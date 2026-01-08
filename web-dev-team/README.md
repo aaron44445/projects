@@ -2,7 +2,57 @@
 
 A complete, coordinated AI development team for building world-class web projects.
 
-## Quick Start
+> **New to this?** Start with the [Quick Decision Guide](#quick-decision-guide) below.
+>
+> **Have existing code?** See [USAGE_GUIDE.md](USAGE_GUIDE.md) for token-optimized workflows.
+
+---
+
+## Quick Decision Guide
+
+**Pick your path based on what you have:**
+
+| Your Situation | What to Use | Token Cost |
+|----------------|-------------|------------|
+| Starting from scratch | Full Orchestrator | High |
+| Existing app, need specific improvements | Lite Orchestrator | Medium |
+| Just need one thing (design/tests/deploy) | Single Agent | Low |
+
+### Path A: New Project (Full Orchestrator)
+```
+Read web-dev-team/orchestrator/SKILL.md and start my project.
+Here's my brief: [paste brief]
+```
+
+### Path B: Existing Project (Lite Orchestrator)
+```
+Read web-dev-team/orchestrator/LITE.md
+
+Project: MyApp
+Location: src/
+
+Agents needed:
+- UI Designer: Audit current design
+- Testing: Add E2E tests
+
+Skip: Backend, Database, DevOps, Frontend
+Start with: UI Designer
+```
+
+### Path C: Single Task (Direct Agent)
+```
+Read web-dev-team/agents/ui-designer/SKILL.md
+
+Review my existing app at spa-software/ and create:
+1. Design system improvements
+2. Component-by-component recommendations
+
+Focus on: [specific areas]
+```
+
+---
+
+## Quick Start (New Projects)
 
 ### 1. Fill Out the Project Brief
 
@@ -60,7 +110,8 @@ The orchestrator will:
 ```
 web-dev-team/
 ├── orchestrator/
-│   └── SKILL.md              # Team coordinator
+│   ├── SKILL.md              # Full team coordinator
+│   └── LITE.md               # Token-efficient coordinator
 ├── agents/
 │   ├── ui-designer/
 │   │   └── SKILL.md          # Visual design specialist
@@ -81,6 +132,7 @@ web-dev-team/
 │   │   └── LAYOUTS.md        # Layout patterns for UI designer
 │   └── component-examples/
 │       └── COMPONENTS.md     # Component patterns for reference
+├── USAGE_GUIDE.md            # Token optimization guide
 └── README.md                 # This file
 ```
 
@@ -286,7 +338,8 @@ Check handoff documents between agents for missing context.
 
 | Agent | Skill File | Use For |
 |-------|------------|---------|
-| Orchestrator | `orchestrator/SKILL.md` | Full project coordination |
+| Full Orchestrator | `orchestrator/SKILL.md` | New projects, full coordination |
+| Lite Orchestrator | `orchestrator/LITE.md` | Existing projects, partial improvements |
 | UI Designer | `agents/ui-designer/SKILL.md` | Design systems, mockups |
 | Frontend | `agents/frontend/SKILL.md` | React, CSS, components |
 | Backend | `agents/backend/SKILL.md` | APIs, auth, server logic |
