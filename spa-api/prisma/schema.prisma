@@ -67,6 +67,44 @@ model Organization {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
+  // === Public Marketplace Profile ===
+  isPublished      Boolean  @default(false) @map("is_published")
+  profileSlug      String?  @unique @map("profile_slug")
+
+  // Basic Info
+  description      String?  @db.Text
+  shortDescription String?  @map("short_description") @db.VarChar(200)
+
+  // Contact Info
+  phone            String?
+  address          String?
+  businessHours    Json?    @map("business_hours")
+
+  // Media
+  logo             String?
+  coverImage       String?  @map("cover_image")
+  galleryImages    String[] @map("gallery_images")
+
+  // Location
+  city             String?
+  state            String?
+  zipCode          String?  @map("zip_code")
+  country          String?  @default("US")
+  latitude         Float?
+  longitude        Float?
+
+  // Attributes
+  amenities        String[]
+  priceRange       String?  @map("price_range") // $, $$, $$$, $$$$
+
+  // SEO
+  metaTitle        String?  @map("meta_title")
+  metaDescription  String?  @map("meta_description") @db.VarChar(160)
+
+  // Ratings (denormalized for performance)
+  averageRating    Float    @default(0) @map("average_rating")
+  reviewCount      Int      @default(0) @map("review_count")
+
   // Relations
   ownerId String @map("owner_id")
   owner   User   @relation("OrganizationOwner", fields: [ownerId], references: [id])
@@ -83,6 +121,13 @@ model Organization {
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
 
+  // Marketplace relations
+  reviews  Review[]
+  bookings Booking[]
+
+  @@index([isPublished])
+  @@index([city, state])
+  @@index([averageRating])
   @@map("organizations")
 }
 
@@ -217,6 +262,7 @@ model Service {
   description     String?
   durationMinutes Int      @map("duration_minutes")
   price           Decimal  @db.Decimal(10, 2)
+  category        String?  // e.g., "Massage", "Facial", "Nails"
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -226,11 +272,13 @@ model Service {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Relations
-  appointments Appointment[]
+  appointments  Appointment[]
   staffServices StaffService[]
+  bookings      Booking[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
+  @@index([category])
   @@map("services")
 }
 
@@ -238,6 +286,7 @@ model Staff {
   id        String   @id @default(cuid())
   name      String
   title     String?
+  avatar    String?  // Profile photo URL
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -253,6 +302,7 @@ model Staff {
   // Relations
   appointments  Appointment[]
   staffServices StaffService[]
+  bookings      Booking[]
 
   @@index([organizationId])
   @@index([organizationId, isActive])
@@ -296,6 +346,9 @@ model Appointment {
 
   // Transaction (if paid)
   transaction Transaction?
+
+  // Marketplace booking link
+  booking Booking?
 
   @@index([organizationId])
   @@index([organizationId, startTime])
@@ -353,4 +406,83 @@ model Transaction {
   @@index([organizationId, createdAt])
   @@index([organizationId, status])
   @@map("transactions")
+}
+
+// ============================================
+// MARKETPLACE MODELS
+// ============================================
+
+model Review {
+  id            String   @id @default(cuid())
+  rating        Int      // 1-5 stars
+  title         String?
+  comment       String?  @db.Text
+
+  // Reviewer info (customers don't need accounts)
+  reviewerName  String   @map("reviewer_name")
+  reviewerEmail String?  @map("reviewer_email")
+
+  // Verification
+  isVerified    Boolean  @default(false) @map("is_verified")
+  bookingId     String?  @map("booking_id") // Links to actual booking for verification
+
+  // Moderation
+  status        String   @default("published") // pending, published, hidden
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([rating])
+  @@index([organizationId, status])
+  @@map("reviews")
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+
+  // Customer info (no account required)
+  customerName  String   @map("customer_name")
+  customerEmail String   @map("customer_email")
+  customerPhone String?  @map("customer_phone")
+
+  // Booking details
+  dateTime      DateTime @map("date_time")
+  duration      Int      // Duration in minutes
+  totalPrice    Decimal  @map("total_price") @db.Decimal(10, 2)
+  status        String   @default("pending") // pending, confirmed, completed, cancelled, no-show
+  notes         String?
+
+  // Confirmation
+  confirmationNumber String @unique @map("confirmation_number")
+
+  // Source tracking
+  source        String   @default("marketplace") // marketplace, direct, widget
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  serviceId      String       @map("service_id")
+  service        Service      @relation(fields: [serviceId], references: [id])
+  staffId        String?      @map("staff_id")
+  staff          Staff?       @relation(fields: [staffId], references: [id])
+
+  // Link to internal appointment (created after confirmation)
+  appointmentId  String?      @unique @map("appointment_id")
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([organizationId])
+  @@index([customerEmail])
+  @@index([dateTime])
+  @@index([status])
+  @@index([confirmationNumber])
+  @@map("bookings")
 }

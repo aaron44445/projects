@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Store
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/staff', icon: UserCircle, label: 'Staff' },
   { path: '/products', icon: Package, label: 'Products' },
   { path: '/transactions', icon: Receipt, label: 'Transactions' },
+  { path: '/marketplace', icon: Store, label: 'Marketplace' },
 ];
 
 export default function Layout({ children }: LayoutProps) {

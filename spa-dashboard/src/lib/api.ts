@@ -372,6 +372,104 @@ class ApiClient {
     const result = await this.request<{ data: DailySummary }>(`/transactions/summary${query}`);
     return result.data;
   }
+
+  // Marketplace Profile endpoints
+  async getMarketplaceProfile() {
+    const result = await this.request<MarketplaceProfile>('/marketplace/profile');
+    return result;
+  }
+
+  async updateMarketplaceProfile(data: UpdateMarketplaceProfileInput) {
+    const result = await this.request<MarketplaceProfileData>('/marketplace/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return result;
+  }
+
+  async publishToMarketplace() {
+    const result = await this.request<{
+      message: string;
+      profileUrl: string;
+      id: string;
+      name: string;
+      isPublished: boolean;
+      profileSlug: string;
+    }>('/marketplace/publish', {
+      method: 'POST',
+    });
+    return result;
+  }
+
+  async unpublishFromMarketplace() {
+    const result = await this.request<{
+      message: string;
+      id: string;
+      name: string;
+      isPublished: boolean;
+      profileSlug: string;
+    }>('/marketplace/unpublish', {
+      method: 'POST',
+    });
+    return result;
+  }
+
+  async getMarketplaceStats() {
+    const result = await this.request<MarketplaceStats>('/marketplace/stats');
+    return result;
+  }
+
+  // Marketplace Bookings
+  async getMarketplaceBookings(params?: { status?: string; page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+
+    const query = searchParams.toString();
+    const result = await this.request<{
+      bookings: MarketplaceBooking[];
+      pagination: PaginationMeta;
+    }>(`/marketplace/bookings${query ? `?${query}` : ''}`);
+    return result;
+  }
+
+  async updateMarketplaceBookingStatus(id: string, status: string) {
+    const result = await this.request<{ id: string; status: string; confirmationNumber: string }>(
+      `/marketplace/bookings/${id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }
+    );
+    return result;
+  }
+
+  // Marketplace Reviews
+  async getMarketplaceReviews(params?: { status?: string; page?: number; limit?: number }) {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set('status', params.status);
+    if (params?.page) searchParams.set('page', params.page.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+
+    const query = searchParams.toString();
+    const result = await this.request<{
+      reviews: MarketplaceReview[];
+      pagination: PaginationMeta;
+    }>(`/marketplace/reviews${query ? `?${query}` : ''}`);
+    return result;
+  }
+
+  async updateMarketplaceReviewStatus(id: string, status: string) {
+    const result = await this.request<{ id: string; status: string }>(
+      `/marketplace/reviews/${id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }
+    );
+    return result;
+  }
 }
 
 // Types
@@ -633,6 +731,120 @@ export interface DailySummary {
     CARD: { count: number; total: number };
     OTHER: { count: number; total: number };
   };
+}
+
+// Marketplace types
+export interface MarketplaceProfileData {
+  id: string;
+  name: string;
+  isPublished: boolean;
+  profileSlug: string | null;
+  description: string | null;
+  shortDescription: string | null;
+  phone: string | null;
+  address: string | null;
+  businessHours: Record<string, { open: string; close: string } | null> | null;
+  logo: string | null;
+  coverImage: string | null;
+  galleryImages: string[];
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  amenities: string[];
+  priceRange: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface MarketplaceProfile extends MarketplaceProfileData {
+  requirements: {
+    profileSlug: boolean;
+    description: boolean;
+    hasImage: boolean;
+    hasService: boolean;
+    hasBusinessHours: boolean;
+  };
+  isReady: boolean;
+  marketplaceBookings: number;
+  activeServices: number;
+}
+
+export interface UpdateMarketplaceProfileInput {
+  profileSlug?: string;
+  description?: string;
+  shortDescription?: string;
+  phone?: string;
+  address?: string;
+  businessHours?: Record<string, { open: string; close: string } | null>;
+  logo?: string | null;
+  coverImage?: string | null;
+  galleryImages?: string[];
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  amenities?: string[];
+  priceRange?: string | null;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
+export interface MarketplaceStats {
+  bookings: {
+    total: number;
+    pending: number;
+    recent: {
+      id: string;
+      customerName: string;
+      dateTime: string;
+      status: string;
+      totalPrice: number;
+      service: { name: string };
+      createdAt: string;
+    }[];
+  };
+  reviews: {
+    average: number;
+    count: number;
+  };
+  revenue: {
+    total: number;
+  };
+}
+
+export interface MarketplaceBooking {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string | null;
+  dateTime: string;
+  duration: number;
+  totalPrice: number;
+  status: string;
+  confirmationNumber: string;
+  notes: string | null;
+  createdAt: string;
+  service: { id: string; name: string };
+  staff: { id: string; name: string } | null;
+}
+
+export interface MarketplaceReview {
+  id: string;
+  rating: number;
+  title: string | null;
+  comment: string | null;
+  reviewerName: string;
+  reviewerEmail: string | null;
+  isVerified: boolean;
+  status: string;
+  createdAt: string;
 }
 
 export const api = new ApiClient();

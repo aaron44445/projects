@@ -20,7 +20,7 @@
 
 ## Current Phase
 
-**Phase 10 of 10 - COMPLETE**
+**Phase 11 of 15 - COMPLETE**
 
 | Phase | Name | Status |
 |-------|------|--------|
@@ -34,6 +34,11 @@
 | 8 | Products & Inventory | ✅ Complete |
 | 9 | Reports & Analytics | ✅ Complete |
 | 10 | Deployment & Launch | ✅ Complete |
+| 11 | Customer Database & API Foundation | ✅ Complete |
+| 12 | Customer Marketplace Frontend | 🔲 Pending |
+| 13 | Booking Widget | 🔲 Pending |
+| 14 | Payment Integration | 🔲 Pending |
+| 15 | Production Deployment | 🔲 Pending |
 
 ---
 
@@ -117,6 +122,64 @@
 - [x] Complete React Router configuration
 - [x] All UI components implemented
 - [x] Ready for database setup and deployment
+
+### Phase 11: Customer Database & API Foundation
+- [x] Extended Organization model with marketplace profile fields
+  - isPublished, profileSlug for marketplace visibility
+  - description, shortDescription for profile content
+  - logo, coverImage, galleryImages for media
+  - city, state, zipCode, latitude, longitude for location
+  - amenities, priceRange for attributes
+  - metaTitle, metaDescription for SEO
+  - averageRating, reviewCount for ratings (denormalized)
+- [x] Created Review model for customer reviews
+  - 1-5 star rating, title, comment
+  - Reviewer info (no account required)
+  - Verification via booking link
+  - Moderation status (pending, published, hidden)
+- [x] Created Booking model for marketplace bookings
+  - Customer info (name, email, phone)
+  - Service, staff, datetime, duration, price
+  - Confirmation number generation
+  - Source tracking (marketplace, direct, widget)
+  - Link to internal Appointment after confirmation
+- [x] Added category field to Service model
+- [x] Added avatar field to Staff model
+- [x] Consumer API routes (`/api/consumer/`)
+  - GET /spas - List published spas with filters
+  - GET /spas/:slug - Full spa profile
+  - GET /spas/:slug/services - Bookable services
+  - GET /spas/:slug/staff - Staff list
+  - GET /spas/:slug/availability - Time slot availability
+  - POST /spas/:slug/book - Create booking
+  - GET /spas/:slug/reviews - List reviews with summary
+  - POST /spas/:slug/reviews - Submit review
+  - GET /search - Search spas
+  - GET /cities - Cities with spa counts
+  - GET /categories - Service categories with counts
+- [x] Dashboard marketplace routes (`/api/marketplace/`)
+  - GET /profile - Get marketplace profile
+  - PUT /profile - Update marketplace profile
+  - POST /publish - Publish to marketplace
+  - POST /unpublish - Remove from marketplace
+  - GET /stats - Marketplace statistics
+  - GET /bookings - List marketplace bookings
+  - PATCH /bookings/:id/status - Update booking status
+  - GET /reviews - List reviews
+  - PATCH /reviews/:id/status - Moderate reviews
+- [x] Helper functions (lib/consumer.ts)
+  - generateSlug, generateUniqueProfileSlug
+  - formatAddress
+  - getAvailableSlots, isSlotAvailable
+  - updateSpaRating
+  - generateConfirmationNumber
+  - generateCitySlug, generateCategorySlug
+- [x] Dashboard marketplace pages
+  - MarketplacePage - Overview with stats and publish toggle
+  - MarketplaceProfilePage - Edit public profile
+  - MarketplaceBookingsPage - Manage bookings
+  - MarketplaceReviewsPage - View and moderate reviews
+- [x] Updated navigation with Marketplace link
 
 ---
 
@@ -232,6 +295,78 @@ transactions
 ├── created_at          TIMESTAMP
 @@index([organization_id])
 @@index([organization_id, created_at])
+```
+
+### Marketplace Tables
+
+```
+organizations (extended)
+├── is_published        BOOLEAN DEFAULT false
+├── profile_slug        VARCHAR UNIQUE
+├── description         TEXT
+├── short_description   VARCHAR(200)
+├── phone               VARCHAR
+├── address             VARCHAR
+├── business_hours      JSON
+├── logo                VARCHAR
+├── cover_image         VARCHAR
+├── gallery_images      VARCHAR[]
+├── city                VARCHAR
+├── state               VARCHAR
+├── zip_code            VARCHAR
+├── country             VARCHAR DEFAULT 'US'
+├── latitude            FLOAT
+├── longitude           FLOAT
+├── amenities           VARCHAR[]
+├── price_range         VARCHAR ($, $$, $$$, $$$$)
+├── meta_title          VARCHAR
+├── meta_description    VARCHAR(160)
+├── average_rating      FLOAT DEFAULT 0
+├── review_count        INT DEFAULT 0
+@@index([is_published])
+@@index([city, state])
+@@index([average_rating])
+
+reviews
+├── id                  CUID PRIMARY KEY
+├── organization_id     CUID → organizations.id [CASCADE]
+├── rating              INT (1-5)
+├── title               VARCHAR
+├── comment             TEXT
+├── reviewer_name       VARCHAR
+├── reviewer_email      VARCHAR
+├── is_verified         BOOLEAN DEFAULT false
+├── booking_id          VARCHAR (for verification)
+├── status              VARCHAR DEFAULT 'published' (pending, published, hidden)
+├── created_at          TIMESTAMP
+├── updated_at          TIMESTAMP
+@@index([organization_id])
+@@index([status])
+@@index([rating])
+
+bookings
+├── id                  CUID PRIMARY KEY
+├── organization_id     CUID → organizations.id [CASCADE]
+├── service_id          CUID → services.id
+├── staff_id            CUID → staff.id (optional)
+├── appointment_id      CUID → appointments.id (optional, unique)
+├── customer_name       VARCHAR
+├── customer_email      VARCHAR
+├── customer_phone      VARCHAR
+├── date_time           TIMESTAMP
+├── duration            INT (minutes)
+├── total_price         DECIMAL(10,2)
+├── status              VARCHAR DEFAULT 'pending'
+├── confirmation_number VARCHAR UNIQUE
+├── source              VARCHAR DEFAULT 'marketplace'
+├── notes               TEXT
+├── created_at          TIMESTAMP
+├── updated_at          TIMESTAMP
+@@index([organization_id])
+@@index([customer_email])
+@@index([date_time])
+@@index([status])
+@@index([confirmation_number])
 ```
 
 ### Auth Tables
@@ -363,6 +498,33 @@ GET    /api/transactions            List with filters (clientId, type, status, d
 POST   /api/transactions            Create, auto-adjust inventory
 GET    /api/transactions/:id        Get with relations
 GET    /api/transactions/summary    Daily summary by type/payment method
+
+# Marketplace (dashboard, authenticated)
+GET    /api/marketplace/profile           Get marketplace profile with requirements
+PUT    /api/marketplace/profile           Update marketplace profile fields
+POST   /api/marketplace/publish           Publish to marketplace (validates requirements)
+POST   /api/marketplace/unpublish         Remove from marketplace
+GET    /api/marketplace/stats             Marketplace statistics (bookings, reviews, revenue)
+GET    /api/marketplace/bookings          List marketplace bookings, ?status=pending
+PATCH  /api/marketplace/bookings/:id/status  Update booking status
+GET    /api/marketplace/reviews           List reviews, ?status=published
+PATCH  /api/marketplace/reviews/:id/status   Moderate review (publish/hide)
+
+# Consumer API (public)
+GET    /api/consumer/spas                 List published spas with filters
+                                          ?city, ?state, ?category, ?amenities
+                                          ?minRating, ?priceRange, ?sort, ?page, ?limit
+GET    /api/consumer/spas/:slug           Full spa profile with services, staff, reviews
+GET    /api/consumer/spas/:slug/services  List bookable services (active only)
+GET    /api/consumer/spas/:slug/staff     List staff for booking selection
+GET    /api/consumer/spas/:slug/availability  Available time slots
+                                          ?date (YYYY-MM-DD), ?serviceId, ?staffId
+POST   /api/consumer/spas/:slug/book      Create booking
+GET    /api/consumer/spas/:slug/reviews   List reviews with summary breakdown
+POST   /api/consumer/spas/:slug/reviews   Submit review
+GET    /api/consumer/search               Search spas, ?q, ?city, ?limit
+GET    /api/consumer/cities               List cities with spa counts
+GET    /api/consumer/categories           List service categories with counts
 ```
 
 ---

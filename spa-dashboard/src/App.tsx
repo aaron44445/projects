@@ -24,6 +24,11 @@ import ProductFormPage from './pages/products/ProductFormPage';
 // Transactions
 import TransactionListPage from './pages/transactions/TransactionListPage';
 import TransactionFormPage from './pages/transactions/TransactionFormPage';
+// Marketplace
+import MarketplacePage from './pages/marketplace/MarketplacePage';
+import MarketplaceProfilePage from './pages/marketplace/MarketplaceProfilePage';
+import MarketplaceBookingsPage from './pages/marketplace/MarketplaceBookingsPage';
+import MarketplaceReviewsPage from './pages/marketplace/MarketplaceReviewsPage';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -102,6 +107,12 @@ function AppRoutes() {
       {/* Transactions */}
       <Route path="/transactions" element={<ProtectedRoute><TransactionListPage /></ProtectedRoute>} />
       <Route path="/transactions/new" element={<ProtectedRoute><TransactionFormPage /></ProtectedRoute>} />
+
+      {/* Marketplace */}
+      <Route path="/marketplace" element={<ProtectedRoute><MarketplacePage /></ProtectedRoute>} />
+      <Route path="/marketplace/profile" element={<ProtectedRoute><MarketplaceProfilePage /></ProtectedRoute>} />
+      <Route path="/marketplace/bookings" element={<ProtectedRoute><MarketplaceBookingsPage /></ProtectedRoute>} />
+      <Route path="/marketplace/reviews" element={<ProtectedRoute><MarketplaceReviewsPage /></ProtectedRoute>} />
 
       {/* Settings placeholder */}
       <Route path="/settings" element={<ProtectedRoute><ComingSoon title="Settings" /></ProtectedRoute>} />
