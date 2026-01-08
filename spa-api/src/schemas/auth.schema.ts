@@ -13,6 +13,18 @@ export const registerSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 /**
+ * Customer registration schema (no business required)
+ */
+export const customerRegisterSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  phone: z.string().optional(),
+});
+
+export type CustomerRegisterInput = z.infer<typeof customerRegisterSchema>;
+
+/**
  * Login schema
  */
 export const loginSchema = z.object({

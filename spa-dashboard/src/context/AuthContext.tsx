@@ -1,17 +1,25 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api, User, Organization } from '../lib/api';
+import { api, User, Organization, UserType } from '../lib/api';
 
 interface AuthState {
   user: User | null;
   organization: Organization | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  userType: UserType | null;
+}
+
+interface LoginResult {
+  redirectTo: string;
 }
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   register: (email: string, password: string, name: string, businessName: string) => Promise<void>;
+  registerCustomer: (email: string, password: string, name: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
+  isCustomer: boolean;
+  isBusiness: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -25,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     organization: null,
     isLoading: true,
     isAuthenticated: false,
+    userType: null,
   });
 
   // Initialize auth state from stored tokens
@@ -44,9 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { user, organization } = await api.getMe();
         setState({
           user,
-          organization,
+          organization: organization || null,
           isLoading: false,
           isAuthenticated: true,
+          userType: user.userType || 'BUSINESS',
         });
       } catch {
         // Token expired, try refresh
@@ -59,9 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const { user, organization } = await api.getMe();
           setState({
             user,
-            organization,
+            organization: organization || null,
             isLoading: false,
             isAuthenticated: true,
+            userType: user.userType || 'BUSINESS',
           });
         } catch {
           // Refresh failed, clear tokens
@@ -73,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             organization: null,
             isLoading: false,
             isAuthenticated: false,
+            userType: null,
           });
         }
       }
@@ -81,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const { user, organization, accessToken, refreshToken } = await api.login(email, password);
+  const login = async (email: string, password: string): Promise<LoginResult> => {
+    const { user, organization, accessToken, refreshToken, redirectTo } = await api.login(email, password);
 
     localStorage.setItem(TOKEN_KEY, accessToken);
     localStorage.setItem(REFRESH_KEY, refreshToken);
@@ -90,10 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setState({
       user,
-      organization,
+      organization: organization || null,
       isLoading: false,
       isAuthenticated: true,
+      userType: user.userType || 'BUSINESS',
     });
+
+    return { redirectTo };
   };
 
   const register = async (email: string, password: string, name: string, businessName: string) => {
@@ -113,6 +128,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       organization,
       isLoading: false,
       isAuthenticated: true,
+      userType: 'BUSINESS',
+    });
+  };
+
+  const registerCustomer = async (email: string, password: string, name: string, phone?: string) => {
+    const { user, accessToken, refreshToken } = await api.registerCustomer(
+      email,
+      password,
+      name,
+      phone
+    );
+
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_KEY, refreshToken);
+    api.setAccessToken(accessToken);
+
+    setState({
+      user,
+      organization: null,
+      isLoading: false,
+      isAuthenticated: true,
+      userType: 'CUSTOMER',
     });
   };
 
@@ -136,11 +173,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       organization: null,
       isLoading: false,
       isAuthenticated: false,
+      userType: null,
     });
   };
 
+  const isCustomer = state.userType === 'CUSTOMER';
+  const isBusiness = state.userType === 'BUSINESS';
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, registerCustomer, logout, isCustomer, isBusiness }}>
       {children}
     </AuthContext.Provider>
   );

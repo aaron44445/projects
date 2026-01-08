@@ -27,6 +27,11 @@ enum UserRole {
   STAFF
 }
 
+enum UserType {
+  BUSINESS  // Spa owners, managers, staff
+  CUSTOMER  // End-users booking services
+}
+
 enum AppointmentStatus {
   PENDING
   CONFIRMED
@@ -136,18 +141,24 @@ model User {
   email           String    @unique
   passwordHash    String    @map("password_hash")
   name            String
+  userType        UserType  @default(BUSINESS) @map("user_type")
   role            UserRole  @default(STAFF)
+  phone           String?
+  avatar          String?
   emailVerifiedAt DateTime? @map("email_verified_at")
   isActive        Boolean   @default(true) @map("is_active")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  // Organization relation
-  organizationId String       @map("organization_id")
-  organization   Organization @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: Cascade)
+  // Organization relation (optional for customers)
+  organizationId String?      @map("organization_id")
+  organization   Organization? @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Owner relation (for organizations they own)
   ownedOrganizations Organization[] @relation("OrganizationOwner")
+
+  // Customer bookings (when user is a customer)
+  customerBookings Booking[] @relation("CustomerBookings")
 
   // Staff profile (if user is a service provider)
   staffProfile Staff?
@@ -446,10 +457,14 @@ model Review {
 model Booking {
   id            String   @id @default(cuid())
 
-  // Customer info (no account required)
+  // Customer info (no account required for guest bookings)
   customerName  String   @map("customer_name")
   customerEmail String   @map("customer_email")
   customerPhone String?  @map("customer_phone")
+
+  // Registered customer (optional - for logged-in customers)
+  userId        String?  @map("user_id")
+  user          User?    @relation("CustomerBookings", fields: [userId], references: [id], onDelete: SetNull)
 
   // Booking details
   dateTime      DateTime @map("date_time")
@@ -481,6 +496,7 @@ model Booking {
 
   @@index([organizationId])
   @@index([customerEmail])
+  @@index([userId])
   @@index([dateTime])
   @@index([status])
   @@index([confirmationNumber])

@@ -15,6 +15,7 @@ import {
 } from '../lib/email.js';
 import {
   RegisterInput,
+  CustomerRegisterInput,
   LoginInput,
   RefreshInput,
   VerifyEmailInput,
@@ -157,7 +158,78 @@ export async function register(
 }
 
 /**
- * Login with email and password
+ * Register a new customer (no organization)
+ */
+export async function registerCustomer(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email, password, name, phone } = req.body as CustomerRegisterInput;
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictError('Email already registered');
+    }
+
+    // Hash password
+    const passwordHash = await hashPassword(password);
+
+    // Create customer user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        name,
+        phone,
+        userType: 'CUSTOMER',
+        role: 'STAFF', // Not used for customers but required by schema
+      },
+    });
+
+    // Create refresh token
+    const refreshTokenRecord = await prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        token: generateSecureToken(),
+        expiresAt: getRefreshTokenExpiry(),
+      },
+    });
+
+    // Generate access token
+    const accessToken = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      organizationId: null,
+      role: user.role,
+      userType: 'CUSTOMER',
+    });
+
+    res.status(201).json({
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          userType: 'CUSTOMER',
+        },
+        accessToken,
+        refreshToken: refreshTokenRecord.token,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Login with email and password (supports both business and customer users)
  */
 export async function login(
   req: Request,
@@ -167,7 +239,7 @@ export async function login(
   try {
     const { email, password } = req.body as LoginInput;
 
-    // Find user with organization
+    // Find user with organization (organization is optional for customers)
     const user = await prisma.user.findUnique({
       where: { email },
       include: { organization: true },
@@ -204,26 +276,50 @@ export async function login(
       email: user.email,
       organizationId: user.organizationId,
       role: user.role,
+      userType: user.userType,
     });
 
-    res.json({
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          emailVerified: !!user.emailVerifiedAt,
+    // Build response based on user type
+    if (user.userType === 'CUSTOMER') {
+      // Customer login response (no organization)
+      res.json({
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            userType: 'CUSTOMER',
+            emailVerified: !!user.emailVerifiedAt,
+          },
+          accessToken,
+          refreshToken: refreshTokenRecord.token,
+          redirectTo: '/account', // Redirect customers to their account
         },
-        organization: {
-          id: user.organization.id,
-          name: user.organization.name,
-          slug: user.organization.slug,
+      });
+    } else {
+      // Business user login response (with organization)
+      res.json({
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            userType: 'BUSINESS',
+            emailVerified: !!user.emailVerifiedAt,
+          },
+          organization: user.organization ? {
+            id: user.organization.id,
+            name: user.organization.name,
+            slug: user.organization.slug,
+          } : null,
+          accessToken,
+          refreshToken: refreshTokenRecord.token,
+          redirectTo: '/', // Redirect business users to dashboard
         },
-        accessToken,
-        refreshToken: refreshTokenRecord.token,
-      },
-    });
+      });
+    }
   } catch (error) {
     next(error);
   }
@@ -490,7 +586,7 @@ export async function resetPassword(
 }
 
 /**
- * Get current user info
+ * Get current user info (handles both business and customer users)
  */
 export async function me(
   req: AuthenticatedRequest,
@@ -507,23 +603,42 @@ export async function me(
       throw new NotFoundError('User');
     }
 
-    res.json({
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          emailVerified: !!user.emailVerifiedAt,
+    if (user.userType === 'CUSTOMER') {
+      // Customer response (no organization)
+      res.json({
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            avatar: user.avatar,
+            userType: 'CUSTOMER',
+            emailVerified: !!user.emailVerifiedAt,
+          },
         },
-        organization: {
-          id: user.organization.id,
-          name: user.organization.name,
-          slug: user.organization.slug,
-          plan: user.organization.plan,
+      });
+    } else {
+      // Business user response (with organization)
+      res.json({
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            userType: 'BUSINESS',
+            emailVerified: !!user.emailVerifiedAt,
+          },
+          organization: user.organization ? {
+            id: user.organization.id,
+            name: user.organization.name,
+            slug: user.organization.slug,
+            plan: user.organization.plan,
+          } : null,
         },
-      },
-    });
+      });
+    }
   } catch (error) {
     next(error);
   }

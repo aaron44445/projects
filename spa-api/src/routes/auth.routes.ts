@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.js';
 import * as authController from '../controllers/auth.controller.js';
 import {
   registerSchema,
+  customerRegisterSchema,
   loginSchema,
   refreshSchema,
   verifyEmailSchema,
@@ -33,8 +34,11 @@ function validate(schema: any) {
   };
 }
 
-// Public routes
+// Public routes - Business registration
 router.post('/register', validate(registerSchema), authController.register);
+// Public routes - Customer registration
+router.post('/register/customer', validate(customerRegisterSchema), authController.registerCustomer);
+// Public routes - Login (handles both types)
 router.post('/login', validate(loginSchema), authController.login);
 router.post('/refresh', validate(refreshSchema), authController.refresh);
 router.post('/logout', validate(refreshSchema), authController.logout);

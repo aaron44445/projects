@@ -1,23 +1,19 @@
 import { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Sparkles } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { Sparkles, Building2 } from 'lucide-react';
 
-export default function RegisterPage() {
+export default function BusinessRegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    phone: '',
+    businessName: '',
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { registerCustomer } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  // Check if user came from a specific flow (e.g., booking)
-  const returnTo = searchParams.get('returnTo');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -29,13 +25,13 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await registerCustomer(
+      await register(
         formData.email,
         formData.password,
         formData.name,
-        formData.phone || undefined
+        formData.businessName
       );
-      navigate(returnTo || '/account');
+      navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -50,8 +46,14 @@ export default function RegisterPage() {
           <Link to="/" className="inline-flex items-center justify-center w-16 h-16 bg-teal-100 rounded-full mb-4">
             <Sparkles className="w-8 h-8 text-teal-600" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-500 mt-1">Book and manage spa appointments</p>
+          <h1 className="text-2xl font-bold text-gray-900">Register Your Spa</h1>
+          <p className="text-gray-500 mt-1">Start managing your spa business today</p>
+        </div>
+
+        {/* Business badge */}
+        <div className="flex items-center justify-center gap-2 mb-6 py-2 px-4 bg-teal-50 rounded-lg">
+          <Building2 className="w-4 h-4 text-teal-600" />
+          <span className="text-sm font-medium text-teal-700">Business Account</span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,7 +65,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              Your Name
             </label>
             <input
               id="name"
@@ -78,8 +80,24 @@ export default function RegisterPage() {
           </div>
 
           <div>
+            <label htmlFor="businessName" className="block text-sm font-medium text-gray-700 mb-1">
+              Business Name
+            </label>
+            <input
+              id="businessName"
+              name="businessName"
+              type="text"
+              value={formData.businessName}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
+              placeholder="Serenity Spa"
+              required
+            />
+          </div>
+
+          <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              Business Email
             </label>
             <input
               id="email"
@@ -88,23 +106,8 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
-              placeholder="you@example.com"
+              placeholder="you@yourspa.com"
               required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone <span className="text-gray-400">(optional)</span>
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
-              placeholder="(555) 123-4567"
             />
           </div>
 
@@ -131,7 +134,7 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full bg-teal-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Creating account...' : 'Create account'}
+            {isLoading ? 'Creating business account...' : 'Create Business Account'}
           </button>
         </form>
 
@@ -144,9 +147,9 @@ export default function RegisterPage() {
           </p>
           <div className="border-t border-gray-200 pt-4">
             <p className="text-xs text-gray-400">
-              Own a spa business?{' '}
-              <Link to="/business/register" className="text-teal-600 hover:text-teal-700">
-                Register your spa
+              Just looking to book a spa?{' '}
+              <Link to="/register" className="text-teal-600 hover:text-teal-700">
+                Create a customer account
               </Link>
             </p>
           </div>

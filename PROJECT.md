@@ -34,7 +34,7 @@
 | 8 | Products & Inventory | ✅ Complete |
 | 9 | Reports & Analytics | ✅ Complete |
 | 10 | Deployment & Launch | ✅ Complete |
-| 11 | Customer Database & API Foundation | ✅ Complete |
+| 11 | Unified Platform Foundation | ✅ Complete |
 | 12 | Customer Marketplace Frontend | 🔲 Pending |
 | 13 | Booking Widget | 🔲 Pending |
 | 14 | Payment Integration | 🔲 Pending |
@@ -123,7 +123,7 @@
 - [x] All UI components implemented
 - [x] Ready for database setup and deployment
 
-### Phase 11: Customer Database & API Foundation
+### Phase 11: Unified Platform Foundation
 - [x] Extended Organization model with marketplace profile fields
   - isPublished, profileSlug for marketplace visibility
   - description, shortDescription for profile content
@@ -180,6 +180,32 @@
   - MarketplaceBookingsPage - Manage bookings
   - MarketplaceReviewsPage - View and moderate reviews
 - [x] Updated navigation with Marketplace link
+- [x] **Unified Auth System** (customers + business on ONE platform)
+  - UserType enum (BUSINESS, CUSTOMER) added to User model
+  - organizationId made optional for customers
+  - Customer registration endpoint (POST /auth/register/customer)
+  - Login returns redirectTo based on user type
+  - JWT tokens include userType claim
+  - /me endpoint returns different data based on user type
+- [x] **Public Layout** (same design system as admin)
+  - PublicLayout component with header/footer
+  - Responsive navigation with mobile menu
+  - User menu for authenticated customers
+  - Same teal color scheme, typography, spacing
+- [x] **Unified Auth Pages**
+  - LoginPage - Universal login with server-side redirect
+  - RegisterPage - Customer registration (default)
+  - BusinessRegisterPage - Spa owner registration
+  - Support for returnTo query param
+- [x] **Customer Account Pages**
+  - AccountPage - Profile view/edit
+  - CustomerBookingsPage - View booking history
+  - Links to explore spas
+- [x] **Route Protection by User Type**
+  - BusinessRoute - Admin dashboard (redirects customers)
+  - CustomerRoute - Customer pages (redirects business)
+  - PublicRoute - Auth pages (redirects logged-in users)
+  - HomePage - Shows dashboard OR public landing based on auth
 
 ---
 
@@ -203,11 +229,14 @@ organizations
 
 users
 ├── id                  CUID PRIMARY KEY
-├── organization_id     CUID → organizations.id [REQUIRED]
+├── organization_id     CUID → organizations.id [OPTIONAL for customers]
 ├── email               VARCHAR UNIQUE
 ├── password_hash       VARCHAR
 ├── name                VARCHAR
+├── user_type           ENUM(BUSINESS, CUSTOMER) DEFAULT BUSINESS
 ├── role                ENUM(OWNER, MANAGER, STAFF)
+├── phone               VARCHAR
+├── avatar              VARCHAR
 ├── email_verified_at   TIMESTAMP
 ├── is_active           BOOLEAN
 ├── created_at          TIMESTAMP
@@ -440,14 +469,15 @@ staff_services (join table)
 GET  /api/health                    Health check
 
 # Authentication (public)
-POST /api/auth/register             Create account + organization
-POST /api/auth/login                Login, get tokens
+POST /api/auth/register             Create business account + organization
+POST /api/auth/register/customer    Create customer account (no org)
+POST /api/auth/login                Login, get tokens + redirectTo
 POST /api/auth/refresh              Refresh access token
 POST /api/auth/logout               Revoke refresh token
 POST /api/auth/verify-email         Verify email with token
 POST /api/auth/forgot-password      Request password reset
 POST /api/auth/reset-password       Reset password with token
-GET  /api/auth/me                   Get current user (protected)
+GET  /api/auth/me                   Get current user (protected, returns based on userType)
 
 # Invitations
 POST   /api/invitations             Create invitation (OWNER, MANAGER)

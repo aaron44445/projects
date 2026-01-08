@@ -49,9 +49,10 @@ class ApiClient {
     const result = await this.request<{
       data: {
         user: User;
-        organization: Organization;
+        organization?: Organization;
         accessToken: string;
         refreshToken: string;
+        redirectTo: string;
       };
     }>('/auth/login', {
       method: 'POST',
@@ -75,6 +76,20 @@ class ApiClient {
     return result.data;
   }
 
+  async registerCustomer(email: string, password: string, name: string, phone?: string) {
+    const result = await this.request<{
+      data: {
+        user: User;
+        accessToken: string;
+        refreshToken: string;
+      };
+    }>('/auth/register/customer', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name, phone }),
+    });
+    return result.data;
+  }
+
   async refreshToken(refreshToken: string) {
     const result = await this.request<{
       data: { accessToken: string; refreshToken: string };
@@ -94,7 +109,7 @@ class ApiClient {
 
   async getMe() {
     const result = await this.request<{
-      data: { user: User; organization: Organization };
+      data: { user: User; organization?: Organization };
     }>('/auth/me');
     return result.data;
   }
@@ -473,11 +488,15 @@ class ApiClient {
 }
 
 // Types
+export type UserType = 'BUSINESS' | 'CUSTOMER';
+
 export interface User {
   id: string;
   email: string;
   name: string;
   role: 'OWNER' | 'MANAGER' | 'STAFF';
+  userType?: UserType;
+  phone?: string;
   emailVerified: boolean;
 }
 

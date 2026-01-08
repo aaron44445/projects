@@ -4,8 +4,9 @@ import { config } from '../config/index.js';
 export interface AccessTokenPayload {
   userId: string;
   email: string;
-  organizationId: string;
+  organizationId: string | null;
   role: string;
+  userType?: 'BUSINESS' | 'CUSTOMER';
 }
 
 export interface RefreshTokenPayload {

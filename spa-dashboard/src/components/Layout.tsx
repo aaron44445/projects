@@ -25,7 +25,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/clients', icon: Users, label: 'Clients' },
   { path: '/appointments', icon: Calendar, label: 'Appointments' },
-  { path: '/services', icon: Scissors, label: 'Services' },
+  { path: '/services-manage', icon: Scissors, label: 'Services' },
   { path: '/staff', icon: UserCircle, label: 'Staff' },
   { path: '/products', icon: Package, label: 'Products' },
   { path: '/transactions', icon: Receipt, label: 'Transactions' },
