@@ -4,9 +4,26 @@ import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import SpaDashboard from './SpaDashboard';
+// Clients
 import ClientListPage from './pages/clients/ClientListPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import ClientFormPage from './pages/clients/ClientFormPage';
+// Appointments
+import AppointmentListPage from './pages/appointments/AppointmentListPage';
+import AppointmentDetailPage from './pages/appointments/AppointmentDetailPage';
+import AppointmentFormPage from './pages/appointments/AppointmentFormPage';
+// Services
+import ServiceListPage from './pages/services/ServiceListPage';
+import ServiceFormPage from './pages/services/ServiceFormPage';
+// Staff
+import StaffListPage from './pages/staff/StaffListPage';
+import StaffFormPage from './pages/staff/StaffFormPage';
+// Products
+import ProductListPage from './pages/products/ProductListPage';
+import ProductFormPage from './pages/products/ProductFormPage';
+// Transactions
+import TransactionListPage from './pages/transactions/TransactionListPage';
+import TransactionFormPage from './pages/transactions/TransactionFormPage';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -52,7 +69,7 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-      {/* Protected routes */}
+      {/* Dashboard */}
       <Route path="/" element={<ProtectedRoute><SpaDashboard /></ProtectedRoute>} />
 
       {/* Clients */}
@@ -61,12 +78,32 @@ function AppRoutes() {
       <Route path="/clients/:id" element={<ProtectedRoute><ClientDetailPage /></ProtectedRoute>} />
       <Route path="/clients/:id/edit" element={<ProtectedRoute><ClientFormPage /></ProtectedRoute>} />
 
-      {/* Placeholder routes */}
-      <Route path="/appointments" element={<ProtectedRoute><ComingSoon title="Appointments" /></ProtectedRoute>} />
-      <Route path="/services" element={<ProtectedRoute><ComingSoon title="Services" /></ProtectedRoute>} />
-      <Route path="/staff" element={<ProtectedRoute><ComingSoon title="Staff" /></ProtectedRoute>} />
-      <Route path="/products" element={<ProtectedRoute><ComingSoon title="Products" /></ProtectedRoute>} />
-      <Route path="/transactions" element={<ProtectedRoute><ComingSoon title="Transactions" /></ProtectedRoute>} />
+      {/* Appointments */}
+      <Route path="/appointments" element={<ProtectedRoute><AppointmentListPage /></ProtectedRoute>} />
+      <Route path="/appointments/new" element={<ProtectedRoute><AppointmentFormPage /></ProtectedRoute>} />
+      <Route path="/appointments/:id" element={<ProtectedRoute><AppointmentDetailPage /></ProtectedRoute>} />
+      <Route path="/appointments/:id/edit" element={<ProtectedRoute><AppointmentFormPage /></ProtectedRoute>} />
+
+      {/* Services */}
+      <Route path="/services" element={<ProtectedRoute><ServiceListPage /></ProtectedRoute>} />
+      <Route path="/services/new" element={<ProtectedRoute><ServiceFormPage /></ProtectedRoute>} />
+      <Route path="/services/:id" element={<ProtectedRoute><ServiceFormPage /></ProtectedRoute>} />
+
+      {/* Staff */}
+      <Route path="/staff" element={<ProtectedRoute><StaffListPage /></ProtectedRoute>} />
+      <Route path="/staff/new" element={<ProtectedRoute><StaffFormPage /></ProtectedRoute>} />
+      <Route path="/staff/:id" element={<ProtectedRoute><StaffFormPage /></ProtectedRoute>} />
+
+      {/* Products */}
+      <Route path="/products" element={<ProtectedRoute><ProductListPage /></ProtectedRoute>} />
+      <Route path="/products/new" element={<ProtectedRoute><ProductFormPage /></ProtectedRoute>} />
+      <Route path="/products/:id" element={<ProtectedRoute><ProductFormPage /></ProtectedRoute>} />
+
+      {/* Transactions */}
+      <Route path="/transactions" element={<ProtectedRoute><TransactionListPage /></ProtectedRoute>} />
+      <Route path="/transactions/new" element={<ProtectedRoute><TransactionFormPage /></ProtectedRoute>} />
+
+      {/* Settings placeholder */}
       <Route path="/settings" element={<ProtectedRoute><ComingSoon title="Settings" /></ProtectedRoute>} />
 
       {/* Catch all */}
