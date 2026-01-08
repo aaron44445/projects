@@ -20,14 +20,14 @@
 
 ## Current Phase
 
-**Phase 2 of 10**
+**Phase 4 of 10**
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Project Setup & Architecture | ✅ Complete |
-| 2 | Database Schema & Models | 🔄 In Progress |
-| 3 | Authentication & Multi-tenancy | ⏳ Pending |
-| 4 | Core API Routes | ⏳ Pending |
+| 2 | Database Schema & Models | ✅ Complete |
+| 3 | Authentication & Multi-tenancy | ✅ Complete |
+| 4 | Core API Routes | 🔄 In Progress |
 | 5 | Client Management | ⏳ Pending |
 | 6 | Appointment Booking | ⏳ Pending |
 | 7 | Services & Staff | ⏳ Pending |
@@ -46,34 +46,59 @@
 - [x] Dashboard UI preview created (`spa-dashboard/`)
 - [x] Design system documented
 
+### Phase 2: Database Schema & Models
+- [x] Created `spa-api/` Express + TypeScript project
+- [x] Full Prisma schema with 14 models
+- [x] Multi-tenant tables with `organization_id` foreign keys
+- [x] Proper indexes for performance
+- [x] Enums for roles, statuses, payment methods
+- [x] Configured TypeScript, ESLint, environment variables
+
+### Phase 3: Authentication & Multi-tenancy
+- [x] JWT authentication (access + refresh tokens)
+- [x] User registration with organization creation
+- [x] Login/logout with refresh token rotation
+- [x] Email verification flow (stub emails for dev)
+- [x] Password reset flow
+- [x] Team invitations (create, accept, delete, list)
+- [x] Role-based middleware (OWNER, MANAGER, STAFF)
+- [x] Auth middleware extracts user from JWT
+- [x] Global error handler with typed errors
+- [x] Zod validation schemas
+
 ---
 
 ## Database Schema
+
+> **Location**: `spa-api/prisma/schema.prisma`
 
 ### Core Tables
 
 ```
 organizations
-├── id                  UUID PRIMARY KEY
-├── name                VARCHAR(255) NOT NULL
-├── slug                VARCHAR(100) UNIQUE
-├── owner_id            UUID → users.id
-├── plan                ENUM(free, starter, pro, enterprise)
-├── stripe_customer_id  VARCHAR(255)
-├── settings            JSONB
+├── id                  CUID PRIMARY KEY
+├── name                VARCHAR NOT NULL
+├── slug                VARCHAR UNIQUE
+├── owner_id            CUID → users.id
+├── plan                ENUM(FREE, STARTER, PRO, ENTERPRISE)
+├── stripe_customer_id  VARCHAR
+├── settings            JSON
 ├── created_at          TIMESTAMP
 ├── updated_at          TIMESTAMP
 
 users
-├── id                  UUID PRIMARY KEY
-├── organization_id     UUID → organizations.id [REQUIRED]
-├── email               VARCHAR(255) UNIQUE
-├── password_hash       VARCHAR(255)
-├── name                VARCHAR(255)
-├── role                ENUM(owner, admin, staff)
+├── id                  CUID PRIMARY KEY
+├── organization_id     CUID → organizations.id [REQUIRED]
+├── email               VARCHAR UNIQUE
+├── password_hash       VARCHAR
+├── name                VARCHAR
+├── role                ENUM(OWNER, MANAGER, STAFF)
+├── email_verified_at   TIMESTAMP
+├── is_active           BOOLEAN
 ├── created_at          TIMESTAMP
 ├── updated_at          TIMESTAMP
 @@index([organization_id])
+@@index([email])
 
 clients
 ├── id                  UUID PRIMARY KEY
@@ -157,6 +182,58 @@ transactions
 @@index([organization_id, created_at])
 ```
 
+### Auth Tables
+
+```
+email_verifications
+├── id                  CUID PRIMARY KEY
+├── token               VARCHAR UNIQUE
+├── user_id             CUID
+├── organization_id     CUID → organizations.id
+├── expires_at          TIMESTAMP
+├── created_at          TIMESTAMP
+@@index([token])
+
+password_resets
+├── id                  CUID PRIMARY KEY
+├── token               VARCHAR UNIQUE
+├── user_id             CUID
+├── organization_id     CUID → organizations.id
+├── expires_at          TIMESTAMP
+├── used_at             TIMESTAMP
+├── created_at          TIMESTAMP
+@@index([token])
+
+invitations
+├── id                  CUID PRIMARY KEY
+├── email               VARCHAR
+├── role                ENUM(OWNER, MANAGER, STAFF)
+├── token               VARCHAR UNIQUE
+├── organization_id     CUID → organizations.id
+├── invited_by_id       CUID → users.id
+├── expires_at          TIMESTAMP
+├── accepted_at         TIMESTAMP
+├── created_at          TIMESTAMP
+@@index([token])
+@@index([organization_id])
+
+refresh_tokens
+├── id                  CUID PRIMARY KEY
+├── token               VARCHAR UNIQUE
+├── user_id             CUID → users.id
+├── expires_at          TIMESTAMP
+├── created_at          TIMESTAMP
+@@index([token])
+@@index([user_id])
+
+staff_services (join table)
+├── id                  CUID PRIMARY KEY
+├── staff_id            CUID → staff.id
+├── service_id          CUID → services.id
+├── created_at          TIMESTAMP
+@@unique([staff_id, service_id])
+```
+
 ### Multi-Tenancy Rules
 
 1. **Every table** (except `organizations`) has `organization_id`
@@ -168,19 +245,70 @@ transactions
 
 ## API Routes
 
-```
-To be documented as we build.
+> **Location**: `spa-api/src/routes/`
 
-Planned route groups:
-- /api/auth/*
-- /api/organizations/*
-- /api/clients/*
-- /api/appointments/*
-- /api/services/*
-- /api/staff/*
-- /api/products/*
-- /api/transactions/*
-- /api/reports/*
+### Implemented Routes
+
+```
+GET  /api/health                    Health check
+
+# Authentication (public)
+POST /api/auth/register             Create account + organization
+POST /api/auth/login                Login, get tokens
+POST /api/auth/refresh              Refresh access token
+POST /api/auth/logout               Revoke refresh token
+POST /api/auth/verify-email         Verify email with token
+POST /api/auth/forgot-password      Request password reset
+POST /api/auth/reset-password       Reset password with token
+GET  /api/auth/me                   Get current user (protected)
+
+# Invitations
+POST /api/invitations               Create invitation (OWNER, MANAGER)
+GET  /api/invitations               List org invitations (OWNER, MANAGER)
+DELETE /api/invitations/:id         Cancel invitation (OWNER, MANAGER)
+GET  /api/invitations/:token        Get invitation details (public)
+POST /api/invitations/accept        Accept invitation (public)
+```
+
+### Planned Routes
+
+```
+# Clients
+GET    /api/clients
+POST   /api/clients
+GET    /api/clients/:id
+PUT    /api/clients/:id
+DELETE /api/clients/:id
+
+# Services
+GET    /api/services
+POST   /api/services
+PUT    /api/services/:id
+DELETE /api/services/:id
+
+# Staff
+GET    /api/staff
+POST   /api/staff
+PUT    /api/staff/:id
+DELETE /api/staff/:id
+
+# Appointments
+GET    /api/appointments
+POST   /api/appointments
+PUT    /api/appointments/:id
+PATCH  /api/appointments/:id/status
+DELETE /api/appointments/:id
+
+# Products
+GET    /api/products
+POST   /api/products
+PUT    /api/products/:id
+DELETE /api/products/:id
+
+# Transactions
+GET    /api/transactions
+POST   /api/transactions
+GET    /api/transactions/:id
 ```
 
 ---
@@ -219,6 +347,32 @@ PORT=3001
 
 ## Quick Links
 
-- Dashboard Preview: `spa-dashboard/` (run with `npm run dev`)
-- Design System: `spa-software/docs/DESIGN_SYSTEM.md`
-- Web Dev Team: `web-dev-team/README.md`
+- **API Server**: `spa-api/` (run with `npm run dev`)
+- **Dashboard Preview**: `spa-dashboard/` (run with `npm run dev`)
+- **Design System**: `spa-software/docs/DESIGN_SYSTEM.md`
+- **Web Dev Team**: `web-dev-team/README.md`
+
+---
+
+## Project Structure
+
+```
+projects/
+├── spa-api/                    # Backend API (Express + Prisma)
+│   ├── prisma/
+│   │   └── schema.prisma       # Database schema
+│   ├── src/
+│   │   ├── config/             # Environment config
+│   │   ├── controllers/        # Route handlers
+│   │   ├── lib/                # Core utilities (jwt, password, email)
+│   │   ├── middleware/         # Auth, roles, error handling
+│   │   ├── routes/             # API route definitions
+│   │   ├── schemas/            # Zod validation
+│   │   ├── types/              # TypeScript types
+│   │   ├── utils/              # Helper functions
+│   │   └── index.ts            # App entry point
+│   └── package.json
+├── spa-dashboard/              # Frontend (React + Vite)
+├── spa-software/               # Design assets
+└── PROJECT.md                  # This file
+```

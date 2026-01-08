@@ -1,0 +1,356 @@
+// Prisma Schema for Multi-Tenant Spa Management SaaS
+// All tenant-scoped tables include organizationId
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum TransactionType {
+  SERVICE
+  PRODUCT
+  REFUND
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  OTHER
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+}
+
+// ============================================
+// CORE MODELS
+// ============================================
+
+model Organization {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  plan             Plan     @default(FREE)
+  stripeCustomerId String?  @map("stripe_customer_id")
+  settings         Json?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  ownerId String @map("owner_id")
+  owner   User   @relation("OrganizationOwner", fields: [ownerId], references: [id])
+
+  // Tenant-scoped relations
+  users              User[]              @relation("OrganizationMembers")
+  clients            Client[]
+  services           Service[]
+  staff              Staff[]
+  appointments       Appointment[]
+  products           Product[]
+  transactions       Transaction[]
+  invitations        Invitation[]
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  name            String
+  role            UserRole  @default(STAFF)
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Organization relation
+  organizationId String       @map("organization_id")
+  organization   Organization @relation("OrganizationMembers", fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Owner relation (for organizations they own)
+  ownedOrganizations Organization[] @relation("OrganizationOwner")
+
+  // Staff profile (if user is a service provider)
+  staffProfile Staff?
+
+  // Invitations sent by this user
+  sentInvitations Invitation[] @relation("InvitationSender")
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("users")
+}
+
+// ============================================
+// AUTH MODELS
+// ============================================
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  userId         String       @map("user_id")
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([organizationId])
+  @@map("email_verifications")
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  userId         String       @map("user_id")
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([organizationId])
+  @@map("password_resets")
+}
+
+model Invitation {
+  id         String    @id @default(cuid())
+  email      String
+  role       UserRole  @default(STAFF)
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String       @map("invited_by_id")
+  invitedBy      User         @relation("InvitationSender", fields: [invitedById], references: [id])
+
+  @@index([token])
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitations")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// BUSINESS MODELS
+// ============================================
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  appointments Appointment[]
+  transactions Transaction[]
+
+  @@index([organizationId])
+  @@index([organizationId, email])
+  @@map("clients")
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  durationMinutes Int      @map("duration_minutes")
+  price           Decimal  @db.Decimal(10, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  appointments Appointment[]
+  staffServices StaffService[]
+
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+  @@map("services")
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  title     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Link to user account (optional - staff may or may not have login)
+  userId String? @unique @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Relations
+  appointments  Appointment[]
+  staffServices StaffService[]
+
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+  @@map("staff")
+}
+
+model StaffService {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  staffId   String  @map("staff_id")
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, serviceId])
+  @@map("staff_services")
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  startTime DateTime          @map("start_time")
+  endTime   DateTime          @map("end_time")
+  status    AppointmentStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  clientId  String  @map("client_id")
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staffId   String  @map("staff_id")
+  staff     Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  serviceId String  @map("service_id")
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  // Transaction (if paid)
+  transaction Transaction?
+
+  @@index([organizationId])
+  @@index([organizationId, startTime])
+  @@index([organizationId, status])
+  @@index([clientId])
+  @@index([staffId])
+  @@map("appointments")
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  sku          String?
+  price        Decimal  @db.Decimal(10, 2)
+  cost         Decimal? @db.Decimal(10, 2)
+  quantity     Int      @default(0)
+  reorderLevel Int      @default(10) @map("reorder_level")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, isActive])
+  @@index([organizationId, sku])
+  @@map("products")
+}
+
+model Transaction {
+  id            String            @id @default(cuid())
+  type          TransactionType
+  items         Json
+  subtotal      Decimal           @db.Decimal(10, 2)
+  tax           Decimal           @db.Decimal(10, 2)
+  total         Decimal           @db.Decimal(10, 2)
+  paymentMethod PaymentMethod     @map("payment_method")
+  status        TransactionStatus @default(PENDING)
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  // Organization relation (multi-tenant)
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  clientId      String?      @map("client_id")
+  client        Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  appointmentId String?      @unique @map("appointment_id")
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+  @@map("transactions")
+}
