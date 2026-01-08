@@ -20,15 +20,15 @@
 
 ## Current Phase
 
-**Phase 4 of 10**
+**Phase 5 of 10**
 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Project Setup & Architecture | ✅ Complete |
 | 2 | Database Schema & Models | ✅ Complete |
 | 3 | Authentication & Multi-tenancy | ✅ Complete |
-| 4 | Core API Routes | 🔄 In Progress |
-| 5 | Client Management | ⏳ Pending |
+| 4 | Core API Routes | ✅ Complete |
+| 5 | Client Management | 🔄 In Progress |
 | 6 | Appointment Booking | ⏳ Pending |
 | 7 | Services & Staff | ⏳ Pending |
 | 8 | Products & Inventory | ⏳ Pending |
@@ -65,6 +65,16 @@
 - [x] Auth middleware extracts user from JWT
 - [x] Global error handler with typed errors
 - [x] Zod validation schemas
+
+### Phase 4: Core API Routes
+- [x] Clients CRUD (list, get, create, update, delete)
+- [x] Services CRUD with role-based permissions
+- [x] Staff CRUD with service linking
+- [x] Appointments CRUD with overlap detection
+- [x] Products CRUD with quantity adjustment
+- [x] Transactions with daily summary
+- [x] Pagination on all list endpoints
+- [x] Query filters (date range, status, etc.)
 
 ---
 
@@ -263,52 +273,54 @@ POST /api/auth/reset-password       Reset password with token
 GET  /api/auth/me                   Get current user (protected)
 
 # Invitations
-POST /api/invitations               Create invitation (OWNER, MANAGER)
-GET  /api/invitations               List org invitations (OWNER, MANAGER)
+POST   /api/invitations             Create invitation (OWNER, MANAGER)
+GET    /api/invitations             List org invitations (OWNER, MANAGER)
 DELETE /api/invitations/:id         Cancel invitation (OWNER, MANAGER)
-GET  /api/invitations/:token        Get invitation details (public)
-POST /api/invitations/accept        Accept invitation (public)
-```
+GET    /api/invitations/:token      Get invitation details (public)
+POST   /api/invitations/accept      Accept invitation (public)
 
-### Planned Routes
+# Clients (all authenticated)
+GET    /api/clients                 List with pagination
+POST   /api/clients                 Create client
+GET    /api/clients/:id             Get with appointments/transactions
+PUT    /api/clients/:id             Update client
+DELETE /api/clients/:id             Delete client
 
-```
-# Clients
-GET    /api/clients
-POST   /api/clients
-GET    /api/clients/:id
-PUT    /api/clients/:id
-DELETE /api/clients/:id
+# Services (write: MANAGER+)
+GET    /api/services                List with pagination, ?active=true
+POST   /api/services                Create service
+GET    /api/services/:id            Get with staff
+PUT    /api/services/:id            Update service
+DELETE /api/services/:id            Delete service
 
-# Services
-GET    /api/services
-POST   /api/services
-PUT    /api/services/:id
-DELETE /api/services/:id
+# Staff (write: MANAGER+)
+GET    /api/staff                   List with pagination, ?active=true
+POST   /api/staff                   Create with serviceIds
+GET    /api/staff/:id               Get with services, appointments
+PUT    /api/staff/:id               Update with serviceIds
+DELETE /api/staff/:id               Delete staff
 
-# Staff
-GET    /api/staff
-POST   /api/staff
-PUT    /api/staff/:id
-DELETE /api/staff/:id
+# Appointments (all authenticated)
+GET    /api/appointments            List with filters (staffId, clientId, status, dates)
+POST   /api/appointments            Create with overlap detection
+GET    /api/appointments/:id        Get with relations
+PUT    /api/appointments/:id        Update, recalculates endTime
+PATCH  /api/appointments/:id/status Update status only
+DELETE /api/appointments/:id        Delete appointment
 
-# Appointments
-GET    /api/appointments
-POST   /api/appointments
-PUT    /api/appointments/:id
-PATCH  /api/appointments/:id/status
-DELETE /api/appointments/:id
+# Products (write: MANAGER+)
+GET    /api/products                List, ?active=true, ?lowStock=true
+POST   /api/products                Create product
+GET    /api/products/:id            Get product
+PUT    /api/products/:id            Update product
+DELETE /api/products/:id            Delete product
+PATCH  /api/products/:id/quantity   Adjust inventory
 
-# Products
-GET    /api/products
-POST   /api/products
-PUT    /api/products/:id
-DELETE /api/products/:id
-
-# Transactions
-GET    /api/transactions
-POST   /api/transactions
-GET    /api/transactions/:id
+# Transactions (all authenticated)
+GET    /api/transactions            List with filters (clientId, type, status, dates)
+POST   /api/transactions            Create, auto-adjust inventory
+GET    /api/transactions/:id        Get with relations
+GET    /api/transactions/summary    Daily summary by type/payment method
 ```
 
 ---
