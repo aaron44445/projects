@@ -15,7 +15,9 @@
     "react-dom": "^18.2.0",
     "next": "^14.0.0",
     "@pecase/types": "workspace:*",
-    "@pecase/ui": "workspace:*"
+    "@pecase/ui": "workspace:*",
+    "zustand": "^4.4.0",
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
