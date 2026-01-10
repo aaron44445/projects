@@ -1,0 +1,560 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// SALONS (Root entity)
+// ============================================================================
+/// Core salon entity - represents a salon business
+model Salon {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  phone             String
+  address           String
+  city              String
+  state             String
+  zip               String
+  timezone          String    @default("America/Chicago")
+  logoUrl           String?
+  website           String?
+  subscriptionPlan  String    @default("base") // enum: "base", "pro", "enterprise"
+  featuresEnabled   Json      @default("[]") // JSON array of enabled features
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isActive          Boolean   @default(true)
+
+  // Relationships
+  users             User[]
+  clients           Client[]
+  services          Service[]
+  appointments      Appointment[]
+  payments          Payment[]
+  locations         Location[]
+  packages          Package[]
+  giftCards         GiftCard[]
+  reviews           Review[]
+  marketingCampaigns MarketingCampaign[]
+  consultationForms ConsultationForm[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+// ============================================================================
+// USERS (Staff members with roles)
+// ============================================================================
+/// Staff/User entity - represents salon staff members
+model User {
+  id              String    @id @default(uuid())
+  salonId         String
+  email           String
+  passwordHash    String
+  firstName       String
+  lastName        String
+  phone           String?
+  role            String    @default("staff") // enum: "admin", "manager", "staff", "receptionist"
+  avatarUrl       String?
+  certifications  String?
+  lastLogin       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  isActive        Boolean   @default(true)
+
+  // Relationships
+  salon           Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  staffLocations  StaffLocation[]
+  availability    StaffAvailability[]
+  timeOff         TimeOff[]
+  serviceStaff    ServiceStaff[]
+  appointments    Appointment[]
+  clientNotes     ClientNote[]
+  clientPreferred Client[]  @relation("PreferredStaff")
+  reviews         Review[]
+  reviewResponses ReviewResponse[]
+
+  @@unique([salonId, email])
+  @@index([salonId])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// ============================================================================
+// LOCATIONS (Multi-location support)
+// ============================================================================
+/// Location entity - represents salon locations
+model Location {
+  id          String    @id @default(uuid())
+  salonId     String
+  name        String
+  address     String
+  phone       String
+  timezone    String
+  hours       Json      @default("{}") // JSON object for hours, e.g., {"mon": "9:00-17:00"}
+  isPrimary   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  // Relationships
+  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  staffLocations StaffLocation[]
+  appointments Appointment[]
+
+  @@index([salonId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// STAFF LOCATIONS (Many-to-many: Staff to Locations)
+// ============================================================================
+/// Junction table linking staff to locations
+model StaffLocation {
+  id          String    @id @default(uuid())
+  staffId     String
+  locationId  String
+  assignedAt  DateTime  @default(now())
+
+  // Relationships
+  staff       User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  location    Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, locationId])
+  @@index([staffId])
+  @@index([locationId])
+}
+
+// ============================================================================
+// STAFF AVAILABILITY (Weekly schedule)
+// ============================================================================
+/// Staff availability - defines working hours per day of week
+model StaffAvailability {
+  id            String    @id @default(uuid())
+  staffId       String
+  dayOfWeek     Int       // 0-6: Sun-Sat
+  startTime     String    // Format: "HH:MM", e.g., "09:00"
+  endTime       String    // Format: "HH:MM", e.g., "17:00"
+  lunchStart    String?   // Format: "HH:MM"
+  lunchEnd      String?   // Format: "HH:MM"
+  isAvailable   Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  // Relationships
+  staff         User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, dayOfWeek])
+  @@index([staffId])
+}
+
+// ============================================================================
+// TIME OFF (Vacation, sick leave, etc.)
+// ============================================================================
+/// Time off periods for staff members
+model TimeOff {
+  id          String    @id @default(uuid())
+  staffId     String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String    @default("other") // enum: "vacation", "sick", "meeting", "other"
+  createdAt   DateTime  @default(now())
+
+  // Relationships
+  staff       User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@index([staffId])
+  @@index([startDate, endDate])
+}
+
+// ============================================================================
+// CLIENTS (Customer database)
+// ============================================================================
+/// Client entity - represents salon customers
+model Client {
+  id                        String    @id @default(uuid())
+  salonId                   String
+  firstName                 String
+  lastName                  String
+  phone                     String
+  email                     String?
+  address                   String?
+  birthday                  DateTime?
+  notes                      String?
+  preferredStaffId          String?
+  preferredServiceId        String?
+  communicationPreference   String    @default("none") // enum: "email", "sms", "both", "none"
+  optedInReminders          Boolean   @default(true)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  isActive                  Boolean   @default(true)
+
+  // Relationships
+  salon                     Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  preferredStaff            User?     @relation("PreferredStaff", fields: [preferredStaffId], references: [id], onDelete: SetNull)
+  preferredService          Service?  @relation("PreferredService", fields: [preferredServiceId], references: [id], onDelete: SetNull)
+  appointments              Appointment[]
+  clientNotes               ClientNote[]
+  clientPackages            ClientPackage[]
+  reviews                   Review[]
+  payments                  Payment[]
+  formResponses             FormResponse[]
+
+  @@unique([salonId, phone])
+  @@index([salonId])
+  @@index([isActive])
+  @@index([phone])
+}
+
+// ============================================================================
+// CLIENT NOTES (Internal notes about clients)
+// ============================================================================
+/// Internal notes staff can add about clients
+model ClientNote {
+  id          String    @id @default(uuid())
+  clientId    String
+  staffId     String
+  content     String
+  createdAt   DateTime  @default(now())
+
+  // Relationships
+  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff       User      @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([staffId])
+}
+
+// ============================================================================
+// SERVICES (Service offerings)
+// ============================================================================
+/// Service entity - represents services offered by the salon
+model Service {
+  id                String    @id @default(uuid())
+  salonId           String
+  name              String
+  description       String?
+  durationMinutes   Int       @default(30)
+  price             Decimal   @db.Decimal(10, 2)
+  color             String    @default("#C7DCC8") // Default to sage green
+  category          String?   // e.g., "haircut", "color", "massage"
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isActive          Boolean   @default(true)
+
+  // Relationships
+  salon             Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  serviceStaff      ServiceStaff[]
+  appointments      Appointment[]
+  packageServices   PackageService[]
+  clientPreferred   Client[]  @relation("PreferredService")
+
+  @@index([salonId])
+  @@index([isActive])
+  @@index([category])
+}
+
+// ============================================================================
+// SERVICE STAFF (Many-to-many: Service to Staff)
+// ============================================================================
+/// Junction table linking services to staff that can perform them
+model ServiceStaff {
+  id          String    @id @default(uuid())
+  serviceId   String
+  staffId     String
+  isAvailable Boolean   @default(true)
+
+  // Relationships
+  service     Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  staff       User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, staffId])
+  @@index([serviceId])
+  @@index([staffId])
+}
+
+// ============================================================================
+// APPOINTMENTS (Core scheduling entity)
+// ============================================================================
+/// Appointment entity - core scheduling table
+model Appointment {
+  id                  String    @id @default(uuid())
+  salonId             String
+  locationId          String?
+  clientId            String
+  staffId             String
+  serviceId           String
+  startTime           DateTime
+  endTime             DateTime
+  durationMinutes     Int
+  price               Decimal   @db.Decimal(10, 2)
+  priceOverride       Decimal?  @db.Decimal(10, 2)
+  status              String    @default("pending") // enum: "confirmed", "pending", "completed", "no_show", "cancelled"
+  cancellationReason  String?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  cancelledAt         DateTime?
+
+  // Relationships
+  salon               Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  location            Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  client              Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff               User      @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  service             Service   @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  payments            Payment[]
+  reviews             Review[]
+  formResponses       FormResponse[]
+
+  @@index([salonId])
+  @@index([locationId])
+  @@index([clientId])
+  @@index([staffId])
+  @@index([serviceId])
+  @@index([startTime, endTime])
+  @@index([status])
+}
+
+// ============================================================================
+// PAYMENTS (Financial transactions)
+// ============================================================================
+/// Payment entity - tracks all payments and transactions
+model Payment {
+  id                String    @id @default(uuid())
+  salonId           String
+  appointmentId     String?
+  clientId          String
+  amount            Decimal   @db.Decimal(10, 2)
+  amountPaid        Decimal   @db.Decimal(10, 2)
+  tipAmount         Decimal   @default(0) @db.Decimal(10, 2)
+  method            String    @default("cash") // enum: "cash", "card", "online", "check", "other"
+  status            String    @default("pending") // enum: "pending", "completed", "failed", "refunded"
+  stripeChargeId    String?
+  refundedAt        DateTime?
+  refundReason      String?
+  createdAt         DateTime  @default(now())
+
+  // Relationships
+  salon             Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([appointmentId])
+  @@index([clientId])
+  @@index([status])
+  @@index([stripeChargeId])
+}
+
+// ============================================================================
+// PACKAGES (Service packages/bundles)
+// ============================================================================
+/// Package entity - represents service packages/memberships
+model Package {
+  id              String    @id @default(uuid())
+  salonId         String
+  name            String
+  description     String?
+  price           Decimal   @db.Decimal(10, 2)
+  type            String    @default("one_time") // enum: "one_time", "recurring"
+  durationDays    Int?
+  renewalPrice    Decimal?  @db.Decimal(10, 2)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+
+  // Relationships
+  salon           Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  packageServices PackageService[]
+  clientPackages  ClientPackage[]
+
+  @@index([salonId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// PACKAGE SERVICES (Many-to-many: Package to Service)
+// ============================================================================
+/// Junction table linking packages to services
+model PackageService {
+  id          String    @id @default(uuid())
+  packageId   String
+  serviceId   String
+  quantity    Int       @default(1)
+
+  // Relationships
+  package     Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service     Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, serviceId])
+  @@index([packageId])
+  @@index([serviceId])
+}
+
+// ============================================================================
+// CLIENT PACKAGES (Package purchases)
+// ============================================================================
+/// Client package entity - tracks package purchases by clients
+model ClientPackage {
+  id                String    @id @default(uuid())
+  clientId          String
+  packageId         String
+  purchaseDate      DateTime
+  expirationDate    DateTime?
+  servicesRemaining Int
+  totalServices     Int
+  autoRenew         Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+
+  // Relationships
+  client            Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  package           Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([packageId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// GIFT CARDS (Digital gift cards)
+// ============================================================================
+/// Gift card entity - digital gift cards
+model GiftCard {
+  id              String    @id @default(uuid())
+  salonId         String
+  code            String    @unique
+  initialAmount   Decimal   @db.Decimal(10, 2)
+  balance         Decimal   @db.Decimal(10, 2)
+  status          String    @default("active") // enum: "active", "redeemed", "expired", "cancelled"
+  expiresAt       DateTime?
+  purchasedAt     DateTime  @default(now())
+  redeemedAt      DateTime?
+  recipientEmail  String?
+  recipientName   String?
+
+  // Relationships
+  salon           Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([code])
+  @@index([status])
+}
+
+// ============================================================================
+// REVIEWS (Client feedback)
+// ============================================================================
+/// Review entity - client reviews and ratings
+model Review {
+  id            String    @id @default(uuid())
+  salonId       String
+  appointmentId String?
+  clientId      String
+  staffId       String?
+  rating        Int       // 1-5 star rating
+  comment       String?
+  isApproved    Boolean   @default(false)
+  submittedAt   DateTime  @default(now())
+  approvedAt    DateTime?
+
+  // Relationships
+  salon         Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  client        Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff         User?     @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  responses     ReviewResponse[]
+
+  @@index([salonId])
+  @@index([appointmentId])
+  @@index([clientId])
+  @@index([staffId])
+  @@index([isApproved])
+}
+
+// ============================================================================
+// REVIEW RESPONSES (Business responses to reviews)
+// ============================================================================
+/// Review response entity - business responses to client reviews
+model ReviewResponse {
+  id            String    @id @default(uuid())
+  reviewId      String
+  responseText  String
+  respondedById String
+  respondedAt   DateTime  @default(now())
+
+  // Relationships
+  review        Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  respondedBy   User      @relation(fields: [respondedById], references: [id], onDelete: SetNull)
+
+  @@index([reviewId])
+  @@index([respondedById])
+}
+
+// ============================================================================
+// MARKETING CAMPAIGNS (Email/SMS campaigns)
+// ============================================================================
+/// Marketing campaign entity - email and SMS campaigns
+model MarketingCampaign {
+  id              String    @id @default(uuid())
+  salonId         String
+  name            String
+  type            String    @default("email") // enum: "email", "sms"
+  subjectLine     String?
+  message         String
+  audienceFilter  Json      @default("{}") // JSON object for audience filtering
+  sentAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Relationships
+  salon           Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([sentAt])
+}
+
+// ============================================================================
+// CONSULTATION FORMS (Customizable intake forms)
+// ============================================================================
+/// Consultation form entity - customizable intake forms
+model ConsultationForm {
+  id          String    @id @default(uuid())
+  salonId     String
+  name        String
+  fields      Json      @default("[]") // JSON array of field objects
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  // Relationships
+  salon       Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  responses   FormResponse[]
+
+  @@index([salonId])
+  @@index([isActive])
+}
+
+// ============================================================================
+// FORM RESPONSES (Submitted form responses)
+// ============================================================================
+/// Form response entity - client responses to consultation forms
+model FormResponse {
+  id              String    @id @default(uuid())
+  formId          String
+  clientId        String
+  appointmentId   String?
+  responseData    Json      @default("{}") // JSON object containing form response data
+  submittedAt     DateTime  @default(now())
+
+  // Relationships
+  form            ConsultationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([formId])
+  @@index([clientId])
+  @@index([appointmentId])
+}

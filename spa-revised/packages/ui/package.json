@@ -1,0 +1,59 @@
+{
+  "name": "@pecase/ui",
+  "version": "1.0.0",
+  "description": "Pecase design system UI component library",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.js",
+      "types": "./dist/components/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/lib/utils.js",
+      "require": "./dist/lib/utils.js",
+      "types": "./dist/lib/utils.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.52.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0"
+  },
+  "peerDependencies": {
+    "tailwindcss": "^3.3.0"
+  },
+  "keywords": [
+    "ui",
+    "components",
+    "design-system",
+    "tailwindcss",
+    "pecase",
+    "react"
+  ],
+  "author": "Pecase Team",
+  "license": "MIT"
+}

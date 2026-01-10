@@ -1,0 +1,17 @@
+{
+  "name": "@pecase/tailwind-config",
+  "version": "1.0.0",
+  "description": "Shared Tailwind CSS configuration for Pecase design system",
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "tailwind",
+    "css",
+    "design-system",
+    "pecase"
+  ],
+  "author": "Pecase Team",
+  "license": "MIT"
+}
