@@ -17,7 +17,8 @@
     "@pecase/types": "workspace:*",
     "@pecase/ui": "workspace:*",
     "zustand": "^4.4.0",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "react-hook-form": "^7.48.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

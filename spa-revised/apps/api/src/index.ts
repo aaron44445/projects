@@ -7,6 +7,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/auth.routes'
+import clientRoutes from './routes/client.routes'
+import serviceRoutes from './routes/service.routes'
 
 // Load environment variables
 dotenv.config()
@@ -21,6 +23,8 @@ app.use(express.urlencoded({ extended: true }))
 
 // Routes
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/clients', clientRoutes)
+app.use('/api/v1/services', serviceRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
