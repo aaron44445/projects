@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LogIn, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
 
 export default function LoginPage() {
@@ -49,54 +50,72 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-2 text-gray-900">
-            Pecase
-          </h1>
-          <p className="text-center text-gray-600 mb-8">
-            Salon Management System
-          </p>
+    <div className="min-h-screen bg-cream flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-soft-peach/20 rounded-full blur-3xl opacity-40" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-soft-lavender/15 rounded-full blur-3xl opacity-30" />
+      </div>
 
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md">
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-card-lg p-8 lg:p-10 space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-sage/10">
+              <LogIn size={24} className="text-sage" />
+            </div>
+            <h1 className="text-section-xl font-display font-bold text-charcoal">
+              Welcome back
+            </h1>
+            <p className="text-body text-charcoal/60">
+              Sign in to your account to continue
+            </p>
+          </div>
+
+          {/* Loading state */}
           {isLoading && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800 text-sm flex items-center">
-                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-800 mr-2"></span>
-                Logging in...
-              </p>
+            <div className="p-4 rounded-lg bg-sage/10 border border-sage/30 flex items-center gap-3">
+              <Loader2 size={18} className="text-sage animate-spin" />
+              <p className="text-small font-medium text-sage">Signing in...</p>
             </div>
           )}
 
+          {/* Error state */}
           {(formError || error) && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{formError || error}</p>
+            <div className="p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+              <AlertCircle size={18} className="text-red-600 mt-0.5 flex-shrink-0" />
+              <p className="text-small text-red-700">{formError || error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email field */}
+            <div className="space-y-2">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-small font-medium text-charcoal"
               >
-                Email Address
+                Email address
               </label>
               <input
                 id="email"
                 type="email"
-                placeholder="demo@salon.com"
+                placeholder="your@salon.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 disabled={isLoading}
+                className="w-full px-4 py-3 rounded-lg border border-charcoal/10 bg-white/50 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
-            <div>
+            {/* Password field */}
+            <div className="space-y-2">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-small font-medium text-charcoal"
               >
                 Password
               </label>
@@ -106,40 +125,52 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 disabled={isLoading}
+                className="w-full px-4 py-3 rounded-lg border border-charcoal/10 bg-white/50 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
+            {/* Submit button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center"
+              className="w-full py-3 px-4 rounded-lg bg-sage text-white font-semibold transition-all duration-300 hover:shadow-hover hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0 flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
-                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                  Signing in...
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Signing in...</span>
                 </>
               ) : (
-                'Sign In'
+                <>
+                  <LogIn size={18} />
+                  <span>Sign in</span>
+                </>
               )}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-gray-500">
-            Auto-login with demo account in progress...
-          </p>
+          {/* Divider */}
+          <div className="h-px bg-gradient-to-r from-charcoal/0 via-charcoal/10 to-charcoal/0" />
 
-          <p className="mt-6 text-center text-gray-600">
-            Do not have an account?{' '}
+          {/* Sign up link */}
+          <p className="text-center text-body text-charcoal/60">
+            Don't have an account?{' '}
             <Link
-              href="/register"
-              className="text-indigo-600 hover:text-indigo-700 font-semibold"
+              href="/signup"
+              className="font-semibold text-sage hover:text-sage/80 transition-colors"
             >
               Sign up
             </Link>
           </p>
+
+          {/* Demo info */}
+          {!isLoading && !formError && !error && (
+            <div className="text-center text-xs text-charcoal/40 space-y-2 pt-4 border-t border-charcoal/10">
+              <p>Auto-login will attempt to sign in with demo credentials</p>
+              <p>Email: demo@salon.com | Password: demo123</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
