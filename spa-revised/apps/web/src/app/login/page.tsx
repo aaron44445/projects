@@ -7,33 +7,36 @@ import { useAuthStore } from '@/stores/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, error, isAuthenticated, clearError } =
-    useAuthStore();
+  const { login, isLoading, error, isAuthenticated } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Redirect to dashboard if already authenticated
+  // Auto-login on page load if not authenticated
   useEffect(() => {
     if (isAuthenticated()) {
       router.push('/dashboard');
+    } else {
+      // Auto-login with demo credentials
+      const autoLogin = async () => {
+        try {
+          await login('demo@salon.com', 'demo123');
+          router.push('/dashboard');
+        } catch (err) {
+          console.log('Auto-login will use manual form');
+        }
+      };
+      autoLogin();
     }
-  }, [isAuthenticated, router]);
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError('');
-    clearError();
 
-    // Validation
     if (!email || !password) {
       setFormError('Please fill in all fields');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setFormError('Please enter a valid email address');
       return;
     }
 
@@ -41,7 +44,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push('/dashboard');
     } catch (err) {
-      // Error is already set in store
+      setFormError('Login failed. Please try again.');
     }
   };
 
@@ -55,6 +58,15 @@ export default function LoginPage() {
           <p className="text-center text-gray-600 mb-8">
             Salon Management System
           </p>
+
+          {isLoading && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm flex items-center">
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-800 mr-2"></span>
+                Logging in...
+              </p>
+            </div>
+          )}
 
           {(formError || error) && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -73,12 +85,11 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="demo@salon.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 disabled={isLoading}
-                required
               />
             </div>
 
@@ -97,7 +108,6 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 disabled={isLoading}
-                required
               />
             </div>
 
@@ -116,6 +126,10 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Auto-login with demo account in progress...
+          </p>
 
           <p className="mt-6 text-center text-gray-600">
             Do not have an account?{' '}

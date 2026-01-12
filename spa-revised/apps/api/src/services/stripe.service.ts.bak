@@ -1,0 +1,195 @@
+/**
+ * Stripe Payment Service
+ * Handles Stripe payment intents, confirmations, and webhooks
+ */
+
+import Stripe from 'stripe'
+import { prisma } from '@pecase/database'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+
+export interface CreatePaymentIntentData {
+  salonId: string
+  serviceId: string
+  staffId: string
+  startTime: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  amount: number
+}
+
+export interface ConfirmPaymentData {
+  paymentIntentId: string
+  salonId: string
+  serviceId: string
+  staffId: string
+  startTime: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  price: number
+}
+
+/**
+ * Create a Stripe payment intent for a booking
+ */
+export async function createPaymentIntent(data: CreatePaymentIntentData) {
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(data.amount * 100), // Convert to cents
+    currency: 'usd',
+    metadata: {
+      salonId: data.salonId,
+      serviceId: data.serviceId,
+      staffId: data.staffId,
+      startTime: data.startTime,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone,
+    },
+    receipt_email: data.customerEmail,
+  })
+
+  return {
+    clientSecret: paymentIntent.client_secret,
+    paymentIntentId: paymentIntent.id,
+    amount: data.amount,
+  }
+}
+
+/**
+ * Confirm a payment intent and create the appointment in the database
+ */
+export async function confirmPaymentIntent(data: ConfirmPaymentData) {
+  // Retrieve payment intent to verify it succeeded
+  const paymentIntent = await stripe.paymentIntents.retrieve(data.paymentIntentId)
+
+  if (paymentIntent.status !== 'succeeded') {
+    throw new Error(`Payment intent status is ${paymentIntent.status}`)
+  }
+
+  const startDate = new Date(data.startTime)
+  const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1 hour default duration
+
+  // Create appointment in database with client creation or update
+  const appointment = await prisma.appointment.create({
+    data: {
+      salonId: data.salonId,
+      serviceId: data.serviceId,
+      staffId: data.staffId,
+      clientId: '', // Will be set below
+      startTime: startDate,
+      endTime: endDate,
+      durationMinutes: 60,
+      status: 'confirmed',
+      price: data.price,
+      notes: `Payment Intent: ${data.paymentIntentId}`,
+    },
+  })
+
+  // Get or create client
+  const client = await prisma.client.upsert({
+    where: {
+      salonId_phone: {
+        salonId: data.salonId,
+        phone: data.customerPhone,
+      },
+    },
+    update: {
+      email: data.customerEmail,
+    },
+    create: {
+      salonId: data.salonId,
+      firstName: data.customerName.split(' ')[0],
+      lastName: data.customerName.split(' ').slice(1).join(' ') || '',
+      phone: data.customerPhone,
+      email: data.customerEmail,
+    },
+  })
+
+  // Update appointment with clientId
+  const updatedAppointment = await prisma.appointment.update({
+    where: { id: appointment.id },
+    data: { clientId: client.id },
+    include: {
+      client: true,
+      service: true,
+      staff: true,
+      salon: true,
+    },
+  })
+
+  // Create payment record
+  let chargeId = ''
+  const charges = (paymentIntent as any).charges
+  if (charges && charges.data && charges.data.length > 0) {
+    chargeId = charges.data[0].id
+  }
+
+  await prisma.payment.create({
+    data: {
+      salonId: data.salonId,
+      appointmentId: updatedAppointment.id,
+      clientId: client.id,
+      amount: data.price,
+      amountPaid: data.price,
+      method: 'online',
+      status: 'completed',
+      stripeChargeId: chargeId,
+    },
+  })
+
+  return updatedAppointment
+}
+
+/**
+ * Handle Stripe webhook events
+ */
+export async function handleStripeWebhook(event: Stripe.Event) {
+  switch (event.type) {
+    case 'payment_intent.succeeded': {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      console.log(`Payment intent ${paymentIntent.id} succeeded`)
+      break
+    }
+
+    case 'payment_intent.payment_failed': {
+      const failedIntent = event.data.object as Stripe.PaymentIntent
+      console.error(`Payment intent ${failedIntent.id} failed`)
+      // Could send notification email, update status, etc.
+      break
+    }
+
+    case 'charge.refunded': {
+      const refundedCharge = event.data.object as Stripe.Charge
+      console.log(`Charge ${refundedCharge.id} refunded`)
+      // Update payment status to refunded
+      if (refundedCharge.payment_intent) {
+        await prisma.payment.updateMany({
+          where: {
+            stripeChargeId: refundedCharge.id,
+          },
+          data: {
+            status: 'refunded',
+            refundedAt: new Date(),
+          },
+        })
+      }
+      break
+    }
+
+    default:
+      console.log(`Unhandled event type ${event.type}`)
+  }
+}
+
+/**
+ * Construct and verify a Stripe webhook event
+ */
+export function constructWebhookEvent(
+  body: string | Buffer,
+  signature: string,
+  webhookSecret: string
+): Stripe.Event {
+  return stripe.webhooks.constructEvent(body, signature, webhookSecret)
+}

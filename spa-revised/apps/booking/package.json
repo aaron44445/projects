@@ -11,18 +11,22 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@pecase/types": "workspace:*",
+    "@pecase/ui": "workspace:*",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "axios": "^1.6.0",
+    "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "next": "^14.0.0",
-    "@pecase/types": "workspace:*",
-    "@pecase/ui": "workspace:*"
+    "stripe": "^20.1.2",
+    "zustand": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "typescript": "^5.3.0",
     "eslint": "^8.52.0",
-    "eslint-config-next": "^14.0.0"
+    "eslint-config-next": "^14.0.0",
+    "typescript": "^5.3.0"
   }
 }

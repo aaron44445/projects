@@ -9,6 +9,8 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/auth.routes'
 import clientRoutes from './routes/client.routes'
 import serviceRoutes from './routes/service.routes'
+import paymentsRoutes from './routes/payments.routes'
+import { initializeReminderJobs } from './jobs/reminders.cron'
 
 // Load environment variables
 dotenv.config()
@@ -25,6 +27,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/clients', clientRoutes)
 app.use('/api/v1/services', serviceRoutes)
+app.use('/api/v1/payments', paymentsRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
@@ -41,6 +44,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   console.error(err)
   res.status(500).json({ error: 'Internal Server Error' })
 })
+
+// Initialize reminder jobs
+if (process.env.NODE_ENV !== 'test') {
+  initializeReminderJobs()
+}
 
 // Start server
 if (process.env.NODE_ENV !== 'test') {

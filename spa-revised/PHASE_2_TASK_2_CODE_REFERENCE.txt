@@ -1,0 +1,202 @@
+================================================================================
+PHASE 2, TASK 2: SIGNUP & REGISTRATION FLOW - CODE REFERENCE
+================================================================================
+
+COMMIT: b9be3b2a3e9cab183dc32ea83f40c47e36624bc0
+DATE: January 12, 2026
+STATUS: COMPLETE AND COMMITTED
+
+================================================================================
+FILE 1: apps/web/src/components/SignupForm.tsx (200 lines)
+================================================================================
+
+The SignupForm component is a React client component that implements:
+- Form state management with 6 fields
+- Form validation with 5 rules
+- API integration with error handling
+- Loading states and user feedback
+- Professional UI with specified color scheme
+- Lucide-react icons (AlertCircle, CheckCircle)
+- Responsive design
+- Full TypeScript type safety
+
+Key functionality:
+- validateForm(): Validates all fields and returns boolean
+- handleSubmit(): Handles form submission with API call
+- State management: formData, errors, loading, success
+- Error display: Inline field errors and general alerts
+- Success feedback: Message before redirect to /onboarding
+
+================================================================================
+FILE 2: apps/web/src/app/signup/page.tsx (19 lines)
+================================================================================
+
+The signup page is a Next.js page component that provides:
+- Page layout with welcome header
+- Centered form presentation
+- Cream background color (#F5F3F0)
+- Trial information display
+- Responsive padding for mobile devices
+- Integration with SignupForm component
+
+================================================================================
+IMPLEMENTATION SUMMARY
+================================================================================
+
+Total Files Created: 2
+Total Lines of Code: 219
+
+Components:
+- SignupForm.tsx: 200 lines (React client component)
+- page.tsx: 19 lines (Next.js page component)
+
+Form Fields (6 total):
+1. Salon Name (text) - Required
+2. Email Address (email) - Required
+3. Phone Number (tel) - Required
+4. Timezone (select) - Optional, 7 options
+5. Password (password) - Required
+6. Confirm Password (password) - Required
+
+Validation Rules (5 total):
+1. Salon name must be non-empty
+2. Email must contain '@' character
+3. Password must be at least 8 characters
+4. Confirm password must match password
+5. Phone must be non-empty
+
+Error Messages:
+- "Salon name is required"
+- "Valid email is required"
+- "Password must be at least 8 characters"
+- "Passwords do not match"
+- "Phone number is required"
+
+Colors Used:
+- Primary (Sage Green): #C7DCC8
+- Background (Cream): #F5F3F0
+- Text (Dark): #2C2C2C
+- Borders (Light): #E8E6E4
+- Error (Red): #dc2626, #991b1b, #fef2f2
+- Success (Green): #16a34a, #15803d, #f0fdf4
+
+API Integration:
+- Endpoint: POST http://localhost:3001/api/v1/auth/register
+- Field mapping: salonName→salon_name
+- Success: Redirect to /onboarding after 2 seconds
+- Error: Display error message from API
+- Network error: Display generic network error message
+
+Icons (Lucide React):
+- AlertCircle: Red error icon (20px)
+- CheckCircle: Green success icon (20px)
+- NO EMOJIS used
+
+================================================================================
+GIT COMMIT INFORMATION
+================================================================================
+
+Commit SHA: b9be3b2a3e9cab183dc32ea83f40c47e36624bc0
+Branch: main
+Author: aaron44445 <aaronmcbride57@gmail.com>
+Date: Mon Jan 12 11:48:32 2026 -0500
+Message: feat: implement signup form with validation and backend integration
+
+Files Changed:
++ apps/web/src/components/SignupForm.tsx (200 lines)
++ apps/web/src/app/signup/page.tsx (19 lines)
+
+Total: 2 files changed, 219 insertions(+)
+
+================================================================================
+CODE QUALITY FEATURES
+================================================================================
+
+TypeScript:
+- Full type safety implemented
+- Proper type annotations
+- No implicit any types
+- Record<string, string> for errors
+- React.FormEvent for form submission
+
+React:
+- Functional component with hooks
+- useState for state management
+- useRouter for navigation
+- 'use client' directive present
+- Proper component structure
+
+HTML/CSS:
+- Semantic HTML structure
+- Proper label associations
+- Inline styles for specific colors
+- Tailwind classes for layout
+- Responsive design (px-4 for mobile)
+
+Accessibility:
+- Labels for all inputs
+- Semantic form element
+- Error messages associated with fields
+- Icons used with text
+- Color not sole indicator of state
+
+Error Handling:
+- Form validation errors
+- API error response handling
+- Network error catching
+- Try-catch-finally block
+- User-friendly error messages
+
+Performance:
+- Minimal state updates
+- Single API call per submission
+- Client-side validation
+- Efficient re-renders
+- No unnecessary dependencies
+
+================================================================================
+TEST SCENARIOS
+================================================================================
+
+Test 1: Empty Form Submission
+- Expected: All 5 validation errors displayed
+
+Test 2: Invalid Email
+- Input: email="invalid"
+- Expected: "Valid email is required"
+
+Test 3: Short Password
+- Input: password="short"
+- Expected: "Password must be at least 8 characters"
+
+Test 4: Password Mismatch
+- Input: password="password1", confirm="password2"
+- Expected: "Passwords do not match"
+
+Test 5: Valid Submission
+- Input: All valid fields
+- Expected: Success message, redirect to /onboarding
+
+Test 6: Network Error
+- Expected: "Network error. Please try again."
+
+Test 7: API Error Response
+- Expected: Error message from API displayed
+
+================================================================================
+STATUS: COMPLETE AND COMMITTED
+================================================================================
+
+The signup form has been successfully implemented with:
+- 2 files created (219 total lines)
+- Complete form validation
+- Professional UI design
+- Backend API integration
+- Comprehensive error handling
+- Loading states and feedback
+- Success messaging
+- No emojis (only lucide-react icons)
+- Full TypeScript type safety
+- Git commit completed
+
+Ready for testing, code review, and deployment.
