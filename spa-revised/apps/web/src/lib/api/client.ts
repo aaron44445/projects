@@ -42,14 +42,12 @@ apiClient.interceptors.response.use(
 
       try {
         const authStore = useAuthStore.getState();
-        const refreshSucceeded = await authStore.refreshAccessToken();
+        await authStore.refreshAccessToken();
 
-        if (refreshSucceeded) {
-          // Get the new token and retry the original request
-          const newToken = useAuthStore.getState().accessToken;
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          }
+        // Get the new token and retry the original request
+        const newToken = useAuthStore.getState().accessToken;
+        if (newToken && originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return apiClient(originalRequest);
         } else {
           // Token refresh failed, redirect to login
