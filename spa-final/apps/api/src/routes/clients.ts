@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import {
+  createClientSchema,
+  updateClientSchema,
+  createClientNoteSchema
+} from '../validation/schemas.js';
 
 const router = Router();
 
@@ -99,6 +104,20 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
 // Create new client
 // ============================================
 router.post('/', authenticate, async (req: Request, res: Response) => {
+  // Validate request body
+  const validationResult = createClientSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid client data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
   const {
     firstName,
     lastName,
@@ -112,7 +131,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     notes,
     preferredStaffId,
     communicationPreference,
-  } = req.body;
+  } = validationResult.data;
 
   // Check for duplicate by phone or email
   if (phone || email) {
@@ -167,6 +186,20 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 // Update client
 // ============================================
 router.patch('/:id', authenticate, async (req: Request, res: Response) => {
+  // Validate request body
+  const validationResult = updateClientSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid client data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
   const client = await prisma.client.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -181,9 +214,10 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
     });
   }
 
+  // Only update whitelisted fields from validated data
   const updated = await prisma.client.update({
     where: { id: req.params.id },
-    data: req.body,
+    data: validationResult.data,
   });
 
   res.json({
@@ -197,7 +231,21 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
 // Add note to client
 // ============================================
 router.post('/:id/notes', authenticate, async (req: Request, res: Response) => {
-  const { content } = req.body;
+  // Validate request body
+  const validationResult = createClientNoteSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid note data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
+  const { content } = validationResult.data;
 
   const client = await prisma.client.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },

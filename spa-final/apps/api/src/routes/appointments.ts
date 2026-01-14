@@ -3,6 +3,10 @@ import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { sendEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
+import {
+  createAppointmentSchema,
+  updateAppointmentSchema
+} from '../validation/schemas.js';
 
 const router = Router();
 
@@ -95,14 +99,28 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
 // Create new appointment
 // ============================================
 router.post('/', authenticate, async (req: Request, res: Response) => {
+  // Validate request body
+  const validationResult = createAppointmentSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid appointment data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
   const {
     clientId,
     staffId,
     serviceId,
     startTime,
     notes,
-    status = 'confirmed',
-  } = req.body;
+    status,
+  } = validationResult.data;
 
   // Get service details
   const service = await prisma.service.findFirst({
@@ -245,6 +263,20 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 // Update appointment
 // ============================================
 router.patch('/:id', authenticate, async (req: Request, res: Response) => {
+  // Validate request body
+  const validationResult = updateAppointmentSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid appointment data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
   const appointment = await prisma.appointment.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -259,7 +291,7 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
     });
   }
 
-  const { status, notes, startTime, staffId, serviceId, cancellationReason } = req.body;
+  const { status, notes, startTime, staffId, serviceId, cancellationReason } = validationResult.data;
 
   const updateData: Record<string, unknown> = {};
 

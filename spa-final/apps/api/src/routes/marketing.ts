@@ -3,6 +3,10 @@ import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { sendBulkEmail, marketingCampaignEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import {
+  createMarketingCampaignSchema,
+  updateMarketingCampaignSchema
+} from '../validation/schemas.js';
 
 const router = Router();
 
@@ -23,7 +27,21 @@ router.get('/campaigns', authenticate, async (req: Request, res: Response) => {
 
 // POST /api/v1/marketing/campaigns
 router.post('/campaigns', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
-  const { name, type, subjectLine, message, audienceFilter, scheduledFor } = req.body;
+  // Validate request body
+  const validationResult = createMarketingCampaignSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid campaign data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
+  const { name, type, subjectLine, message, audienceFilter, scheduledFor } = validationResult.data;
 
   const campaign = await prisma.marketingCampaign.create({
     data: {
@@ -42,6 +60,20 @@ router.post('/campaigns', authenticate, authorize('admin', 'manager'), async (re
 
 // PATCH /api/v1/marketing/campaigns/:id
 router.patch('/campaigns/:id', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+  // Validate request body
+  const validationResult = updateMarketingCampaignSchema.safeParse(req.body);
+
+  if (!validationResult.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid campaign data',
+        details: validationResult.error.errors,
+      },
+    });
+  }
+
   const campaign = await prisma.marketingCampaign.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -50,9 +82,10 @@ router.patch('/campaigns/:id', authenticate, authorize('admin', 'manager'), asyn
     return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Campaign not found' } });
   }
 
+  // Only update whitelisted fields from validated data
   const updated = await prisma.marketingCampaign.update({
     where: { id: req.params.id },
-    data: req.body,
+    data: validationResult.data,
   });
 
   res.json({ success: true, data: updated });
