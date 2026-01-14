@@ -116,6 +116,13 @@ pnpm db:studio
 
 ## Deployment
 
+Peacase is deployed on:
+- **Frontend**: Vercel (Next.js)
+- **Backend API**: Railway (Express.js)
+- **Database**: Supabase (PostgreSQL)
+
+See [DEPLOYMENT_INSTRUCTIONS.md](./docs/DEPLOYMENT_INSTRUCTIONS.md) for step-by-step deployment guide.
+
 ### CI/CD Pipeline
 
 This project uses GitHub Actions for continuous integration and deployment:
