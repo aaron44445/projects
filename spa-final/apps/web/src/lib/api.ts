@@ -14,30 +14,17 @@ export class ApiError extends Error {
 }
 
 class ApiClient {
-  private accessToken: string | null = null;
-
-  setAccessToken(token: string | null) {
-    this.accessToken = token;
-  }
-
-  getAccessToken(): string | null {
-    return this.accessToken;
-  }
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.accessToken) {
-      headers['Authorization'] = `Bearer ${this.accessToken}`;
-    }
-
+    // Tokens are handled via HTTP-only cookies
     const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
       headers,
-      credentials: 'include',
+      credentials: 'include', // Important: Send cookies with requests
     });
 
     const data = await response.json();

@@ -109,6 +109,7 @@ export default function SettingsPage() {
 
     try {
       if (activeSection === 'business') {
+        // Business info - IMPLEMENTED: Save to backend
         await updateSalon({
           name: businessForm.name,
           phone: businessForm.phone || null,
@@ -121,9 +122,14 @@ export default function SettingsPage() {
           timezone: businessForm.timezone,
           description: businessForm.description || null,
         });
+      } else {
+        // TODO: Implement backend API endpoints for:
+        // - hours: POST /api/v1/salon/hours
+        // - branding: POST /api/v1/salon/branding
+        // - security: POST /api/v1/users/change-password
+        // For now, show success message but changes are not persisted
+        console.warn(`Save functionality for "${activeSection}" section needs backend implementation`);
       }
-      // For hours and other sections, we would call appropriate API endpoints
-      // For now, simulate save for other sections
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {

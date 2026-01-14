@@ -36,27 +36,19 @@ export interface Salon {
   createdAt: string;
 }
 
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
 interface LoginResponse {
   user: User;
   salon: Salon;
-  tokens: AuthTokens;
 }
 
 interface RegisterResponse {
   user: User;
   salon: Salon;
-  tokens: AuthTokens;
   requiresVerification?: boolean;
 }
 
 interface RefreshResponse {
-  accessToken: string;
-  refreshToken?: string;
+  success: boolean;
 }
 
 interface AuthContextType {
@@ -73,70 +65,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = 'peacase_access_token';
-const REFRESH_TOKEN_KEY = 'peacase_refresh_token';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [salon, setSalon] = useState<Salon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Store tokens in localStorage
-  const storeTokens = useCallback((tokens: AuthTokens) => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-    api.setAccessToken(tokens.accessToken);
-  }, []);
-
-  // Clear tokens from localStorage
-  const clearTokens = useCallback(() => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    api.setAccessToken(null);
-  }, []);
-
-  // Get stored tokens
-  const getStoredTokens = useCallback((): AuthTokens | null => {
-    const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-
-    if (accessToken && refreshToken) {
-      return { accessToken, refreshToken };
-    }
-    return null;
-  }, []);
-
-  // Refresh authentication
+  // Refresh authentication using HTTP-only cookies
   const refreshAuth = useCallback(async (): Promise<boolean> => {
-    const tokens = getStoredTokens();
-    if (!tokens?.refreshToken) {
-      return false;
-    }
-
     try {
-      const response = await api.post<RefreshResponse>('/auth/refresh', {
-        refreshToken: tokens.refreshToken,
-      });
+      const response = await api.post<RefreshResponse>('/auth/refresh');
 
-      if (response.success && response.data) {
-        const newAccessToken = response.data.accessToken;
-        const newRefreshToken = response.data.refreshToken || tokens.refreshToken;
-
-        storeTokens({
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-        });
-
+      if (response.success) {
+        // Token is refreshed in HTTP-only cookie automatically
         return true;
       }
       return false;
     } catch {
-      clearTokens();
       setUser(null);
       setSalon(null);
       return false;
     }
-  }, [getStoredTokens, storeTokens, clearTokens]);
+  }, []);
 
   // Fetch current user data
   const fetchCurrentUser = useCallback(async (): Promise<boolean> => {
@@ -171,18 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize auth state on mount
   useEffect(() => {
     const initAuth = async () => {
-      const tokens = getStoredTokens();
+      // Try to fetch current user (cookies will be sent automatically)
+      const success = await fetchCurrentUser();
 
-      if (tokens?.accessToken) {
-        api.setAccessToken(tokens.accessToken);
-
-        const success = await fetchCurrentUser();
-        if (!success) {
-          // Token might be expired, try refresh
-          const refreshed = await refreshAuth();
-          if (refreshed) {
-            await fetchCurrentUser();
-          }
+      if (!success) {
+        // Token might be expired, try refresh
+        const refreshed = await refreshAuth();
+        if (refreshed) {
+          await fetchCurrentUser();
         }
       }
 
@@ -190,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initAuth();
-  }, [getStoredTokens, fetchCurrentUser, refreshAuth]);
+  }, [fetchCurrentUser, refreshAuth]);
 
   // Login function
   const login = async (email: string, password: string): Promise<void> => {
@@ -200,9 +145,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (response.success && response.data) {
-      const { user: userData, salon: salonData, tokens } = response.data;
+      const { user: userData, salon: salonData } = response.data;
 
-      storeTokens(tokens);
+      // Tokens are set in HTTP-only cookies automatically
       setUser(userData);
       setSalon(salonData);
     } else {
@@ -227,9 +172,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (response.success && response.data) {
-      const { user: userData, salon: salonData, tokens, requiresVerification } = response.data;
+      const { user: userData, salon: salonData, requiresVerification } = response.data;
 
-      storeTokens(tokens);
+      // Tokens are set in HTTP-only cookies automatically
       setUser(userData);
       setSalon(salonData);
 
@@ -251,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore logout errors - we'll clear local state anyway
     } finally {
-      clearTokens();
+      // Cookies are cleared by the backend
       setUser(null);
       setSalon(null);
     }

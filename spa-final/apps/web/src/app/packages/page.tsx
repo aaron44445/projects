@@ -26,18 +26,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
-
-const services = [
-  'Haircut & Style',
-  'Beard Trim',
-  'Full Color',
-  'Highlights',
-  'Swedish Massage',
-  'Deep Tissue Massage',
-  'Manicure',
-  'Pedicure',
-  'Facial Treatment',
-];
+import { useServices } from '@/hooks/useServices';
 
 export default function PackagesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,8 +37,9 @@ export default function PackagesPage() {
   const [editingItem, setEditingItem] = useState<PackageType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // API hook
+  // API hooks
   const { packages, members, loading, error, fetchPackages, fetchMembers, createPackage, updatePackage, deletePackage, updateMember, cancelMembership } = usePackages();
+  const { services: servicesList, isLoading: servicesLoading } = useServices();
 
   // View details modal state
   const [viewingItem, setViewingItem] = useState<PackageType | null>(null);
@@ -770,26 +760,35 @@ export default function PackagesPage() {
               <div>
                 <label className="block text-sm font-medium text-charcoal mb-2">Applicable Services (optional)</label>
                 <p className="text-xs text-charcoal/50 mb-3">Leave empty to allow any service</p>
-                <div className="flex flex-wrap gap-2">
-                  {services.map((service) => (
-                    <button
-                      key={service}
-                      onClick={() => {
-                        const selected = formData.selectedServices.includes(service)
-                          ? formData.selectedServices.filter(s => s !== service)
-                          : [...formData.selectedServices, service];
-                        setFormData({ ...formData, selectedServices: selected });
-                      }}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-all ${
-                        formData.selectedServices.includes(service)
-                          ? 'bg-sage text-white'
-                          : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
-                      }`}
-                    >
-                      {service}
-                    </button>
-                  ))}
-                </div>
+                {servicesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-sage" />
+                    <span className="ml-2 text-sm text-charcoal/60">Loading services...</span>
+                  </div>
+                ) : servicesList.length === 0 ? (
+                  <p className="text-sm text-charcoal/60 py-4">No services available. Please add services first.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {servicesList.map((service) => (
+                      <button
+                        key={service.id}
+                        onClick={() => {
+                          const selected = formData.selectedServices.includes(service.name)
+                            ? formData.selectedServices.filter(s => s !== service.name)
+                            : [...formData.selectedServices, service.name];
+                          setFormData({ ...formData, selectedServices: selected });
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                          formData.selectedServices.includes(service.name)
+                            ? 'bg-sage text-white'
+                            : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
+                        }`}
+                      >
+                        {service.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

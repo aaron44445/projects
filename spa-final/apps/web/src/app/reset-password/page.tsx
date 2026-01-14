@@ -14,8 +14,7 @@ import {
   AlertCircle,
   Check,
 } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { api, ApiError } from '@/lib/api';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -73,22 +72,10 @@ function ResetPasswordForm() {
     setErrors({});
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          password: formData.password,
-        }),
+      await api.post('/auth/reset-password', {
+        token,
+        password: formData.password,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Something went wrong');
-      }
 
       setIsSuccess(true);
 
@@ -97,7 +84,7 @@ function ResetPasswordForm() {
         router.push('/login');
       }, 3000);
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof ApiError) {
         setErrors({ submit: err.message });
       } else {
         setErrors({ submit: 'An error occurred. Please try again.' });

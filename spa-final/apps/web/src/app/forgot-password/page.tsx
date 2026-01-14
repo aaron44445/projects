@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Sparkles, Mail, ArrowRight, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { api, ApiError } from '@/lib/api';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -18,23 +17,10 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || 'Something went wrong');
-      }
-
+      await api.post('/auth/forgot-password', { email });
       setIsSubmitted(true);
     } catch (err) {
-      if (err instanceof Error) {
+      if (err instanceof ApiError) {
         setError(err.message);
       } else {
         setError('An error occurred. Please try again.');
