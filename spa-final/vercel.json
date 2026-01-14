@@ -1,27 +1,14 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "apps/web/package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "$RAILWAY_API_URL/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "apps/web/$1"
-    }
-  ],
+  "buildCommand": "pnpm --filter @peacase/web build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "outputDirectory": "apps/web/.next",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://peacase-api-production.up.railway.app"
+    "NEXT_PUBLIC_API_URL": ""
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_API_URL": "https://peacase-api-production.up.railway.app"
+      "NEXT_PUBLIC_API_URL": ""
     }
   }
 }

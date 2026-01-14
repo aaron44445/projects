@@ -30,11 +30,11 @@ Click the button above, then:
 
 ### Step 2: Deploy Frontend
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aaron44445/projects&project-name=peacase&repository-name=peacase&root-directory=apps/web&env=NEXT_PUBLIC_API_URL&envDescription=Backend%20API%20URL%20from%20Step%201&envLink=https://github.com/aaron44445/projects#deployment)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aaron44445/projects&project-name=peacase&repository-name=peacase&root-directory=spa-final/apps/web&env=NEXT_PUBLIC_API_URL&envDescription=Backend%20API%20URL%20from%20Step%201&envLink=https://github.com/aaron44445/projects#deployment)
 
 Click the button above, then:
 1. Login with GitHub
-2. Set Root Directory: `apps/web`
+2. Verify Root Directory is set to: `spa-final/apps/web`
 3. Add environment variable:
    - `NEXT_PUBLIC_API_URL`: Paste the Render URL from Step 1
 4. Click "Deploy"
@@ -49,7 +49,11 @@ Go back to Render:
 3. Update `CORS_ORIGIN` and `FRONTEND_URL` with your Vercel URL
 4. Click "Save Changes" (auto-redeploys)
 
-**Done!** Your app is live. See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed screenshots.
+**Done!** Your app is live.
+
+📖 **Need help?** See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed step-by-step guide with screenshots.
+
+💰 **Planning to scale?** See [CapRover Migration Guide](./docs/CAPROVER_MIGRATION.md) for self-hosted option ($6/month).
 
 ---
 
