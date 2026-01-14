@@ -6,6 +6,11 @@ const nextConfig = {
   // Transpile workspace packages
   transpilePackages: ['@peacase/ui', '@peacase/types'],
 
+  // Production optimizations
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+
   // Image configuration
   images: {
     domains: ['localhost'],
@@ -16,6 +21,9 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+    // Image optimization
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
   },
 
   // Environment variables exposed to the browser
