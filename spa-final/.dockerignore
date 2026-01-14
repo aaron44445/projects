@@ -1,0 +1,109 @@
+# ============================================
+# Peacase Root .dockerignore
+# ============================================
+
+# Dependencies (will be installed in container)
+node_modules
+**/node_modules
+
+# Build outputs
+**/dist
+**/.next
+**/out
+**/build
+
+# Environment files (use Docker environment variables)
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# IDE and editor files
+.idea
+.vscode
+**/.idea
+**/.vscode
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+.git
+.gitignore
+**/.git
+**/.gitignore
+
+# Documentation (not needed in container)
+*.md
+!README.md
+docs/
+
+# Test files
+coverage
+.nyc_output
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/cypress
+**/e2e
+**/playwright
+
+# Development and config files
+.eslintrc*
+.prettierrc*
+**/.eslintrc*
+**/.prettierrc*
+**/tsconfig.tsbuildinfo
+turbo.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+**/tmp/
+**/temp/
+tmpclaude-*
+**/tmpclaude-*
+nul
+
+# Docker files in subdirectories (avoid recursive builds)
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+
+# Keep root docker files
+!Dockerfile*
+!docker-compose*
+!.dockerignore
+
+# Logs
+*.log
+**/npm-debug.log*
+**/pnpm-debug.log*
+**/yarn-error.log*
+
+# Prisma development files
+**/prisma/migrations/**/migration_lock.toml
+
+# Storybook
+.storybook
+storybook-static
+**/.storybook
+**/storybook-static
+
+# Husky
+.husky
+
+# Turbo cache
+.turbo
+**/.turbo

@@ -18,6 +18,8 @@ import {
   Shield,
   Zap,
   Clock,
+  CheckCircle2,
+  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -37,10 +39,13 @@ const timezones = [
 
 export default function SignupPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, resendVerificationEmail } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const [formData, setFormData] = useState({
     salonName: '',
     email: '',
@@ -90,14 +95,19 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await register(
+      const result = await register(
         formData.salonName,
         formData.email,
         formData.password,
         formData.phone,
         formData.timezone
       );
-      router.push('/dashboard');
+
+      if (result.requiresVerification) {
+        setShowVerificationMessage(true);
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
       if (err instanceof Error) {
         setErrors({ submit: err.message });
@@ -107,6 +117,25 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendVerification = async () => {
+    setIsResending(true);
+    setResendSuccess(false);
+
+    try {
+      await resendVerificationEmail(formData.email);
+      setResendSuccess(true);
+    } catch {
+      // Still show success to prevent email enumeration
+      setResendSuccess(true);
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleContinueToDashboard = () => {
+    router.push('/dashboard');
   };
 
   const isFieldValid = (field: string) => {
@@ -148,18 +177,78 @@ export default function SignupPage() {
       {/* Signup Card */}
       <div className="w-full max-w-lg relative z-10 animate-slide-up">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex p-3 rounded-xl bg-sage/10 text-sage mb-4">
-              <Building2 className="w-6 h-6" />
+          {/* Verification Message */}
+          {showVerificationMessage ? (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-8 h-8 text-success" />
+              </div>
+              <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+                Check your email
+              </h1>
+              <p className="text-charcoal/60 mb-6">
+                We've sent a verification link to <strong>{formData.email}</strong>.
+                Please click the link to verify your account.
+              </p>
+
+              <div className="p-4 rounded-lg bg-sage/5 border border-sage/20 mb-6">
+                <p className="text-sm text-charcoal/70">
+                  Didn't receive the email? Check your spam folder or click below to resend.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {!resendSuccess ? (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="w-full py-3 rounded-lg border border-sage text-sage font-semibold hover:bg-sage/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isResending ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-5 h-5" />
+                        Resend verification email
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-success text-sm">
+                    Verification email sent! Check your inbox.
+                  </div>
+                )}
+
+                <button
+                  onClick={handleContinueToDashboard}
+                  className="w-full py-3 rounded-lg bg-sage text-white font-semibold hover:bg-sage-dark transition-all flex items-center justify-center gap-2"
+                >
+                  Continue to Dashboard
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+
+                <p className="text-xs text-charcoal/50 mt-4">
+                  You can continue using Peacase, but some features may be limited until you verify your email.
+                </p>
+              </div>
             </div>
-            <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
-              Create your salon account
-            </h1>
-            <p className="text-charcoal/60">
-              Get started with your 14-day free trial
-            </p>
-          </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex p-3 rounded-xl bg-sage/10 text-sage mb-4">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+                  Create your salon account
+                </h1>
+                <p className="text-charcoal/60">
+                  Get started with your 14-day free trial
+                </p>
+              </div>
 
           {/* Error Message */}
           {errors.submit && (
@@ -169,7 +258,7 @@ export default function SignupPage() {
           )}
 
           {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Salon Name */}
             <div>
               <label htmlFor="salonName" className="block text-sm font-medium text-charcoal mb-2">
@@ -381,6 +470,8 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
+            </>
+          )}
         </div>
       </div>
 
