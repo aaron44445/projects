@@ -2,7 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 import { env } from './lib/env.js';
+
+// Import middleware
+import { csrfProtection } from './middleware/csrf.js';
+import { generalRateLimit } from './middleware/rateLimit.js';
 
 // Import routes
 import { authRouter } from './routes/auth.js';
@@ -18,6 +23,7 @@ import { marketingRouter } from './routes/marketing.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { reportsRouter } from './routes/reports.js';
 import { webhooksRouter } from './routes/webhooks.js';
+import { billingRouter } from './routes/billing.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -52,10 +58,19 @@ export function createApp() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  // Cookie parsing (required for CSRF protection)
+  app.use(cookieParser());
+
   // Logging (skip in test mode)
   if (!isTest) {
     app.use(morgan('dev'));
   }
+
+  // Rate limiting - Apply to all API routes
+  app.use('/api/v1', generalRateLimit);
+
+  // CSRF protection - Applied to all routes (has built-in skip logic)
+  app.use(csrfProtection);
 
   // ============================================
   // ROUTES
@@ -79,6 +94,7 @@ export function createApp() {
   app.use('/api/v1/marketing', marketingRouter);
   app.use('/api/v1/dashboard', dashboardRouter);
   app.use('/api/v1/reports', reportsRouter);
+  app.use('/api/v1/billing', billingRouter);
   app.use('/api/v1/webhooks', webhooksRouter);
 
   // ============================================

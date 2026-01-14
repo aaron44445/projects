@@ -86,13 +86,13 @@ function generateTokens(userId: string, salonId: string, role: string) {
   const accessToken = jwt.sign(
     { userId, salonId, role },
     env.JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '1h', algorithm: 'HS256' }
   );
 
   const refreshToken = jwt.sign(
     { userId, salonId, role, type: 'refresh' },
     env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: '7d', algorithm: 'HS256' }
   );
 
   return { accessToken, refreshToken };
@@ -496,7 +496,8 @@ router.post('/refresh', async (req: Request, res: Response) => {
     // Verify refresh token
     const decoded = jwt.verify(
       refreshToken,
-      env.JWT_REFRESH_SECRET
+      env.JWT_REFRESH_SECRET,
+      { algorithms: ['HS256'] }
     ) as { userId: string; salonId: string; role: string };
 
     // Check if token exists in database

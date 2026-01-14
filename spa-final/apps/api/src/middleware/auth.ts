@@ -35,7 +35,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     const decoded = jwt.verify(
       token,
-      env.JWT_SECRET
+      env.JWT_SECRET,
+      { algorithms: ['HS256'] }
     ) as JWTPayload;
 
     req.user = decoded;
