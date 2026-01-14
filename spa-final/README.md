@@ -9,6 +9,50 @@
 
 A modern, full-featured spa and salon management platform built with Next.js, Express, and Prisma.
 
+## 🚀 Quick Deploy
+
+Deploy Peacase to production in under 10 minutes with zero configuration:
+
+### Step 1: Deploy Backend API
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/aaron44445/projects)
+
+Click the button above, then:
+1. Login with GitHub
+2. Render auto-detects `render.yaml`
+3. Add these 3 environment variables when prompted:
+   - `DATABASE_URL`: Your PostgreSQL connection string
+   - `CORS_ORIGIN`: `https://your-app.vercel.app` (you'll get this in Step 2)
+   - `FRONTEND_URL`: Same as CORS_ORIGIN
+4. Click "Create Web Service"
+5. Wait 3-5 minutes
+6. Copy your Render URL (e.g., `https://peacase-api.onrender.com`)
+
+### Step 2: Deploy Frontend
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/aaron44445/projects&project-name=peacase&repository-name=peacase&root-directory=spa-final/apps/web&env=NEXT_PUBLIC_API_URL&envDescription=Backend%20API%20URL%20from%20Step%201&envLink=https://github.com/aaron44445/projects#deployment)
+
+Click the button above, then:
+1. Login with GitHub
+2. Set Root Directory: `spa-final/apps/web`
+3. Add environment variable:
+   - `NEXT_PUBLIC_API_URL`: Paste the Render URL from Step 1
+4. Click "Deploy"
+5. Wait 5-7 minutes
+6. Copy your Vercel URL (e.g., `https://peacase.vercel.app`)
+
+### Step 3: Update Backend CORS
+
+Go back to Render:
+1. Click your API service
+2. Environment tab
+3. Update `CORS_ORIGIN` and `FRONTEND_URL` with your Vercel URL
+4. Click "Save Changes" (auto-redeploys)
+
+**Done!** Your app is live. See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed screenshots.
+
+---
+
 ## Tech Stack
 
 - **Frontend**: Next.js 14, React 18, TailwindCSS
