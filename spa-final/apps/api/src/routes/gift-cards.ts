@@ -123,6 +123,22 @@ router.post('/:code/redeem', authenticate, async (req: Request, res: Response) =
     return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Gift card not found' } });
   }
 
+  // Validate salon ownership
+  if (giftCard.salonId !== req.user!.salonId) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Gift card does not belong to this salon' },
+    });
+  }
+
+  // Check expiration date
+  if (giftCard.expiresAt && new Date(giftCard.expiresAt) < new Date()) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'EXPIRED', message: 'Gift card has expired' },
+    });
+  }
+
   if (giftCard.balance < amount) {
     return res.status(400).json({ success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'Insufficient balance' } });
   }

@@ -15,6 +15,7 @@ import { salonRouter } from './routes/salon.js';
 import { clientsRouter } from './routes/clients.js';
 import { servicesRouter } from './routes/services.js';
 import { appointmentsRouter } from './routes/appointments.js';
+import { paymentsRouter } from './routes/payments.js';
 import { usersRouter } from './routes/users.js';
 import { reviewsRouter } from './routes/reviews.js';
 import { giftCardsRouter } from './routes/gift-cards.js';
@@ -88,6 +89,7 @@ export function createApp() {
   app.use('/api/v1/clients', clientsRouter);
   app.use('/api/v1/services', servicesRouter);
   app.use('/api/v1/appointments', appointmentsRouter);
+  app.use('/api/v1/payments', paymentsRouter);
   app.use('/api/v1/reviews', reviewsRouter);
   app.use('/api/v1/gift-cards', giftCardsRouter);
   app.use('/api/v1/packages', packagesRouter);

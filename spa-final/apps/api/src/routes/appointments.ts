@@ -59,6 +59,84 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 });
 
 // ============================================
+// GET /api/v1/appointments/availability
+// Get available time slots
+// ============================================
+router.get('/availability', authenticate, async (req: Request, res: Response) => {
+  const { date, serviceId, staffId } = req.query;
+
+  if (!date || !serviceId) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'MISSING_PARAMS',
+        message: 'Date and serviceId are required',
+      },
+    });
+  }
+
+  const service = await prisma.service.findFirst({
+    where: { id: serviceId as string, salonId: req.user!.salonId },
+  });
+
+  if (!service) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Service not found',
+      },
+    });
+  }
+
+  // Get existing appointments for the date
+  const startOfDay = new Date(date as string);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(date as string);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const existingAppointments = await prisma.appointment.findMany({
+    where: {
+      salonId: req.user!.salonId,
+      startTime: { gte: startOfDay, lte: endOfDay },
+      status: { notIn: ['cancelled'] },
+      ...(staffId && { staffId: staffId as string }),
+    },
+  });
+
+  // Generate available slots (9am - 5pm, 30 min increments)
+  const slots = [];
+  for (let hour = 9; hour < 17; hour++) {
+    for (let min = 0; min < 60; min += 30) {
+      const slotTime = new Date(date as string);
+      slotTime.setHours(hour, min, 0, 0);
+      const slotEnd = new Date(slotTime.getTime() + service.durationMinutes * 60000);
+
+      // Check if slot conflicts with existing appointments
+      const hasConflict = existingAppointments.some((apt) => {
+        const aptStart = new Date(apt.startTime);
+        const aptEnd = new Date(apt.endTime);
+        return (
+          (slotTime >= aptStart && slotTime < aptEnd) ||
+          (slotEnd > aptStart && slotEnd <= aptEnd) ||
+          (slotTime <= aptStart && slotEnd >= aptEnd)
+        );
+      });
+
+      slots.push({
+        time: `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`,
+        available: !hasConflict,
+      });
+    }
+  }
+
+  res.json({
+    success: true,
+    data: slots,
+  });
+});
+
+// ============================================
 // GET /api/v1/appointments/:id
 // Get appointment details
 // ============================================
@@ -137,11 +215,12 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     });
   }
 
-  // Calculate end time
+  // Calculate end time (including buffer)
   const start = new Date(startTime);
   const end = new Date(start.getTime() + service.durationMinutes * 60000);
+  const endWithBuffer = new Date(end.getTime() + service.bufferMinutes * 60000);
 
-  // Check for conflicts
+  // Check for conflicts (using buffer time)
   const conflict = await prisma.appointment.findFirst({
     where: {
       salonId: req.user!.salonId,
@@ -156,14 +235,14 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         },
         {
           AND: [
-            { startTime: { lt: end } },
-            { endTime: { gte: end } },
+            { startTime: { lt: endWithBuffer } },
+            { endTime: { gte: endWithBuffer } },
           ],
         },
         {
           AND: [
             { startTime: { gte: start } },
-            { endTime: { lte: end } },
+            { endTime: { lte: endWithBuffer } },
           ],
         },
       ],
@@ -300,11 +379,71 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
   if (cancellationReason) updateData.cancellationReason = cancellationReason;
   if (status === 'cancelled') updateData.cancelledAt = new Date();
 
-  // Handle time change
-  if (startTime && serviceId) {
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-    if (service) {
-      const start = new Date(startTime);
+  // Handle time/staff change - check for conflicts
+  if (startTime || staffId) {
+    // Get service details for conflict checking
+    const targetServiceId = serviceId || appointment.serviceId;
+    const service = await prisma.service.findFirst({
+      where: { id: targetServiceId, salonId: req.user!.salonId },
+    });
+
+    if (!service) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SERVICE',
+          message: 'Service not found',
+        },
+      });
+    }
+
+    const start = startTime ? new Date(startTime) : appointment.startTime;
+    const end = new Date(start.getTime() + service.durationMinutes * 60000);
+    const endWithBuffer = new Date(end.getTime() + service.bufferMinutes * 60000);
+    const targetStaffId = staffId || appointment.staffId;
+
+    // Check for conflicts (exclude current appointment)
+    const conflict = await prisma.appointment.findFirst({
+      where: {
+        id: { not: req.params.id },
+        salonId: req.user!.salonId,
+        staffId: targetStaffId,
+        status: { notIn: ['cancelled'] },
+        OR: [
+          {
+            AND: [
+              { startTime: { lte: start } },
+              { endTime: { gt: start } },
+            ],
+          },
+          {
+            AND: [
+              { startTime: { lt: endWithBuffer } },
+              { endTime: { gte: endWithBuffer } },
+            ],
+          },
+          {
+            AND: [
+              { startTime: { gte: start } },
+              { endTime: { lte: endWithBuffer } },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'TIME_CONFLICT',
+          message: 'Staff member is not available at this time',
+        },
+      });
+    }
+
+    // Update time if changed
+    if (startTime) {
       updateData.startTime = start;
       updateData.endTime = new Date(start.getTime() + service.durationMinutes * 60000);
       updateData.durationMinutes = service.durationMinutes;
@@ -394,84 +533,6 @@ router.post('/:id/no-show', authenticate, async (req: Request, res: Response) =>
   res.json({
     success: true,
     data: updated,
-  });
-});
-
-// ============================================
-// GET /api/v1/appointments/availability
-// Get available time slots
-// ============================================
-router.get('/availability', authenticate, async (req: Request, res: Response) => {
-  const { date, serviceId, staffId } = req.query;
-
-  if (!date || !serviceId) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'MISSING_PARAMS',
-        message: 'Date and serviceId are required',
-      },
-    });
-  }
-
-  const service = await prisma.service.findFirst({
-    where: { id: serviceId as string, salonId: req.user!.salonId },
-  });
-
-  if (!service) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Service not found',
-      },
-    });
-  }
-
-  // Get existing appointments for the date
-  const startOfDay = new Date(date as string);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date as string);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const existingAppointments = await prisma.appointment.findMany({
-    where: {
-      salonId: req.user!.salonId,
-      startTime: { gte: startOfDay, lte: endOfDay },
-      status: { notIn: ['cancelled'] },
-      ...(staffId && { staffId: staffId as string }),
-    },
-  });
-
-  // Generate available slots (9am - 5pm, 30 min increments)
-  const slots = [];
-  for (let hour = 9; hour < 17; hour++) {
-    for (let min = 0; min < 60; min += 30) {
-      const slotTime = new Date(date as string);
-      slotTime.setHours(hour, min, 0, 0);
-      const slotEnd = new Date(slotTime.getTime() + service.durationMinutes * 60000);
-
-      // Check if slot conflicts with existing appointments
-      const hasConflict = existingAppointments.some((apt) => {
-        const aptStart = new Date(apt.startTime);
-        const aptEnd = new Date(apt.endTime);
-        return (
-          (slotTime >= aptStart && slotTime < aptEnd) ||
-          (slotEnd > aptStart && slotEnd <= aptEnd) ||
-          (slotTime <= aptStart && slotEnd >= aptEnd)
-        );
-      });
-
-      slots.push({
-        time: `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`,
-        available: !hasConflict,
-      });
-    }
-  }
-
-  res.json({
-    success: true,
-    data: slots,
   });
 });
 

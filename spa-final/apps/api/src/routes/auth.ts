@@ -456,17 +456,16 @@ router.post('/resend-verification', strictRateLimit, async (req: Request, res: R
 // POST /api/v1/auth/logout
 // ============================================
 router.post('/logout', async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
+  const { refreshToken } = req.body;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+  if (refreshToken) {
     try {
-      // Delete refresh token if exists
+      // Delete refresh token from database
       await prisma.refreshToken.deleteMany({
-        where: { token },
+        where: { token: refreshToken },
       });
     } catch {
-      // Ignore errors
+      // Ignore errors - token might already be deleted
     }
   }
 
