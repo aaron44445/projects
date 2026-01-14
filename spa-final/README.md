@@ -34,7 +34,7 @@ Click the button above, then:
 
 Click the button above, then:
 1. Login with GitHub
-2. Set Root Directory: `spa-final/apps/web`
+2. Verify Root Directory is set to: `spa-final/apps/web`
 3. Add environment variable:
    - `NEXT_PUBLIC_API_URL`: Paste the Render URL from Step 1
 4. Click "Deploy"
