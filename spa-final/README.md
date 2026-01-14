@@ -49,7 +49,11 @@ Go back to Render:
 3. Update `CORS_ORIGIN` and `FRONTEND_URL` with your Vercel URL
 4. Click "Save Changes" (auto-redeploys)
 
-**Done!** Your app is live. See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed screenshots.
+**Done!** Your app is live.
+
+📖 **Need help?** See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed step-by-step guide with screenshots.
+
+💰 **Planning to scale?** See [CapRover Migration Guide](./docs/CAPROVER_MIGRATION.md) for self-hosted option ($6/month).
 
 ---
 
