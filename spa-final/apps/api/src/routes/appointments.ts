@@ -412,7 +412,7 @@ router.get('/availability', authenticate, async (req: Request, res: Response) =>
   });
 
   // Generate available slots (9am - 5pm, 30 min increments)
-  const slots = [];
+  const slots: Array<{ time: string; available: boolean }> = [];
   for (let hour = 9; hour < 17; hour++) {
     for (let min = 0; min < 60; min += 30) {
       const slotTime = new Date(date as string);

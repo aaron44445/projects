@@ -111,7 +111,7 @@ router.get(
       }
 
       // Calculate grace period status
-      let gracePeriod = null;
+      let gracePeriod: { active: boolean; startedAt: Date; endsAt: Date; daysRemaining: number } | null = null;
       if (salon.marketingAddonEnabled && salon.marketingAddonEnabledAt) {
         const enabledAt = new Date(salon.marketingAddonEnabledAt).getTime();
         const gracePeriodEndsAt = enabledAt + GRACE_PERIOD_MS;

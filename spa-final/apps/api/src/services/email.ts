@@ -54,7 +54,7 @@ export async function sendBulkEmail(options: BulkEmailOptions): Promise<{ sent: 
     return results;
   }
 
-  const batches = [];
+  const batches: string[][] = [];
   for (let i = 0; i < options.recipients.length; i += 1000) {
     batches.push(options.recipients.slice(i, i + 1000));
   }
