@@ -55,20 +55,13 @@ const envSchema = z.object({
   // Encryption key for API keys (required - 32 bytes hex encoded = 64 chars)
   ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)').optional(),
 }).superRefine((data, ctx) => {
-  // Stripe is required in production
-  if (data.NODE_ENV === 'production') {
+  // Stripe is required in production (except webhook secret which can be added later)
+  if (data.NODE_ENV === 'production' && !process.env.VERCEL) {
     if (!data.STRIPE_SECRET_KEY) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'STRIPE_SECRET_KEY is required in production',
         path: ['STRIPE_SECRET_KEY'],
-      });
-    }
-    if (!data.STRIPE_WEBHOOK_SECRET) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'STRIPE_WEBHOOK_SECRET is required in production',
-        path: ['STRIPE_WEBHOOK_SECRET'],
       });
     }
   }

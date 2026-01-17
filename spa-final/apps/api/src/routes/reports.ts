@@ -265,7 +265,7 @@ router.get('/services', authenticate, async (req: Request, res: Response) => {
         };
       }
       serviceStats[serviceId].count += 1;
-      serviceStats[serviceId].revenue += apt.payments.reduce((sum, p) => sum + p.totalAmount, 0) || apt.price;
+      serviceStats[serviceId].revenue += apt.payments.reduce((sum: number, p: { totalAmount: number }) => sum + p.totalAmount, 0) || apt.price;
       serviceStats[serviceId].totalDuration += apt.durationMinutes;
     });
 

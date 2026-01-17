@@ -108,8 +108,10 @@ app.use(errorHandler);
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
-  console.log(`
+// Only start server if not running in Vercel serverless
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`
   ============================================
   Peacase API Server
   ============================================
@@ -119,8 +121,11 @@ app.listen(PORT, () => {
   ============================================
   `);
 
-  // Start cron jobs after server is running
-  startCronJobs();
-});
+    // Start cron jobs after server is running
+    startCronJobs();
+  });
+}
 
+// Export for Vercel serverless
 export default app;
+module.exports = app;
