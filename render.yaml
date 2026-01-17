@@ -5,9 +5,9 @@ services:
     region: oregon
     plan: free
     branch: main
-    rootDir: spa-final/apps/api
-    buildCommand: cd ../../.. && pnpm install --frozen-lockfile && pnpm --filter @peacase/api build
-    startCommand: cd ../../.. && pnpm --filter @peacase/api start
+    rootDir: spa-final
+    buildCommand: pnpm install && pnpm --filter @peacase/api build
+    startCommand: pnpm --filter @peacase/api start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
