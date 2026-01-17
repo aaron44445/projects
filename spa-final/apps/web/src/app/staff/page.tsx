@@ -121,7 +121,7 @@ export default function StaffPage() {
         const staffServiceIds = member.staffServices?.map((s) => s.serviceId) || [];
         const staffServicesNames = services
           .filter((s) => staffServiceIds.includes(s.id))
-          .map((s) => s.category || s.name);
+          .map((s) => (typeof s.category === 'string' ? s.category : s.category?.name) || s.name);
         return staffServicesNames.some((name) =>
           name.toLowerCase().includes(filters.department.toLowerCase())
         );
@@ -136,7 +136,8 @@ export default function StaffPage() {
     const departments = new Set<string>();
     services.forEach((service) => {
       if (service.category) {
-        departments.add(service.category);
+        const categoryName = typeof service.category === 'string' ? service.category : service.category.name;
+        if (categoryName) departments.add(categoryName);
       }
     });
     return Array.from(departments).sort();

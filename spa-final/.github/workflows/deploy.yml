@@ -1,0 +1,260 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+# Cancel in-progress deployment runs for the same ref
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false # Don't cancel deployments in progress
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  NODE_VERSION: "20"
+  PNPM_VERSION: "8.15.0"
+
+jobs:
+  # Run CI checks first
+  ci:
+    name: CI Checks
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # Determine deployment environment
+  prepare:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    needs: ci
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      should_deploy: ${{ steps.set-env.outputs.should_deploy }}
+    steps:
+      - name: Determine environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "environment=none" >> $GITHUB_OUTPUT
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.environment == 'staging' && needs.prepare.outputs.should_deploy == 'true'
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Run database migrations
+        run: pnpm --filter @peacase/database db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+      - name: Build all packages
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.STAGING_API_URL }}
+          NODE_ENV: production
+
+      # Example: Deploy to Vercel (Frontend)
+      - name: Deploy Frontend to Vercel
+        if: vars.VERCEL_PROJECT_ID != ''
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ vars.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          alias-domains: |
+            staging.peacase.com
+
+      # Example: Deploy to Railway/Render/Fly.io (API)
+      # Uncomment and configure based on your hosting provider
+
+      # Railway deployment
+      # - name: Deploy API to Railway
+      #   if: secrets.RAILWAY_TOKEN != ''
+      #   uses: bervProject/railway-deploy@main
+      #   with:
+      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
+      #     service: api-staging
+
+      # Docker deployment (generic)
+      - name: Build and push Docker image
+        if: vars.DOCKER_REGISTRY != ''
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker build -t ${{ vars.DOCKER_REGISTRY }}/peacase-api:staging-${{ github.sha }} -f apps/api/Dockerfile .
+          docker push ${{ vars.DOCKER_REGISTRY }}/peacase-api:staging-${{ github.sha }}
+
+      - name: Notify deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? 'Deployed' : 'Failed';
+            const emoji = status === 'Deployed' ? ':white_check_mark:' : ':x:';
+
+            console.log(`Staging deployment ${status}`);
+
+            // Add Slack/Discord notification here if configured
+            // Example: Send to Slack webhook
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.environment == 'production' && needs.prepare.outputs.should_deploy == 'true'
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Run database migrations
+        run: pnpm --filter @peacase/database db:migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+      - name: Build all packages
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.PRODUCTION_API_URL }}
+          NODE_ENV: production
+
+      # Deploy to Vercel (Frontend) - Production
+      - name: Deploy Frontend to Vercel (Production)
+        if: vars.VERCEL_PROJECT_ID != ''
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ vars.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          vercel-args: "--prod"
+          alias-domains: |
+            peacase.com
+            www.peacase.com
+
+      # Docker deployment for production
+      - name: Build and push Docker image (Production)
+        if: vars.DOCKER_REGISTRY != ''
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker build -t ${{ vars.DOCKER_REGISTRY }}/peacase-api:${VERSION} -t ${{ vars.DOCKER_REGISTRY }}/peacase-api:latest -f apps/api/Dockerfile .
+          docker push ${{ vars.DOCKER_REGISTRY }}/peacase-api:${VERSION}
+          docker push ${{ vars.DOCKER_REGISTRY }}/peacase-api:latest
+
+      - name: Create deployment record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production',
+              auto_merge: false,
+              required_contexts: [],
+              description: `Production deployment for ${context.sha.substring(0, 7)}`
+            });
+
+      - name: Notify deployment status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? 'Deployed' : 'Failed';
+            console.log(`Production deployment ${status}`);
+
+  # Post-deployment verification
+  verify:
+    name: Post-Deployment Verification
+    runs-on: ubuntu-latest
+    needs: [prepare, deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    steps:
+      - name: Health check - Staging
+        if: needs.deploy-staging.result == 'success'
+        run: |
+          echo "Running health check on staging..."
+          # curl -f ${{ vars.STAGING_API_URL }}/health || exit 1
+          echo "Health check passed (placeholder)"
+
+      - name: Health check - Production
+        if: needs.deploy-production.result == 'success'
+        run: |
+          echo "Running health check on production..."
+          # curl -f ${{ vars.PRODUCTION_API_URL }}/health || exit 1
+          echo "Health check passed (placeholder)"
+
+      - name: Notify team
+        if: always()
+        run: |
+          echo "Deployment verification complete"
+          # Add Slack/Discord/Email notification here

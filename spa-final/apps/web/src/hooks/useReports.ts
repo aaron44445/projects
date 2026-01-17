@@ -56,6 +56,7 @@ export interface CategoryReportItem {
   name: string;
   revenue: number;
   count: number;
+  bookings?: number;
   percentage: number;
 }
 

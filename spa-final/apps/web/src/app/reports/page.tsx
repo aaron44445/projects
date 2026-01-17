@@ -266,7 +266,7 @@ export default function ReportsPage() {
       rows.push(['REVENUE BY SERVICE CATEGORY']);
       rows.push(['Category', 'Revenue', 'Percentage', 'Bookings']);
       servicesReport.categories.forEach(cat => {
-        rows.push([cat.name, `$${cat.revenue}`, `${cat.percentage}%`, String(cat.bookings)]);
+        rows.push([cat.name, `$${cat.revenue}`, `${cat.percentage}%`, String(cat.bookings || cat.count)]);
       });
       rows.push([]);
     }

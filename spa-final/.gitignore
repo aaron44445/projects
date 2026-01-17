@@ -38,3 +38,5 @@ coverage
 *.tsbuildinfo
 .vercel
 .worktrees
+
+.vercel

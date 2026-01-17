@@ -1,0 +1,25 @@
+# CODEOWNERS - Define code owners for automatic review requests
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+*       @peacase-team
+
+# Frontend owners
+/apps/web/              @frontend-team
+/packages/ui/           @frontend-team
+
+# Backend owners
+/apps/api/              @backend-team
+/packages/database/     @backend-team
+
+# Infrastructure and CI/CD
+/.github/               @devops-team
+/turbo.json             @devops-team
+/pnpm-workspace.yaml    @devops-team
+
+# Shared types (requires both teams)
+/packages/types/        @frontend-team @backend-team
+
+# Documentation
+/docs/                  @peacase-team
+*.md                    @peacase-team

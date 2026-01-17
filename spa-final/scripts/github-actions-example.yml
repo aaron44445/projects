@@ -1,0 +1,172 @@
+# Example GitHub Actions Workflow
+# Copy this to .github/workflows/verify-env.yml to enable environment verification in CI/CD
+
+name: Verify Environment Configuration
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  verify-environment:
+    name: Verify Environment Variables
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify Environment Configuration
+        run: pnpm verify-env --skip-optional
+        env:
+          # Required environment variables
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV || 'production' }}
+          API_PORT: ${{ secrets.API_PORT || '3001' }}
+          API_HOST: ${{ secrets.API_HOST || '0.0.0.0' }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_EXPIRY: ${{ secrets.JWT_EXPIRY || '7d' }}
+          JWT_REFRESH_EXPIRY: ${{ secrets.JWT_REFRESH_EXPIRY || '30d' }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+
+          # Optional services (uncomment if needed)
+          # STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          # SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          # SENDGRID_FROM_EMAIL: ${{ secrets.SENDGRID_FROM_EMAIL }}
+          # TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          # TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          # TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+          # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+      - name: Verify Optional Services
+        if: success()
+        run: pnpm verify-env
+        continue-on-error: true # Don't fail build if optional services fail
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: ${{ secrets.NODE_ENV || 'production' }}
+          API_PORT: ${{ secrets.API_PORT || '3001' }}
+          API_HOST: ${{ secrets.API_HOST || '0.0.0.0' }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_FROM_EMAIL: ${{ secrets.SENDGRID_FROM_EMAIL }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+  verify-production-readiness:
+    name: Verify Production Readiness
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: verify-environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify Production Environment
+        run: |
+          echo "Verifying production environment configuration..."
+          pnpm verify-env
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NODE_ENV: production
+          API_PORT: ${{ secrets.API_PORT }}
+          API_HOST: ${{ secrets.API_HOST }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          SENDGRID_FROM_EMAIL: ${{ secrets.SENDGRID_FROM_EMAIL }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+
+      - name: Check for Production Issues
+        run: |
+          echo "Checking for common production issues..."
+
+          # Check JWT secret length
+          if [ ${#JWT_SECRET} -lt 64 ]; then
+            echo "⚠️ WARNING: JWT_SECRET is shorter than 64 characters"
+          fi
+
+          # Check if using test Stripe key in production
+          if [[ $STRIPE_SECRET_KEY == sk_test_* ]]; then
+            echo "❌ ERROR: Using Stripe test key in production!"
+            exit 1
+          fi
+
+          # Check for wildcard CORS
+          if [[ $CORS_ORIGIN == "*" ]]; then
+            echo "❌ ERROR: CORS_ORIGIN is set to wildcard (*) in production!"
+            exit 1
+          fi
+
+          echo "✅ Production checks passed"
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+
+# To use this workflow:
+# 1. Copy this file to .github/workflows/verify-env.yml
+# 2. Add required secrets to your GitHub repository:
+#    - Settings → Secrets and variables → Actions → New repository secret
+# 3. Add the following secrets:
+#    - DATABASE_URL
+#    - API_BASE_URL
+#    - JWT_SECRET
+#    - JWT_REFRESH_SECRET
+#    - CORS_ORIGIN
+#    - (Optional) STRIPE_SECRET_KEY, SENDGRID_API_KEY, etc.
+# 4. Push to trigger the workflow

@@ -24,6 +24,10 @@ export interface Client {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // Computed fields from API (optional)
+  lastVisit?: string | null;
+  totalSpent?: number | null;
+  visitCount?: number | null;
 }
 
 export interface CreateClientInput {
