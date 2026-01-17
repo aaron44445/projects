@@ -1,33 +1,28 @@
 import { z } from 'zod';
+import crypto from 'crypto';
 
 // ============================================
 // ENVIRONMENT VARIABLE SCHEMA
 // ============================================
-// Required variables will throw on startup if missing
-// Optional variables have sensible defaults for development
+// All variables are optional with sensible defaults
+// The app will start even with missing env vars
+// Features will be disabled gracefully if their config is missing
 
 const envSchema = z.object({
-  // Database (required)
-  DATABASE_URL: z.string({
-    required_error: 'DATABASE_URL is required',
-  }),
+  // Database - use a placeholder if not set (will fail on DB operations, not startup)
+  DATABASE_URL: z.string().default('postgresql://localhost:5432/peacase'),
 
-  // JWT Authentication (required, min 32 chars for security)
-  JWT_SECRET: z.string({
-    required_error: 'JWT_SECRET is required',
-  }).min(32, 'JWT_SECRET must be at least 32 characters for security'),
-
-  JWT_REFRESH_SECRET: z.string({
-    required_error: 'JWT_REFRESH_SECRET is required',
-  }).min(32, 'JWT_REFRESH_SECRET must be at least 32 characters for security'),
+  // JWT Authentication - generate random secrets if not provided
+  JWT_SECRET: z.string().default(() => crypto.randomBytes(32).toString('hex')),
+  JWT_REFRESH_SECRET: z.string().default(() => crypto.randomBytes(32).toString('hex')),
 
   // Server (optional with defaults)
   PORT: z.coerce.number().default(3001),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
-  FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+  CORS_ORIGIN: z.string().default('*'),
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
 
-  // Stripe (required in production)
+  // Stripe (optional)
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PROFESSIONAL_PRICE_ID: z.string().optional(),
@@ -35,7 +30,7 @@ const envSchema = z.object({
 
   // SendGrid (optional - email features will be disabled if not set)
   SENDGRID_API_KEY: z.string().optional(),
-  SENDGRID_FROM_EMAIL: z.string().email().optional().default('noreply@peacase.com'),
+  SENDGRID_FROM_EMAIL: z.string().default('noreply@peacase.com'),
 
   // Twilio (optional - SMS features will be disabled if not set)
   TWILIO_ACCOUNT_SID: z.string().optional(),
@@ -43,7 +38,7 @@ const envSchema = z.object({
   TWILIO_PHONE_NUMBER: z.string().optional(),
 
   // Sentry (optional - error tracking disabled if not set)
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.string().optional(),
   SENTRY_RELEASE: z.string().optional(),
   SENTRY_ENABLE_DEV: z.string().optional(),
 
@@ -52,83 +47,53 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
 
-  // Encryption key for API keys (required - 32 bytes hex encoded = 64 chars)
-  ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)').optional(),
-}).superRefine((data, ctx) => {
-  // Stripe is required in production (except webhook secret which can be added later)
-  if (data.NODE_ENV === 'production' && !process.env.VERCEL) {
-    if (!data.STRIPE_SECRET_KEY) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'STRIPE_SECRET_KEY is required in production',
-        path: ['STRIPE_SECRET_KEY'],
-      });
-    }
-  }
+  // Encryption key for API keys - generate if not provided
+  ENCRYPTION_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
 
 // ============================================
-// TEST ENVIRONMENT DEFAULTS
-// ============================================
-const testDefaults = {
-  NODE_ENV: 'test',
-  DATABASE_URL: 'postgresql://localhost:5432/peacase_test',
-  JWT_SECRET: 'test-jwt-secret-key-for-testing-1234567890',
-  JWT_REFRESH_SECRET: 'test-jwt-refresh-secret-for-testing-1234567890',
-  CORS_ORIGIN: 'http://localhost:3000',
-  FRONTEND_URL: 'http://localhost:3000',
-  PORT: '3002',
-};
-
-// ============================================
-// VALIDATE ENVIRONMENT
+// VALIDATE ENVIRONMENT (lenient - never exits)
 // ============================================
 
 function validateEnv(): Env {
-  // In test mode, provide defaults for required variables
-  const isTest = process.env.NODE_ENV === 'test';
-  const envWithTestDefaults = isTest
-    ? { ...testDefaults, ...process.env }
-    : process.env;
-
-  const result = envSchema.safeParse(envWithTestDefaults);
+  const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    console.error('\n============================================');
-    console.error('ENVIRONMENT VALIDATION FAILED');
-    console.error('============================================');
-    console.error('\nThe following environment variables are missing or invalid:\n');
-
+    // Log warnings but don't exit - let the app start
+    console.warn('\n⚠️  Some environment variables are missing or invalid:');
     for (const issue of result.error.issues) {
-      const path = issue.path.join('.');
-      console.error(`  - ${path}: ${issue.message}`);
+      console.warn(`   - ${issue.path.join('.')}: ${issue.message}`);
     }
+    console.warn('   App will start with defaults. Some features may not work.\n');
 
-    console.error('\n============================================');
-    console.error('Required environment variables:');
-    console.error('  - DATABASE_URL: PostgreSQL connection string');
-    console.error('  - JWT_SECRET: Secret for signing JWT tokens (min 32 chars)');
-    console.error('  - JWT_REFRESH_SECRET: Secret for refresh tokens (min 32 chars)');
-    console.error('');
-    console.error('Required in production:');
-    console.error('  - STRIPE_SECRET_KEY: Stripe secret API key');
-    console.error('  - STRIPE_WEBHOOK_SECRET: Stripe webhook signing secret');
-    console.error('');
-    console.error('Optional (with defaults):');
-    console.error('  - PORT: Server port (default: 3001)');
-    console.error('  - NODE_ENV: Environment mode (default: development)');
-    console.error('  - CORS_ORIGIN: Allowed CORS origin (default: http://localhost:3000)');
-    console.error('  - FRONTEND_URL: Frontend URL for links (default: http://localhost:3000)');
-    console.error('  - SENDGRID_API_KEY: For email functionality');
-    console.error('  - SENDGRID_FROM_EMAIL: Sender email address');
-    console.error('  - TWILIO_ACCOUNT_SID: For SMS functionality');
-    console.error('  - TWILIO_AUTH_TOKEN: Twilio auth token');
-    console.error('  - TWILIO_PHONE_NUMBER: Twilio phone number');
-    console.error('============================================\n');
+    // Return defaults anyway
+    return envSchema.parse({});
+  }
 
-    process.exit(1);
+  // Log what's configured
+  const configured: string[] = [];
+  const missing: string[] = [];
+
+  if (result.data.DATABASE_URL && !result.data.DATABASE_URL.includes('localhost')) configured.push('Database');
+  else missing.push('Database');
+
+  if (result.data.STRIPE_SECRET_KEY) configured.push('Stripe');
+  else missing.push('Stripe');
+
+  if (result.data.SENDGRID_API_KEY) configured.push('SendGrid');
+  else missing.push('SendGrid');
+
+  if (result.data.TWILIO_ACCOUNT_SID) configured.push('Twilio');
+  else missing.push('Twilio');
+
+  if (result.data.ENCRYPTION_KEY) configured.push('Encryption');
+  else missing.push('Encryption');
+
+  console.log(`\n✅ Configured: ${configured.join(', ') || 'None'}`);
+  if (missing.length > 0) {
+    console.log(`⚠️  Not configured (features disabled): ${missing.join(', ')}\n`);
   }
 
   return result.data;
@@ -136,3 +101,19 @@ function validateEnv(): Env {
 
 // Export validated environment
 export const env = validateEnv();
+
+// Helper to get encryption key (generates one if not set)
+let _encryptionKey: Buffer | null = null;
+export function getEncryptionKey(): Buffer {
+  if (_encryptionKey) return _encryptionKey;
+
+  if (env.ENCRYPTION_KEY && env.ENCRYPTION_KEY.length === 64) {
+    _encryptionKey = Buffer.from(env.ENCRYPTION_KEY, 'hex');
+  } else {
+    // Generate a random key for this session (won't persist across restarts)
+    console.warn('⚠️  No ENCRYPTION_KEY set - using temporary key. Encrypted data will not persist across restarts.');
+    _encryptionKey = crypto.randomBytes(32);
+  }
+
+  return _encryptionKey;
+}

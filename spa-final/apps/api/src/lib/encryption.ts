@@ -1,21 +1,9 @@
 import crypto from 'crypto';
-import { env } from './env.js';
+import { getEncryptionKey } from './env.js';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 const AUTH_TAG_LENGTH = 16;
-
-/**
- * Get the encryption key from environment
- * Throws if not configured
- */
-function getEncryptionKey(): Buffer {
-  const key = env.ENCRYPTION_KEY;
-  if (!key) {
-    throw new Error('ENCRYPTION_KEY is not configured');
-  }
-  return Buffer.from(key, 'hex');
-}
 
 /**
  * Encrypt a string using AES-256-GCM
