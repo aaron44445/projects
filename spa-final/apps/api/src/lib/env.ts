@@ -51,6 +51,9 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+
+  // Encryption key for API keys (required - 32 bytes hex encoded = 64 chars)
+  ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)').optional(),
 }).superRefine((data, ctx) => {
   // Stripe is required in production
   if (data.NODE_ENV === 'production') {

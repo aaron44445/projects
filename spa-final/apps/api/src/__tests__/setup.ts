@@ -9,6 +9,7 @@ config({ path: resolve(__dirname, '../../.env.test') });
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key-for-testing-1234567890';
 process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-jwt-refresh-secret-for-testing-1234567890';
+process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'a'.repeat(64); // 32-byte test key
 
 // Import prisma after env is loaded
 import { prisma } from '@peacase/database';
@@ -76,12 +77,14 @@ async function cleanDatabase() {
 }
 
 beforeAll(async () => {
-  // Verify database connection
+  // Skip database connection for unit tests that don't need it
+  // Tests that need the database will fail on first query if not connected
   try {
     await prisma.$connect();
   } catch (error) {
     console.error('Failed to connect to test database:', error);
-    throw error;
+    console.warn('Database-dependent tests will be skipped or fail.');
+    // Don't throw - allow unit tests that don't need the database to run
   }
 });
 

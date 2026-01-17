@@ -18,6 +18,7 @@ import { marketingRouter } from './routes/marketing.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { reportsRouter } from './routes/reports.js';
 import { webhooksRouter } from './routes/webhooks.js';
+import { integrationsRouter } from './routes/integrations.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -80,6 +81,7 @@ export function createApp() {
   app.use('/api/v1/dashboard', dashboardRouter);
   app.use('/api/v1/reports', reportsRouter);
   app.use('/api/v1/webhooks', webhooksRouter);
+  app.use('/api/v1/integrations', integrationsRouter);
 
   // ============================================
   // ERROR HANDLING

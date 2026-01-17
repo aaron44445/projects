@@ -20,11 +20,16 @@
     "db:migrate:deploy": "turbo db:migrate:deploy",
     "db:studio": "pnpm --filter @peacase/database studio",
     "typecheck": "turbo typecheck",
-    "ci": "turbo lint typecheck build"
+    "ci": "turbo lint typecheck build",
+    "verify-env": "tsx scripts/verify-env.ts",
+    "generate-secrets": "tsx scripts/generate-jwt-secrets.ts"
   },
   "devDependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "@types/node": "^20.10.0",
+    "dotenv": "^16.3.0",
     "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
     "turbo": "^2.0.0",
     "typescript": "^5.3.0"
   },
