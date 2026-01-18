@@ -10,7 +10,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'owner' | 'admin' | 'staff';
-  avatar?: string;
+  avatarUrl?: string;
   phone?: string;
   emailVerified?: boolean;
   createdAt: string;
