@@ -148,40 +148,37 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
       counter++;
     }
 
-    // Create salon and admin user in transaction
-    const result = await prisma.$transaction(async (tx) => {
-      const salon = await tx.salon.create({
-        data: {
-          name: data.salonName,
-          slug,
-          email: data.email,
-          phone: data.phone,
-          timezone: data.timezone || 'America/Chicago',
-        },
-      });
+    // Create salon first
+    const salon = await prisma.salon.create({
+      data: {
+        name: data.salonName,
+        slug,
+        email: data.email,
+        phone: data.phone,
+        timezone: data.timezone || 'America/Chicago',
+      },
+    });
 
-      const user = await tx.user.create({
-        data: {
-          salonId: salon.id,
-          email: data.email,
-          passwordHash,
-          firstName: 'Admin',
-          lastName: 'User',
-          role: 'admin',
-          emailVerified: false,
-        },
-      });
-
-      return { salon, user };
+    // Create admin user
+    const user = await prisma.user.create({
+      data: {
+        salonId: salon.id,
+        email: data.email,
+        passwordHash,
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        emailVerified: false,
+      },
     });
 
     // Generate tokens
-    const tokens = generateTokens(result.user.id, result.salon.id, result.user.role);
+    const tokens = generateTokens(user.id, salon.id, user.role);
 
     // Store refresh token
     await prisma.refreshToken.create({
       data: {
-        userId: result.user.id,
+        userId: user.id,
         token: tokens.refreshToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -189,7 +186,7 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
 
     // Send verification email (don't block registration if email fails)
     try {
-      await createAndSendVerificationEmail(result.user.id, result.user.email, result.salon.name);
+      await createAndSendVerificationEmail(user.id, user.email, salon.name);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
     }
@@ -198,17 +195,17 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
       success: true,
       data: {
         user: {
-          id: result.user.id,
-          email: result.user.email,
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          role: result.user.role,
-          emailVerified: result.user.emailVerified,
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          emailVerified: user.emailVerified,
         },
         salon: {
-          id: result.salon.id,
-          name: result.salon.name,
-          slug: result.salon.slug,
+          id: salon.id,
+          name: salon.name,
+          slug: salon.slug,
         },
         tokens,
         requiresVerification: true,
