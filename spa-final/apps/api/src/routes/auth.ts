@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -10,6 +10,13 @@ import { env } from '../lib/env.js';
 import { csrfTokenHandler, clearCsrfToken } from '../middleware/csrf.js';
 
 const router = Router();
+
+// Async error wrapper to properly catch errors in async route handlers
+function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
 
 // Generate a secure random verification token
 function generateVerificationToken(): string {
@@ -109,7 +116,7 @@ function generateSlug(name: string): string {
 // ============================================
 // POST /api/v1/auth/register
 // ============================================
-router.post('/register', authRateLimit, async (req: Request, res: Response) => {
+router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = registerSchema.parse(req.body);
 
@@ -220,12 +227,12 @@ router.post('/register', authRateLimit, async (req: Request, res: Response) => {
     }
     throw error;
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/login
 // ============================================
-router.post('/login', authRateLimit, async (req: Request, res: Response) => {
+router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = loginSchema.parse(req.body);
 
@@ -306,7 +313,7 @@ router.post('/login', authRateLimit, async (req: Request, res: Response) => {
     }
     throw error;
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/verify-email

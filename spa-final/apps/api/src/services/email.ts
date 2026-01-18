@@ -1,9 +1,15 @@
-import sgMail from '@sendgrid/mail';
 import { env } from '../lib/env.js';
 
-// Initialize SendGrid (only if API key is configured)
-if (env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(env.SENDGRID_API_KEY);
+// Lazy load SendGrid to avoid module initialization issues
+let sgMail: any = null;
+
+async function getSendGrid() {
+  if (!sgMail && env.SENDGRID_API_KEY) {
+    const sendgridModule = await import('@sendgrid/mail');
+    sgMail = sendgridModule.default;
+    sgMail.setApiKey(env.SENDGRID_API_KEY);
+  }
+  return sgMail;
 }
 
 interface EmailOptions {
@@ -30,7 +36,13 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   }
 
   try {
-    await sgMail.send({
+    const sendgrid = await getSendGrid();
+    if (!sendgrid) {
+      console.warn('SendGrid initialization failed - email not sent to:', options.to);
+      return false;
+    }
+
+    await sendgrid.send({
       to: options.to,
       from: options.from || env.SENDGRID_FROM_EMAIL,
       subject: options.subject,
@@ -54,6 +66,13 @@ export async function sendBulkEmail(options: BulkEmailOptions): Promise<{ sent: 
     return results;
   }
 
+  const sendgrid = await getSendGrid();
+  if (!sendgrid) {
+    console.warn('SendGrid initialization failed - bulk emails not sent');
+    results.failed = options.recipients.length;
+    return results;
+  }
+
   const batches: string[][] = [];
   for (let i = 0; i < options.recipients.length; i += 1000) {
     batches.push(options.recipients.slice(i, i + 1000));
@@ -69,7 +88,7 @@ export async function sendBulkEmail(options: BulkEmailOptions): Promise<{ sent: 
     }));
 
     try {
-      await sgMail.send(messages);
+      await sendgrid.send(messages);
       results.sent += batch.length;
     } catch (error) {
       console.error('Bulk email error:', error);
