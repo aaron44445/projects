@@ -179,15 +179,22 @@ spa-final/
 - API port fallback was 4001 but API runs on 3001
 - Missing /users/me endpoint caused "user undefined" errors after login
 - No timeout on fetch calls caused infinite hangs
+- CORS_ORIGIN in API .env was port 4000 but Next.js runs on port 3000
+- Database password with @ symbol needs URL encoding (%40)
+- ESM imports are hoisted - dotenv.config() must be in separate module imported first
 
 ### Patterns that work
 - Add request timeouts (30s) to prevent infinite hangs
 - Use in-memory rate limiting (resets on deploy) for dev/staging
 - Wrap email sending in try/catch so registration doesn't block
 - Place specific routes (like /me) before parameterized routes (/:id)
+- Use loadEnv.ts pattern for ESM dotenv loading (import first)
+- Use __dirname from fileURLToPath for ESM module paths
 
 ### Project-specific gotchas
 - Workspace packages need `pnpm install` to create symlinks
 - Database package must be built before API can import it
 - Vercel auto-deploys on push to main
 - Render auto-deploys on push to main (API restarts, rate limits reset)
+- When running via `pnpm --filter`, cwd is monorepo root, not package dir
+- dotenv.config() needs explicit path in monorepo packages
