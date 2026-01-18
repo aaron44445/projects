@@ -205,7 +205,7 @@ describe('SignupPage', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
 
-      let resolveRegister: () => void;
+      let resolveRegister: (value: unknown) => void;
       mockRegister.mockImplementation(() => new Promise((resolve) => {
         resolveRegister = resolve;
       }));
@@ -223,7 +223,7 @@ describe('SignupPage', () => {
         expect(screen.getByText(/creating account/i)).toBeInTheDocument();
       });
 
-      resolveRegister!();
+      resolveRegister!(undefined);
     });
 
     it('should navigate to dashboard on successful registration', async () => {

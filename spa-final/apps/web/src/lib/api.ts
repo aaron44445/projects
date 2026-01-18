@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -34,23 +34,38 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-      credentials: 'include',
-    });
+    // Add timeout to prevent infinite hangs
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const data = await response.json();
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers,
+        credentials: 'include',
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      throw new ApiError(
-        data.error?.code || 'UNKNOWN',
-        data.error?.message || 'An error occurred',
-        data.error?.details
-      );
+      clearTimeout(timeoutId);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(
+          data.error?.code || 'UNKNOWN',
+          data.error?.message || 'An error occurred',
+          data.error?.details
+        );
+      }
+
+      return data;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ApiError('TIMEOUT', 'Request timed out. Please try again.');
+      }
+      throw error;
     }
-
-    return data;
   }
 
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {

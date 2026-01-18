@@ -27,12 +27,13 @@ export const generalRateLimit = rateLimit({
 
 // ============================================
 // AUTH RATE LIMIT
-// 5 requests per 15 minutes per IP
+// 50 requests per 15 minutes per IP (increased from 5 for testing)
 // For: login, register, forgot-password
+// TODO: Reduce back to 5 after debugging is complete
 // ============================================
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: 50, // Temporarily increased from 5 for debugging
   standardHeaders: true,
   legacyHeaders: true,
   message: createRateLimitResponse('Too many authentication attempts, please try again later'),

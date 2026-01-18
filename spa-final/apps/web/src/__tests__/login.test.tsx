@@ -126,7 +126,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
 
       // Create a promise that doesn't resolve immediately
-      let resolveLogin: () => void;
+      let resolveLogin: (value: unknown) => void;
       mockLogin.mockImplementation(() => new Promise((resolve) => {
         resolveLogin = resolve;
       }));
@@ -143,7 +143,7 @@ describe('LoginPage', () => {
       });
 
       // Resolve the login promise
-      resolveLogin!();
+      resolveLogin!(undefined);
     });
 
     it('should navigate to dashboard on successful login', async () => {
