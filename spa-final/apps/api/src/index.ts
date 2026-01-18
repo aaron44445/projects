@@ -1,12 +1,11 @@
+// MUST be first import to load environment variables before anything else
+import './loadEnv.js';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
-
-// Load environment variables BEFORE validation
-dotenv.config();
 
 // Initialize Sentry as early as possible (before other imports)
 import { initSentry, Sentry } from './lib/sentry.js';
