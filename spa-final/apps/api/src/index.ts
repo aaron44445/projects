@@ -112,6 +112,29 @@ app.get('/api/v1/debug/db', async (req, res) => {
   }
 });
 
+// Auth test endpoint - simulates what login does
+app.post('/api/v1/debug/auth', async (req, res) => {
+  try {
+    const { prisma } = await import('@peacase/database');
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { email: email || 'test@test.com' },
+      include: { salon: true }
+    });
+    res.json({
+      status: 'ok',
+      userFound: !!user,
+      message: user ? 'User found' : 'User not found (this is OK for testing)'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+});
+
 // API Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/salon', salonRouter);
