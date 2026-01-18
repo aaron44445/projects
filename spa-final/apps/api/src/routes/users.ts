@@ -36,6 +36,42 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 });
 
 // ============================================
+// GET /api/v1/users/me
+// Get current authenticated user
+// ============================================
+router.get('/me', authenticate, async (req: Request, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.userId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      role: true,
+      avatarUrl: true,
+      emailVerified: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'User not found',
+      },
+    });
+  }
+
+  res.json({
+    success: true,
+    data: user,
+  });
+});
+
+// ============================================
 // GET /api/v1/users/:id
 // Get staff member details
 // ============================================
