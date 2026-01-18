@@ -6,7 +6,7 @@ services:
     plan: free
     branch: main
     rootDir: apps/api
-    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter @peacase/database db:generate && pnpm --filter @peacase/api build
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter @peacase/database db:generate && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
     startCommand: cd ../.. && pnpm --filter @peacase/api start
     healthCheckPath: /health
     envVars:
