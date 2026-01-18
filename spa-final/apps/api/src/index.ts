@@ -117,7 +117,7 @@ app.post('/api/v1/debug/auth', async (req, res) => {
   try {
     const { prisma } = await import('@peacase/database');
     const { email } = req.body;
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: email || 'test@test.com' },
       include: { salon: true }
     });
