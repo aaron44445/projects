@@ -5,9 +5,9 @@ services:
     region: oregon
     plan: free
     branch: main
-    rootDir: apps/api
-    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter @peacase/database db:generate && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
-    startCommand: cd ../.. && pnpm --filter @peacase/api start
+    rootDir: spa-final
+    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @peacase/database exec prisma generate && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
+    startCommand: node apps/api/dist/index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
