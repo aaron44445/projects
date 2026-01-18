@@ -33,6 +33,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { generalRateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
+import { prisma } from '@peacase/database';
 
 const app = express();
 const PORT = env.PORT;
@@ -112,10 +113,9 @@ app.get('/api/v1/debug/db', async (req, res) => {
   }
 });
 
-// Auth test endpoint - simulates what login does
+// Auth test endpoint - uses static import like real routes
 app.post('/api/v1/debug/auth', async (req, res) => {
   try {
-    const { prisma } = await import('@peacase/database');
     const { email } = req.body;
     const user = await prisma.user.findFirst({
       where: { email: email || 'test@test.com' },
