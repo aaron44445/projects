@@ -60,6 +60,9 @@ app.use(
 // Raw body parser for Stripe webhooks (must be before json parser)
 app.use('/api/v1/webhooks/stripe', express.raw({ type: 'application/json' }));
 
+// Cookie parsing (for refresh tokens)
+app.use(cookieParser());
+
 // Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -79,6 +82,19 @@ app.use('/api', generalRateLimit);
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Debug endpoint - test if /api routes work without database
+app.get('/api/v1/debug', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'API routes are working',
+    env: {
+      nodeEnv: env.NODE_ENV,
+      corsOrigin: env.CORS_ORIGIN,
+      hasDbUrl: !!env.DATABASE_URL && !env.DATABASE_URL.includes('localhost'),
+    }
+  });
 });
 
 // API Routes
