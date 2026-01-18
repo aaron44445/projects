@@ -97,6 +97,21 @@ app.get('/api/v1/debug', (req, res) => {
   });
 });
 
+// Database test endpoint
+app.get('/api/v1/debug/db', async (req, res) => {
+  try {
+    const { prisma } = await import('@peacase/database');
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', message: 'Database connected' });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+});
+
 // API Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/salon', salonRouter);
