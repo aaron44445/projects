@@ -17,6 +17,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:fix-schema": "node scripts/run-migration.js",
     "db:seed": "tsx prisma/seed.ts",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit"
@@ -26,7 +27,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.8.0",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
