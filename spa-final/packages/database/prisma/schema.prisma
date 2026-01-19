@@ -73,6 +73,9 @@ model Salon {
   consultationForms  ConsultationForm[]
   commissionRecords  CommissionRecord[]
   subscription       Subscription?
+  setupProgress      SetupProgress?
+  resources          Resource[]
+  intakeForms        IntakeForm[]
 
   @@map("salons")
 }
@@ -139,14 +142,15 @@ model Client {
   updatedAt               DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  salon          Salon           @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  preferredStaff User?           @relation("PreferredStaff", fields: [preferredStaffId], references: [id])
-  appointments   Appointment[]
-  payments       Payment[]
-  clientNotes    ClientNote[]
-  clientPackages ClientPackage[]
-  reviews        Review[]
-  formResponses  FormResponse[]
+  salon               Salon                @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  preferredStaff      User?                @relation("PreferredStaff", fields: [preferredStaffId], references: [id])
+  appointments        Appointment[]
+  payments            Payment[]
+  clientNotes         ClientNote[]
+  clientPackages      ClientPackage[]
+  reviews             Review[]
+  formResponses       FormResponse[]
+  intakeFormResponses IntakeFormResponse[]
 
   @@map("clients")
 }
@@ -202,6 +206,7 @@ model Service {
   appointments    Appointment[]
   staffServices   StaffService[]
   packageServices PackageService[]
+  variants        ServiceVariant[]
 
   @@map("services")
 }
@@ -293,16 +298,17 @@ model Appointment {
   cancelledAt        DateTime? @map("cancelled_at")
 
   // Relations
-  salon             Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  location          Location?          @relation(fields: [locationId], references: [id])
-  client            Client             @relation(fields: [clientId], references: [id])
-  staff             User               @relation(fields: [staffId], references: [id])
-  service           Service            @relation(fields: [serviceId], references: [id])
-  payments          Payment[]
-  reviews           Review[]
-  formResponses     FormResponse[]
-  commissionRecords CommissionRecord[]
-  reminderLogs      ReminderLog[]
+  salon               Salon                @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  location            Location?            @relation(fields: [locationId], references: [id])
+  client              Client               @relation(fields: [clientId], references: [id])
+  staff               User                 @relation(fields: [staffId], references: [id])
+  service             Service              @relation(fields: [serviceId], references: [id])
+  payments            Payment[]
+  reviews             Review[]
+  formResponses       FormResponse[]
+  commissionRecords   CommissionRecord[]
+  reminderLogs        ReminderLog[]
+  intakeFormResponses IntakeFormResponse[]
 
   @@map("appointments")
 }
@@ -638,4 +644,115 @@ model BillingHistory {
   @@index([salonId])
   @@index([createdAt])
   @@map("billing_history")
+}
+
+// ============================================
+// SETUP PROGRESS TRACKING
+// ============================================
+
+model SetupProgress {
+  id            String    @id @default(uuid())
+  salonId       String    @unique @map("salon_id")
+  businessHours Boolean   @default(false) @map("business_hours")
+  firstService  Boolean   @default(false) @map("first_service")
+  firstStaff    Boolean   @default(false) @map("first_staff")
+  bookingPage   Boolean   @default(false) @map("booking_page")
+  paymentMethod Boolean   @default(false) @map("payment_method")
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@map("setup_progress")
+}
+
+// ============================================
+// SERVICE VARIANTS
+// ============================================
+
+model ServiceVariant {
+  id        String   @id @default(uuid())
+  serviceId String   @map("service_id")
+  name      String
+  duration  Int
+  price     Float
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_variants")
+}
+
+// ============================================
+// RESOURCES (rooms, equipment, etc.)
+// ============================================
+
+model Resource {
+  id        String   @id @default(uuid())
+  salonId   String   @map("salon_id")
+  name      String
+  type      String   @default("room")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@map("resources")
+}
+
+// ============================================
+// INTAKE FORMS
+// ============================================
+
+model IntakeForm {
+  id                String   @id @default(uuid())
+  salonId           String   @map("salon_id")
+  name              String
+  description       String?
+  isActive          Boolean  @default(true) @map("is_active")
+  requiresSignature Boolean  @default(false) @map("requires_signature")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  salon     Salon                @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  fields    IntakeFormField[]
+  responses IntakeFormResponse[]
+
+  @@map("intake_forms")
+}
+
+model IntakeFormField {
+  id         String   @id @default(uuid())
+  formId     String   @map("form_id")
+  label      String
+  type       String   @default("text")
+  options    String?
+  isRequired Boolean  @default(false) @map("is_required")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  form IntakeForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("intake_form_fields")
+}
+
+model IntakeFormResponse {
+  id            String   @id @default(uuid())
+  formId        String   @map("form_id")
+  clientId      String   @map("client_id")
+  appointmentId String?  @map("appointment_id")
+  responses     String
+  signatureUrl  String?  @map("signature_url")
+  submittedAt   DateTime @default(now()) @map("submitted_at")
+
+  form        IntakeForm   @relation(fields: [formId], references: [id], onDelete: Cascade)
+  client      Client       @relation(fields: [clientId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@map("intake_form_responses")
 }
