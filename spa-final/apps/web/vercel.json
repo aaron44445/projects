@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter=@peacase/web build",
-  "devCommand": "pnpm dev",
-  "installCommand": "pnpm install",
+  "buildCommand": "cd ../.. && npm install --legacy-peer-deps && npx turbo run build --filter=@peacase/web",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
