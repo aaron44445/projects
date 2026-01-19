@@ -185,8 +185,14 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
     });
 
     // Send verification email (don't block registration if email fails)
+    let emailSent = false;
     try {
-      await createAndSendVerificationEmail(user.id, user.email, salon.name);
+      emailSent = await createAndSendVerificationEmail(user.id, user.email, salon.name);
+      if (emailSent) {
+        console.log(`Verification email sent successfully to ${user.email}`);
+      } else {
+        console.warn(`Verification email could not be sent to ${user.email} - SendGrid may not be configured or sender not verified`);
+      }
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
     }

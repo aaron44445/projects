@@ -42,17 +42,24 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       return false;
     }
 
+    const fromEmail = options.from || env.SENDGRID_FROM_EMAIL;
+    console.log(`Sending email to ${options.to} from ${fromEmail} - Subject: ${options.subject}`);
+
     await sendgrid.send({
       to: options.to,
-      from: options.from || env.SENDGRID_FROM_EMAIL,
+      from: fromEmail,
       subject: options.subject,
       html: options.html,
       text: options.text || options.html.replace(/<[^>]*>/g, ''),
       replyTo: options.replyTo,
     });
+    console.log(`Email sent successfully to ${options.to}`);
     return true;
-  } catch (error) {
-    console.error('SendGrid error:', error);
+  } catch (error: any) {
+    console.error('SendGrid error:', error?.message || error);
+    if (error?.response?.body) {
+      console.error('SendGrid response body:', JSON.stringify(error.response.body, null, 2));
+    }
     return false;
   }
 }

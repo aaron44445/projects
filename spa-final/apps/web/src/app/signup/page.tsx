@@ -103,11 +103,8 @@ export default function SignupPage() {
         formData.timezone
       );
 
-      if (result.requiresVerification) {
-        setShowVerificationMessage(true);
-      } else {
-        router.push('/dashboard');
-      }
+      // Always show verification message - users must verify email before accessing the platform
+      setShowVerificationMessage(true);
     } catch (err) {
       if (err instanceof Error) {
         setErrors({ submit: err.message });
