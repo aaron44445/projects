@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { api, ApiError } from '@/lib/api';
 import {
   Building2,
@@ -28,11 +29,14 @@ import {
   Star,
   Layers,
   Shield,
+  HelpCircle,
+  Lightbulb,
+  MapPin,
 } from 'lucide-react';
 
-// Step configuration - new order per requirements
+// Step configuration
 const steps = [
-  { id: 'business', title: 'Business Info', icon: Building2 },
+  { id: 'business', title: 'Business Location', icon: MapPin },
   { id: 'subscription', title: 'Select Plan', icon: CreditCard },
   { id: 'hours', title: 'Working Hours', icon: Clock },
   { id: 'services', title: 'Services', icon: Scissors },
@@ -52,16 +56,45 @@ const addOns = [
   { id: 'marketing', name: 'Marketing Automation', price: 25, icon: Sparkles, description: 'Automated campaigns and promotions' },
 ];
 
-const businessTypes = [
-  { value: 'salon', label: 'Hair Salon' },
-  { value: 'spa', label: 'Day Spa' },
-  { value: 'barbershop', label: 'Barbershop' },
-  { value: 'nails', label: 'Nail Salon' },
-  { value: 'beauty', label: 'Beauty Studio' },
-  { value: 'wellness', label: 'Wellness Center' },
-  { value: 'med_spa', label: 'Medical Spa' },
-  { value: 'other', label: 'Other' },
-];
+// Default hours by business type
+const businessHoursDefaults: Record<string, typeof defaultHours> = {
+  salon: [
+    { day: 'Monday', open: '09:00', close: '19:00', isOpen: true },
+    { day: 'Tuesday', open: '09:00', close: '19:00', isOpen: true },
+    { day: 'Wednesday', open: '09:00', close: '19:00', isOpen: true },
+    { day: 'Thursday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Friday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Saturday', open: '09:00', close: '17:00', isOpen: true },
+    { day: 'Sunday', open: '10:00', close: '16:00', isOpen: false },
+  ],
+  spa: [
+    { day: 'Monday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Tuesday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Wednesday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Thursday', open: '09:00', close: '20:00', isOpen: true },
+    { day: 'Friday', open: '09:00', close: '21:00', isOpen: true },
+    { day: 'Saturday', open: '09:00', close: '18:00', isOpen: true },
+    { day: 'Sunday', open: '10:00', close: '17:00', isOpen: true },
+  ],
+  barbershop: [
+    { day: 'Monday', open: '08:00', close: '18:00', isOpen: true },
+    { day: 'Tuesday', open: '08:00', close: '18:00', isOpen: true },
+    { day: 'Wednesday', open: '08:00', close: '18:00', isOpen: true },
+    { day: 'Thursday', open: '08:00', close: '18:00', isOpen: true },
+    { day: 'Friday', open: '08:00', close: '18:00', isOpen: true },
+    { day: 'Saturday', open: '08:00', close: '16:00', isOpen: true },
+    { day: 'Sunday', open: '10:00', close: '16:00', isOpen: false },
+  ],
+  med_spa: [
+    { day: 'Monday', open: '09:00', close: '18:00', isOpen: true },
+    { day: 'Tuesday', open: '09:00', close: '18:00', isOpen: true },
+    { day: 'Wednesday', open: '09:00', close: '18:00', isOpen: true },
+    { day: 'Thursday', open: '09:00', close: '18:00', isOpen: true },
+    { day: 'Friday', open: '09:00', close: '17:00', isOpen: true },
+    { day: 'Saturday', open: '09:00', close: '14:00', isOpen: true },
+    { day: 'Sunday', open: '10:00', close: '16:00', isOpen: false },
+  ],
+};
 
 const defaultHours = [
   { day: 'Monday', open: '09:00', close: '18:00', isOpen: true },
@@ -73,23 +106,133 @@ const defaultHours = [
   { day: 'Sunday', open: '10:00', close: '16:00', isOpen: false },
 ];
 
-const serviceCategories = [
-  { name: 'Hair', services: ['Haircut', 'Hair Color', 'Highlights', 'Blowout', 'Hair Treatment'] },
-  { name: 'Nails', services: ['Manicure', 'Pedicure', 'Gel Nails', 'Nail Art', 'Acrylic Nails'] },
-  { name: 'Skin', services: ['Facial', 'Chemical Peel', 'Microdermabrasion', 'LED Therapy'] },
-  { name: 'Body', services: ['Massage', 'Body Wrap', 'Scrub', 'Waxing'] },
-  { name: 'Makeup', services: ['Full Makeup', 'Bridal Makeup', 'Lash Extensions', 'Brow Shaping'] },
-];
+// Suggested services by business type
+const suggestedServices: Record<string, Array<{ name: string; duration: number; price: number; category: string }>> = {
+  salon: [
+    { name: "Women's Haircut", duration: 45, price: 65, category: 'Hair' },
+    { name: "Men's Haircut", duration: 30, price: 35, category: 'Hair' },
+    { name: 'Hair Color (Full)', duration: 120, price: 150, category: 'Hair' },
+    { name: 'Highlights (Partial)', duration: 90, price: 120, category: 'Hair' },
+    { name: 'Blowout & Style', duration: 45, price: 55, category: 'Hair' },
+    { name: 'Deep Conditioning Treatment', duration: 30, price: 40, category: 'Hair' },
+  ],
+  spa: [
+    { name: 'Swedish Massage (60 min)', duration: 60, price: 95, category: 'Body' },
+    { name: 'Deep Tissue Massage (60 min)', duration: 60, price: 110, category: 'Body' },
+    { name: 'Classic Facial', duration: 60, price: 85, category: 'Skin' },
+    { name: 'Anti-Aging Facial', duration: 75, price: 120, category: 'Skin' },
+    { name: 'Body Wrap', duration: 60, price: 100, category: 'Body' },
+    { name: 'Hot Stone Massage', duration: 75, price: 130, category: 'Body' },
+  ],
+  barbershop: [
+    { name: 'Classic Haircut', duration: 30, price: 30, category: 'Hair' },
+    { name: 'Haircut & Beard Trim', duration: 45, price: 45, category: 'Hair' },
+    { name: 'Beard Trim Only', duration: 20, price: 20, category: 'Hair' },
+    { name: 'Hot Towel Shave', duration: 30, price: 35, category: 'Hair' },
+    { name: "Kid's Haircut", duration: 20, price: 20, category: 'Hair' },
+    { name: 'Head Shave', duration: 30, price: 30, category: 'Hair' },
+  ],
+  nail_salon: [
+    { name: 'Classic Manicure', duration: 30, price: 25, category: 'Nails' },
+    { name: 'Classic Pedicure', duration: 45, price: 40, category: 'Nails' },
+    { name: 'Gel Manicure', duration: 45, price: 45, category: 'Nails' },
+    { name: 'Gel Pedicure', duration: 60, price: 55, category: 'Nails' },
+    { name: 'Acrylic Full Set', duration: 60, price: 60, category: 'Nails' },
+    { name: 'Nail Art (per nail)', duration: 10, price: 5, category: 'Nails' },
+  ],
+  med_spa: [
+    { name: 'Botox (per unit)', duration: 30, price: 15, category: 'Injectable' },
+    { name: 'Dermal Filler (per syringe)', duration: 45, price: 600, category: 'Injectable' },
+    { name: 'Chemical Peel', duration: 45, price: 150, category: 'Skin' },
+    { name: 'Microneedling', duration: 60, price: 300, category: 'Skin' },
+    { name: 'Laser Hair Removal (Small Area)', duration: 30, price: 150, category: 'Laser' },
+    { name: 'Hydrafacial', duration: 60, price: 200, category: 'Skin' },
+  ],
+  massage_studio: [
+    { name: 'Swedish Massage (60 min)', duration: 60, price: 85, category: 'Massage' },
+    { name: 'Deep Tissue Massage (60 min)', duration: 60, price: 100, category: 'Massage' },
+    { name: 'Sports Massage (60 min)', duration: 60, price: 100, category: 'Massage' },
+    { name: 'Prenatal Massage (60 min)', duration: 60, price: 90, category: 'Massage' },
+    { name: 'Couples Massage (60 min)', duration: 60, price: 170, category: 'Massage' },
+    { name: 'Hot Stone Massage (75 min)', duration: 75, price: 120, category: 'Massage' },
+  ],
+};
+
+// Contextual help content per step
+const stepHelp: Record<string, { title: string; tips: string[]; faq: Array<{ q: string; a: string }> }> = {
+  business: {
+    title: 'Business Location',
+    tips: [
+      'Your address will appear on booking confirmations and help clients find you.',
+      'Make sure to use the exact address that shows on Google Maps.',
+      'If you operate from multiple locations, you can add more later.',
+    ],
+    faq: [
+      { q: 'Why do you need my address?', a: 'Your address helps clients find you and is shown on appointment confirmations. It also enables location-based features.' },
+      { q: 'Can I add multiple locations?', a: 'Yes! After setup, go to Settings → Locations to add additional business locations.' },
+    ],
+  },
+  subscription: {
+    title: 'Choosing Your Plan',
+    tips: [
+      'Start with Essentials - you can add features anytime.',
+      'Online Booking and Reminders are the most popular add-ons.',
+      'All add-ons can be enabled/disabled monthly.',
+    ],
+    faq: [
+      { q: 'Can I change my plan later?', a: 'Yes, you can add or remove features at any time from your Settings.' },
+      { q: 'Is there a contract?', a: 'No contracts - you can cancel anytime. We bill monthly.' },
+    ],
+  },
+  hours: {
+    title: 'Setting Your Hours',
+    tips: [
+      'These are your default business hours.',
+      'Individual staff can have their own schedules.',
+      'You can set holiday hours and special closures later.',
+    ],
+    faq: [
+      { q: 'What if my hours vary?', a: 'Set your most common hours here. You can adjust specific dates in the calendar.' },
+      { q: 'Can staff have different hours?', a: 'Yes! Each staff member can have their own availability schedule.' },
+    ],
+  },
+  services: {
+    title: 'Adding Services',
+    tips: [
+      'Add at least one service to continue.',
+      'You can edit prices and durations anytime.',
+      'Group similar services into categories for easier booking.',
+    ],
+    faq: [
+      { q: 'How do I price my services?', a: 'Research local competitors and consider your experience level. You can always adjust later.' },
+      { q: 'What about service variations?', a: 'Create separate services for variations (e.g., "Haircut - Short" and "Haircut - Long").' },
+    ],
+  },
+  optional: {
+    title: 'Optional Setup',
+    tips: [
+      'These features can all be configured later.',
+      'Skip this step if you want to get started quickly.',
+      'Staff invitations can be sent from your dashboard.',
+    ],
+    faq: [
+      { q: 'Should I set these up now?', a: "It's up to you! You can always come back to these in Settings." },
+      { q: 'How do I invite staff?', a: 'Go to Staff → Invite and enter their email. They\'ll receive an invitation to join.' },
+    ],
+  },
+};
 
 import { AuthGuard } from '@/components/AuthGuard';
 
 function OnboardingContent() {
   const router = useRouter();
+  const { salon, user } = useAuth();
   const { setActiveAddOns } = useSubscription();
   const [currentStep, setCurrentStep] = useState(0);
-  const [useAI, setUseAI] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showHelp, setShowHelp] = useState(true);
 
   // Plan selection state
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
@@ -111,46 +254,95 @@ function OnboardingContent() {
   });
   const [cardErrors, setCardErrors] = useState<Record<string, string>>({});
 
+  // Business location state (only NEW info not collected at signup)
+  const [businessLocation, setBusinessLocation] = useState({
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    website: '',
+  });
+
+  // Get business type from signup data
+  const businessType = salon?.businessType || 'salon';
+
+  // Initialize hours with business-type-specific defaults
+  const [hours, setHours] = useState(() => {
+    return businessHoursDefaults[businessType] || defaultHours;
+  });
+
+  const [services, setServices] = useState<
+    Array<{ name: string; duration: number; price: number; category: string }>
+  >([]);
+
+  // Update hours when business type changes (if salon data loads after initial render)
+  useEffect(() => {
+    if (businessType && businessHoursDefaults[businessType]) {
+      setHours(businessHoursDefaults[businessType]);
+    }
+  }, [businessType]);
+
   const validateCard = () => {
     const errors: Record<string, string> = {};
 
-    // Card number validation (16 digits)
     const cardDigits = subscriptionInfo.cardNumber.replace(/\s/g, '');
     if (!cardDigits) {
       errors.cardNumber = 'Card number is required';
     } else if (cardDigits.length !== 16 || !/^\d+$/.test(cardDigits)) {
-      errors.cardNumber = 'Enter a valid 16-digit card number';
+      errors.cardNumber = 'Please enter a valid 16-digit card number';
     }
 
-    // Expiry validation (MM/YY format)
     if (!subscriptionInfo.expiry) {
       errors.expiry = 'Expiry date is required';
     } else if (!/^\d{2}\/\d{2}$/.test(subscriptionInfo.expiry)) {
-      errors.expiry = 'Use MM/YY format';
+      errors.expiry = 'Please use MM/YY format';
     } else {
       const [month, year] = subscriptionInfo.expiry.split('/').map(Number);
       const now = new Date();
       const expDate = new Date(2000 + year, month - 1);
       if (month < 1 || month > 12) {
-        errors.expiry = 'Invalid month';
+        errors.expiry = 'Please enter a valid month (01-12)';
       } else if (expDate < now) {
-        errors.expiry = 'Card has expired';
+        errors.expiry = 'This card has expired';
       }
     }
 
-    // CVC validation (3-4 digits)
     if (!subscriptionInfo.cvc) {
       errors.cvc = 'CVC is required';
     } else if (!/^\d{3,4}$/.test(subscriptionInfo.cvc)) {
-      errors.cvc = 'Enter a valid CVC';
+      errors.cvc = 'Please enter the 3 or 4 digit code on your card';
     }
 
-    // Name validation
     if (!subscriptionInfo.nameOnCard.trim()) {
-      errors.nameOnCard = 'Name on card is required';
+      errors.nameOnCard = 'Please enter the name as it appears on your card';
     }
 
     setCardErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateBusinessLocation = () => {
+    const errors: Record<string, string> = {};
+
+    if (!businessLocation.address.trim()) {
+      errors.address = 'Please enter your street address';
+    }
+    if (!businessLocation.city.trim()) {
+      errors.city = 'Please enter your city';
+    }
+    if (!businessLocation.state.trim()) {
+      errors.state = 'Please enter your state';
+    }
+    if (!businessLocation.zip.trim()) {
+      errors.zip = 'Please enter your ZIP code';
+    } else if (!/^\d{5}(-\d{4})?$/.test(businessLocation.zip.trim())) {
+      errors.zip = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';
+    }
+    if (businessLocation.website && !/^https?:\/\/.+\..+/.test(businessLocation.website)) {
+      errors.website = 'Please enter a valid URL starting with http:// or https://';
+    }
+
+    setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
@@ -166,45 +358,24 @@ function OnboardingContent() {
     return basePlanPrice + addOnsPrice;
   };
 
-  // Form state
-  const [businessInfo, setBusinessInfo] = useState({
-    name: '',
-    type: '',
-    phone: '',
-    email: '',
-    website: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    description: '',
-  });
-
-  const [hours, setHours] = useState(defaultHours);
-
-  const [services, setServices] = useState<
-    Array<{ name: string; duration: number; price: number; category: string }>
-  >([]);
-
   // API submission functions
   const submitBusinessInfo = async () => {
     try {
       await api.post('/onboarding/business-info', {
-        name: businessInfo.name,
-        type: businessInfo.type,
-        phone: businessInfo.phone,
-        email: businessInfo.email,
-        website: businessInfo.website,
-        address: businessInfo.address,
-        city: businessInfo.city,
-        state: businessInfo.state,
-        zip: businessInfo.zip,
-        description: businessInfo.description,
+        address: businessLocation.address,
+        city: businessLocation.city,
+        state: businessLocation.state,
+        zip: businessLocation.zip,
+        website: businessLocation.website || undefined,
       });
       return true;
     } catch (error) {
       if (error instanceof ApiError) {
-        setSubmitError(error.message);
+        if (error.message.includes('Invalid input')) {
+          setSubmitError('Please check all required fields are filled in correctly.');
+        } else {
+          setSubmitError(error.message);
+        }
       } else {
         setSubmitError('Failed to save business info. Please try again.');
       }
@@ -273,13 +444,17 @@ function OnboardingContent() {
 
   const nextStep = async () => {
     setSubmitError(null);
+    setFieldErrors({});
     setIsSubmitting(true);
 
     try {
       const currentStepId = steps[currentStep].id;
 
-      // Handle step-specific submissions
       if (currentStepId === 'business') {
+        if (!validateBusinessLocation()) {
+          setIsSubmitting(false);
+          return;
+        }
         const success = await submitBusinessInfo();
         if (!success) {
           setIsSubmitting(false);
@@ -309,6 +484,13 @@ function OnboardingContent() {
           setIsSubmitting(false);
           return;
         }
+        // Validate services have names
+        const invalidServices = services.filter(s => !s.name.trim());
+        if (invalidServices.length > 0) {
+          setSubmitError('Please enter a name for all services.');
+          setIsSubmitting(false);
+          return;
+        }
         const success = await submitServices();
         if (!success) {
           setIsSubmitting(false);
@@ -322,7 +504,6 @@ function OnboardingContent() {
           setIsSubmitting(false);
           return;
         }
-        // Move to complete step
         setCurrentStep(currentStep + 1);
         setIsSubmitting(false);
         return;
@@ -343,7 +524,6 @@ function OnboardingContent() {
     try {
       const success = await completeOnboarding();
       if (success) {
-        // Navigate to complete step
         setCurrentStep(steps.findIndex((s) => s.id === 'complete'));
       }
     } finally {
@@ -355,6 +535,7 @@ function OnboardingContent() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       setSubmitError(null);
+      setFieldErrors({});
     }
   };
 
@@ -372,14 +553,93 @@ function OnboardingContent() {
     setServices(updated);
   };
 
-  const addQuickServices = (category: string, serviceNames: string[]) => {
-    const newServices = serviceNames.map((name) => ({
-      name,
-      duration: 30,
-      price: 50,
-      category,
-    }));
+  const addSuggestedServices = () => {
+    const suggested = suggestedServices[businessType] || suggestedServices['salon'];
+    // Only add services that aren't already added
+    const existingNames = new Set(services.map(s => s.name.toLowerCase()));
+    const newServices = suggested.filter(s => !existingNames.has(s.name.toLowerCase()));
     setServices([...services, ...newServices]);
+  };
+
+  const useDefaultHours = () => {
+    const defaultForType = businessHoursDefaults[businessType] || defaultHours;
+    setHours(defaultForType);
+  };
+
+  // Get display name for business type
+  const businessTypeLabel = {
+    salon: 'Hair Salon',
+    spa: 'Day Spa',
+    barbershop: 'Barbershop',
+    nail_salon: 'Nail Salon',
+    med_spa: 'Medical Spa',
+    massage_studio: 'Massage Studio',
+    wellness: 'Wellness Center',
+    beauty: 'Beauty Studio',
+    other: 'Business',
+  }[businessType] || 'Business';
+
+  // Contextual help sidebar
+  const renderHelpSidebar = () => {
+    const currentStepId = steps[currentStep].id;
+    const help = stepHelp[currentStepId];
+
+    if (!help || currentStepId === 'complete') return null;
+
+    return (
+      <div className="hidden xl:block w-80 flex-shrink-0">
+        <div className="sticky top-8 bg-gradient-to-br from-sage/5 to-lavender/10 rounded-2xl border border-sage/20 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-sage/20 flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-sage" />
+            </div>
+            <h3 className="font-semibold text-charcoal">Tips & Help</h3>
+          </div>
+
+          {/* Tips */}
+          <div className="space-y-3 mb-6">
+            {help.tips.map((tip, i) => (
+              <div key={i} className="flex gap-2">
+                <Check className="w-4 h-4 text-sage flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-charcoal/70">{tip}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          {currentStepId === 'hours' && (
+            <button
+              onClick={useDefaultHours}
+              className="w-full mb-4 py-2 px-4 bg-sage/10 text-sage rounded-lg text-sm font-medium hover:bg-sage/20 transition-colors"
+            >
+              Use Suggested Hours for {businessTypeLabel}
+            </button>
+          )}
+
+          {currentStepId === 'services' && (
+            <button
+              onClick={addSuggestedServices}
+              className="w-full mb-4 py-2 px-4 bg-sage/10 text-sage rounded-lg text-sm font-medium hover:bg-sage/20 transition-colors"
+            >
+              Add Popular {businessTypeLabel} Services
+            </button>
+          )}
+
+          {/* FAQ */}
+          <div className="border-t border-sage/20 pt-4">
+            <p className="text-xs font-medium text-charcoal/50 uppercase tracking-wide mb-3">Common Questions</p>
+            <div className="space-y-3">
+              {help.faq.map((item, i) => (
+                <div key={i}>
+                  <p className="text-sm font-medium text-charcoal">{item.q}</p>
+                  <p className="text-sm text-charcoal/60 mt-1">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderStep = () => {
@@ -388,162 +648,127 @@ function OnboardingContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Tell us about your business</h2>
+              <h2 className="text-2xl font-bold text-charcoal mb-2">Where is your business located?</h2>
               <p className="text-charcoal/60">
-                This information will be used on your booking page and invoices.
+                We&apos;ll use this address for booking confirmations and to help clients find you.
               </p>
             </div>
 
-            {/* AI Assistant Toggle */}
-            <div className="bg-gradient-to-r from-sage/20 to-lavender/20 rounded-2xl p-6 border border-sage/30">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-white" />
+            {/* Show pre-filled info from signup */}
+            <div className="bg-sage/5 rounded-xl p-4 border border-sage/20">
+              <p className="text-sm text-charcoal/60 mb-2">From your signup:</p>
+              <div className="flex flex-wrap gap-4">
+                <div>
+                  <span className="text-xs text-charcoal/50">Business</span>
+                  <p className="font-medium text-charcoal">{salon?.name || 'Your Business'}</p>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-charcoal mb-1">AI-Guided Setup</h3>
-                  <p className="text-sm text-charcoal/60 mb-4">
-                    Let our AI assistant help you set up faster by suggesting services, pricing, and
-                    settings based on your business type.
-                  </p>
-                  <button
-                    onClick={() => setUseAI(!useAI)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      useAI
-                        ? 'bg-sage text-white'
-                        : 'bg-white text-charcoal border border-charcoal/20 hover:border-sage'
-                    }`}
-                  >
-                    {useAI ? 'AI Enabled' : 'Enable AI Assistant'}
-                  </button>
+                <div>
+                  <span className="text-xs text-charcoal/50">Type</span>
+                  <p className="font-medium text-charcoal">{businessTypeLabel}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-charcoal/50">Email</span>
+                  <p className="font-medium text-charcoal">{user?.email}</p>
                 </div>
               </div>
             </div>
 
-            {/* Business Type Selection */}
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Business Type</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {businessTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => setBusinessInfo({ ...businessInfo, type: type.value })}
-                    className={`p-4 rounded-xl border-2 transition-all text-center ${
-                      businessInfo.type === type.value
-                        ? 'border-sage bg-sage/10'
-                        : 'border-charcoal/10 hover:border-sage/50'
-                    }`}
-                  >
-                    <span className="font-medium text-charcoal">{type.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Business Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Business Name</label>
-                <input
-                  type="text"
-                  value={businessInfo.name}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="Serenity Spa & Salon"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  value={businessInfo.phone}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={businessInfo.email}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="hello@yoursalon.com"
-                />
-              </div>
+            {/* Address Fields */}
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-charcoal mb-2">
-                  Website (optional)
+                  Street Address <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={businessLocation.address}
+                  onChange={(e) => {
+                    setBusinessLocation({ ...businessLocation, address: e.target.value });
+                    if (fieldErrors.address) setFieldErrors({ ...fieldErrors, address: '' });
+                  }}
+                  className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.address ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
+                  placeholder="123 Main Street"
+                />
+                {fieldErrors.address && (
+                  <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.address}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    City <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={businessLocation.city}
+                    onChange={(e) => {
+                      setBusinessLocation({ ...businessLocation, city: e.target.value });
+                      if (fieldErrors.city) setFieldErrors({ ...fieldErrors, city: '' });
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.city ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
+                    placeholder="Los Angeles"
+                  />
+                  {fieldErrors.city && (
+                    <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.city}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    State <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={businessLocation.state}
+                    onChange={(e) => {
+                      setBusinessLocation({ ...businessLocation, state: e.target.value });
+                      if (fieldErrors.state) setFieldErrors({ ...fieldErrors, state: '' });
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.state ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
+                    placeholder="CA"
+                  />
+                  {fieldErrors.state && (
+                    <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.state}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    ZIP Code <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={businessLocation.zip}
+                    onChange={(e) => {
+                      setBusinessLocation({ ...businessLocation, zip: e.target.value });
+                      if (fieldErrors.zip) setFieldErrors({ ...fieldErrors, zip: '' });
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.zip ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
+                    placeholder="90210"
+                  />
+                  {fieldErrors.zip && (
+                    <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.zip}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">
+                  Website <span className="text-charcoal/40">(optional)</span>
                 </label>
                 <input
                   type="url"
-                  value={businessInfo.website}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, website: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="https://yoursalon.com"
+                  value={businessLocation.website}
+                  onChange={(e) => {
+                    setBusinessLocation({ ...businessLocation, website: e.target.value });
+                    if (fieldErrors.website) setFieldErrors({ ...fieldErrors, website: '' });
+                  }}
+                  className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.website ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
+                  placeholder="https://yourbusiness.com"
                 />
+                {fieldErrors.website && (
+                  <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.website}</p>
+                )}
               </div>
-            </div>
-
-            {/* Address */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Street Address</label>
-                <input
-                  type="text"
-                  value={businessInfo.address}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, address: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="123 Main Street"
-                />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-charcoal mb-2">City</label>
-                  <input
-                    type="text"
-                    value={businessInfo.city}
-                    onChange={(e) => setBusinessInfo({ ...businessInfo, city: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="Los Angeles"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">State</label>
-                  <input
-                    type="text"
-                    value={businessInfo.state}
-                    onChange={(e) => setBusinessInfo({ ...businessInfo, state: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="CA"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">ZIP Code</label>
-                  <input
-                    type="text"
-                    value={businessInfo.zip}
-                    onChange={(e) => setBusinessInfo({ ...businessInfo, zip: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="90210"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-2">
-                Business Description (optional)
-              </label>
-              <textarea
-                value={businessInfo.description}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, description: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
-                placeholder="Tell clients what makes your business special..."
-              />
             </div>
           </div>
         );
@@ -664,13 +889,12 @@ function OnboardingContent() {
                       type="text"
                       value={subscriptionInfo.cardNumber}
                       onChange={(e) => {
-                        // Format card number with spaces
                         const value = e.target.value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
                         setSubscriptionInfo({ ...subscriptionInfo, cardNumber: value.slice(0, 19) });
                         if (cardErrors.cardNumber) setCardErrors({ ...cardErrors, cardNumber: '' });
                       }}
                       placeholder="1234 5678 9012 3456"
-                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cardNumber ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cardNumber ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                       <div className="w-8 h-5 bg-[#1A1F71] rounded text-white text-xs flex items-center justify-center font-bold">
@@ -702,7 +926,7 @@ function OnboardingContent() {
                       }}
                       placeholder="MM/YY"
                       maxLength={5}
-                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.expiry ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.expiry ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
                     />
                     {cardErrors.expiry && (
                       <p className="text-sm text-rose-500 mt-1">{cardErrors.expiry}</p>
@@ -722,7 +946,7 @@ function OnboardingContent() {
                         }}
                         placeholder="123"
                         maxLength={4}
-                        className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cvc ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                        className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cvc ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
                       />
                       <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/30" />
                     </div>
@@ -744,7 +968,7 @@ function OnboardingContent() {
                       if (cardErrors.nameOnCard) setCardErrors({ ...cardErrors, nameOnCard: '' });
                     }}
                     placeholder="John Smith"
-                    className={`w-full px-4 py-3 rounded-lg border ${cardErrors.nameOnCard ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                    className={`w-full px-4 py-3 rounded-lg border ${cardErrors.nameOnCard ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
                   />
                   {cardErrors.nameOnCard && (
                     <p className="text-sm text-rose-500 mt-1">{cardErrors.nameOnCard}</p>
@@ -752,7 +976,6 @@ function OnboardingContent() {
                 </div>
               </div>
 
-              {/* Security Notice */}
               <div className="flex items-start gap-3 p-4 bg-charcoal/5 rounded-xl">
                 <Shield className="w-5 h-5 text-sage mt-0.5" />
                 <div className="text-sm text-charcoal/70">
@@ -761,7 +984,6 @@ function OnboardingContent() {
                 </div>
               </div>
 
-              {/* Terms */}
               <p className="text-xs text-charcoal/50 text-center">
                 By continuing, you agree to our{' '}
                 <Link href="/terms" className="text-sage hover:underline">Terms of Service</Link>
@@ -781,6 +1003,17 @@ function OnboardingContent() {
               <p className="text-charcoal/60">
                 These are your default business hours. Staff can have individual schedules.
               </p>
+            </div>
+
+            {/* Mobile quick action */}
+            <div className="xl:hidden">
+              <button
+                onClick={useDefaultHours}
+                className="w-full py-3 px-4 bg-sage/10 text-sage rounded-xl text-sm font-medium hover:bg-sage/20 transition-colors flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Use Suggested Hours for {businessTypeLabel}
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -841,13 +1074,6 @@ function OnboardingContent() {
                 </div>
               ))}
             </div>
-
-            <div className="bg-lavender/20 rounded-xl p-4 border border-lavender/30">
-              <p className="text-sm text-charcoal/70">
-                <strong>Tip:</strong> You can customize hours for specific staff members, holidays,
-                and special events later in Settings.
-              </p>
-            </div>
           </div>
         );
 
@@ -861,26 +1087,16 @@ function OnboardingContent() {
               </p>
             </div>
 
-            {/* Quick Add Sections */}
-            {useAI && (
-              <div className="bg-gradient-to-r from-sage/10 to-lavender/10 rounded-2xl p-6 border border-sage/20">
-                <div className="flex items-center gap-3 mb-4">
-                  <Sparkles className="w-5 h-5 text-sage" />
-                  <h3 className="font-semibold text-charcoal">Quick Add Popular Services</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {serviceCategories.map((cat) => (
-                    <button
-                      key={cat.name}
-                      onClick={() => addQuickServices(cat.name, cat.services)}
-                      className="px-4 py-2 rounded-lg bg-white border border-charcoal/10 hover:border-sage hover:bg-sage/5 transition-all text-sm font-medium text-charcoal"
-                    >
-                      Add {cat.name} Services
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Mobile quick action */}
+            <div className="xl:hidden">
+              <button
+                onClick={addSuggestedServices}
+                className="w-full py-3 px-4 bg-sage/10 text-sage rounded-xl text-sm font-medium hover:bg-sage/20 transition-colors flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Add Popular {businessTypeLabel} Services
+              </button>
+            </div>
 
             {/* Services List */}
             <div className="space-y-4">
@@ -1086,12 +1302,6 @@ function OnboardingContent() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-lavender/20 rounded-xl p-4 border border-lavender/30">
-              <p className="text-sm text-charcoal/70">
-                <strong>Note:</strong> You can always configure these settings later from your dashboard.
-              </p>
-            </div>
           </div>
         );
 
@@ -1103,14 +1313,21 @@ function OnboardingContent() {
             </div>
             <h2 className="text-3xl font-bold text-charcoal mb-4">You&apos;re all set!</h2>
             <p className="text-lg text-charcoal/60 mb-8 max-w-md mx-auto">
-              Your {businessInfo.name || 'business'} is ready to start accepting bookings. Welcome
-              to Peacase!
+              {salon?.name || 'Your business'} is ready to start accepting bookings. Welcome to Peacase!
             </p>
 
             {/* Summary */}
             <div className="bg-charcoal/5 rounded-2xl p-6 max-w-lg mx-auto text-left mb-8">
               <h3 className="font-semibold text-charcoal mb-4">Setup Summary</h3>
               <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-charcoal/60">Business</span>
+                  <span className="font-medium text-charcoal">{salon?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-charcoal/60">Type</span>
+                  <span className="font-medium text-charcoal">{businessTypeLabel}</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-charcoal/60">Plan</span>
                   <span className="font-medium text-charcoal">
@@ -1122,30 +1339,9 @@ function OnboardingContent() {
                   <span className="font-medium text-charcoal">${calculateMonthlyTotal()}/month</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-charcoal/60">Business Type</span>
-                  <span className="font-medium text-charcoal">
-                    {businessTypes.find((t) => t.value === businessInfo.type)?.label || 'Not set'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-charcoal/60">Services</span>
                   <span className="font-medium text-charcoal">{services.length} services</span>
                 </div>
-                {(optionalSetup.staff || optionalSetup.branding || optionalSetup.clientPayments || optionalSetup.notifications) && (
-                  <div className="flex justify-between">
-                    <span className="text-charcoal/60">Optional Setup</span>
-                    <span className="font-medium text-charcoal">
-                      {[
-                        optionalSetup.staff && 'Staff',
-                        optionalSetup.branding && 'Branding',
-                        optionalSetup.clientPayments && 'Payments',
-                        optionalSetup.notifications && 'Notifications',
-                      ]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1176,7 +1372,7 @@ function OnboardingContent() {
     <div className="min-h-screen bg-cream">
       {/* Header */}
       <header className="bg-white border-b border-charcoal/10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center">
               <span className="text-white font-bold text-xl">P</span>
@@ -1189,7 +1385,7 @@ function OnboardingContent() {
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex gap-8">
           {/* Sidebar - Step Indicators */}
           <div className="hidden lg:block w-64 flex-shrink-0">
@@ -1293,6 +1489,9 @@ function OnboardingContent() {
               </div>
             )}
           </div>
+
+          {/* Help Sidebar */}
+          {renderHelpSidebar()}
         </div>
       </div>
     </div>
