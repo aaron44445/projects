@@ -1,5 +1,5 @@
 'use client';
-
+// Updated signup flow v2 - Jan 2026
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
