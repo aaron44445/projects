@@ -19,6 +19,7 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { reportsRouter } from './routes/reports.js';
 import { webhooksRouter } from './routes/webhooks.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { setupProgressRouter } from './routes/setup-progress.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -82,6 +83,7 @@ export function createApp() {
   app.use('/api/v1/reports', reportsRouter);
   app.use('/api/v1/webhooks', webhooksRouter);
   app.use('/api/v1/integrations', integrationsRouter);
+  app.use('/api/v1/salon/setup-progress', setupProgressRouter);
 
   // ============================================
   // ERROR HANDLING
