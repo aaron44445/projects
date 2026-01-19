@@ -34,6 +34,9 @@ export interface Salon {
   logo?: string;
   settings?: Record<string, unknown>;
   createdAt: string;
+  businessType?: string;
+  onboardingComplete?: boolean;
+  onboardingStep?: number;
 }
 
 interface AuthTokens {
@@ -65,7 +68,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (salonName: string, email: string, password: string, phone?: string, timezone?: string) => Promise<{ requiresVerification: boolean }>;
+  register: (ownerName: string, email: string, password: string, phone: string, businessName: string, businessType: string) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
   resendVerificationEmail: (email: string) => Promise<void>;
@@ -212,28 +215,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Register function
   const register = async (
-    salonName: string,
+    ownerName: string,
     email: string,
     password: string,
-    phone?: string,
-    timezone?: string
+    phone: string,
+    businessName: string,
+    businessType: string
   ): Promise<{ requiresVerification: boolean }> => {
     const response = await api.post<RegisterResponse>('/auth/register', {
-      salonName,
+      ownerName,
       email,
       password,
       phone,
-      timezone: timezone || 'America/Chicago',
+      businessName,
+      businessType,
     });
 
     if (response.success && response.data) {
-      const { user: userData, salon: salonData, tokens, requiresVerification } = response.data;
+      const { user: userData, salon: salonData, tokens } = response.data;
 
       storeTokens(tokens);
       setUser(userData);
       setSalon(salonData);
 
-      return { requiresVerification: requiresVerification ?? true };
+      return { requiresVerification: false }; // No longer blocking on verification
     } else {
       throw new ApiError('REGISTER_FAILED', 'Registration failed. Please try again.');
     }

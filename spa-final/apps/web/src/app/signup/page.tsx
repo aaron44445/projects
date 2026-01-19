@@ -23,18 +23,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const timezones = [
-  { value: 'America/New_York', label: 'Eastern Time (ET)' },
-  { value: 'America/Chicago', label: 'Central Time (CT)' },
-  { value: 'America/Denver', label: 'Mountain Time (MT)' },
-  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-  { value: 'America/Phoenix', label: 'Arizona (no DST)' },
-  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
-  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
-  { value: 'Europe/London', label: 'London (GMT/BST)' },
-  { value: 'Europe/Paris', label: 'Central European (CET)' },
-  { value: 'Asia/Tokyo', label: 'Japan (JST)' },
-  { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
+const businessTypes = [
+  { value: 'spa', label: 'Spa' },
+  { value: 'salon', label: 'Salon' },
+  { value: 'barbershop', label: 'Barbershop' },
+  { value: 'wellness', label: 'Wellness Center' },
+  { value: 'other', label: 'Other' },
 ];
 
 export default function SignupPage() {
@@ -47,10 +41,11 @@ export default function SignupPage() {
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    salonName: '',
+    ownerName: '',
+    businessName: '',
+    businessType: 'spa',
     email: '',
     phone: '',
-    timezone: 'America/Chicago',
     password: '',
     confirmPassword: '',
   });
@@ -59,8 +54,12 @@ export default function SignupPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.salonName.trim()) {
-      newErrors.salonName = 'Salon name is required';
+    if (!formData.ownerName.trim()) {
+      newErrors.ownerName = 'Your name is required';
+    }
+
+    if (!formData.businessName.trim()) {
+      newErrors.businessName = 'Business name is required';
     }
 
     if (!formData.email.trim()) {
@@ -96,11 +95,12 @@ export default function SignupPage() {
 
     try {
       const result = await register(
-        formData.salonName,
+        formData.ownerName,
         formData.email,
         formData.password,
         formData.phone,
-        formData.timezone
+        formData.businessName,
+        formData.businessType
       );
 
       // Always show verification message - users must verify email before accessing the platform
@@ -142,6 +142,9 @@ export default function SignupPage() {
         return value.length >= 8;
       case 'confirmPassword':
         return value === formData.password && value.length > 0;
+      case 'ownerName':
+      case 'businessName':
+        return value.trim().length > 0;
       default:
         return value.trim().length > 0;
     }
@@ -244,29 +247,55 @@ export default function SignupPage() {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
-            {/* Salon Name */}
+            {/* Owner Name */}
             <div>
-              <label htmlFor="salonName" className="block text-sm font-medium text-charcoal mb-2">
-                Salon / Business Name
+              <label htmlFor="ownerName" className="block text-sm font-medium text-charcoal mb-2">
+                Your Name
               </label>
               <div className="relative">
                 <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
                 <input
                   type="text"
-                  id="salonName"
-                  value={formData.salonName}
-                  onChange={(e) => setFormData({ ...formData, salonName: e.target.value })}
-                  placeholder="Your Salon Name"
+                  id="ownerName"
+                  value={formData.ownerName}
+                  onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+                  placeholder="John Smith"
                   className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.salonName ? 'border-error' : 'border-charcoal/10'
+                    errors.ownerName ? 'border-error' : 'border-charcoal/10'
                   }`}
                 />
-                {isFieldValid('salonName') && (
+                {isFieldValid('ownerName') && (
                   <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-success" />
                 )}
               </div>
-              {errors.salonName && (
-                <p className="mt-1.5 text-sm text-error">{errors.salonName}</p>
+              {errors.ownerName && (
+                <p className="mt-1.5 text-sm text-error">{errors.ownerName}</p>
+              )}
+            </div>
+
+            {/* Business Name */}
+            <div>
+              <label htmlFor="businessName" className="block text-sm font-medium text-charcoal mb-2">
+                Business Name
+              </label>
+              <div className="relative">
+                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                <input
+                  type="text"
+                  id="businessName"
+                  value={formData.businessName}
+                  onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                  placeholder="Serenity Spa & Wellness"
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                    errors.businessName ? 'border-error' : 'border-charcoal/10'
+                  }`}
+                />
+                {isFieldValid('businessName') && (
+                  <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-success" />
+                )}
+              </div>
+              {errors.businessName && (
+                <p className="mt-1.5 text-sm text-error">{errors.businessName}</p>
               )}
             </div>
 
@@ -322,22 +351,22 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Timezone */}
+            {/* Business Type */}
             <div>
-              <label htmlFor="timezone" className="block text-sm font-medium text-charcoal mb-2">
-                Timezone
+              <label htmlFor="businessType" className="block text-sm font-medium text-charcoal mb-2">
+                Business Type
               </label>
               <div className="relative">
                 <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
                 <select
-                  id="timezone"
-                  value={formData.timezone}
-                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  id="businessType"
+                  value={formData.businessType}
+                  onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-charcoal/10 bg-white/50 text-charcoal focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all appearance-none"
                 >
-                  {timezones.map((tz) => (
-                    <option key={tz.value} value={tz.value}>
-                      {tz.label}
+                  {businessTypes.map((bt) => (
+                    <option key={bt.value} value={bt.value}>
+                      {bt.label}
                     </option>
                   ))}
                 </select>
