@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
+import { api, ApiError } from '@/lib/api';
 import {
   Building2,
   Clock,
@@ -18,11 +19,8 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  Upload,
-  Zap,
   Check,
   Lock,
-  Calendar,
   Globe,
   BarChart3,
   MessageSquare,
@@ -32,17 +30,13 @@ import {
   Shield,
 } from 'lucide-react';
 
-// Step configuration
+// Step configuration - new order per requirements
 const steps = [
-  { id: 'plan', title: 'Choose Plan', icon: Zap },
   { id: 'business', title: 'Business Info', icon: Building2 },
+  { id: 'subscription', title: 'Select Plan', icon: CreditCard },
   { id: 'hours', title: 'Working Hours', icon: Clock },
   { id: 'services', title: 'Services', icon: Scissors },
-  { id: 'staff', title: 'Team', icon: Users },
-  { id: 'branding', title: 'Branding', icon: Palette },
-  { id: 'clientPayments', title: 'Client Payments', icon: CreditCard },
-  { id: 'notifications', title: 'Notifications', icon: Bell },
-  { id: 'subscription', title: 'Start Trial', icon: Shield },
+  { id: 'optional', title: 'Optional Setup', icon: Layers },
   { id: 'complete', title: 'Complete', icon: CheckCircle2 },
 ];
 
@@ -87,14 +81,26 @@ const serviceCategories = [
   { name: 'Makeup', services: ['Full Makeup', 'Bridal Makeup', 'Lash Extensions', 'Brow Shaping'] },
 ];
 
-export default function OnboardingPage() {
+import { AuthGuard } from '@/components/AuthGuard';
+
+function OnboardingContent() {
   const router = useRouter();
   const { setActiveAddOns } = useSubscription();
   const [currentStep, setCurrentStep] = useState(0);
   const [useAI, setUseAI] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Plan selection state
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+
+  // Optional setup checklist state
+  const [optionalSetup, setOptionalSetup] = useState({
+    staff: false,
+    branding: false,
+    clientPayments: false,
+    notifications: false,
+  });
 
   // Subscription payment state
   const [subscriptionInfo, setSubscriptionInfo] = useState({
@@ -180,50 +186,175 @@ export default function OnboardingPage() {
     Array<{ name: string; duration: number; price: number; category: string }>
   >([]);
 
-  const [staff, setStaff] = useState<
-    Array<{ name: string; email: string; role: string; services: string[] }>
-  >([]);
-
-  const [branding, setBranding] = useState({
-    primaryColor: '#C7DCC8',
-    secondaryColor: '#FAF8F3',
-    logo: null as File | null,
-  });
-
-  const [payments, setPayments] = useState({
-    stripe: false,
-    square: false,
-    paypal: false,
-    cash: true,
-    depositRequired: false,
-    depositPercentage: 20,
-  });
-
-  const [notifications, setNotifications] = useState({
-    appointmentReminders: true,
-    reminderTiming: '24',
-    marketingEmails: true,
-    smsNotifications: true,
-    emailNotifications: true,
-  });
-
-  const nextStep = () => {
-    // When completing the subscription step, validate card and save the add-ons
-    if (steps[currentStep].id === 'subscription') {
-      if (!validateCard()) {
-        return; // Don't proceed if card validation fails
+  // API submission functions
+  const submitBusinessInfo = async () => {
+    try {
+      await api.post('/onboarding/business-info', {
+        name: businessInfo.name,
+        type: businessInfo.type,
+        phone: businessInfo.phone,
+        email: businessInfo.email,
+        website: businessInfo.website,
+        address: businessInfo.address,
+        city: businessInfo.city,
+        state: businessInfo.state,
+        zip: businessInfo.zip,
+        description: businessInfo.description,
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError('Failed to save business info. Please try again.');
       }
-      setActiveAddOns(selectedAddOns as AddOnId[]);
+      return false;
     }
+  };
 
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const submitWorkingHours = async () => {
+    try {
+      await api.post('/onboarding/working-hours', {
+        hours: hours.map((h) => ({
+          day: h.day,
+          open: h.open,
+          close: h.close,
+          isOpen: h.isOpen,
+        })),
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError('Failed to save working hours. Please try again.');
+      }
+      return false;
+    }
+  };
+
+  const submitServices = async () => {
+    try {
+      await api.post('/onboarding/services', {
+        services: services.map((s) => ({
+          name: s.name,
+          duration: s.duration,
+          price: s.price,
+          category: s.category,
+        })),
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError('Failed to save services. Please try again.');
+      }
+      return false;
+    }
+  };
+
+  const completeOnboarding = async () => {
+    try {
+      await api.post('/onboarding/complete', {
+        addOns: selectedAddOns,
+        optionalSetupSelected: optionalSetup,
+      });
+      return true;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError('Failed to complete onboarding. Please try again.');
+      }
+      return false;
+    }
+  };
+
+  const nextStep = async () => {
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const currentStepId = steps[currentStep].id;
+
+      // Handle step-specific submissions
+      if (currentStepId === 'business') {
+        const success = await submitBusinessInfo();
+        if (!success) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (currentStepId === 'subscription') {
+        if (!validateCard()) {
+          setIsSubmitting(false);
+          return;
+        }
+        setActiveAddOns(selectedAddOns as AddOnId[]);
+      }
+
+      if (currentStepId === 'hours') {
+        const success = await submitWorkingHours();
+        if (!success) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (currentStepId === 'services') {
+        if (services.length === 0) {
+          setSubmitError('Please add at least one service to continue.');
+          setIsSubmitting(false);
+          return;
+        }
+        const success = await submitServices();
+        if (!success) {
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      if (currentStepId === 'optional') {
+        const success = await completeOnboarding();
+        if (!success) {
+          setIsSubmitting(false);
+          return;
+        }
+        // Move to complete step
+        setCurrentStep(currentStep + 1);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const skipToComplete = async () => {
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const success = await completeOnboarding();
+      if (success) {
+        // Navigate to complete step
+        setCurrentStep(steps.findIndex((s) => s.id === 'complete'));
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      setSubmitError(null);
     }
   };
 
@@ -241,20 +372,6 @@ export default function OnboardingPage() {
     setServices(updated);
   };
 
-  const addStaffMember = () => {
-    setStaff([...staff, { name: '', email: '', role: 'staff', services: [] }]);
-  };
-
-  const removeStaffMember = (index: number) => {
-    setStaff(staff.filter((_, i) => i !== index));
-  };
-
-  const updateStaffMember = (index: number, field: string, value: string | string[]) => {
-    const updated = [...staff];
-    updated[index] = { ...updated[index], [field]: value };
-    setStaff(updated);
-  };
-
   const addQuickServices = (category: string, serviceNames: string[]) => {
     const newServices = serviceNames.map((name) => ({
       name,
@@ -267,114 +384,6 @@ export default function OnboardingPage() {
 
   const renderStep = () => {
     switch (steps[currentStep].id) {
-      case 'plan':
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Choose your plan</h2>
-              <p className="text-charcoal/60">
-                Start with the Essentials plan, then add only the features you need. Your 14-day free trial includes everything.
-              </p>
-            </div>
-
-            {/* Base Plan */}
-            <div className="bg-gradient-to-br from-sage/10 to-sage/5 rounded-2xl p-6 border-2 border-sage/30">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-charcoal">Essentials</h3>
-                    <span className="px-2 py-0.5 bg-sage text-white text-xs font-medium rounded-full">
-                      Included
-                    </span>
-                  </div>
-                  <p className="text-charcoal/60">Everything you need to get started</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-bold text-charcoal">$50</p>
-                  <p className="text-sm text-charcoal/60">/month</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  'Calendar & Scheduling',
-                  'Client Management',
-                  'Staff Management (up to 10)',
-                  'Service Management',
-                  'Basic Dashboard',
-                  'Mobile Responsive',
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-sage" />
-                    <span className="text-sm text-charcoal">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Add-ons Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-charcoal">Add-on Features</h3>
-                  <p className="text-sm text-charcoal/60">$25/month each - only pay for what you use</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-charcoal/60">Selected: {selectedAddOns.length}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {addOns.map((addOn) => {
-                  const Icon = addOn.icon;
-                  const isSelected = selectedAddOns.includes(addOn.id);
-                  return (
-                    <div
-                      key={addOn.id}
-                      onClick={() => toggleAddOn(addOn.id)}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-sage bg-sage/5'
-                          : 'border-charcoal/10 hover:border-sage/50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          isSelected ? 'bg-sage text-white' : 'bg-charcoal/5 text-charcoal/60'
-                        }`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-charcoal">{addOn.name}</h4>
-                            <span className="text-sm font-semibold text-charcoal">+$25</span>
-                          </div>
-                          <p className="text-sm text-charcoal/60">{addOn.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Total */}
-            <div className="bg-charcoal rounded-2xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/80">Your monthly total</span>
-                <div className="text-right">
-                  <p className="text-3xl font-bold">${calculateMonthlyTotal()}</p>
-                  <p className="text-sm text-white/60">/month after trial</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 pt-4 border-t border-white/20">
-                <Sparkles className="w-5 h-5 text-sage-light" />
-                <span className="text-sm">Start with a 14-day free trial - no charge today</span>
-              </div>
-            </div>
-          </div>
-        );
-
       case 'business':
         return (
           <div className="space-y-8">
@@ -539,6 +548,231 @@ export default function OnboardingPage() {
           </div>
         );
 
+      case 'subscription':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold text-charcoal mb-2">Select your plan</h2>
+              <p className="text-charcoal/60">
+                Start with the Essentials plan, then add only the features you need.
+              </p>
+            </div>
+
+            {/* Base Plan */}
+            <div className="bg-gradient-to-br from-sage/10 to-sage/5 rounded-2xl p-6 border-2 border-sage/30">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-xl font-bold text-charcoal">Essentials</h3>
+                    <span className="px-2 py-0.5 bg-sage text-white text-xs font-medium rounded-full">
+                      Included
+                    </span>
+                  </div>
+                  <p className="text-charcoal/60">Everything you need to get started</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-charcoal">$50</p>
+                  <p className="text-sm text-charcoal/60">/month</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  'Calendar & Scheduling',
+                  'Client Management',
+                  'Staff Management (up to 10)',
+                  'Service Management',
+                  'Basic Dashboard',
+                  'Mobile Responsive',
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-sage" />
+                    <span className="text-sm text-charcoal">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Add-ons Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-charcoal">Add-on Features</h3>
+                  <p className="text-sm text-charcoal/60">$25/month each - only pay for what you use</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-charcoal/60">Selected: {selectedAddOns.length}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {addOns.map((addOn) => {
+                  const Icon = addOn.icon;
+                  const isSelected = selectedAddOns.includes(addOn.id);
+                  return (
+                    <div
+                      key={addOn.id}
+                      onClick={() => toggleAddOn(addOn.id)}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-sage bg-sage/5'
+                          : 'border-charcoal/10 hover:border-sage/50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isSelected ? 'bg-sage text-white' : 'bg-charcoal/5 text-charcoal/60'
+                        }`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-charcoal">{addOn.name}</h4>
+                            <span className="text-sm font-semibold text-charcoal">+$25</span>
+                          </div>
+                          <p className="text-sm text-charcoal/60">{addOn.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="bg-charcoal rounded-2xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-white/80">Your monthly total</span>
+                <div className="text-right">
+                  <p className="text-3xl font-bold">${calculateMonthlyTotal()}</p>
+                  <p className="text-sm text-white/60">/month</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Form */}
+            <div className="space-y-6">
+              <h3 className="font-semibold text-charcoal">Payment Method</h3>
+
+              <div className="bg-white rounded-xl border border-charcoal/10 p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    Card Number <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={subscriptionInfo.cardNumber}
+                      onChange={(e) => {
+                        // Format card number with spaces
+                        const value = e.target.value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
+                        setSubscriptionInfo({ ...subscriptionInfo, cardNumber: value.slice(0, 19) });
+                        if (cardErrors.cardNumber) setCardErrors({ ...cardErrors, cardNumber: '' });
+                      }}
+                      placeholder="1234 5678 9012 3456"
+                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cardNumber ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                      <div className="w-8 h-5 bg-[#1A1F71] rounded text-white text-xs flex items-center justify-center font-bold">
+                        VISA
+                      </div>
+                      <div className="w-8 h-5 bg-gradient-to-r from-[#EB001B] to-[#F79E1B] rounded" />
+                    </div>
+                  </div>
+                  {cardErrors.cardNumber && (
+                    <p className="text-sm text-rose-500 mt-1">{cardErrors.cardNumber}</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      Expiry Date <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={subscriptionInfo.expiry}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, '');
+                        if (value.length >= 2) {
+                          value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                        }
+                        setSubscriptionInfo({ ...subscriptionInfo, expiry: value });
+                        if (cardErrors.expiry) setCardErrors({ ...cardErrors, expiry: '' });
+                      }}
+                      placeholder="MM/YY"
+                      maxLength={5}
+                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.expiry ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                    />
+                    {cardErrors.expiry && (
+                      <p className="text-sm text-rose-500 mt-1">{cardErrors.expiry}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      CVC <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={subscriptionInfo.cvc}
+                        onChange={(e) => {
+                          setSubscriptionInfo({ ...subscriptionInfo, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) });
+                          if (cardErrors.cvc) setCardErrors({ ...cardErrors, cvc: '' });
+                        }}
+                        placeholder="123"
+                        maxLength={4}
+                        className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cvc ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                      />
+                      <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/30" />
+                    </div>
+                    {cardErrors.cvc && (
+                      <p className="text-sm text-rose-500 mt-1">{cardErrors.cvc}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    Name on Card <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={subscriptionInfo.nameOnCard}
+                    onChange={(e) => {
+                      setSubscriptionInfo({ ...subscriptionInfo, nameOnCard: e.target.value });
+                      if (cardErrors.nameOnCard) setCardErrors({ ...cardErrors, nameOnCard: '' });
+                    }}
+                    placeholder="John Smith"
+                    className={`w-full px-4 py-3 rounded-lg border ${cardErrors.nameOnCard ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
+                  />
+                  {cardErrors.nameOnCard && (
+                    <p className="text-sm text-rose-500 mt-1">{cardErrors.nameOnCard}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Security Notice */}
+              <div className="flex items-start gap-3 p-4 bg-charcoal/5 rounded-xl">
+                <Shield className="w-5 h-5 text-sage mt-0.5" />
+                <div className="text-sm text-charcoal/70">
+                  <p className="font-medium text-charcoal mb-1">Secure Payment</p>
+                  <p>Your payment information is encrypted and processed securely by Stripe. We never store your full card details.</p>
+                </div>
+              </div>
+
+              {/* Terms */}
+              <p className="text-xs text-charcoal/50 text-center">
+                By continuing, you agree to our{' '}
+                <Link href="/terms" className="text-sage hover:underline">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-sage hover:underline">Privacy Policy</Link>.
+                Your subscription will be ${calculateMonthlyTotal()}/month.
+              </p>
+            </div>
+          </div>
+        );
+
       case 'hours':
         return (
           <div className="space-y-8">
@@ -623,7 +857,7 @@ export default function OnboardingPage() {
             <div>
               <h2 className="text-2xl font-bold text-charcoal mb-2">Add your services</h2>
               <p className="text-charcoal/60">
-                Create your service menu. You can always add or edit services later.
+                Create your service menu. You need at least one service to continue.
               </p>
             </div>
 
@@ -744,690 +978,118 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 'staff':
+      case 'optional':
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Add your team</h2>
+              <h2 className="text-2xl font-bold text-charcoal mb-2">Optional Setup</h2>
               <p className="text-charcoal/60">
-                Add staff members who will provide services. Skip this step if you work solo.
+                Select any additional features you&apos;d like to set up now, or skip and configure them later.
               </p>
             </div>
 
-            {/* Staff List */}
+            {/* Checklist */}
             <div className="space-y-4">
-              {staff.map((member, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl border border-charcoal/10 p-4 shadow-sm"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-charcoal/60 mb-1">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={member.name}
-                          onChange={(e) => updateStaffMember(index, 'name', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
-                          placeholder="Jane Smith"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-charcoal/60 mb-1">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          value={member.email}
-                          onChange={(e) => updateStaffMember(index, 'email', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
-                          placeholder="jane@email.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-charcoal/60 mb-1">
-                          Role
-                        </label>
-                        <select
-                          value={member.role}
-                          onChange={(e) => updateStaffMember(index, 'role', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
-                        >
-                          <option value="staff">Staff</option>
-                          <option value="manager">Manager</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeStaffMember(index)}
-                      className="p-2 text-charcoal/40 hover:text-rose-500 transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {staff.length === 0 && (
-                <div className="text-center py-12 bg-charcoal/5 rounded-xl border-2 border-dashed border-charcoal/20">
-                  <Users className="w-12 h-12 text-charcoal/30 mx-auto mb-4" />
-                  <p className="text-charcoal/60 mb-2">No team members added</p>
-                  <p className="text-sm text-charcoal/40 mb-4">
-                    Working solo? You can skip this step.
-                  </p>
-                  <button
-                    onClick={addStaffMember}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-lg hover:bg-sage-dark transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Team Member
-                  </button>
-                </div>
-              )}
-
-              {staff.length > 0 && (
-                <button
-                  onClick={addStaffMember}
-                  className="w-full py-3 border-2 border-dashed border-charcoal/20 rounded-xl text-charcoal/60 hover:border-sage hover:text-sage transition-all flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add Another Team Member
-                </button>
-              )}
-            </div>
-
-            <div className="bg-peach/20 rounded-xl p-4 border border-peach/30">
-              <p className="text-sm text-charcoal/70">
-                <strong>Note:</strong> Team members will receive an email invitation to create their
-                account and set up their personal schedule.
-              </p>
-            </div>
-          </div>
-        );
-
-      case 'branding':
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Customize your brand</h2>
-              <p className="text-charcoal/60">
-                Make your booking page match your brand identity.
-              </p>
-            </div>
-
-            {/* Logo Upload */}
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Business Logo</label>
-              <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-2xl bg-charcoal/5 border-2 border-dashed border-charcoal/20 flex items-center justify-center overflow-hidden">
-                  {branding.logo ? (
-                    <img
-                      src={URL.createObjectURL(branding.logo)}
-                      alt="Logo preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Upload className="w-8 h-8 text-charcoal/30" />
-                  )}
-                </div>
-                <div>
-                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-charcoal/20 rounded-lg cursor-pointer hover:border-sage transition-colors">
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm font-medium">Upload Logo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setBranding({ ...branding, logo: file });
-                        }
-                      }}
-                    />
-                  </label>
-                  <p className="text-xs text-charcoal/40 mt-2">PNG, JPG up to 5MB. Square works best.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Brand Colors</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-medium text-charcoal/60 mb-2">
-                    Primary Color
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={branding.primaryColor}
-                      onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={branding.primaryColor}
-                      onChange={(e) => setBranding({ ...branding, primaryColor: e.target.value })}
-                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-charcoal/60 mb-2">
-                    Background Color
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={branding.secondaryColor}
-                      onChange={(e) => setBranding({ ...branding, secondaryColor: e.target.value })}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={branding.secondaryColor}
-                      onChange={(e) =>
-                        setBranding({ ...branding, secondaryColor: e.target.value })
-                      }
-                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Preview */}
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Preview</label>
               <div
-                className="rounded-2xl p-6 border"
-                style={{ backgroundColor: branding.secondaryColor }}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
-                    style={{ backgroundColor: branding.primaryColor }}
-                  >
-                    {businessInfo.name?.[0] || 'S'}
-                  </div>
-                  <span className="font-semibold text-charcoal">
-                    {businessInfo.name || 'Your Salon'}
-                  </span>
-                </div>
-                <button
-                  className="px-6 py-2 rounded-lg text-white font-medium"
-                  style={{ backgroundColor: branding.primaryColor }}
-                >
-                  Book Now
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'clientPayments':
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Accept client payments</h2>
-              <p className="text-charcoal/60">
-                Choose how you want to accept payments from your clients.
-              </p>
-            </div>
-
-            {/* Payment Methods */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-charcoal">Payment Methods</label>
-
-              <div
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  payments.stripe ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
+                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                  optionalSetup.staff ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
                 }`}
-                onClick={() => setPayments({ ...payments, stripe: !payments.stripe })}
+                onClick={() => setOptionalSetup({ ...optionalSetup, staff: !optionalSetup.staff })}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
-                    <span className="text-[#635BFF] font-bold text-lg">S</span>
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                    optionalSetup.staff ? 'border-sage bg-sage' : 'border-charcoal/30'
+                  }`}>
+                    {optionalSetup.staff && <Check className="w-4 h-4 text-white" />}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-charcoal">Stripe</h3>
-                    <p className="text-sm text-charcoal/60">
-                      Credit/debit cards, Apple Pay, Google Pay
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={payments.stripe}
-                    onChange={() => {}}
-                    className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                  />
-                </div>
-              </div>
-
-              <div
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  payments.square ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setPayments({ ...payments, square: !payments.square })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-black/5 flex items-center justify-center">
-                    <span className="font-bold text-lg">Sq</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-charcoal">Square</h3>
-                    <p className="text-sm text-charcoal/60">In-person and online payments</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={payments.square}
-                    onChange={() => {}}
-                    className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                  />
-                </div>
-              </div>
-
-              <div
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  payments.paypal ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setPayments({ ...payments, paypal: !payments.paypal })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#003087]/10 flex items-center justify-center">
-                    <span className="text-[#003087] font-bold text-lg">P</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-charcoal">PayPal</h3>
-                    <p className="text-sm text-charcoal/60">PayPal and Venmo payments</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={payments.paypal}
-                    onChange={() => {}}
-                    className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                  />
-                </div>
-              </div>
-
-              <div
-                className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                  payments.cash ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setPayments({ ...payments, cash: !payments.cash })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-sage/10 flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-sage" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-charcoal">Cash / Pay at Location</h3>
-                    <p className="text-sm text-charcoal/60">Accept payment in person</p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={payments.cash}
-                    onChange={() => {}}
-                    className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Deposit Settings */}
-            <div className="bg-charcoal/5 rounded-xl p-6">
-              <div className="flex items-start gap-4">
-                <input
-                  type="checkbox"
-                  checked={payments.depositRequired}
-                  onChange={(e) =>
-                    setPayments({ ...payments, depositRequired: e.target.checked })
-                  }
-                  className="w-5 h-5 mt-1 rounded border-charcoal/20 text-sage focus:ring-sage"
-                />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-charcoal">Require booking deposit</h3>
-                  <p className="text-sm text-charcoal/60 mb-4">
-                    Reduce no-shows by collecting a deposit when clients book online.
-                  </p>
-                  {payments.depositRequired && (
                     <div className="flex items-center gap-3">
-                      <label className="text-sm text-charcoal/60">Deposit amount:</label>
-                      <select
-                        value={payments.depositPercentage}
-                        onChange={(e) =>
-                          setPayments({
-                            ...payments,
-                            depositPercentage: parseInt(e.target.value),
-                          })
-                        }
-                        className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
-                      >
-                        <option value={10}>10% of service</option>
-                        <option value={20}>20% of service</option>
-                        <option value={50}>50% of service</option>
-                        <option value={100}>Full amount</option>
-                      </select>
+                      <Users className="w-5 h-5 text-charcoal/60" />
+                      <h3 className="font-semibold text-charcoal">Add Staff Members</h3>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'notifications':
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Notification preferences</h2>
-              <p className="text-charcoal/60">
-                Configure how you and your clients receive updates.
-              </p>
-            </div>
-
-            {/* Client Notifications */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-charcoal">Client Notifications</h3>
-
-              <div className="bg-white rounded-xl border border-charcoal/10 p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h4 className="font-medium text-charcoal">Appointment Reminders</h4>
-                    <p className="text-sm text-charcoal/60">
-                      Automatically remind clients about upcoming appointments
+                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
+                      Invite team members and set up their schedules
                     </p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notifications.appointmentReminders}
-                      onChange={(e) =>
-                        setNotifications({
-                          ...notifications,
-                          appointmentReminders: e.target.checked,
-                        })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
                 </div>
-
-                {notifications.appointmentReminders && (
-                  <div className="flex items-center gap-3 pt-4 border-t border-charcoal/10">
-                    <label className="text-sm text-charcoal/60">Send reminder:</label>
-                    <select
-                      value={notifications.reminderTiming}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, reminderTiming: e.target.value })
-                      }
-                      className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
-                    >
-                      <option value="1">1 hour before</option>
-                      <option value="2">2 hours before</option>
-                      <option value="24">24 hours before</option>
-                      <option value="48">48 hours before</option>
-                    </select>
-                  </div>
-                )}
               </div>
 
-              <div className="bg-white rounded-xl border border-charcoal/10 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-charcoal">Marketing Emails</h4>
-                    <p className="text-sm text-charcoal/60">
-                      Send promotional emails and special offers to clients
+              <div
+                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                  optionalSetup.branding ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
+                }`}
+                onClick={() => setOptionalSetup({ ...optionalSetup, branding: !optionalSetup.branding })}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                    optionalSetup.branding ? 'border-sage bg-sage' : 'border-charcoal/30'
+                  }`}>
+                    {optionalSetup.branding && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <Palette className="w-5 h-5 text-charcoal/60" />
+                      <h3 className="font-semibold text-charcoal">Customize Branding</h3>
+                    </div>
+                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
+                      Upload logo and set brand colors
                     </p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notifications.marketingEmails}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, marketingEmails: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
+                </div>
+              </div>
+
+              <div
+                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                  optionalSetup.clientPayments ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
+                }`}
+                onClick={() => setOptionalSetup({ ...optionalSetup, clientPayments: !optionalSetup.clientPayments })}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                    optionalSetup.clientPayments ? 'border-sage bg-sage' : 'border-charcoal/30'
+                  }`}>
+                    {optionalSetup.clientPayments && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <CreditCard className="w-5 h-5 text-charcoal/60" />
+                      <h3 className="font-semibold text-charcoal">Set Up Client Payments</h3>
+                    </div>
+                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
+                      Configure payment methods and deposits
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
+                  optionalSetup.notifications ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
+                }`}
+                onClick={() => setOptionalSetup({ ...optionalSetup, notifications: !optionalSetup.notifications })}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                    optionalSetup.notifications ? 'border-sage bg-sage' : 'border-charcoal/30'
+                  }`}>
+                    {optionalSetup.notifications && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <Bell className="w-5 h-5 text-charcoal/60" />
+                      <h3 className="font-semibold text-charcoal">Configure Notifications</h3>
+                    </div>
+                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
+                      Set up reminders and communication preferences
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Notification Channels */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-charcoal">Notification Channels</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    notifications.emailNotifications
-                      ? 'border-sage bg-sage/5'
-                      : 'border-charcoal/10'
-                  }`}
-                  onClick={() =>
-                    setNotifications({
-                      ...notifications,
-                      emailNotifications: !notifications.emailNotifications,
-                    })
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={notifications.emailNotifications}
-                      onChange={() => {}}
-                      className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                    />
-                    <div>
-                      <h4 className="font-medium text-charcoal">Email</h4>
-                      <p className="text-sm text-charcoal/60">Detailed notifications via email</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    notifications.smsNotifications
-                      ? 'border-sage bg-sage/5'
-                      : 'border-charcoal/10'
-                  }`}
-                  onClick={() =>
-                    setNotifications({
-                      ...notifications,
-                      smsNotifications: !notifications.smsNotifications,
-                    })
-                  }
-                >
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={notifications.smsNotifications}
-                      onChange={() => {}}
-                      className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                    />
-                    <div>
-                      <h4 className="font-medium text-charcoal">SMS</h4>
-                      <p className="text-sm text-charcoal/60">Quick text message reminders</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'subscription':
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Start your free trial</h2>
-              <p className="text-charcoal/60">
-                Add a payment method to start your 14-day free trial. You won&apos;t be charged until your trial ends.
-              </p>
-            </div>
-
-            {/* Plan Summary */}
-            <div className="bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl p-6 border border-sage/20">
-              <h3 className="font-semibold text-charcoal mb-4">Your Plan</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-charcoal/10">
-                  <span className="text-charcoal">Essentials (base plan)</span>
-                  <span className="font-semibold text-charcoal">$50/mo</span>
-                </div>
-                {selectedAddOns.length > 0 && (
-                  <>
-                    {selectedAddOns.map((addOnId) => {
-                      const addOn = addOns.find((a) => a.id === addOnId);
-                      return (
-                        <div key={addOnId} className="flex items-center justify-between text-sm">
-                          <span className="text-charcoal/70">{addOn?.name}</span>
-                          <span className="text-charcoal">$25/mo</span>
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-                <div className="flex items-center justify-between pt-3 border-t border-charcoal/10">
-                  <span className="font-semibold text-charcoal">Monthly Total</span>
-                  <span className="text-xl font-bold text-charcoal">${calculateMonthlyTotal()}/mo</span>
-                </div>
-              </div>
-
-              <div className="mt-4 p-3 bg-sage/20 rounded-lg">
-                <div className="flex items-center gap-2 text-sage-dark">
-                  <Calendar className="w-5 h-5" />
-                  <span className="text-sm font-medium">14-day free trial - first charge on Feb 27, 2026</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Form */}
-            <div className="space-y-6">
-              <h3 className="font-semibold text-charcoal">Payment Method</h3>
-
-              <div className="bg-white rounded-xl border border-charcoal/10 p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
-                    Card Number <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={subscriptionInfo.cardNumber}
-                      onChange={(e) => {
-                        // Format card number with spaces
-                        const value = e.target.value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-                        setSubscriptionInfo({ ...subscriptionInfo, cardNumber: value.slice(0, 19) });
-                        if (cardErrors.cardNumber) setCardErrors({ ...cardErrors, cardNumber: '' });
-                      }}
-                      placeholder="1234 5678 9012 3456"
-                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cardNumber ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      <div className="w-8 h-5 bg-[#1A1F71] rounded text-white text-xs flex items-center justify-center font-bold">
-                        VISA
-                      </div>
-                      <div className="w-8 h-5 bg-gradient-to-r from-[#EB001B] to-[#F79E1B] rounded" />
-                    </div>
-                  </div>
-                  {cardErrors.cardNumber && (
-                    <p className="text-sm text-rose-500 mt-1">{cardErrors.cardNumber}</p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
-                      Expiry Date <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={subscriptionInfo.expiry}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, '');
-                        if (value.length >= 2) {
-                          value = value.slice(0, 2) + '/' + value.slice(2, 4);
-                        }
-                        setSubscriptionInfo({ ...subscriptionInfo, expiry: value });
-                        if (cardErrors.expiry) setCardErrors({ ...cardErrors, expiry: '' });
-                      }}
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      className={`w-full px-4 py-3 rounded-lg border ${cardErrors.expiry ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
-                    />
-                    {cardErrors.expiry && (
-                      <p className="text-sm text-rose-500 mt-1">{cardErrors.expiry}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
-                      CVC <span className="text-rose-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={subscriptionInfo.cvc}
-                        onChange={(e) => {
-                          setSubscriptionInfo({ ...subscriptionInfo, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) });
-                          if (cardErrors.cvc) setCardErrors({ ...cardErrors, cvc: '' });
-                        }}
-                        placeholder="123"
-                        maxLength={4}
-                        className={`w-full px-4 py-3 rounded-lg border ${cardErrors.cvc ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
-                      />
-                      <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/30" />
-                    </div>
-                    {cardErrors.cvc && (
-                      <p className="text-sm text-rose-500 mt-1">{cardErrors.cvc}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
-                    Name on Card <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={subscriptionInfo.nameOnCard}
-                    onChange={(e) => {
-                      setSubscriptionInfo({ ...subscriptionInfo, nameOnCard: e.target.value });
-                      if (cardErrors.nameOnCard) setCardErrors({ ...cardErrors, nameOnCard: '' });
-                    }}
-                    placeholder="John Smith"
-                    className={`w-full px-4 py-3 rounded-lg border ${cardErrors.nameOnCard ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20' : 'border-charcoal/20 focus:border-sage focus:ring-sage/20'} focus:ring-2 outline-none transition-all`}
-                  />
-                  {cardErrors.nameOnCard && (
-                    <p className="text-sm text-rose-500 mt-1">{cardErrors.nameOnCard}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Security Notice */}
-              <div className="flex items-start gap-3 p-4 bg-charcoal/5 rounded-xl">
-                <Shield className="w-5 h-5 text-sage mt-0.5" />
-                <div className="text-sm text-charcoal/70">
-                  <p className="font-medium text-charcoal mb-1">Secure Payment</p>
-                  <p>Your payment information is encrypted and processed securely by Stripe. We never store your full card details.</p>
-                </div>
-              </div>
-
-              {/* Terms */}
-              <p className="text-xs text-charcoal/50 text-center">
-                By starting your trial, you agree to our{' '}
-                <Link href="/terms" className="text-sage hover:underline">Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="text-sage hover:underline">Privacy Policy</Link>.
-                Your subscription will automatically renew at ${calculateMonthlyTotal()}/month after your trial ends unless you cancel.
+            <div className="bg-lavender/20 rounded-xl p-4 border border-lavender/30">
+              <p className="text-sm text-charcoal/70">
+                <strong>Note:</strong> You can always configure these settings later from your dashboard.
               </p>
             </div>
           </div>
@@ -1439,28 +1101,11 @@ export default function OnboardingPage() {
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-charcoal mb-4">Your trial has started!</h2>
+            <h2 className="text-3xl font-bold text-charcoal mb-4">You&apos;re all set!</h2>
             <p className="text-lg text-charcoal/60 mb-8 max-w-md mx-auto">
               Your {businessInfo.name || 'business'} is ready to start accepting bookings. Welcome
               to Peacase!
             </p>
-
-            {/* Trial Info */}
-            <div className="bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl p-6 max-w-lg mx-auto mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Calendar className="w-6 h-6 text-sage" />
-                <div>
-                  <p className="font-semibold text-charcoal">14-Day Free Trial Active</p>
-                  <p className="text-sm text-charcoal/60">Your trial ends on Feb 27, 2026</p>
-                </div>
-              </div>
-              <div className="bg-white/60 rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-charcoal/70">Plan after trial</span>
-                  <span className="font-bold text-charcoal">${calculateMonthlyTotal()}/month</span>
-                </div>
-              </div>
-            </div>
 
             {/* Summary */}
             <div className="bg-charcoal/5 rounded-2xl p-6 max-w-lg mx-auto text-left mb-8">
@@ -1473,6 +1118,10 @@ export default function OnboardingPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-charcoal/60">Monthly Cost</span>
+                  <span className="font-medium text-charcoal">${calculateMonthlyTotal()}/month</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-charcoal/60">Business Type</span>
                   <span className="font-medium text-charcoal">
                     {businessTypes.find((t) => t.value === businessInfo.type)?.label || 'Not set'}
@@ -1482,25 +1131,21 @@ export default function OnboardingPage() {
                   <span className="text-charcoal/60">Services</span>
                   <span className="font-medium text-charcoal">{services.length} services</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal/60">Team Members</span>
-                  <span className="font-medium text-charcoal">
-                    {staff.length === 0 ? 'Solo' : `${staff.length} members`}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-charcoal/60">Payment Methods</span>
-                  <span className="font-medium text-charcoal">
-                    {[
-                      payments.stripe && 'Stripe',
-                      payments.square && 'Square',
-                      payments.paypal && 'PayPal',
-                      payments.cash && 'Cash',
-                    ]
-                      .filter(Boolean)
-                      .join(', ') || 'None'}
-                  </span>
-                </div>
+                {(optionalSetup.staff || optionalSetup.branding || optionalSetup.clientPayments || optionalSetup.notifications) && (
+                  <div className="flex justify-between">
+                    <span className="text-charcoal/60">Optional Setup</span>
+                    <span className="font-medium text-charcoal">
+                      {[
+                        optionalSetup.staff && 'Staff',
+                        optionalSetup.branding && 'Branding',
+                        optionalSetup.clientPayments && 'Payments',
+                        optionalSetup.notifications && 'Notifications',
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1596,6 +1241,13 @@ export default function OnboardingPage() {
             {/* Step Content */}
             <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-8">
               {renderStep()}
+
+              {/* Error Message */}
+              {submitError && (
+                <div className="mt-6 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                  <p className="text-sm text-rose-600">{submitError}</p>
+                </div>
+              )}
             </div>
 
             {/* Navigation Buttons */}
@@ -1603,9 +1255,9 @@ export default function OnboardingPage() {
               <div className="flex justify-between mt-6">
                 <button
                   onClick={prevStep}
-                  disabled={currentStep === 0}
+                  disabled={currentStep === 0 || isSubmitting}
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
-                    currentStep === 0
+                    currentStep === 0 || isSubmitting
                       ? 'text-charcoal/30 cursor-not-allowed'
                       : 'text-charcoal hover:bg-charcoal/5'
                   }`}
@@ -1614,22 +1266,43 @@ export default function OnboardingPage() {
                   Back
                 </button>
 
-                <button
-                  onClick={nextStep}
-                  className="flex items-center gap-2 px-8 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all shadow-lg hover:shadow-xl"
-                >
-                  {steps[currentStep].id === 'subscription'
-                    ? 'Start Free Trial'
-                    : currentStep === steps.length - 2
-                      ? 'Complete Setup'
-                      : 'Continue'}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
+                <div className="flex gap-3">
+                  {steps[currentStep].id === 'optional' && (
+                    <button
+                      onClick={skipToComplete}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-2 px-6 py-3 bg-white text-charcoal border border-charcoal/20 rounded-xl font-medium hover:border-sage transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? 'Saving...' : 'Skip All & Go to Dashboard'}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={nextStep}
+                    disabled={isSubmitting}
+                    className="flex items-center gap-2 px-8 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                  >
+                    {isSubmitting
+                      ? 'Saving...'
+                      : steps[currentStep].id === 'optional'
+                        ? 'Set Up Selected'
+                        : 'Continue'}
+                    {!isSubmitting && <ArrowRight className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <AuthGuard>
+      <OnboardingContent />
+    </AuthGuard>
   );
 }
