@@ -124,16 +124,27 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
     // Check if email already exists
     const existingUser = await prisma.user.findFirst({
       where: { email: data.email },
+      include: { salon: true },
     });
 
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'EMAIL_EXISTS',
-          message: 'An account with this email already exists',
-        },
-      });
+      // If the user exists but hasn't completed onboarding, delete and allow re-registration
+      if (existingUser.salon && !existingUser.salon.onboardingComplete) {
+        // Delete the incomplete account (cascade will delete user, tokens, etc.)
+        await prisma.salon.delete({
+          where: { id: existingUser.salonId },
+        });
+        console.log(`Deleted incomplete account for ${data.email} to allow re-registration`);
+      } else {
+        // Account exists and onboarding is complete - don't allow re-registration
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'EMAIL_EXISTS',
+            message: 'An account with this email already exists',
+          },
+        });
+      }
     }
 
     // Hash password
