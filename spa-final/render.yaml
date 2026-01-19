@@ -6,7 +6,7 @@ services:
     plan: free
     branch: main
     rootDir: spa-final
-    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @peacase/database run db:fix-schema && pnpm --filter @peacase/database exec prisma generate && pnpm --filter @peacase/database exec prisma db push && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
+    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @peacase/database exec prisma generate && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
     startCommand: node apps/api/dist/index.js
     healthCheckPath: /health
     envVars:
