@@ -20,6 +20,10 @@ import {
   BarChart3,
   Loader2,
   AlertCircle,
+  Copy,
+  Calendar,
+  ExternalLink,
+  Code,
 } from 'lucide-react';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -85,6 +89,15 @@ function SettingsContent() {
     primaryColor: '#C7DCC8',
     backgroundColor: '#FAF8F3',
   });
+
+  // Embed widget customization state
+  const [embedSettings, setEmbedSettings] = useState({
+    buttonText: 'Book Now',
+    buttonColor: '#7C9A82',
+    position: 'inline' as 'inline' | 'floating',
+  });
+  const [embedCopied, setEmbedCopied] = useState(false);
+  const [activeInstallTab, setActiveInstallTab] = useState('wordpress');
 
   // Update form when salon data loads
   useEffect(() => {
@@ -756,39 +769,209 @@ function SettingsContent() {
             </div>
           );
         }
+
+        const embedCode = `<script src="https://peacase.com/book.js" data-salon="${salon?.slug || 'your-salon'}"${embedSettings.buttonText !== 'Book Now' ? ` data-text="${embedSettings.buttonText}"` : ''}${embedSettings.buttonColor !== '#7C9A82' ? ` data-color="${embedSettings.buttonColor}"` : ''}${embedSettings.position !== 'inline' ? ` data-position="${embedSettings.position}"` : ''}></script>`;
+
+        const copyEmbedCode = () => {
+          navigator.clipboard.writeText(embedCode);
+          setEmbedCopied(true);
+          setTimeout(() => setEmbedCopied(false), 2000);
+        };
+
+        const installInstructions: Record<string, { title: string; steps: string[] }> = {
+          wordpress: {
+            title: 'WordPress',
+            steps: [
+              'Go to Appearance → Widgets in your WordPress admin',
+              'Add a "Custom HTML" widget to your desired location',
+              'Paste the embed code above into the widget',
+              'Click Save to publish the booking button',
+            ],
+          },
+          squarespace: {
+            title: 'Squarespace',
+            steps: [
+              'Edit the page where you want the booking button',
+              'Click Add Section → choose "Code" block',
+              'Paste the embed code above',
+              'Click Save to publish',
+            ],
+          },
+          wix: {
+            title: 'Wix',
+            steps: [
+              'In the Wix Editor, click Add → Embed → Custom HTML',
+              'Click "Enter Code" and paste the embed code',
+              'Adjust the size and position as needed',
+              'Click Apply, then Publish your site',
+            ],
+          },
+          shopify: {
+            title: 'Shopify',
+            steps: [
+              'Go to Online Store → Themes → Edit',
+              'Add a custom Liquid section or use theme.liquid',
+              'Paste the embed code before the closing </body> tag',
+              'Save and preview your changes',
+            ],
+          },
+          html: {
+            title: 'Generic HTML',
+            steps: [
+              'Open your website\'s HTML file in a text editor',
+              'Paste the embed code before the </body> tag',
+              'Save the file and upload to your web server',
+              'The booking button will appear where you placed it',
+            ],
+          },
+        };
+
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking</h2>
+              <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking Widget</h2>
               <p className="text-charcoal/60">
-                Configure your public booking page settings.
+                Add a booking button to your website with one line of code.
               </p>
             </div>
 
-            {/* Booking Page URL */}
-            <div className="p-6 bg-sage/10 rounded-xl border border-sage/20">
-              <h3 className="font-semibold text-charcoal mb-2">Your Booking Page</h3>
-              <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  value={salon ? `https://book.peacase.com/${salon.slug}` : 'https://book.peacase.com/your-salon'}
-                  readOnly
-                  className="flex-1 px-4 py-3 rounded-xl bg-white border border-charcoal/10 text-charcoal/70"
-                />
+            {/* Embed Code Section */}
+            <div className="p-6 bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl border border-sage/20">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-sage/20 flex items-center justify-center flex-shrink-0">
+                  <Code className="w-5 h-5 text-sage" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-charcoal">Your Embed Code</h3>
+                  <p className="text-sm text-charcoal/60">Copy and paste this into your website</p>
+                </div>
+              </div>
+              <div className="relative">
+                <pre className="bg-charcoal text-cream p-4 rounded-xl text-sm overflow-x-auto font-mono whitespace-pre-wrap break-all">
+                  {embedCode}
+                </pre>
                 <button
-                  onClick={() => {
-                    if (salon) {
-                      navigator.clipboard.writeText(`https://book.peacase.com/${salon.slug}`);
-                    }
-                  }}
-                  className="px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
+                  onClick={copyEmbedCode}
+                  className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors"
                 >
-                  Copy Link
+                  {embedCopied ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </>
+                  )}
                 </button>
               </div>
             </div>
 
+            {/* Live Preview */}
+            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4">Live Preview</h3>
+              <div className="flex items-center justify-center py-8 bg-charcoal/5 rounded-xl">
+                <button
+                  style={{ backgroundColor: embedSettings.buttonColor }}
+                  className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                >
+                  <Calendar className="w-5 h-5" />
+                  {embedSettings.buttonText}
+                </button>
+              </div>
+            </div>
+
+            {/* Customization Options */}
+            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4">Customize Your Button</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Button Text</label>
+                  <input
+                    type="text"
+                    value={embedSettings.buttonText}
+                    onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonText: e.target.value }))}
+                    placeholder="Book Now"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Button Color</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={embedSettings.buttonColor}
+                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
+                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={embedSettings.buttonColor}
+                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
+                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Position</label>
+                  <select
+                    value={embedSettings.position}
+                    onChange={(e) => setEmbedSettings(prev => ({ ...prev, position: e.target.value as 'inline' | 'floating' }))}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none"
+                  >
+                    <option value="inline">Inline (where you place it)</option>
+                    <option value="floating">Floating (bottom-right corner)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Installation Instructions */}
+            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4">Installation Instructions</h3>
+
+              {/* Platform Tabs */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {Object.entries(installInstructions).map(([key, { title }]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveInstallTab(key)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      activeInstallTab === key
+                        ? 'bg-sage text-white'
+                        : 'bg-charcoal/5 text-charcoal/70 hover:bg-charcoal/10'
+                    }`}
+                  >
+                    {title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Instructions */}
+              <div className="space-y-3">
+                {installInstructions[activeInstallTab]?.steps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-sage/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-bold text-sage">{index + 1}</span>
+                    </div>
+                    <p className="text-charcoal/70">{step}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-lavender/20 rounded-xl border border-lavender/30">
+                <p className="text-sm text-charcoal/70">
+                  <strong>Need help?</strong> Contact our support team and we&apos;ll help you install the booking widget on your website.
+                </p>
+              </div>
+            </div>
+
+            {/* Booking Settings */}
             <div className="space-y-4">
+              <h3 className="font-semibold text-charcoal">Booking Settings</h3>
+
               <div className="p-4 bg-white rounded-xl border border-charcoal/10">
                 <div className="flex items-center justify-between mb-4">
                   <div>

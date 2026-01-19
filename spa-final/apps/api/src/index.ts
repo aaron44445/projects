@@ -21,6 +21,7 @@ import { servicesRouter } from './routes/services.js';
 import { appointmentsRouter } from './routes/appointments.js';
 import { usersRouter } from './routes/users.js';
 import { staffRouter } from './routes/staff.js';
+import { publicRouter } from './routes/public.js';
 import { reviewsRouter } from './routes/reviews.js';
 import { giftCardsRouter } from './routes/gift-cards.js';
 import { packagesRouter } from './routes/packages.js';
@@ -153,6 +154,7 @@ app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/webhooks', webhooksRouter);
 app.use('/api/v1/uploads', uploadsRouter);
 app.use('/api/v1/onboarding', onboardingRouter);
+app.use('/api/v1/public', publicRouter);
 
 // ============================================
 // ERROR HANDLING
