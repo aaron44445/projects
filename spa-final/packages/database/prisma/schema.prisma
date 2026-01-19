@@ -36,6 +36,9 @@ model Salon {
   stripeAccountId  String?  @map("stripe_account_id")
   stripeCustomerId String?  @map("stripe_customer_id")
   isActive         Boolean  @default(true) @map("is_active")
+  businessType        String?   @map("business_type")
+  onboardingComplete  Boolean   @default(false) @map("onboarding_complete")
+  onboardingStep      Int       @default(1) @map("onboarding_step")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
