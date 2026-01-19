@@ -26,6 +26,7 @@ import {
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { ServiceSetupModal, HoursSetupModal } from '@/components/setup';
 import { useDashboard, useSetupProgress } from '@/hooks';
 
 const statusColors: Record<string, string> = {
@@ -87,7 +88,7 @@ function DashboardContent() {
   const [showServiceSetup, setShowServiceSetup] = useState(false);
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { stats, todayAppointments, loading, error, refetch } = useDashboard();
-  const { progress, completedCount, totalSteps, percentComplete } = useSetupProgress();
+  const { progress, completedCount, totalSteps, percentComplete, markComplete } = useSetupProgress();
 
   // Format time from ISO string
   const formatTime = (isoString: string) => {
@@ -564,6 +565,17 @@ function DashboardContent() {
           </div>
         </div>
       </main>
+
+      <HoursSetupModal
+        isOpen={showHoursSetup}
+        onClose={() => setShowHoursSetup(false)}
+        onComplete={() => markComplete('businessHours')}
+      />
+      <ServiceSetupModal
+        isOpen={showServiceSetup}
+        onClose={() => setShowServiceSetup(false)}
+        onComplete={() => markComplete('firstService')}
+      />
     </div>
   );
 }
