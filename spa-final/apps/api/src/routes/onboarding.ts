@@ -1,15 +1,25 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { prisma } from '@peacase/database';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = Router();
+
+// Async error wrapper to properly catch errors in async route handlers
+function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+
+// Time format validation regex (HH:MM format)
+const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 // All routes require authentication
 router.use(authenticate);
 
 // GET /api/v1/onboarding/status
-router.get('/status', async (req: Request, res: Response) => {
+router.get('/status', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: {
@@ -27,11 +37,18 @@ router.get('/status', async (req: Request, res: Response) => {
     },
   });
 
+  if (!salon) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'SALON_NOT_FOUND', message: 'Salon not found' },
+    });
+  }
+
   res.json({
     success: true,
     data: salon,
   });
-});
+}));
 
 // POST /api/v1/onboarding/business-info
 const businessInfoSchema = z.object({
@@ -44,7 +61,7 @@ const businessInfoSchema = z.object({
   website: z.string().url().optional().or(z.literal('')),
 });
 
-router.post('/business-info', async (req: Request, res: Response) => {
+router.post('/business-info', authorize('admin'), asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = businessInfoSchema.parse(req.body);
 
@@ -71,19 +88,19 @@ router.post('/business-info', async (req: Request, res: Response) => {
     }
     throw error;
   }
-});
+}));
 
 // POST /api/v1/onboarding/working-hours
 const workingHoursSchema = z.object({
   hours: z.array(z.object({
     day: z.string(),
     isOpen: z.boolean(),
-    open: z.string(),
-    close: z.string(),
+    open: z.string().regex(timeFormatRegex, 'Open time must be in HH:MM format'),
+    close: z.string().regex(timeFormatRegex, 'Close time must be in HH:MM format'),
   })),
 });
 
-router.post('/working-hours', async (req: Request, res: Response) => {
+router.post('/working-hours', authorize('admin'), asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = workingHoursSchema.parse(req.body);
 
@@ -99,27 +116,25 @@ router.post('/working-hours', async (req: Request, res: Response) => {
       });
     }
 
-    // Delete existing availability and create new
-    await prisma.staffAvailability.deleteMany({
-      where: { staffId: adminUser.id },
-    });
-
     const dayMap: Record<string, number> = {
       'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
       'Thursday': 4, 'Friday': 5, 'Saturday': 6,
     };
 
-    for (const hour of data.hours) {
-      await prisma.staffAvailability.create({
-        data: {
-          staffId: adminUser.id,
-          dayOfWeek: dayMap[hour.day] ?? 0,
-          startTime: hour.open,
-          endTime: hour.close,
-          isAvailable: hour.isOpen,
-        },
-      });
-    }
+    // Delete existing availability and create new using createMany
+    await prisma.staffAvailability.deleteMany({
+      where: { staffId: adminUser.id },
+    });
+
+    await prisma.staffAvailability.createMany({
+      data: data.hours.map(hour => ({
+        staffId: adminUser.id,
+        dayOfWeek: dayMap[hour.day] ?? 0,
+        startTime: hour.open,
+        endTime: hour.close,
+        isAvailable: hour.isOpen,
+      })),
+    });
 
     await prisma.salon.update({
       where: { id: req.user!.salonId },
@@ -136,7 +151,7 @@ router.post('/working-hours', async (req: Request, res: Response) => {
     }
     throw error;
   }
-});
+}));
 
 // POST /api/v1/onboarding/services
 const servicesSchema = z.object({
@@ -148,21 +163,19 @@ const servicesSchema = z.object({
   })).min(1),
 });
 
-router.post('/services', async (req: Request, res: Response) => {
+router.post('/services', authorize('admin'), asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = servicesSchema.parse(req.body);
 
-    // Create services
-    for (const service of data.services) {
-      await prisma.service.create({
-        data: {
-          salonId: req.user!.salonId,
-          name: service.name,
-          durationMinutes: service.duration,
-          price: service.price,
-        },
-      });
-    }
+    // Create services using createMany to avoid N+1 queries
+    await prisma.service.createMany({
+      data: data.services.map(service => ({
+        salonId: req.user!.salonId,
+        name: service.name,
+        durationMinutes: service.duration,
+        price: service.price,
+      })),
+    });
 
     await prisma.salon.update({
       where: { id: req.user!.salonId },
@@ -179,10 +192,10 @@ router.post('/services', async (req: Request, res: Response) => {
     }
     throw error;
   }
-});
+}));
 
 // POST /api/v1/onboarding/complete
-router.post('/complete', async (req: Request, res: Response) => {
+router.post('/complete', authorize('admin'), asyncHandler(async (req: Request, res: Response) => {
   await prisma.salon.update({
     where: { id: req.user!.salonId },
     data: {
@@ -195,6 +208,6 @@ router.post('/complete', async (req: Request, res: Response) => {
     success: true,
     data: { message: 'Onboarding complete', onboardingComplete: true },
   });
-});
+}));
 
 export { router as onboardingRouter };
