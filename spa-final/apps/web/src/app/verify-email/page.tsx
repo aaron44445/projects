@@ -101,13 +101,13 @@ function VerifyEmailContent() {
               Email verified!
             </h1>
             <p className="text-charcoal/60 mb-8">
-              Your email has been successfully verified. You can now access all features of your Peacase account.
+              Your email has been successfully verified. Let's finish setting up your business.
             </p>
             <Link
-              href="/dashboard"
+              href="/onboarding"
               className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-lg font-semibold hover:bg-sage-dark transition-all"
             >
-              Go to Dashboard
+              Continue Setup
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

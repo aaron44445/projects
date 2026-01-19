@@ -134,10 +134,6 @@ export default function SignupPage() {
     }
   };
 
-  const handleContinueToDashboard = () => {
-    router.push('/dashboard');
-  };
-
   const isFieldValid = (field: string) => {
     const value = formData[field as keyof typeof formData];
     if (!value) return false;
@@ -222,16 +218,8 @@ export default function SignupPage() {
                   </div>
                 )}
 
-                <button
-                  onClick={handleContinueToDashboard}
-                  className="w-full py-3 rounded-lg bg-sage text-white font-semibold hover:bg-sage-dark transition-all flex items-center justify-center gap-2"
-                >
-                  Continue to Dashboard
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-
                 <p className="text-xs text-charcoal/50 mt-4">
-                  You can continue using Peacase, but some features may be limited until you verify your email.
+                  Please verify your email to continue setting up your account.
                 </p>
               </div>
             </div>
