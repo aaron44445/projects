@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npx turbo run build --filter=@peacase/web",
+  "installCommand": "corepack enable && pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm turbo run build --filter=@peacase/web",
   "outputDirectory": "apps/web/.next",
   "ignoreCommand": "exit 0"
 }

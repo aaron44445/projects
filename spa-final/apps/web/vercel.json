@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd ../.. && npm install --legacy-peer-deps && npx turbo run build --filter=@peacase/web",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "cd ../.. && corepack enable && pnpm install --no-frozen-lockfile && pnpm turbo run build --filter=@peacase/web",
+  "devCommand": "pnpm dev",
+  "installCommand": "corepack enable && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
