@@ -71,6 +71,7 @@ interface AuthContextType {
   register: (ownerName: string, email: string, password: string, phone: string, businessName: string, businessType: string) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
+  refreshSalonData: () => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
 }
 
@@ -249,6 +250,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post('/auth/resend-verification', { email });
   };
 
+  // Refresh salon data (used after onboarding completion)
+  const refreshSalonData = useCallback(async (): Promise<void> => {
+    try {
+      const salonResponse = await api.get<Salon>('/salon');
+      if (salonResponse.success && salonResponse.data) {
+        setSalon(salonResponse.data);
+      }
+    } catch (error) {
+      console.error('Failed to refresh salon data:', error);
+    }
+  }, []);
+
   // Logout function
   const logout = async (): Promise<void> => {
     try {
@@ -271,6 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     refreshAuth,
+    refreshSalonData,
     resendVerificationEmail,
   };
 

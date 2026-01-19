@@ -226,7 +226,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 
 function OnboardingContent() {
   const router = useRouter();
-  const { salon, user } = useAuth();
+  const { salon, user, refreshSalonData } = useAuth();
   const { setActiveAddOns } = useSubscription();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -431,6 +431,8 @@ function OnboardingContent() {
         addOns: selectedAddOns,
         optionalSetupSelected: optionalSetup,
       });
+      // Refresh salon data so OnboardingGuard sees onboardingComplete: true
+      await refreshSalonData();
       return true;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -504,6 +506,20 @@ function OnboardingContent() {
           setIsSubmitting(false);
           return;
         }
+        // If user selected items to set up, redirect to the settings page for the first one
+        const selectedItems = Object.entries(optionalSetup).filter(([, v]) => v).map(([k]) => k);
+        if (selectedItems.length > 0) {
+          const settingsRoutes: Record<string, string> = {
+            staff: '/staff',
+            branding: '/settings?tab=branding',
+            clientPayments: '/settings?tab=payments',
+            notifications: '/settings?tab=notifications',
+          };
+          const firstSelected = selectedItems[0];
+          router.push(settingsRoutes[firstSelected] || '/dashboard');
+          return;
+        }
+        // No items selected - show complete screen
         setCurrentStep(currentStep + 1);
         setIsSubmitting(false);
         return;
@@ -1198,9 +1214,9 @@ function OnboardingContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">Optional Setup</h2>
+              <h2 className="text-2xl font-bold text-charcoal mb-2">What would you like to set up first?</h2>
               <p className="text-charcoal/60">
-                Select any additional features you&apos;d like to set up now, or skip and configure them later.
+                Select an item to configure it in settings, or skip to go straight to your dashboard.
               </p>
             </div>
 
@@ -1481,7 +1497,9 @@ function OnboardingContent() {
                     {isSubmitting
                       ? 'Saving...'
                       : steps[currentStep].id === 'optional'
-                        ? 'Set Up Selected'
+                        ? Object.values(optionalSetup).some(v => v)
+                          ? 'Continue to Settings'
+                          : 'Go to Dashboard'
                         : 'Continue'}
                     {!isSubmitting && <ArrowRight className="w-5 h-5" />}
                   </button>
