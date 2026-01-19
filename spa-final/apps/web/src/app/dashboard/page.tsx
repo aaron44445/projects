@@ -26,6 +26,7 @@ import {
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { useDashboard } from '@/hooks';
 
 const statusColors: Record<string, string> = {
@@ -517,7 +518,9 @@ function DashboardContent() {
 export default function DashboardPage() {
   return (
     <AuthGuard>
-      <DashboardContent />
+      <OnboardingGuard>
+        <DashboardContent />
+      </OnboardingGuard>
     </AuthGuard>
   );
 }
