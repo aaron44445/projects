@@ -28,6 +28,7 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { reportsRouter } from './routes/reports.js';
 import { webhooksRouter } from './routes/webhooks.js';
 import { uploadsRouter } from './routes/uploads.js';
+import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { generalRateLimit } from './middleware/rateLimit.js';
@@ -149,6 +150,7 @@ app.use('/api/v1/dashboard', dashboardRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/webhooks', webhooksRouter);
 app.use('/api/v1/uploads', uploadsRouter);
+app.use('/api/v1/onboarding', onboardingRouter);
 
 // ============================================
 // ERROR HANDLING
