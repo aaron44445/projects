@@ -87,7 +87,8 @@ export function useServices(): UseServicesReturn {
       const response = await api.get<Service[]>('/services');
 
       if (response.success && response.data) {
-        setServices(response.data);
+        // Ensure data is an array to prevent .filter() errors
+        setServices(Array.isArray(response.data) ? response.data : []);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch services';
@@ -105,7 +106,8 @@ export function useServices(): UseServicesReturn {
       const response = await api.get<ServiceCategory[]>('/services/categories');
 
       if (response.success && response.data) {
-        setCategories(response.data);
+        // Ensure data is an array to prevent .filter() errors
+        setCategories(Array.isArray(response.data) ? response.data : []);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch categories';

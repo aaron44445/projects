@@ -506,17 +506,11 @@ function OnboardingContent() {
           setIsSubmitting(false);
           return;
         }
-        // If user selected items to set up, redirect to the settings page for the first one
+        // If user selected items to set up, redirect to the dedicated setup flow
         const selectedItems = Object.entries(optionalSetup).filter(([, v]) => v).map(([k]) => k);
         if (selectedItems.length > 0) {
-          const settingsRoutes: Record<string, string> = {
-            staff: '/staff',
-            branding: '/settings?tab=branding',
-            clientPayments: '/settings?tab=payments',
-            notifications: '/settings?tab=notifications',
-          };
-          const firstSelected = selectedItems[0];
-          router.push(settingsRoutes[firstSelected] || '/dashboard');
+          // Redirect to setup flow with selected items as URL params
+          router.push(`/setup?items=${selectedItems.join(',')}`);
           return;
         }
         // No items selected - show complete screen

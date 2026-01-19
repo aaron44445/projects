@@ -20,9 +20,10 @@ import {
 } from 'lucide-react';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useReviews, Review } from '@/hooks';
 
-export default function ReviewsPage() {
+function ReviewsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [replyModal, setReplyModal] = useState<Review | null>(null);
@@ -450,5 +451,13 @@ export default function ReviewsPage() {
         <div className="fixed inset-0 z-[5]" onClick={() => setActionMenu(null)} />
       )}
     </div>
+  );
+}
+
+export default function ReviewsPage() {
+  return (
+    <AuthGuard>
+      <ReviewsContent />
+    </AuthGuard>
   );
 }

@@ -24,6 +24,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useStaff, useServices, type StaffMember, type CreateStaffInput, type UpdateStaffInput } from '@/hooks';
 
 const statusColors: Record<string, string> = {
@@ -38,7 +39,7 @@ const roleLabels: Record<string, string> = {
   staff: 'Staff',
 };
 
-export default function StaffPage() {
+function StaffContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
@@ -982,5 +983,13 @@ export default function StaffPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StaffPage() {
+  return (
+    <AuthGuard>
+      <StaffContent />
+    </AuthGuard>
   );
 }

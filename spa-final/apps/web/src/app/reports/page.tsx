@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useReports } from '@/hooks/useReports';
 
 // Date range presets
@@ -66,7 +67,7 @@ const statusColors: Record<string, string> = {
 // Color palette for service categories
 const categoryColors = ['bg-sage', 'bg-lavender', 'bg-peach', 'bg-mint', 'bg-rose'];
 
-export default function ReportsPage() {
+function ReportsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState('This Month');
   const [groupBy, setGroupBy] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
@@ -733,5 +734,13 @@ export default function ReportsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <AuthGuard>
+      <ReportsContent />
+    </AuthGuard>
   );
 }

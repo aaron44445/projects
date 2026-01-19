@@ -20,6 +20,7 @@ import { clientsRouter } from './routes/clients.js';
 import { servicesRouter } from './routes/services.js';
 import { appointmentsRouter } from './routes/appointments.js';
 import { usersRouter } from './routes/users.js';
+import { staffRouter } from './routes/staff.js';
 import { reviewsRouter } from './routes/reviews.js';
 import { giftCardsRouter } from './routes/gift-cards.js';
 import { packagesRouter } from './routes/packages.js';
@@ -139,6 +140,7 @@ app.post('/api/v1/debug/auth', async (req, res) => {
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/salon', salonRouter);
 app.use('/api/v1/users', usersRouter);
+app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/clients', clientsRouter);
 app.use('/api/v1/services', servicesRouter);
 app.use('/api/v1/appointments', appointmentsRouter);

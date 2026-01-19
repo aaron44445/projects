@@ -25,11 +25,12 @@ import {
 } from 'lucide-react';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useGiftCards, GiftCard, useSalon } from '@/hooks';
 
 const presetAmounts = [25, 50, 75, 100, 150, 200];
 
-export default function GiftCardsPage() {
+function GiftCardsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
@@ -1029,5 +1030,13 @@ export default function GiftCardsPage() {
         <div className="fixed inset-0 z-[5]" onClick={() => setActionMenu(null)} />
       )}
     </div>
+  );
+}
+
+export default function GiftCardsPage() {
+  return (
+    <AuthGuard>
+      <GiftCardsContent />
+    </AuthGuard>
   );
 }

@@ -107,9 +107,17 @@ export function useDashboard() {
         api.get<RecentAppointment[]>('/dashboard/recent-activity'),
       ]);
       if (statsRes.data) setStats(statsRes.data);
-      if (todayRes.data) setTodayAppointments(todayRes.data);
+      // Ensure arrays to prevent .filter()/.map() errors
+      if (todayRes.data) {
+        const todayData = todayRes.data as { appointments?: TodayAppointment[] } | TodayAppointment[];
+        const appointments = Array.isArray(todayData)
+          ? todayData
+          : (todayData.appointments && Array.isArray(todayData.appointments) ? todayData.appointments : []);
+        setTodayAppointments(appointments);
+      }
       if (recentRes.data) {
-        setRecentActivity(transformToActivity(recentRes.data));
+        const recentData = Array.isArray(recentRes.data) ? recentRes.data : [];
+        setRecentActivity(transformToActivity(recentData));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch dashboard');

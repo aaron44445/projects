@@ -25,6 +25,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import {
   useAppointments,
   useStaff,
@@ -334,7 +335,7 @@ function WeekView({
   );
 }
 
-export default function CalendarPage() {
+function CalendarContent() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
@@ -1361,5 +1362,13 @@ export default function CalendarPage() {
         <div className="fixed inset-0 z-10" onClick={() => setAppointmentMenuOpen(null)} />
       )}
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <AuthGuard>
+      <CalendarContent />
+    </AuthGuard>
   );
 }

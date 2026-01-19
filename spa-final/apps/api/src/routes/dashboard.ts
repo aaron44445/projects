@@ -216,4 +216,43 @@ router.get('/today', authenticate, async (req: Request, res: Response) => {
   });
 });
 
+// ============================================
+// GET /api/v1/dashboard/recent-activity
+// Recent activity feed (bookings, payments, cancellations)
+// ============================================
+router.get('/recent-activity', authenticate, async (req: Request, res: Response) => {
+  const salonId = req.user!.salonId;
+
+  // Get recent appointments (last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const recentAppointments = await prisma.appointment.findMany({
+    where: {
+      salonId,
+      createdAt: { gte: sevenDaysAgo },
+    },
+    include: {
+      client: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+      service: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+  });
+
+  res.json({
+    success: true,
+    data: recentAppointments,
+  });
+});
+
 export { router as dashboardRouter };

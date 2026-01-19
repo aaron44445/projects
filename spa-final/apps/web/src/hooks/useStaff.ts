@@ -93,7 +93,8 @@ export function useStaff(): UseStaffReturn {
       const response = await api.get<StaffMember[]>('/staff');
 
       if (response.success && response.data) {
-        setStaff(response.data);
+        // Ensure data is an array to prevent .filter() errors
+        setStaff(Array.isArray(response.data) ? response.data : []);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch staff';

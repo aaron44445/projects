@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
 
 const services = [
@@ -39,7 +40,7 @@ const services = [
   'Facial Treatment',
 ];
 
-export default function PackagesPage() {
+function PackagesContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('packages');
   const [showModal, setShowModal] = useState<'package' | 'membership' | null>(null);
@@ -1100,5 +1101,13 @@ export default function PackagesPage() {
         <div className="fixed inset-0 z-[5]" onClick={() => setActionMenu(null)} />
       )}
     </div>
+  );
+}
+
+export default function PackagesPage() {
+  return (
+    <AuthGuard>
+      <PackagesContent />
+    </AuthGuard>
   );
 }

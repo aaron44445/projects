@@ -131,7 +131,8 @@ export function useAppointments(initialDateRange?: DateRange): UseAppointmentsRe
       const response = await api.get<Appointment[]>(endpoint);
 
       if (response.success && response.data) {
-        setAppointments(response.data);
+        // Ensure data is an array to prevent .filter() errors
+        setAppointments(Array.isArray(response.data) ? response.data : []);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch appointments';

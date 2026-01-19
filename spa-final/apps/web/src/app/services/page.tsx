@@ -16,9 +16,12 @@ import {
   ChevronRight,
   Loader2,
   AlertCircle,
+  Users,
+  Check,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
-import { useServices, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
+import { AuthGuard } from '@/components/AuthGuard';
+import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
 
 interface CategoryWithUI extends ServiceCategory {
   expanded: boolean;
@@ -31,7 +34,7 @@ interface DragState {
   currentIndex: number;
 }
 
-export default function ServicesPage() {
+function ServicesContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewService, setShowNewService] = useState(false);
@@ -86,6 +89,11 @@ export default function ServicesPage() {
     deleteCategory,
     refetch,
   } = useServices();
+
+  const { staff, setStaffServices } = useStaff();
+
+  // Track assigned staff for the current service being edited
+  const [assignedStaffIds, setAssignedStaffIds] = useState<string[]>([]);
 
   // Group services by category for display
   const categoriesWithServices = useMemo(() => {
@@ -198,6 +206,11 @@ export default function ServicesPage() {
       memberPrice: service.memberPrice?.toString() || '',
       color: service.color,
     });
+    // Load assigned staff for this service
+    const assignedStaff = staff.filter(
+      (s) => s.staffServices?.some((ss) => ss.serviceId === service.id)
+    ).map((s) => s.id);
+    setAssignedStaffIds(assignedStaff);
     setEditingService(service);
     setShowNewService(true);
   };
@@ -206,6 +219,15 @@ export default function ServicesPage() {
     setShowNewService(false);
     setEditingService(null);
     resetServiceForm();
+    setAssignedStaffIds([]);
+  };
+
+  const toggleStaffAssignment = (staffId: string) => {
+    setAssignedStaffIds((prev) =>
+      prev.includes(staffId)
+        ? prev.filter((id) => id !== staffId)
+        : [...prev, staffId]
+    );
   };
 
   const handleSaveService = async () => {
@@ -223,11 +245,41 @@ export default function ServicesPage() {
         color: serviceForm.color,
       };
 
+      let serviceId: string;
+
       if (editingService) {
         await updateService(editingService.id, data as UpdateServiceInput);
+        serviceId = editingService.id;
       } else {
-        await createService(data);
+        const newService = await createService(data);
+        serviceId = newService.id;
       }
+
+      // Update staff assignments for each staff member
+      // For each staff who should be assigned, add this service to their services
+      for (const staffId of assignedStaffIds) {
+        const staffMember = staff.find((s) => s.id === staffId);
+        if (staffMember) {
+          const currentServiceIds = staffMember.staffServices?.map((ss) => ss.serviceId) || [];
+          if (!currentServiceIds.includes(serviceId)) {
+            await setStaffServices(staffId, { serviceIds: [...currentServiceIds, serviceId] });
+          }
+        }
+      }
+
+      // For staff who were previously assigned but are now unassigned, remove this service
+      for (const staffMember of staff) {
+        const wasAssigned = staffMember.staffServices?.some((ss) => ss.serviceId === serviceId);
+        const isNowAssigned = assignedStaffIds.includes(staffMember.id);
+
+        if (wasAssigned && !isNowAssigned) {
+          const updatedServiceIds = staffMember.staffServices
+            ?.filter((ss) => ss.serviceId !== serviceId)
+            .map((ss) => ss.serviceId) || [];
+          await setStaffServices(staffMember.id, { serviceIds: updatedServiceIds });
+        }
+      }
+
       closeServiceModal();
     } catch (err) {
       console.error('Failed to save service:', err);
@@ -704,6 +756,52 @@ export default function ServicesPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Staff Assignment Section */}
+              {staff.length > 0 && (
+                <div className="border-t border-charcoal/10 pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-5 h-5 text-charcoal/60" />
+                    <label className="block text-sm font-medium text-charcoal">
+                      Assigned Staff ({assignedStaffIds.length} selected)
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                    {staff.map((staffMember) => {
+                      const isAssigned = assignedStaffIds.includes(staffMember.id);
+                      return (
+                        <button
+                          key={staffMember.id}
+                          type="button"
+                          onClick={() => toggleStaffAssignment(staffMember.id)}
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                            isAssigned
+                              ? 'border-sage bg-sage/5'
+                              : 'border-charcoal/10 hover:border-sage/50'
+                          }`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                              isAssigned ? 'border-sage bg-sage' : 'border-charcoal/30'
+                            }`}
+                          >
+                            {isAssigned && <Check className="w-3 h-3 text-white" />}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-charcoal text-sm truncate">
+                              {staffMember.firstName} {staffMember.lastName}
+                            </p>
+                            <p className="text-xs text-charcoal/50 capitalize">{staffMember.role}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-charcoal/50 mt-2">
+                    Select which staff members can perform this service
+                  </p>
+                </div>
+              )}
             </div>
             <div className="p-6 border-t border-charcoal/10 flex gap-3">
               <button
@@ -826,5 +924,13 @@ export default function ServicesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ServicesPage() {
+  return (
+    <AuthGuard>
+      <ServicesContent />
+    </AuthGuard>
   );
 }

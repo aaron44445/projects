@@ -77,7 +77,8 @@ export function useClients(): UseClientsReturn {
       const response = await api.get<Client[]>(endpoint);
 
       if (response.success && response.data) {
-        setClients(response.data);
+        // Ensure data is an array to prevent .filter() errors
+        setClients(Array.isArray(response.data) ? response.data : []);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch clients';

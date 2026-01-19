@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useSalon, type Salon } from '@/hooks';
 
 const settingsSections = [
@@ -53,7 +54,7 @@ const defaultHours: BusinessHour[] = [
   { day: 'Sunday', open: '10:00', close: '16:00', isOpen: false },
 ];
 
-export default function SettingsPage() {
+function SettingsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('business');
   const [hours, setHours] = useState<BusinessHour[]>(defaultHours);
@@ -1130,5 +1131,13 @@ export default function SettingsPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <AuthGuard>
+      <SettingsContent />
+    </AuthGuard>
   );
 }

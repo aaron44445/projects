@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
+import { AuthGuard } from '@/components/AuthGuard';
 import { useMarketing, useClients, useReports, Campaign, Client } from '@/hooks';
 
 // Audience segment calculation helpers
@@ -52,7 +53,7 @@ const automationTriggers = [
 
 type ModalType = 'email' | 'sms' | 'automation' | null;
 
-export default function MarketingPage() {
+function MarketingContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Use the marketing hook for API integration
@@ -1023,5 +1024,13 @@ export default function MarketingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MarketingPage() {
+  return (
+    <AuthGuard>
+      <MarketingContent />
+    </AuthGuard>
   );
 }
