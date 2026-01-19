@@ -17,37 +17,31 @@ import {
   Check,
   Shield,
   Zap,
-  Clock,
-  CheckCircle2,
-  RefreshCw,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const businessTypes = [
-  { value: 'spa', label: 'Spa' },
   { value: 'salon', label: 'Salon' },
+  { value: 'spa', label: 'Spa' },
   { value: 'barbershop', label: 'Barbershop' },
-  { value: 'wellness', label: 'Wellness Center' },
+  { value: 'med_spa', label: 'Med Spa' },
+  { value: 'nail_salon', label: 'Nail Salon' },
+  { value: 'massage_studio', label: 'Massage Studio' },
   { value: 'other', label: 'Other' },
 ];
 
 export default function SignupPage() {
   const router = useRouter();
-  const { register, resendVerificationEmail } = useAuth();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
   const [formData, setFormData] = useState({
     ownerName: '',
     businessName: '',
-    businessType: 'spa',
+    businessType: 'salon',
     email: '',
     phone: '',
     password: '',
-    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -78,10 +72,6 @@ export default function SignupPage() {
       newErrors.password = 'Password must be at least 8 characters';
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,7 +84,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const result = await register(
+      await register(
         formData.ownerName,
         formData.email,
         formData.password,
@@ -103,8 +93,8 @@ export default function SignupPage() {
         formData.businessType
       );
 
-      // Always show verification message - users must verify email before accessing the platform
-      setShowVerificationMessage(true);
+      // Redirect to onboarding after successful signup
+      router.push('/onboarding');
     } catch (err) {
       if (err instanceof Error) {
         setErrors({ submit: err.message });
@@ -113,21 +103,6 @@ export default function SignupPage() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    setIsResending(true);
-    setResendSuccess(false);
-
-    try {
-      await resendVerificationEmail(formData.email);
-      setResendSuccess(true);
-    } catch {
-      // Still show success to prevent email enumeration
-      setResendSuccess(true);
-    } finally {
-      setIsResending(false);
     }
   };
 
@@ -140,8 +115,6 @@ export default function SignupPage() {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
       case 'password':
         return value.length >= 8;
-      case 'confirmPassword':
-        return value === formData.password && value.length > 0;
       case 'ownerName':
       case 'businessName':
         return value.trim().length > 0;
@@ -173,70 +146,18 @@ export default function SignupPage() {
       {/* Signup Card */}
       <div className="w-full max-w-lg relative z-10 animate-slide-up">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card-xl p-8">
-          {/* Verification Message */}
-          {showVerificationMessage ? (
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-8 h-8 text-success" />
-              </div>
-              <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
-                Check your email
-              </h1>
-              <p className="text-charcoal/60 mb-6">
-                We've sent a verification link to <strong>{formData.email}</strong>.
-                Please click the link to verify your account.
-              </p>
-
-              <div className="p-4 rounded-lg bg-sage/5 border border-sage/20 mb-6">
-                <p className="text-sm text-charcoal/70">
-                  Didn't receive the email? Check your spam folder or click below to resend.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                {!resendSuccess ? (
-                  <button
-                    onClick={handleResendVerification}
-                    disabled={isResending}
-                    className="w-full py-3 rounded-lg border border-sage text-sage font-semibold hover:bg-sage/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {isResending ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-5 h-5" />
-                        Resend verification email
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <div className="p-3 rounded-lg bg-success/10 border border-success/20 text-success text-sm">
-                    Verification email sent! Check your inbox.
-                  </div>
-                )}
-
-                <p className="text-xs text-charcoal/50 mt-4">
-                  Please verify your email to continue setting up your account.
-                </p>
-              </div>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex p-3 rounded-xl bg-sage/10 text-sage mb-4">
+              <Building2 className="w-6 h-6" />
             </div>
-          ) : (
-            <>
-              {/* Header */}
-              <div className="text-center mb-8">
-                <div className="inline-flex p-3 rounded-xl bg-sage/10 text-sage mb-4">
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
-                  Create your salon account
-                </h1>
-                <p className="text-charcoal/60">
-                  Get started with your 14-day free trial
-                </p>
-              </div>
+            <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+              Create your salon account
+            </h1>
+            <p className="text-charcoal/60">
+              Set up your business in minutes
+            </p>
+          </div>
 
           {/* Error Message */}
           {errors.submit && (
@@ -403,42 +324,6 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-charcoal mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  placeholder="Confirm your password"
-                  className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.confirmPassword ? 'border-error' : 'border-charcoal/10'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1.5 text-sm text-error">{errors.confirmPassword}</p>
-              )}
-              {isFieldValid('confirmPassword') && (
-                <p className="mt-1.5 text-sm text-success flex items-center gap-1">
-                  <Check className="w-4 h-4" />
-                  Passwords match
-                </p>
-              )}
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
@@ -467,10 +352,6 @@ export default function SignupPage() {
                 <span>Secure & encrypted</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span>14-day free trial</span>
-              </div>
-              <div className="flex items-center gap-1.5">
                 <Zap className="w-4 h-4" />
                 <span>Cancel anytime</span>
               </div>
@@ -484,8 +365,6 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
-            </>
-          )}
         </div>
       </div>
 
