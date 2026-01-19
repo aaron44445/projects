@@ -198,3 +198,87 @@ spa-final/
 - Render auto-deploys on push to main (API restarts, rate limits reset)
 - When running via `pnpm --filter`, cwd is monorepo root, not package dir
 - dotenv.config() needs explicit path in monorepo packages
+
+---
+
+## Render Deployment Runbook
+
+### API Key
+```
+rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL
+```
+
+### Service ID
+```
+srv-d5lha7re5dus73dppmv0
+```
+
+### Database Connection Strings (Supabase)
+```
+DATABASE_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Peacase1576@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Peacase1576@aws-1-us-east-1.pooler.supabase.com:5432/postgres
+```
+
+### CRITICAL: render.yaml Location
+The render.yaml that Render uses is at the REPO ROOT (`C:\projects\render.yaml`), NOT in spa-final. The rootDir setting points to spa-final but Render reads render.yaml from repo root.
+
+### Working Build Command
+```
+npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @peacase/database exec prisma generate && pnpm --filter @peacase/database build && pnpm --filter @peacase/api build
+```
+DO NOT add `prisma db push` or `db:fix-schema` to the build command - they cause failures.
+
+### Common Render API Commands
+
+**Update environment variable:**
+```bash
+curl -X PUT -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
+  -H "Content-Type: application/json" \
+  -d '{"value":"NEW_VALUE"}' \
+  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/env-vars/DATABASE_URL"
+```
+
+**Trigger deploy:**
+```bash
+curl -X POST -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
+  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys"
+```
+
+**Deploy specific commit (rollback):**
+```bash
+curl -X POST -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
+  -H "Content-Type: application/json" \
+  -d '{"commitId":"b30d14a"}' \
+  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys"
+```
+
+**Check deploy status:**
+```bash
+curl -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
+  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys?limit=1"
+```
+
+**List all env vars:**
+```bash
+curl -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
+  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/env-vars"
+```
+
+### Last Known Working Commit
+```
+b30d14a - fix(render): add database build step before API build
+```
+If builds keep failing, deploy this commit as a fallback.
+
+### Troubleshooting Database Auth Errors
+1. Check password in Supabase dashboard (Project Settings → Database)
+2. Ensure special characters are URL-encoded (@ = %40)
+3. Update both DATABASE_URL and DIRECT_URL on Render
+4. Trigger redeploy
+
+### Troubleshooting Build Failures
+1. Test build locally: `pnpm --filter @peacase/api build`
+2. Check if schema.prisma was overwritten by `prisma db pull` (should have PascalCase models like `Salon`, `User`)
+3. If schema wrong: `git checkout packages/database/prisma/schema.prisma`
+4. Check render.yaml at REPO ROOT has simple build command (no db:push)
+5. If all else fails, deploy last known working commit: b30d14a
