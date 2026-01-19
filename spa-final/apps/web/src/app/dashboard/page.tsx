@@ -26,7 +26,7 @@ import {
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
-import { useDashboard } from '@/hooks';
+import { useDashboard, useSetupProgress } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -83,8 +83,11 @@ const recentActivity = [
 function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState<AddOnId | null>(null);
+  const [showHoursSetup, setShowHoursSetup] = useState(false);
+  const [showServiceSetup, setShowServiceSetup] = useState(false);
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { stats, todayAppointments, loading, error, refetch } = useDashboard();
+  const { progress, completedCount, totalSteps, percentComplete } = useSetupProgress();
 
   // Format time from ISO string
   const formatTime = (isoString: string) => {
@@ -200,6 +203,57 @@ function DashboardContent() {
               >
                 Retry
               </button>
+            </div>
+          )}
+
+          {/* Welcome Banner - Setup Progress */}
+          {progress && !progress.completedAt && (
+            <div className="mb-6 bg-white rounded-2xl border border-border shadow-soft p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl bg-sage/10 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-sage" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-semibold text-charcoal mb-1">
+                    Welcome to Peacase!
+                  </h2>
+                  <p className="text-charcoal/60 mb-4">
+                    Complete your setup to start accepting bookings.
+                  </p>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-charcoal/60">
+                        {completedCount} of {totalSteps} steps complete
+                      </span>
+                      <span className="font-medium text-sage">{percentComplete}%</span>
+                    </div>
+                    <div className="h-2 bg-charcoal/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-sage rounded-full transition-all duration-500"
+                        style={{ width: `${percentComplete}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {!progress.businessHours && (
+                      <button
+                        onClick={() => setShowHoursSetup(true)}
+                        className="px-4 py-2 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage-dark transition-colors"
+                      >
+                        Set Business Hours
+                      </button>
+                    )}
+                    {!progress.firstService && progress.businessHours && (
+                      <button
+                        onClick={() => setShowServiceSetup(true)}
+                        className="px-4 py-2 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage-dark transition-colors"
+                      >
+                        Add First Service
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

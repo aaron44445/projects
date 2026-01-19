@@ -75,3 +75,5 @@ export type {
   UseUploadOptions,
   UseUploadReturn,
 } from './useUpload';
+
+export { useSetupProgress } from './useSetupProgress';
