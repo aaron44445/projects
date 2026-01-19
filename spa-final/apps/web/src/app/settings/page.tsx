@@ -746,30 +746,7 @@ function SettingsContent() {
         );
 
       case 'booking':
-        if (!hasAddOn('online_booking')) {
-          return (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-charcoal/10 flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-charcoal/40" />
-              </div>
-              <h3 className="text-xl font-bold text-charcoal mb-2">Online Booking</h3>
-              <p className="text-charcoal/60 mb-6 max-w-md mx-auto">
-                Let clients book appointments 24/7 from your website with a customizable booking page.
-              </p>
-              <button
-                onClick={() => {
-                  toggleAddOn('online_booking');
-                  setActiveSection('subscription');
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all"
-              >
-                <Sparkles className="w-5 h-5" />
-                Add to Your Plan - $25/mo
-              </button>
-            </div>
-          );
-        }
-
+        // Online booking is now included in the base plan - no paywall
         const embedCode = `<script src="https://peacase.com/book.js" data-salon="${salon?.slug || 'your-salon'}"${embedSettings.buttonText !== 'Book Now' ? ` data-text="${embedSettings.buttonText}"` : ''}${embedSettings.buttonColor !== '#7C9A82' ? ` data-color="${embedSettings.buttonColor}"` : ''}${embedSettings.position !== 'inline' ? ` data-position="${embedSettings.position}"` : ''}></script>`;
 
         const copyEmbedCode = () => {
