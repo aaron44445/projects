@@ -90,15 +90,89 @@ function SettingsContent() {
     backgroundColor: '#FAF8F3',
   });
 
-  // Embed widget customization state
-  const [embedSettings, setEmbedSettings] = useState({
-    embedType: 'iframe' as 'iframe' | 'button',
-    buttonText: 'Book Now',
-    buttonColor: '#7C9A82',
-    iframeHeight: '700',
+  // Widget customization state - synced with API
+  const [widgetSettings, setWidgetSettings] = useState({
+    primaryColor: '#7C9A82',
+    accentColor: '#B5A8D5',
+    buttonStyle: 'rounded' as 'rounded' | 'square',
+    fontFamily: 'system' as 'system' | 'modern' | 'classic',
   });
+  const [widgetLoading, setWidgetLoading] = useState(true); // Start true to prevent initial save
+  const [widgetSaving, setWidgetSaving] = useState(false);
+  const [widgetSaveStatus, setWidgetSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [widgetInitialized, setWidgetInitialized] = useState(false);
+  const [iframeHeight, setIframeHeight] = useState('700');
   const [embedCopied, setEmbedCopied] = useState(false);
   const [activeInstallTab, setActiveInstallTab] = useState('wordpress');
+
+  // Fetch widget settings on mount
+  useEffect(() => {
+    const fetchWidgetSettings = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/salon/widget-settings`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        const data = await response.json();
+        if (data.success && data.data) {
+          setWidgetSettings({
+            primaryColor: data.data.primaryColor || '#7C9A82',
+            accentColor: data.data.accentColor || '#B5A8D5',
+            buttonStyle: data.data.buttonStyle || 'rounded',
+            fontFamily: data.data.fontFamily || 'system',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch widget settings:', err);
+      } finally {
+        setWidgetLoading(false);
+        // Small delay to allow state to settle before enabling auto-save
+        setTimeout(() => setWidgetInitialized(true), 100);
+      }
+    };
+    fetchWidgetSettings();
+  }, []);
+
+  // Auto-save widget settings when they change (debounced)
+  useEffect(() => {
+    // Don't save until we've loaded initial data
+    if (!widgetInitialized) return;
+
+    const saveWidgetSettings = async () => {
+      setWidgetSaving(true);
+      setWidgetSaveStatus('saving');
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/salon/widget-settings`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+          body: JSON.stringify(widgetSettings),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setWidgetSaveStatus('saved');
+          setTimeout(() => setWidgetSaveStatus('idle'), 2000);
+        } else {
+          setWidgetSaveStatus('error');
+        }
+      } catch (err) {
+        console.error('Failed to save widget settings:', err);
+        setWidgetSaveStatus('error');
+      } finally {
+        setWidgetSaving(false);
+      }
+    };
+
+    // Debounce the save - wait 500ms after last change
+    const timeoutId = setTimeout(() => {
+      saveWidgetSettings();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [widgetSettings, widgetInitialized]);
 
   // Update form when salon data loads
   useEffect(() => {
@@ -747,25 +821,28 @@ function SettingsContent() {
         );
 
       case 'booking':
-        // Online booking is now included in the base plan - no paywall
-        const bookingUrl = `https://book.peacase.com/${salon?.slug || 'your-salon'}`;
+        // Generate embed URL using salon slug
+        const embedUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${salon?.slug || 'your-salon'}`;
 
-        // Generate embed code based on selected type
-        const embedCode = embedSettings.embedType === 'iframe'
-          ? `<iframe
-  src="${bookingUrl}"
+        // Font family CSS mapping
+        const fontFamilyMap: Record<string, string> = {
+          system: 'system-ui, -apple-system, sans-serif',
+          modern: "'Plus Jakarta Sans', sans-serif",
+          classic: "Georgia, 'Times New Roman', serif",
+        };
+
+        // Button radius based on style
+        const buttonRadius = widgetSettings.buttonStyle === 'rounded' ? '12px' : '4px';
+
+        // Generate iframe embed code
+        const embedCode = `<iframe
+  src="${embedUrl}"
   width="100%"
-  height="${embedSettings.iframeHeight}px"
+  height="${iframeHeight}px"
   frameborder="0"
-  style="border: none; border-radius: 12px; max-width: 500px;"
+  style="border: none; border-radius: ${buttonRadius}; max-width: 500px;"
   title="Book an appointment"
-></iframe>`
-          : `<a
-  href="${bookingUrl}"
-  target="_blank"
-  rel="noopener noreferrer"
-  style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background-color: ${embedSettings.buttonColor}; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-family: system-ui, sans-serif;"
->${embedSettings.buttonText}</a>`;
+></iframe>`;
 
         const copyEmbedCode = () => {
           navigator.clipboard.writeText(embedCode.replace(/\n\s*/g, ' ').trim());
@@ -773,80 +850,49 @@ function SettingsContent() {
           setTimeout(() => setEmbedCopied(false), 2000);
         };
 
-        const copyDirectLink = () => {
-          navigator.clipboard.writeText(bookingUrl);
-          setEmbedCopied(true);
-          setTimeout(() => setEmbedCopied(false), 2000);
-        };
-
         const installInstructions: Record<string, { title: string; steps: string[] }> = {
           wordpress: {
             title: 'WordPress',
-            steps: embedSettings.embedType === 'iframe' ? [
+            steps: [
               'Go to the page where you want the booking form',
               'Add a "Custom HTML" block',
               'Paste the embed code above',
               'Preview and publish your page',
-            ] : [
-              'Edit the page or post where you want the booking button',
-              'Add a "Custom HTML" block',
-              'Paste the button code above',
-              'Save and publish your changes',
             ],
           },
           squarespace: {
             title: 'Squarespace',
-            steps: embedSettings.embedType === 'iframe' ? [
+            steps: [
               'Edit the page where you want the booking form',
-              'Click Add Section → choose "Code" block',
+              'Click Add Section and choose "Code" block',
               'Paste the embed code and set display to "HTML"',
               'Click Save to publish',
-            ] : [
-              'Edit the page where you want the booking button',
-              'Add a "Code" block where you want the button',
-              'Paste the button code above',
-              'Save and publish',
             ],
           },
           wix: {
             title: 'Wix',
-            steps: embedSettings.embedType === 'iframe' ? [
-              'In the Wix Editor, click Add → Embed → Embed a Site',
-              'Enter your booking URL or use Custom HTML',
+            steps: [
+              'In the Wix Editor, click Add, then Embed, then Embed a Site',
+              'Select "Custom HTML" and paste the embed code',
               'Adjust the size to fit your design',
               'Click Apply, then Publish your site',
-            ] : [
-              'In the Wix Editor, click Add → Embed → Custom HTML',
-              'Paste the button code above',
-              'Position the button where you want it',
-              'Click Apply, then Publish',
             ],
           },
           shopify: {
             title: 'Shopify',
-            steps: embedSettings.embedType === 'iframe' ? [
-              'Go to Online Store → Pages',
+            steps: [
+              'Go to Online Store then Pages',
               'Edit the page and switch to HTML view',
               'Paste the iframe code where you want the form',
               'Save and preview your changes',
-            ] : [
-              'Go to Online Store → Pages or Products',
-              'Edit the page and switch to HTML view',
-              'Paste the button code where you want it',
-              'Save your changes',
             ],
           },
           html: {
             title: 'Generic HTML',
-            steps: embedSettings.embedType === 'iframe' ? [
-              'Open your website\'s HTML file',
+            steps: [
+              'Open your website HTML file',
               'Paste the iframe code where you want the booking form',
               'Adjust width/height if needed',
-              'Save and upload to your server',
-            ] : [
-              'Open your website\'s HTML file',
-              'Paste the button code where you want it',
-              'Customize colors if needed',
               'Save and upload to your server',
             ],
           },
@@ -854,110 +900,307 @@ function SettingsContent() {
 
         return (
           <div className="space-y-8">
-            <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking Widget</h2>
-              <p className="text-charcoal/60">
-                Let clients book appointments directly from your website.
-              </p>
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking Widget</h2>
+                <p className="text-charcoal/60">
+                  Customize and embed your booking widget on your website.
+                </p>
+              </div>
+              {/* Auto-save status indicator */}
+              <div className="flex items-center gap-2 text-sm">
+                {widgetSaveStatus === 'saving' && (
+                  <span className="flex items-center gap-2 text-charcoal/50">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </span>
+                )}
+                {widgetSaveStatus === 'saved' && (
+                  <span className="flex items-center gap-2 text-sage">
+                    <Check className="w-4 h-4" />
+                    Saved
+                  </span>
+                )}
+                {widgetSaveStatus === 'error' && (
+                  <span className="flex items-center gap-2 text-rose-500">
+                    <AlertCircle className="w-4 h-4" />
+                    Save failed
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Direct Booking Link */}
-            <div className="p-6 bg-gradient-to-br from-lavender/10 to-sage/10 rounded-2xl border border-lavender/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-lavender/20 flex items-center justify-center flex-shrink-0">
-                  <ExternalLink className="w-5 h-5 text-lavender" />
+            {/* Customization Section */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-6">Customize Appearance</h3>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column: Controls */}
+                <div className="space-y-6">
+                  {/* Primary Color */}
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      Primary Color
+                    </label>
+                    <p className="text-xs text-charcoal/50 mb-3">
+                      Used for buttons, selected states, and progress indicators
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <input
+                          type="color"
+                          value={widgetSettings.primaryColor}
+                          onChange={(e) => setWidgetSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 cursor-pointer appearance-none bg-transparent"
+                          style={{ backgroundColor: widgetSettings.primaryColor }}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={widgetSettings.primaryColor}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.match(/^#[0-9A-Fa-f]{0,6}$/)) {
+                            setWidgetSettings(prev => ({ ...prev, primaryColor: val }));
+                          }
+                        }}
+                        placeholder="#7C9A82"
+                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Accent Color */}
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      Accent Color
+                    </label>
+                    <p className="text-xs text-charcoal/50 mb-3">
+                      Used for links and category headers
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <input
+                          type="color"
+                          value={widgetSettings.accentColor}
+                          onChange={(e) => setWidgetSettings(prev => ({ ...prev, accentColor: e.target.value }))}
+                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 cursor-pointer appearance-none bg-transparent"
+                          style={{ backgroundColor: widgetSettings.accentColor }}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={widgetSettings.accentColor}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val.match(/^#[0-9A-Fa-f]{0,6}$/)) {
+                            setWidgetSettings(prev => ({ ...prev, accentColor: val }));
+                          }
+                        }}
+                        placeholder="#B5A8D5"
+                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Button Style */}
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      Button Style
+                    </label>
+                    <p className="text-xs text-charcoal/50 mb-3">
+                      Corner style for buttons and inputs
+                    </p>
+                    <select
+                      value={widgetSettings.buttonStyle}
+                      onChange={(e) => setWidgetSettings(prev => ({ ...prev, buttonStyle: e.target.value as 'rounded' | 'square' }))}
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                    >
+                      <option value="rounded">Rounded (12px corners)</option>
+                      <option value="square">Square (4px corners)</option>
+                    </select>
+                  </div>
+
+                  {/* Font Style */}
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">
+                      Font Style
+                    </label>
+                    <p className="text-xs text-charcoal/50 mb-3">
+                      Typography for all text in the widget
+                    </p>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'system', label: 'System Default', desc: 'Clean and familiar' },
+                        { value: 'modern', label: 'Modern', desc: 'Plus Jakarta Sans' },
+                        { value: 'classic', label: 'Classic', desc: 'Georgia serif' },
+                      ].map((font) => (
+                        <label
+                          key={font.value}
+                          className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                            widgetSettings.fontFamily === font.value
+                              ? 'border-sage bg-sage/5'
+                              : 'border-charcoal/10 hover:border-charcoal/20'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="fontFamily"
+                            value={font.value}
+                            checked={widgetSettings.fontFamily === font.value}
+                            onChange={(e) => setWidgetSettings(prev => ({ ...prev, fontFamily: e.target.value as 'system' | 'modern' | 'classic' }))}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            widgetSettings.fontFamily === font.value ? 'border-sage' : 'border-charcoal/30'
+                          }`}>
+                            {widgetSettings.fontFamily === font.value && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-sage" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-charcoal text-sm">{font.label}</p>
+                            <p className="text-xs text-charcoal/50">{font.desc}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Right Column: Live Preview */}
                 <div>
-                  <h3 className="font-semibold text-charcoal">Your Booking Page</h3>
-                  <p className="text-sm text-charcoal/60">Share this link directly or use the embed options below</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  readOnly
-                  value={bookingUrl}
-                  className="flex-1 px-4 py-3 bg-white rounded-xl border border-charcoal/10 text-charcoal font-mono text-sm"
-                />
-                <button
-                  onClick={copyDirectLink}
-                  className="flex items-center gap-2 px-4 py-3 bg-charcoal text-white rounded-xl font-medium hover:bg-charcoal/90 transition-colors"
-                >
-                  <Copy className="w-4 h-4" />
-                  Copy
-                </button>
-                <a
-                  href={bookingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage/90 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Preview
-                </a>
-              </div>
-            </div>
+                  <label className="block text-sm font-medium text-charcoal mb-3">
+                    Live Preview
+                  </label>
+                  <div
+                    className="bg-cream/50 rounded-2xl border border-charcoal/10 p-6 min-h-[400px]"
+                    style={{ fontFamily: fontFamilyMap[widgetSettings.fontFamily] }}
+                  >
+                    {/* Mini booking form preview */}
+                    <div
+                      className="bg-white p-5 shadow-sm"
+                      style={{ borderRadius: buttonRadius }}
+                    >
+                      {/* Header */}
+                      <div className="text-center mb-5">
+                        <h4 className="font-semibold text-charcoal text-lg mb-1" style={{ fontFamily: fontFamilyMap[widgetSettings.fontFamily] }}>
+                          {salon?.name || 'Your Spa'}
+                        </h4>
+                        <p className="text-sm text-charcoal/60">Book an appointment</p>
+                      </div>
 
-            {/* Embed Type Selector */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Choose Embed Style</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setEmbedSettings(prev => ({ ...prev, embedType: 'iframe' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    embedSettings.embedType === 'iframe'
-                      ? 'border-sage bg-sage/5'
-                      : 'border-charcoal/10 hover:border-charcoal/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      embedSettings.embedType === 'iframe' ? 'bg-sage text-white' : 'bg-charcoal/10 text-charcoal'
-                    }`}>
-                      <Code className="w-4 h-4" />
+                      {/* Service category */}
+                      <div className="mb-4">
+                        <p
+                          className="text-xs font-semibold uppercase tracking-wide mb-2"
+                          style={{ color: widgetSettings.accentColor }}
+                        >
+                          Select a Service
+                        </p>
+                        <div className="space-y-2">
+                          {['Swedish Massage', 'Deep Tissue', 'Hot Stone'].map((service, idx) => (
+                            <div
+                              key={service}
+                              className={`p-3 border-2 cursor-pointer transition-all ${idx === 0 ? 'bg-opacity-10' : ''}`}
+                              style={{
+                                borderRadius: buttonRadius,
+                                borderColor: idx === 0 ? widgetSettings.primaryColor : '#e5e5e5',
+                                backgroundColor: idx === 0 ? `${widgetSettings.primaryColor}15` : 'white',
+                              }}
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium text-charcoal">{service}</span>
+                                <span className="text-sm text-charcoal/60">${60 + idx * 20}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Time slots preview */}
+                      <div className="mb-5">
+                        <p
+                          className="text-xs font-semibold uppercase tracking-wide mb-2"
+                          style={{ color: widgetSettings.accentColor }}
+                        >
+                          Available Times
+                        </p>
+                        <div className="flex gap-2 flex-wrap">
+                          {['9:00 AM', '10:30 AM', '2:00 PM'].map((time, idx) => (
+                            <button
+                              key={time}
+                              className="px-3 py-2 text-sm font-medium transition-all"
+                              style={{
+                                borderRadius: buttonRadius,
+                                backgroundColor: idx === 1 ? widgetSettings.primaryColor : '#f5f5f5',
+                                color: idx === 1 ? 'white' : '#374151',
+                              }}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Book button */}
+                      <button
+                        className="w-full py-3 text-white font-semibold transition-all"
+                        style={{
+                          backgroundColor: widgetSettings.primaryColor,
+                          borderRadius: buttonRadius,
+                        }}
+                      >
+                        Continue
+                      </button>
+
+                      {/* Link preview */}
+                      <p className="text-center mt-3">
+                        <span
+                          className="text-sm cursor-pointer hover:underline"
+                          style={{ color: widgetSettings.accentColor }}
+                        >
+                          View all services
+                        </span>
+                      </p>
                     </div>
-                    <span className="font-semibold text-charcoal">Inline Form</span>
                   </div>
-                  <p className="text-sm text-charcoal/60">
-                    Embed the full booking form directly on your page. Best for dedicated booking pages.
-                  </p>
-                </button>
-                <button
-                  onClick={() => setEmbedSettings(prev => ({ ...prev, embedType: 'button' }))}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    embedSettings.embedType === 'button'
-                      ? 'border-sage bg-sage/5'
-                      : 'border-charcoal/10 hover:border-charcoal/20'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                      embedSettings.embedType === 'button' ? 'bg-sage text-white' : 'bg-charcoal/10 text-charcoal'
-                    }`}>
-                      <Calendar className="w-4 h-4" />
-                    </div>
-                    <span className="font-semibold text-charcoal">Book Now Button</span>
-                  </div>
-                  <p className="text-sm text-charcoal/60">
-                    A styled button that opens booking in a new tab. Best for headers or sidebars.
-                  </p>
-                </button>
+                </div>
               </div>
             </div>
 
             {/* Embed Code Section */}
             <div className="p-6 bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl border border-sage/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-sage/20 flex items-center justify-center flex-shrink-0">
-                  <Code className="w-5 h-5 text-sage" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-charcoal">
-                    {embedSettings.embedType === 'iframe' ? 'Iframe Embed Code' : 'Button Embed Code'}
-                  </h3>
-                  <p className="text-sm text-charcoal/60">Copy and paste this into your website</p>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sage/20 flex items-center justify-center flex-shrink-0">
+                    <Code className="w-5 h-5 text-sage" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-charcoal">Embed Code</h3>
+                    <p className="text-sm text-charcoal/60">Copy and paste this iframe into your website</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Iframe height control */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-charcoal mb-2">
+                  Widget Height (pixels)
+                </label>
+                <input
+                  type="number"
+                  value={iframeHeight}
+                  onChange={(e) => setIframeHeight(e.target.value)}
+                  placeholder="700"
+                  min="400"
+                  max="1200"
+                  className="w-32 px-4 py-2 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
+                />
+                <span className="text-xs text-charcoal/50 ml-2">Recommended: 700px</span>
+              </div>
+
               <div className="relative">
                 <pre className="bg-charcoal text-cream p-4 rounded-xl text-sm overflow-x-auto font-mono whitespace-pre-wrap break-all">
                   {embedCode}
@@ -981,91 +1224,8 @@ function SettingsContent() {
               </div>
             </div>
 
-            {/* Live Preview */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Live Preview</h3>
-              <div className="flex items-center justify-center py-8 bg-charcoal/5 rounded-xl">
-                {embedSettings.embedType === 'iframe' ? (
-                  <div className="w-full max-w-md bg-white rounded-xl border border-charcoal/10 p-4 shadow-sm">
-                    <div className="text-center text-charcoal/60 text-sm">
-                      <div className="w-12 h-12 bg-sage/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Calendar className="w-6 h-6 text-sage" />
-                      </div>
-                      <p className="font-medium text-charcoal mb-1">Booking Form Preview</p>
-                      <p className="text-xs">The full booking experience will appear here</p>
-                    </div>
-                  </div>
-                ) : (
-                  <a
-                    href={bookingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ backgroundColor: embedSettings.buttonColor }}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
-                  >
-                    {embedSettings.buttonText}
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Customization Options - Conditional based on embed type */}
-            {embedSettings.embedType === 'button' ? (
-              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-                <h3 className="font-semibold text-charcoal mb-4">Customize Your Button</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">Button Text</label>
-                    <input
-                      type="text"
-                      value={embedSettings.buttonText}
-                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonText: e.target.value }))}
-                      placeholder="Book Now"
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">Button Color</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={embedSettings.buttonColor}
-                        onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
-                        className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={embedSettings.buttonColor}
-                        onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
-                        className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-                <h3 className="font-semibold text-charcoal mb-4">Customize Iframe</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">Height (pixels)</label>
-                    <input
-                      type="number"
-                      value={embedSettings.iframeHeight}
-                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, iframeHeight: e.target.value }))}
-                      placeholder="700"
-                      min="400"
-                      max="1200"
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    />
-                    <p className="text-xs text-charcoal/50 mt-1">Recommended: 700px for full form visibility</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Installation Instructions */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
               <h3 className="font-semibold text-charcoal mb-4">Installation Instructions</h3>
 
               {/* Platform Tabs */}
@@ -1074,7 +1234,7 @@ function SettingsContent() {
                   <button
                     key={key}
                     onClick={() => setActiveInstallTab(key)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       activeInstallTab === key
                         ? 'bg-sage text-white'
                         : 'bg-charcoal/5 text-charcoal/70 hover:bg-charcoal/10'
@@ -1097,9 +1257,9 @@ function SettingsContent() {
                 ))}
               </div>
 
-              <div className="mt-6 p-4 bg-lavender/20 rounded-xl border border-lavender/30">
+              <div className="mt-6 p-4 bg-lavender/10 rounded-xl border border-lavender/20">
                 <p className="text-sm text-charcoal/70">
-                  <strong>Need help?</strong> Contact our support team and we&apos;ll help you install the booking widget on your website.
+                  <strong>Need help?</strong> Contact our support team and we will help you install the booking widget on your website.
                 </p>
               </div>
             </div>
@@ -1109,10 +1269,10 @@ function SettingsContent() {
               <h3 className="font-semibold text-charcoal">Booking Settings</h3>
 
               <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-charcoal">Accept Online Bookings</p>
-                    <p className="text-sm text-charcoal/60">Allow clients to book through your booking page</p>
+                    <p className="text-sm text-charcoal/60">Allow clients to book through your booking widget</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" defaultChecked className="sr-only peer" />

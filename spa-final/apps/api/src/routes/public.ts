@@ -23,6 +23,11 @@ router.get('/:slug/salon', async (req: Request, res: Response) => {
       state: true,
       zip: true,
       timezone: true,
+      // Widget customization
+      widgetPrimaryColor: true,
+      widgetAccentColor: true,
+      widgetButtonStyle: true,
+      widgetFontFamily: true,
     },
   });
 
@@ -49,10 +54,11 @@ router.get('/:slug/salon', async (req: Request, res: Response) => {
       state: salon.state,
       zip: salon.zip,
       timezone: salon.timezone,
-      branding: {
-        primaryColor: '#7C9A82',
-        accentColor: '#B5A8D5',
-        logoUrl: salon.logoUrl,
+      widget: {
+        primaryColor: salon.widgetPrimaryColor,
+        accentColor: salon.widgetAccentColor,
+        buttonStyle: salon.widgetButtonStyle,
+        fontFamily: salon.widgetFontFamily,
       },
     },
   });

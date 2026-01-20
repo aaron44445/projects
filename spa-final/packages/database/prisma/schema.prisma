@@ -61,6 +61,12 @@ model Salon {
   twilioValidated           Boolean   @default(false) @map("twilio_validated")
   twilioLastValidatedAt     DateTime? @map("twilio_last_validated_at")
 
+  // Widget Customization
+  widgetPrimaryColor  String @default("#7C9A82") @map("widget_primary_color")
+  widgetAccentColor   String @default("#B5A8D5") @map("widget_accent_color")
+  widgetButtonStyle   String @default("rounded") @map("widget_button_style")
+  widgetFontFamily    String @default("system") @map("widget_font_family")
+
   // Relations
   users              User[]
   clients            Client[]

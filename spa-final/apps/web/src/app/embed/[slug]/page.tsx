@@ -23,16 +23,17 @@ interface Salon {
   id: string;
   name: string;
   slug: string;
-  logo: string | null;
+  logoUrl: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
   zip: string | null;
-  branding: {
+  widget: {
     primaryColor: string;
     accentColor: string;
-    logoUrl: string | null;
+    buttonStyle: 'rounded' | 'square';
+    fontFamily: 'system' | 'modern' | 'classic';
   };
 }
 
@@ -183,10 +184,14 @@ function ServiceStep({
   categories,
   onSelect,
   primaryColor,
+  accentColor,
+  borderRadius,
 }: {
   categories: ServiceCategory[];
   onSelect: (service: Service) => void;
   primaryColor: string;
+  accentColor: string;
+  borderRadius: string;
 }) {
   return (
     <div className="space-y-6">
@@ -198,7 +203,7 @@ function ServiceStep({
       <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2">
         {categories.map((category) => (
           <div key={category.id}>
-            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: accentColor }}>
               {category.name}
             </h3>
             <div className="space-y-2">
@@ -206,7 +211,8 @@ function ServiceStep({
                 <button
                   key={service.id}
                   onClick={() => onSelect(service)}
-                  className="w-full p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all text-left group"
+                  className="w-full p-4 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all text-left group"
+                  style={{ borderRadius }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
@@ -252,10 +258,12 @@ function StaffStep({
   staff,
   onSelect,
   primaryColor,
+  borderRadius,
 }: {
   staff: Staff[];
   onSelect: (staffId: string | null, staffName: string) => void;
   primaryColor: string;
+  borderRadius: string;
 }) {
   return (
     <div className="space-y-6">
@@ -268,8 +276,8 @@ function StaffStep({
         {/* Any Available Option */}
         <button
           onClick={() => onSelect(null, 'Any Available')}
-          className="w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-all text-left"
-          style={{ borderColor: primaryColor + '40' }}
+          className="w-full p-4 bg-white border-2 border-gray-200 hover:border-gray-300 transition-all text-left"
+          style={{ borderColor: primaryColor + '40', borderRadius }}
         >
           <div className="flex items-center gap-4">
             <div
@@ -290,7 +298,8 @@ function StaffStep({
           <button
             key={member.id}
             onClick={() => onSelect(member.id, member.name)}
-            className="w-full p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-sm transition-all text-left"
+            className="w-full p-4 bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all text-left"
+            style={{ borderRadius }}
           >
             <div className="flex items-center gap-4">
               {member.avatarUrl ? (
@@ -327,6 +336,7 @@ function DateTimeStep({
   onTimeSelect,
   isLoadingSlots,
   primaryColor,
+  borderRadius,
 }: {
   slots: TimeSlot[];
   selectedDate: string;
@@ -335,6 +345,7 @@ function DateTimeStep({
   onTimeSelect: (time: string) => void;
   isLoadingSlots: boolean;
   primaryColor: string;
+  borderRadius: string;
 }) {
   // Generate next 30 days
   const dates = Array.from({ length: 30 }, (_, i) => {
@@ -437,10 +448,12 @@ function DetailsStep({
   booking,
   onChange,
   primaryColor,
+  borderRadius,
 }: {
   booking: BookingData;
   onChange: (field: keyof BookingData, value: string | boolean) => void;
   primaryColor: string;
+  borderRadius: string;
 }) {
   return (
     <div className="space-y-6">
@@ -529,10 +542,12 @@ function ConfirmationStep({
   booking,
   salon,
   primaryColor,
+  borderRadius,
 }: {
   booking: BookingData;
   salon: Salon;
   primaryColor: string;
+  borderRadius: string;
 }) {
   const formatDateTime = () => {
     if (!booking.date || !booking.time) return '';
@@ -662,7 +677,21 @@ export default function EmbedBookingPage() {
     optInReminders: true,
   });
 
-  const primaryColor = salon?.branding?.primaryColor || '#7C9A82';
+  // Widget styling from salon settings
+  const primaryColor = salon?.widget?.primaryColor || '#7C9A82';
+  const accentColor = salon?.widget?.accentColor || '#B5A8D5';
+  const buttonStyle = salon?.widget?.buttonStyle || 'rounded';
+  const fontFamily = salon?.widget?.fontFamily || 'system';
+
+  // Map font family to CSS value
+  const fontFamilyCSS = {
+    system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    modern: '"Plus Jakarta Sans", system-ui, sans-serif',
+    classic: 'Georgia, "Times New Roman", Times, serif',
+  }[fontFamily];
+
+  // Map button style to border radius
+  const borderRadius = buttonStyle === 'rounded' ? '12px' : '4px';
 
   // Load initial data
   useEffect(() => {
@@ -786,21 +815,22 @@ export default function EmbedBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" style={{ fontFamily: fontFamilyCSS }}>
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-3">
-            {salon.branding.logoUrl ? (
+            {salon.logoUrl ? (
               <img
-                src={salon.branding.logoUrl}
+                src={salon.logoUrl}
                 alt={salon.name}
-                className="w-8 h-8 rounded-lg object-contain"
+                className="w-8 h-8 object-contain"
+                style={{ borderRadius }}
               />
             ) : (
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: primaryColor }}
+                className="w-8 h-8 flex items-center justify-center"
+                style={{ backgroundColor: primaryColor, borderRadius }}
               >
                 <span className="text-white font-bold text-sm">
                   {salon.name[0]}
@@ -844,6 +874,8 @@ export default function EmbedBookingPage() {
             categories={categories}
             onSelect={handleServiceSelect}
             primaryColor={primaryColor}
+            accentColor={accentColor}
+            borderRadius={borderRadius}
           />
         )}
 
@@ -852,6 +884,7 @@ export default function EmbedBookingPage() {
             staff={staff}
             onSelect={handleStaffSelect}
             primaryColor={primaryColor}
+            borderRadius={borderRadius}
           />
         )}
 
@@ -864,6 +897,7 @@ export default function EmbedBookingPage() {
             onTimeSelect={handleTimeSelect}
             isLoadingSlots={isLoadingSlots}
             primaryColor={primaryColor}
+            borderRadius={borderRadius}
           />
         )}
 
@@ -872,6 +906,7 @@ export default function EmbedBookingPage() {
             booking={booking}
             onChange={updateBooking}
             primaryColor={primaryColor}
+            borderRadius={borderRadius}
           />
         )}
 
@@ -880,6 +915,7 @@ export default function EmbedBookingPage() {
             booking={booking}
             salon={salon}
             primaryColor={primaryColor}
+            borderRadius={borderRadius}
           />
         )}
 
