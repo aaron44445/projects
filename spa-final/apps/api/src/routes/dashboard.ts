@@ -232,7 +232,11 @@ router.get('/recent-activity', authenticate, async (req: Request, res: Response)
       salonId,
       createdAt: { gte: sevenDaysAgo },
     },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      price: true,
       client: {
         select: {
           firstName: true,

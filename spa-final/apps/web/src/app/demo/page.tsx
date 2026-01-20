@@ -17,6 +17,8 @@ import {
   Shield,
   Zap,
   Users,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 const timeSlots = [
@@ -49,11 +51,57 @@ export default function DemoPage() {
     preferredTime: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!formData.email.trim()) errors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Invalid email format';
+    if (!formData.phone.trim()) errors.phone = 'Phone is required';
+    if (!formData.businessName.trim()) errors.businessName = 'Business name is required';
+    if (!formData.businessSize) errors.businessSize = 'Team size is required';
+    if (!formData.preferredDate) errors.preferredDate = 'Please select a preferred date';
+    if (!formData.preferredTime) errors.preferredTime = 'Please select a preferred time';
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send to an API
-    setIsSubmitted(true);
+    setError(null);
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://peacase-api.onrender.com';
+      const response = await fetch(`${apiUrl}/api/v1/demo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Failed to submit demo request');
+      }
+
+      setIsSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Generate next 14 days for date selection
@@ -202,6 +250,17 @@ export default function DemoPage() {
             <h2 className="text-xl font-semibold text-charcoal mb-6">
               Schedule your demo
             </h2>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">Submission failed</p>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name */}
@@ -383,10 +442,20 @@ export default function DemoPage() {
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full py-4 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark hover:shadow-hover transition-all flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="w-full py-4 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark hover:shadow-hover transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Schedule Demo
-                <ArrowRight className="w-5 h-5" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Schedule Demo
+                    <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
               </button>
 
               <p className="text-xs text-charcoal/50 text-center">

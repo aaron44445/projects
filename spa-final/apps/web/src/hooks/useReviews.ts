@@ -9,7 +9,7 @@ export interface Review {
   comment: string | null;
   isApproved: boolean;
   submittedAt: string;
-  client: { firstName: string; lastName: string };
+  client: { id: string; firstName: string; lastName: string };
   appointment: { service: { name: string } };
   responses: Array<{
     id: string;

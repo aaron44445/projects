@@ -32,6 +32,8 @@ import {
   HelpCircle,
   Lightbulb,
   MapPin,
+  FileText,
+  Megaphone,
 } from 'lucide-react';
 
 // Step configuration
@@ -237,11 +239,15 @@ function OnboardingContent() {
   // Plan selection state
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
-  // Optional setup checklist state
+  // Optional setup checklist state - all 8 modules
   const [optionalSetup, setOptionalSetup] = useState({
     staff: false,
     branding: false,
+    emailTemplates: false,
     clientPayments: false,
+    marketing: false,
+    reviews: false,
+    onlineBooking: false,
     notifications: false,
   });
 
@@ -1205,112 +1211,81 @@ function OnboardingContent() {
         );
 
       case 'optional':
+        const setupOptions = [
+          { key: 'staff', icon: Users, title: 'Add Staff Members', description: 'Invite team members and set up their schedules' },
+          { key: 'branding', icon: Palette, title: 'Customize Branding', description: 'Upload logo and set brand colors' },
+          { key: 'emailTemplates', icon: FileText, title: 'Email Templates', description: 'Customize appointment and marketing emails' },
+          { key: 'clientPayments', icon: CreditCard, title: 'Set Up Payments', description: 'Configure payment methods and deposits' },
+          { key: 'marketing', icon: Megaphone, title: 'Marketing Setup', description: 'Configure automated campaigns and promotions' },
+          { key: 'reviews', icon: Star, title: 'Reviews & Ratings', description: 'Set up review collection and display' },
+          { key: 'onlineBooking', icon: Globe, title: 'Online Booking', description: 'Configure your booking widget for your website' },
+          { key: 'notifications', icon: Bell, title: 'Configure Notifications', description: 'Set up reminders and communication preferences' },
+        ];
+
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-charcoal mb-2">What would you like to set up first?</h2>
+              <h2 className="text-2xl font-bold text-charcoal mb-2">What would you like to set up?</h2>
               <p className="text-charcoal/60">
-                Select an item to configure it in settings, or skip to go straight to your dashboard.
+                Select the items you want to configure now. You&apos;ll be guided through each one step-by-step.
               </p>
             </div>
 
-            {/* Checklist */}
-            <div className="space-y-4">
-              <div
-                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                  optionalSetup.staff ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setOptionalSetup({ ...optionalSetup, staff: !optionalSetup.staff })}
+            {/* Quick Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const allSelected = Object.values(optionalSetup).every(v => v);
+                  const newState = Object.fromEntries(
+                    Object.keys(optionalSetup).map(k => [k, !allSelected])
+                  ) as typeof optionalSetup;
+                  setOptionalSetup(newState);
+                }}
+                className="text-sm text-sage hover:text-sage-dark font-medium"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    optionalSetup.staff ? 'border-sage bg-sage' : 'border-charcoal/30'
-                  }`}>
-                    {optionalSetup.staff && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-charcoal/60" />
-                      <h3 className="font-semibold text-charcoal">Add Staff Members</h3>
-                    </div>
-                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
-                      Invite team members and set up their schedules
-                    </p>
-                  </div>
-                </div>
-              </div>
+                {Object.values(optionalSetup).every(v => v) ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
 
-              <div
-                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                  optionalSetup.branding ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setOptionalSetup({ ...optionalSetup, branding: !optionalSetup.branding })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    optionalSetup.branding ? 'border-sage bg-sage' : 'border-charcoal/30'
-                  }`}>
-                    {optionalSetup.branding && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <Palette className="w-5 h-5 text-charcoal/60" />
-                      <h3 className="font-semibold text-charcoal">Customize Branding</h3>
-                    </div>
-                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
-                      Upload logo and set brand colors
-                    </p>
-                  </div>
-                </div>
-              </div>
+            {/* Checklist - 2 columns on desktop */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {setupOptions.map((option) => {
+                const Icon = option.icon;
+                const isSelected = optionalSetup[option.key as keyof typeof optionalSetup];
 
-              <div
-                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                  optionalSetup.clientPayments ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setOptionalSetup({ ...optionalSetup, clientPayments: !optionalSetup.clientPayments })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    optionalSetup.clientPayments ? 'border-sage bg-sage' : 'border-charcoal/30'
-                  }`}>
-                    {optionalSetup.clientPayments && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className="flex-1">
+                return (
+                  <div
+                    key={option.key}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      isSelected ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
+                    }`}
+                    onClick={() => setOptionalSetup({
+                      ...optionalSetup,
+                      [option.key]: !isSelected
+                    })}
+                  >
                     <div className="flex items-center gap-3">
-                      <CreditCard className="w-5 h-5 text-charcoal/60" />
-                      <h3 className="font-semibold text-charcoal">Set Up Client Payments</h3>
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                        isSelected ? 'border-sage bg-sage' : 'border-charcoal/30'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <Icon className="w-5 h-5 text-charcoal/60 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-charcoal text-sm">{option.title}</h3>
+                        <p className="text-xs text-charcoal/60 truncate">
+                          {option.description}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
-                      Configure payment methods and deposits
-                    </p>
                   </div>
-                </div>
-              </div>
+                );
+              })}
+            </div>
 
-              <div
-                className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                  optionalSetup.notifications ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-sage/50'
-                }`}
-                onClick={() => setOptionalSetup({ ...optionalSetup, notifications: !optionalSetup.notifications })}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    optionalSetup.notifications ? 'border-sage bg-sage' : 'border-charcoal/30'
-                  }`}>
-                    {optionalSetup.notifications && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <Bell className="w-5 h-5 text-charcoal/60" />
-                      <h3 className="font-semibold text-charcoal">Configure Notifications</h3>
-                    </div>
-                    <p className="text-sm text-charcoal/60 mt-1 ml-8">
-                      Set up reminders and communication preferences
-                    </p>
-                  </div>
-                </div>
-              </div>
+            {/* Selected count */}
+            <div className="text-sm text-charcoal/60 text-center">
+              {Object.values(optionalSetup).filter(v => v).length} of 8 items selected
             </div>
           </div>
         );

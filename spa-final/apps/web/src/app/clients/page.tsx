@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useClients, Client, CreateClientInput, UpdateClientInput } from '@/hooks';
 
 // Filter types
@@ -64,6 +65,7 @@ function ClientsContent() {
     lastVisit: 'all',
     totalSpent: 'all',
   });
+  const [clientMenuId, setClientMenuId] = useState<string | null>(null);
 
   // Form state for new/edit client
   const [formData, setFormData] = useState<CreateClientInput>({
@@ -104,7 +106,7 @@ function ClientsContent() {
 
   // Filter clients locally for immediate feedback while typing and apply filters
   const filteredClients = useMemo(() => {
-    return clients.filter((client) => {
+    return (clients || []).filter((client) => {
       // Search filter
       const matchesSearch =
         client.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -359,10 +361,7 @@ function ClientsContent() {
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={handleOpenNewClient}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"
@@ -545,7 +544,7 @@ function ClientsContent() {
             </div>
 
             {/* Loading State */}
-            {isLoading && clients.length === 0 ? (
+            {isLoading && (clients || []).length === 0 ? (
               <div className="divide-y divide-charcoal/10">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="grid grid-cols-12 gap-4 px-6 py-4 animate-pulse">
@@ -573,7 +572,7 @@ function ClientsContent() {
             ) : (
               /* Table Body */
               <div className="divide-y divide-charcoal/10">
-                {filteredClients.map((client) => {
+                {(filteredClients || []).map((client) => {
                   const tags = getClientTags(client);
                   return (
                     <div
@@ -585,8 +584,8 @@ function ClientsContent() {
                       <div className="col-span-3 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center flex-shrink-0">
                           <span className="text-sage font-semibold text-sm">
-                            {client.firstName[0]}
-                            {client.lastName[0]}
+                            {client.firstName?.[0] || '?'}
+                            {client.lastName?.[0] || ''}
                           </span>
                         </div>
                         <div className="min-w-0">
@@ -642,10 +641,62 @@ function ClientsContent() {
                       </div>
 
                       {/* Actions */}
-                      <div className="col-span-1 flex items-center justify-end">
-                        <button className="p-2 text-charcoal/40 hover:text-charcoal transition-colors">
+                      <div className="col-span-1 flex items-center justify-end relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setClientMenuId(clientMenuId === client.id ? null : client.id);
+                          }}
+                          className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                        >
                           <MoreHorizontal className="w-5 h-5" />
                         </button>
+                        {clientMenuId === client.id && (
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-20">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedClient(client);
+                                setClientMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                              View Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedClient(client);
+                                setFormData({
+                                  firstName: client.firstName,
+                                  lastName: client.lastName,
+                                  email: client.email || '',
+                                  phone: client.phone || '',
+                                  notes: client.notes || '',
+                                });
+                                setShowEditClient(true);
+                                setClientMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                              Edit Client
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedClient(client);
+                                setShowDeleteConfirm(true);
+                                setClientMenuId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-rose/5 text-rose flex items-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete Client
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -653,7 +704,7 @@ function ClientsContent() {
               </div>
             )}
 
-            {!isLoading && filteredClients.length === 0 && (
+            {!isLoading && (filteredClients || []).length === 0 && (
               <div className="p-12 text-center">
                 <Users className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
                 <p className="text-charcoal/60">No clients found</p>
@@ -699,8 +750,8 @@ function ClientsContent() {
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-full bg-sage/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sage font-bold text-xl">
-                    {selectedClient.firstName[0]}
-                    {selectedClient.lastName[0]}
+                    {selectedClient.firstName?.[0] || '?'}
+                    {selectedClient.lastName?.[0] || ''}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -773,11 +824,17 @@ function ClientsContent() {
 
               {/* Quick Actions */}
               <div className="grid grid-cols-2 gap-3">
-                <button className="flex items-center justify-center gap-2 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors">
+                <button
+                  onClick={() => handleBookAppointment(selectedClient)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
+                >
                   <Calendar className="w-5 h-5" />
                   Book
                 </button>
-                <button className="flex items-center justify-center gap-2 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors">
+                <button
+                  onClick={() => handleMessageClient(selectedClient)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors"
+                >
                   <MessageSquare className="w-5 h-5" />
                   Message
                 </button>
@@ -1174,6 +1231,11 @@ function ClientsContent() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Click outside to close client menu */}
+      {clientMenuId && (
+        <div className="fixed inset-0 z-10" onClick={() => setClientMenuId(null)} />
       )}
     </div>
   );

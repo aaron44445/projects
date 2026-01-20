@@ -775,13 +775,13 @@ function Footer() {
             2026 Peacase. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <a href="#" className="text-white/60 hover:text-white transition-colors">
+            <a href="https://twitter.com/peacase" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
               Twitter
             </a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors">
+            <a href="https://linkedin.com/company/peacase" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
               LinkedIn
             </a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors">
+            <a href="https://instagram.com/peacase" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors">
               Instagram
             </a>
           </div>

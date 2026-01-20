@@ -122,7 +122,7 @@ function StaffContent() {
         const staffServiceIds = member.staffServices?.map((s) => s.serviceId) || [];
         const staffServicesNames = services
           .filter((s) => staffServiceIds.includes(s.id))
-          .map((s) => (typeof s.category === 'string' ? s.category : s.category?.name) || s.name);
+          .map((s) => s.category?.name || s.name);
         return staffServicesNames.some((name) =>
           name.toLowerCase().includes(filters.department.toLowerCase())
         );
@@ -275,7 +275,7 @@ function StaffContent() {
     // Get working days from availability
     const workingDays = member.staffAvailability
       ?.filter((a) => a.isAvailable)
-      .map((a) => dayNames[a.dayOfWeek]) || [];
+      .map((a) => dayNames[a.dayOfWeek % 7] || '') || [];
 
     // Get working hours (from first availability entry)
     const firstAvailability = member.staffAvailability?.find((a) => a.isAvailable);
@@ -551,9 +551,9 @@ function StaffContent() {
 
                       {/* Specialties (Services) */}
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {displayInfo.specialties.length > 0 ? (
+                        {(displayInfo.specialties?.length ?? 0) > 0 ? (
                           <>
-                            {displayInfo.specialties.slice(0, 3).map((specialty) => (
+                            {(displayInfo.specialties ?? []).slice(0, 3).map((specialty) => (
                               <span
                                 key={specialty}
                                 className="px-2 py-1 bg-charcoal/5 rounded-lg text-xs text-charcoal/70"
@@ -561,9 +561,9 @@ function StaffContent() {
                                 {specialty}
                               </span>
                             ))}
-                            {displayInfo.specialties.length > 3 && (
+                            {(displayInfo.specialties?.length ?? 0) > 3 && (
                               <span className="px-2 py-1 text-xs text-charcoal/50">
-                                +{displayInfo.specialties.length - 3} more
+                                +{(displayInfo.specialties?.length ?? 0) - 3} more
                               </span>
                             )}
                           </>

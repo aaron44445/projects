@@ -26,6 +26,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useGiftCards, GiftCard, useSalon } from '@/hooks';
 
 const presetAmounts = [25, 50, 75, 100, 150, 200];
@@ -439,9 +440,7 @@ function GiftCardsContent() {
                 <CreditCard className="w-5 h-5" />
                 <span className="hidden sm:inline">Redeem</span>
               </button>
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={() => setShowModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"

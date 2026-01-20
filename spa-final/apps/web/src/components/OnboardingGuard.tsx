@@ -17,7 +17,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     if (!isLoading) {
       if (!isAuthenticated) {
         router.push('/login');
-      } else if (salon && !salon.onboardingComplete) {
+      } else if (salon && salon.onboardingComplete === false) {
         router.push('/onboarding');
       }
     }
@@ -31,7 +31,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     );
   }
 
-  if (!isAuthenticated || (salon && !salon.onboardingComplete)) {
+  if (!isAuthenticated || (salon && salon.onboardingComplete === false)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream">
         <Loader2 className="w-8 h-8 animate-spin text-sage" />

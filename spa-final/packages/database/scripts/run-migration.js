@@ -2,6 +2,7 @@
 /**
  * Emergency migration script to add missing columns
  * Runs during Render build to fix schema sync issues
+ * v2 - Added extra logging for debugging
  */
 
 import pg from 'pg';

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
 
 interface CategoryWithUI extends ServiceCategory {
@@ -182,7 +183,7 @@ function ServicesContent() {
     setServiceForm({
       name: '',
       description: '',
-      categoryId: categories[0]?.id || '',
+      categoryId: categories?.length > 0 ? categories[0].id : '',
       durationMinutes: 60,
       price: '',
       memberPrice: '',
@@ -450,10 +451,7 @@ function ServicesContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={openNewCategoryModal}
                 className="hidden sm:flex items-center gap-2 px-4 py-2 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-all"

@@ -20,6 +20,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useReports } from '@/hooks/useReports';
 
 // Date range presets
@@ -149,7 +150,7 @@ function ReportsContent() {
   const revenueByService = useMemo(() => {
     if (!servicesReport?.categories) return [];
 
-    return servicesReport.categories.slice(0, 5).map((cat, index) => ({
+    return (servicesReport?.categories?.slice(0, 5) || []).map((cat, index) => ({
       name: cat.name,
       revenue: cat.revenue,
       percentage: cat.percentage,
@@ -161,7 +162,7 @@ function ReportsContent() {
   const topStaff = useMemo(() => {
     if (!staffReport?.staff) return [];
 
-    return staffReport.staff.slice(0, 5).map(s => ({
+    return (staffReport?.staff?.slice(0, 5) || []).map(s => ({
       name: s.name,
       role: s.role.charAt(0).toUpperCase() + s.role.slice(1),
       revenue: s.revenue,
@@ -367,10 +368,7 @@ function ReportsContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={handleExportCSV}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"

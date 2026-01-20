@@ -648,3 +648,28 @@ model BillingHistory {
   @@index([createdAt])
   @@map("billing_history")
 }
+
+// ============================================
+// LEADS & DEMO REQUESTS
+// ============================================
+
+model DemoRequest {
+  id            String   @id @default(uuid())
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  email         String
+  phone         String
+  businessName  String   @map("business_name")
+  businessSize  String   @map("business_size")
+  preferredDate String   @map("preferred_date")
+  preferredTime String   @map("preferred_time")
+  message       String?
+  status        String   @default("pending") // pending, scheduled, completed, cancelled
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+  @@map("demo_requests")
+}

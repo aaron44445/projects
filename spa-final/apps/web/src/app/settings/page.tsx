@@ -28,6 +28,7 @@ import {
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useSalon, type Salon } from '@/hooks';
 
 const settingsSections = [
@@ -1432,10 +1433,7 @@ function SettingsContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-              </button>
+              <NotificationDropdown />
             </div>
           </div>
         </header>

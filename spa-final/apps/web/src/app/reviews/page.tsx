@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
-  Bell,
   Menu,
   Star,
   ThumbsUp,
@@ -21,6 +21,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useReviews, Review } from '@/hooks';
 
 function ReviewsContent() {
@@ -31,9 +32,16 @@ function ReviewsContent() {
   const [actionMenu, setActionMenu] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   // Use the reviews hook for API integration
   const { reviews, loading, error, pagination, fetchReviews, respondToReview, approveReview } = useReviews();
+
+  // Navigate to client profile
+  const handleViewClientProfile = (clientId: string) => {
+    router.push(`/clients?client=${clientId}`);
+    setActionMenu(null);
+  };
 
   // Fetch reviews when filter changes
   useEffect(() => {
@@ -147,9 +155,7 @@ function ReviewsContent() {
               <h1 className="text-2xl font-bold text-charcoal">Reviews</h1>
             </div>
             <div className="flex items-center gap-3">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={handleRequestReview}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"
@@ -332,7 +338,10 @@ function ReviewsContent() {
                                     Approve & publish
                                   </button>
                                 )}
-                                <button className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2">
+                                <button
+                                  onClick={() => handleViewClientProfile(review.client.id)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                >
                                   <ExternalLink className="w-4 h-4" />
                                   View client profile
                                 </button>

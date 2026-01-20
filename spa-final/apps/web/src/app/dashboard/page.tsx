@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
-  Bell,
   Menu,
   TrendingUp,
   TrendingDown,
@@ -22,12 +22,16 @@ import {
   AlertCircle,
   RefreshCw,
   Sparkles,
+  Check,
+  XCircle,
+  Edit,
 } from 'lucide-react';
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { OnboardingGuard } from '@/components/OnboardingGuard';
-import { useDashboard } from '@/hooks';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { useDashboard, useAppointments } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -84,8 +88,38 @@ const recentActivity = [
 function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState<AddOnId | null>(null);
+  const [appointmentMenu, setAppointmentMenu] = useState<string | null>(null);
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const router = useRouter();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { stats, todayAppointments, loading, error, refetch } = useDashboard();
+  const { updateAppointment, cancelAppointment } = useAppointments();
+
+  // Handle appointment actions
+  const handleCompleteAppointment = async (id: string) => {
+    try {
+      await updateAppointment(id, { status: 'completed' });
+      setAppointmentMenu(null);
+      refetch();
+    } catch (err) {
+      console.error('Failed to complete appointment:', err);
+    }
+  };
+
+  const handleCancelAppointment = async (id: string) => {
+    try {
+      await cancelAppointment(id);
+      setAppointmentMenu(null);
+      refetch();
+    } catch (err) {
+      console.error('Failed to cancel appointment:', err);
+    }
+  };
+
+  const handleEditAppointment = (id: string) => {
+    router.push(`/calendar?appointment=${id}`);
+    setAppointmentMenu(null);
+  };
 
   // Format time from ISO string
   const formatTime = (isoString: string) => {
@@ -177,10 +211,7 @@ function DashboardContent() {
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </button>
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-white" />
-              </button>
+              <NotificationDropdown />
             </div>
           </div>
         </header>
@@ -415,10 +446,10 @@ function DashboardContent() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-charcoal truncate">
-                            {apt.client.firstName} {apt.client.lastName}
+                            {apt.client?.firstName} {apt.client?.lastName}
                           </p>
                           <p className="text-sm text-charcoal/60 truncate">
-                            {apt.service.name} with {apt.staff.firstName} {apt.staff.lastName}
+                            {apt.service?.name} with {apt.staff?.firstName} {apt.staff?.lastName}
                           </p>
                         </div>
                         <span
@@ -428,9 +459,43 @@ function DashboardContent() {
                         >
                           {apt.status.replace('-', ' ')}
                         </span>
-                        <button className="p-2 text-charcoal/40 hover:text-charcoal">
-                          <MoreHorizontal className="w-5 h-5" />
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => setAppointmentMenu(appointmentMenu === apt.id ? null : apt.id)}
+                            className="p-2 text-charcoal/40 hover:text-charcoal"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+                          {appointmentMenu === apt.id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                              <button
+                                onClick={() => handleEditAppointment(apt.id)}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              >
+                                <Edit className="w-4 h-4" />
+                                Edit Appointment
+                              </button>
+                              {apt.status !== 'completed' && (
+                                <button
+                                  onClick={() => handleCompleteAppointment(apt.id)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  Mark Complete
+                                </button>
+                              )}
+                              {apt.status !== 'cancelled' && (
+                                <button
+                                  onClick={() => handleCancelAppointment(apt.id)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-rose/5 text-rose flex items-center gap-2"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -467,7 +532,10 @@ function DashboardContent() {
                 ))}
               </div>
               <div className="p-4 border-t border-border">
-                <button className="w-full text-sm text-sage hover:text-sage-dark font-medium">
+                <button
+                  onClick={() => setShowAllActivity(true)}
+                  className="w-full text-sm text-sage hover:text-sage-dark font-medium"
+                >
                   View All Activity
                 </button>
               </div>
@@ -511,6 +579,50 @@ function DashboardContent() {
           </div>
         </div>
       </main>
+
+      {/* Click outside to close appointment menu */}
+      {appointmentMenu && (
+        <div className="fixed inset-0 z-[5]" onClick={() => setAppointmentMenu(null)} />
+      )}
+
+      {/* View All Activity Modal */}
+      {showAllActivity && (
+        <>
+          <div
+            className="fixed inset-0 bg-charcoal/50 z-40"
+            onClick={() => setShowAllActivity(false)}
+          />
+          <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl z-50 overflow-auto">
+            <div className="sticky top-0 bg-white border-b border-charcoal/10 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal">Recent Activity</h2>
+              <button
+                onClick={() => setShowAllActivity(false)}
+                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex gap-3 p-4 bg-charcoal/5 rounded-xl">
+                  <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-charcoal">{activity.action}</p>
+                    <p className="text-charcoal/60">{activity.detail}</p>
+                    <p className="text-xs text-charcoal/40 mt-2">{activity.time}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="pt-4 text-center">
+                <p className="text-sm text-charcoal/40">
+                  Showing recent activity from your salon
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

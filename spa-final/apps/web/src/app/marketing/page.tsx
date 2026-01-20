@@ -25,6 +25,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useMarketing, useClients, useReports, Campaign, Client } from '@/hooks';
 
 // Audience segment calculation helpers
@@ -55,9 +56,10 @@ type ModalType = 'email' | 'sms' | 'automation' | null;
 
 function MarketingContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [campaignMenuId, setCampaignMenuId] = useState<string | null>(null);
 
   // Use the marketing hook for API integration
-  const { campaigns, loading, error, createCampaign, sendCampaign, fetchCampaigns } = useMarketing();
+  const { campaigns, loading, error, createCampaign, sendCampaign, deleteCampaign, fetchCampaigns } = useMarketing();
 
   // Use the clients hook to get real audience counts
   const { clients, isLoading: clientsLoading, error: clientsError } = useClients();
@@ -774,9 +776,7 @@ function MarketingContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={() => openModal('email')}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"
@@ -882,13 +882,73 @@ function MarketingContent() {
                             Send
                           </button>
                         )}
-                        <button className="p-2 text-charcoal/40 hover:text-charcoal">
-                          <MoreHorizontal className="w-5 h-5" />
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={() => setCampaignMenuId(campaignMenuId === campaign.id ? null : campaign.id)}
+                            className="p-2 text-charcoal/40 hover:text-charcoal"
+                          >
+                            <MoreHorizontal className="w-5 h-5" />
+                          </button>
+                          {campaignMenuId === campaign.id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                              <button
+                                onClick={() => {
+                                  // View details or edit - for now just close menu
+                                  setCampaignMenuId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                                View Details
+                              </button>
+                              {campaign.status === 'draft' && (
+                                <button
+                                  onClick={() => {
+                                    handleSendCampaign(campaign.id);
+                                    setCampaignMenuId(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Send Campaign
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  // Duplicate functionality - for now just close menu
+                                  setCampaignMenuId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              >
+                                <Plus className="w-4 h-4" />
+                                Duplicate
+                              </button>
+                              {campaign.status === 'draft' && (
+                                <button
+                                  onClick={async () => {
+                                    if (confirm('Are you sure you want to delete this campaign?')) {
+                                      await deleteCampaign(campaign.id);
+                                    }
+                                    setCampaignMenuId(null);
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-rose/5 text-rose flex items-center gap-2"
+                                >
+                                  <X className="w-4 h-4" />
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+              )}
+
+              {/* Click outside to close campaign menu */}
+              {campaignMenuId && (
+                <div className="fixed inset-0 z-[5]" onClick={() => setCampaignMenuId(null)} />
               )}
             </div>
 

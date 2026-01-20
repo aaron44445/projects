@@ -26,7 +26,7 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
       take: parseInt(pageSize as string),
       include: {
         client: {
-          select: { firstName: true, lastName: true, email: true },
+          select: { id: true, firstName: true, lastName: true, email: true },
         },
         appointment: {
           select: {
@@ -157,7 +157,7 @@ router.patch(
       },
       include: {
         client: {
-          select: { firstName: true, lastName: true },
+          select: { id: true, firstName: true, lastName: true },
         },
       },
     });

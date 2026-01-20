@@ -26,6 +26,7 @@ import {
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
 
 const services = [
@@ -282,9 +283,7 @@ function PackagesContent() {
               <h1 className="text-2xl font-bold text-charcoal">Packages & Memberships</h1>
             </div>
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={() => setShowModal(activeTab === 'memberships' ? 'membership' : 'package')}
                 className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import {
   useAppointments,
   useStaff,
@@ -101,7 +102,7 @@ function WeekView({
 
   // Filter appointments for the week
   const weekAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
+    return (appointments || []).filter((apt) => {
       const aptDate = new Date(apt.startTime);
       const weekStart = new Date(currentDate);
       weekStart.setHours(0, 0, 0, 0);
@@ -124,7 +125,7 @@ function WeekView({
 
   // Get appointments for a specific day
   const getAppointmentsForDay = (date: Date) => {
-    return weekAppointments.filter((apt) => {
+    return (weekAppointments || []).filter((apt) => {
       const aptDate = new Date(apt.startTime);
       return (
         aptDate.getFullYear() === date.getFullYear() &&
@@ -151,7 +152,7 @@ function WeekView({
 
   // Get staff color for appointment based on staff index
   const getAppointmentColor = (staffId: string) => {
-    const staffIndex = staff.findIndex((s) => s.id === staffId);
+    const staffIndex = (staff || []).findIndex((s) => s.id === staffId);
     return staffIndex >= 0 ? getStaffColor(staffIndex) : '#E5E5E5';
   };
 
@@ -400,8 +401,9 @@ function CalendarContent() {
 
   // Initialize selected staff when staff data loads
   useEffect(() => {
-    if (staff.length > 0 && selectedStaff.length === 0) {
-      setSelectedStaff(staff.map((s) => s.id));
+    const staffArray = staff || [];
+    if (staffArray.length > 0 && selectedStaff.length === 0) {
+      setSelectedStaff(staffArray.map((s) => s.id));
     }
   }, [staff, selectedStaff.length]);
 
@@ -479,7 +481,7 @@ function CalendarContent() {
 
   // Filter appointments for current day and selected staff
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
+    return (appointments || []).filter((apt) => {
       const aptDate = new Date(apt.startTime);
       const isSameDay =
         aptDate.getFullYear() === currentDate.getFullYear() &&
@@ -500,7 +502,7 @@ function CalendarContent() {
 
   // Get filtered staff list
   const filteredStaff = useMemo(() => {
-    return staff.filter((s) => selectedStaff.includes(s.id));
+    return (staff || []).filter((s) => selectedStaff.includes(s.id));
   }, [staff, selectedStaff]);
 
   // Handle appointment form submission
@@ -509,7 +511,7 @@ function CalendarContent() {
     setSubmitError(null);
 
     try {
-      const selectedService = services.find((s) => s.id === appointmentForm.serviceId);
+      const selectedService = (services || []).find((s) => s.id === appointmentForm.serviceId);
       const startDateTime = new Date(`${appointmentForm.date}T${appointmentForm.time}`);
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + (selectedService?.durationMinutes || 60));
@@ -544,7 +546,7 @@ function CalendarContent() {
     setSubmitError(null);
 
     try {
-      const selectedService = services.find((s) => s.id === appointmentForm.serviceId);
+      const selectedService = (services || []).find((s) => s.id === appointmentForm.serviceId);
       const startDateTime = new Date(`${appointmentForm.date}T${appointmentForm.time}`);
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + (selectedService?.durationMinutes || 60));
@@ -680,10 +682,7 @@ function CalendarContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="p-2 text-charcoal/60 hover:text-charcoal relative">
-                <Bell className="w-6 h-6" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-              </button>
+              <NotificationDropdown />
               <button
                 onClick={() => {
                   resetForm();
@@ -795,7 +794,7 @@ function CalendarContent() {
               </div>
             ) : (
               <div className="space-y-2">
-                {staff.map((staffMember, index) => (
+                {(staff || []).map((staffMember, index) => (
                   <label
                     key={staffMember.id}
                     className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-charcoal/5 transition-colors"
@@ -839,7 +838,7 @@ function CalendarContent() {
                   <div className="w-20 flex-shrink-0 p-4 border-r border-charcoal/10">
                     <Clock className="w-5 h-5 text-charcoal/40 mx-auto" />
                   </div>
-                  {filteredStaff.map((staffMember, index) => (
+                  {(filteredStaff || []).map((staffMember, index) => (
                     <div
                       key={staffMember.id}
                       className="flex-1 min-w-[200px] p-4 border-r border-charcoal/10 text-center"
@@ -848,8 +847,8 @@ function CalendarContent() {
                         className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-semibold"
                         style={{ backgroundColor: getStaffColor(index) }}
                       >
-                        {staffMember.firstName[0]}
-                        {staffMember.lastName[0]}
+                        {staffMember.firstName?.[0] || '?'}
+                        {staffMember.lastName?.[0] || ''}
                       </div>
                       <p className="font-medium text-charcoal text-sm">
                         {staffMember.firstName} {staffMember.lastName}
@@ -866,7 +865,7 @@ function CalendarContent() {
                       <div className="w-20 flex-shrink-0 p-2 text-sm text-charcoal/60 text-right border-r border-charcoal/10">
                         {hour.toString().padStart(2, '0')}:00
                       </div>
-                      {filteredStaff.map((staffMember) => (
+                      {(filteredStaff || []).map((staffMember) => (
                         <div
                           key={staffMember.id}
                           className="flex-1 min-w-[200px] border-r border-charcoal/10 relative"
@@ -876,8 +875,8 @@ function CalendarContent() {
                   ))}
 
                   {/* Appointments */}
-                  {filteredAppointments.map((apt) => {
-                    const staffIndex = filteredStaff.findIndex((s) => s.id === apt.staffId);
+                  {(filteredAppointments || []).map((apt) => {
+                    const staffIndex = (filteredStaff || []).findIndex((s) => s.id === apt.staffId);
                     if (staffIndex === -1) return null;
 
                     const { top, height } = getAppointmentPosition(apt.startTime, apt.endTime);
@@ -1041,9 +1040,9 @@ function CalendarContent() {
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
-                {clientSearch && clients.length > 0 && (
+                {clientSearch && (clients || []).length > 0 && (
                   <div className="mt-2 border border-charcoal/10 rounded-xl max-h-40 overflow-auto">
-                    {clients.map((client) => (
+                    {(clients || []).map((client) => (
                       <button
                         key={client.id}
                         onClick={() => {
@@ -1075,7 +1074,7 @@ function CalendarContent() {
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select a service...</option>
-                  {services.map((service) => (
+                  {(services || []).map((service) => (
                     <option key={service.id} value={service.id}>
                       {service.name} - {service.durationMinutes} min - ${service.price}
                     </option>
@@ -1094,7 +1093,7 @@ function CalendarContent() {
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select staff...</option>
-                  {staff.map((staffMember) => (
+                  {(staff || []).map((staffMember) => (
                     <option key={staffMember.id} value={staffMember.id}>
                       {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
                     </option>
@@ -1241,7 +1240,7 @@ function CalendarContent() {
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select a service...</option>
-                  {services.map((service) => (
+                  {(services || []).map((service) => (
                     <option key={service.id} value={service.id}>
                       {service.name} - {service.durationMinutes} min - ${service.price}
                     </option>
@@ -1260,7 +1259,7 @@ function CalendarContent() {
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select staff...</option>
-                  {staff.map((staffMember) => (
+                  {(staff || []).map((staffMember) => (
                     <option key={staffMember.id} value={staffMember.id}>
                       {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
                     </option>
