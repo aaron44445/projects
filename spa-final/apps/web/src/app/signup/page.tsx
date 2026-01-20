@@ -163,6 +163,13 @@ export default function SignupPage() {
           {errors.submit && (
             <div className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20 text-error text-sm">
               {errors.submit}
+              {errors.submit.toLowerCase().includes('already exists') && (
+                <p className="mt-2">
+                  <Link href="/login" className="font-semibold underline hover:no-underline">
+                    Click here to log in
+                  </Link>
+                </p>
+              )}
             </div>
           )}
 
