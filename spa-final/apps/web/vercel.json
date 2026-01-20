@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd ../.. && npm install -g pnpm && pnpm install && pnpm turbo run build --filter=@peacase/web",
+  "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=@peacase/web",
   "devCommand": "pnpm dev",
-  "installCommand": "npm install -g pnpm && pnpm install",
+  "installCommand": "echo 'skip install - done in buildCommand'",
   "framework": "nextjs",
   "outputDirectory": ".next"
 }
