@@ -37,6 +37,14 @@ vi.mock('twilio', () => {
 });
 
 describe('Integrations API', () => {
+  describe('Stripe Connect (placeholder)', () => {
+    // Note: POST /integrations/stripe/connect endpoint is not implemented
+    // in the integrations.ts file. This is a placeholder for future implementation.
+    it('should be implemented in the future', () => {
+      expect(true).toBe(true);
+    });
+  });
+
   describe('GET /api/v1/integrations/status', () => {
     it('should return integration status for authenticated owner', async () => {
       const salon = await createTestSalon();

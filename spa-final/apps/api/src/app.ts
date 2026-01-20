@@ -19,6 +19,9 @@ import { dashboardRouter } from './routes/dashboard.js';
 import { reportsRouter } from './routes/reports.js';
 import { webhooksRouter } from './routes/webhooks.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { staffPortalRouter } from './routes/staffPortal.js';
+import { demoRouter } from './routes/demo.js';
+import { uploadsRouter } from './routes/uploads.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -82,6 +85,9 @@ export function createApp() {
   app.use('/api/v1/reports', reportsRouter);
   app.use('/api/v1/webhooks', webhooksRouter);
   app.use('/api/v1/integrations', integrationsRouter);
+  app.use('/api/v1/staff-portal', staffPortalRouter);
+  app.use('/api/v1/demo', demoRouter);
+  app.use('/api/v1/uploads', uploadsRouter);
 
   // ============================================
   // ERROR HANDLING
