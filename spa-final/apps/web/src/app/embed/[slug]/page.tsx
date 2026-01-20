@@ -662,6 +662,15 @@ export default function EmbedBookingPage() {
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
+  // Check if in preview mode (for settings page preview iframe)
+  const [isPreview, setIsPreview] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsPreview(new URLSearchParams(window.location.search).has('preview'));
+    }
+  }, []);
+
   const [booking, setBooking] = useState<BookingData>({
     serviceId: null,
     serviceName: null,
@@ -796,7 +805,7 @@ export default function EmbedBookingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-[400px] flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
@@ -804,7 +813,7 @@ export default function EmbedBookingPage() {
 
   if (!salon) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="min-h-[400px] flex items-center justify-center bg-gray-50 p-6">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Salon Not Found</h2>
@@ -815,7 +824,7 @@ export default function EmbedBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ fontFamily: fontFamilyCSS }}>
+    <div className="min-h-[500px] bg-gray-50 flex flex-col" style={{ fontFamily: fontFamilyCSS }}>
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
@@ -868,7 +877,7 @@ export default function EmbedBookingPage() {
       )}
 
       {/* Content */}
-      <main className="max-w-lg mx-auto p-6">
+      <main className="max-w-lg mx-auto p-6 flex-1">
         {step === 1 && (
           <ServiceStep
             categories={categories}
@@ -929,7 +938,7 @@ export default function EmbedBookingPage() {
 
       {/* Footer Navigation */}
       {step < 5 && (
-        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4">
+        <footer className="bg-white border-t border-gray-200 px-4 py-4 mt-auto">
           <div className="max-w-lg mx-auto flex gap-3">
             {step > 1 && (
               <button
@@ -973,7 +982,7 @@ export default function EmbedBookingPage() {
 
       {/* Done Button */}
       {step === 5 && (
-        <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4">
+        <footer className="bg-white border-t border-gray-200 px-4 py-4 mt-auto">
           <div className="max-w-lg mx-auto">
             <button
               onClick={handleClose}

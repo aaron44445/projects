@@ -101,7 +101,7 @@ function SettingsContent() {
   const [widgetSaving, setWidgetSaving] = useState(false);
   const [widgetSaveStatus, setWidgetSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [widgetInitialized, setWidgetInitialized] = useState(false);
-  const [iframeHeight, setIframeHeight] = useState('700');
+  const [iframeHeight, setIframeHeight] = useState('600');
   const [embedCopied, setEmbedCopied] = useState(false);
   const [activeInstallTab, setActiveInstallTab] = useState('wordpress');
 
@@ -1071,101 +1071,31 @@ function SettingsContent() {
 
                 {/* Right Column: Live Preview */}
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-3">
-                    Live Preview
-                  </label>
-                  <div
-                    className="bg-cream/50 rounded-2xl border border-charcoal/10 p-6 min-h-[400px]"
-                    style={{ fontFamily: fontFamilyMap[widgetSettings.fontFamily] }}
-                  >
-                    {/* Mini booking form preview */}
-                    <div
-                      className="bg-white p-5 shadow-sm"
-                      style={{ borderRadius: buttonRadius }}
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-charcoal">
+                      Live Preview
+                    </label>
+                    <a
+                      href={embedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-sage hover:underline"
                     >
-                      {/* Header */}
-                      <div className="text-center mb-5">
-                        <h4 className="font-semibold text-charcoal text-lg mb-1" style={{ fontFamily: fontFamilyMap[widgetSettings.fontFamily] }}>
-                          {salon?.name || 'Your Spa'}
-                        </h4>
-                        <p className="text-sm text-charcoal/60">Book an appointment</p>
-                      </div>
-
-                      {/* Service category */}
-                      <div className="mb-4">
-                        <p
-                          className="text-xs font-semibold uppercase tracking-wide mb-2"
-                          style={{ color: widgetSettings.accentColor }}
-                        >
-                          Select a Service
-                        </p>
-                        <div className="space-y-2">
-                          {['Swedish Massage', 'Deep Tissue', 'Hot Stone'].map((service, idx) => (
-                            <div
-                              key={service}
-                              className={`p-3 border-2 cursor-pointer transition-all ${idx === 0 ? 'bg-opacity-10' : ''}`}
-                              style={{
-                                borderRadius: buttonRadius,
-                                borderColor: idx === 0 ? widgetSettings.primaryColor : '#e5e5e5',
-                                backgroundColor: idx === 0 ? `${widgetSettings.primaryColor}15` : 'white',
-                              }}
-                            >
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-charcoal">{service}</span>
-                                <span className="text-sm text-charcoal/60">${60 + idx * 20}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Time slots preview */}
-                      <div className="mb-5">
-                        <p
-                          className="text-xs font-semibold uppercase tracking-wide mb-2"
-                          style={{ color: widgetSettings.accentColor }}
-                        >
-                          Available Times
-                        </p>
-                        <div className="flex gap-2 flex-wrap">
-                          {['9:00 AM', '10:30 AM', '2:00 PM'].map((time, idx) => (
-                            <button
-                              key={time}
-                              className="px-3 py-2 text-sm font-medium transition-all"
-                              style={{
-                                borderRadius: buttonRadius,
-                                backgroundColor: idx === 1 ? widgetSettings.primaryColor : '#f5f5f5',
-                                color: idx === 1 ? 'white' : '#374151',
-                              }}
-                            >
-                              {time}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Book button */}
-                      <button
-                        className="w-full py-3 text-white font-semibold transition-all"
-                        style={{
-                          backgroundColor: widgetSettings.primaryColor,
-                          borderRadius: buttonRadius,
-                        }}
-                      >
-                        Continue
-                      </button>
-
-                      {/* Link preview */}
-                      <p className="text-center mt-3">
-                        <span
-                          className="text-sm cursor-pointer hover:underline"
-                          style={{ color: widgetSettings.accentColor }}
-                        >
-                          View all services
-                        </span>
-                      </p>
-                    </div>
+                      Open full preview <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
+                  <div className="bg-cream/50 rounded-2xl border border-charcoal/10 overflow-hidden" style={{ height: '500px' }}>
+                    {/* Real interactive iframe preview */}
+                    <iframe
+                      src={`${embedUrl}?preview=true&t=${Date.now()}`}
+                      className="w-full h-full border-0"
+                      title="Booking widget preview"
+                      key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}`}
+                    />
+                  </div>
+                  <p className="text-xs text-charcoal/50 mt-2 text-center">
+                    This is a live preview of your actual booking widget. Changes save automatically.
+                  </p>
                 </div>
               </div>
             </div>
@@ -1198,7 +1128,7 @@ function SettingsContent() {
                   max="1200"
                   className="w-32 px-4 py-2 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
                 />
-                <span className="text-xs text-charcoal/50 ml-2">Recommended: 700px</span>
+                <span className="text-xs text-charcoal/50 ml-2">Recommended: 600px</span>
               </div>
 
               <div className="relative">
