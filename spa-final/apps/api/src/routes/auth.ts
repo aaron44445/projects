@@ -57,19 +57,50 @@ async function createAndSendVerificationEmail(userId: string, email: string, sal
   });
 }
 
-// Validation schemas
+// Input normalization helper - trim and lowercase email before validation
+function normalizeAuthInput(body: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...body };
+
+  // Normalize email: trim whitespace and convert to lowercase
+  if (typeof normalized.email === 'string') {
+    normalized.email = normalized.email.trim().toLowerCase();
+  }
+
+  // Normalize ownerName: trim whitespace
+  if (typeof normalized.ownerName === 'string') {
+    normalized.ownerName = normalized.ownerName.trim();
+  }
+
+  // Normalize businessName: trim whitespace
+  if (typeof normalized.businessName === 'string') {
+    normalized.businessName = normalized.businessName.trim();
+  }
+
+  return normalized;
+}
+
+// Validation schemas with clear error messages
 const registerSchema = z.object({
-  ownerName: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-  phone: z.string().min(1),
-  businessName: z.string().min(2),
-  businessType: z.enum(['salon', 'spa', 'barbershop', 'med_spa', 'nail_salon', 'massage_studio', 'other']),
+  ownerName: z.string()
+    .min(1, 'Name is required')
+    .min(2, 'Name must be at least 2 characters'),
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  password: z.string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+  phone: z.string().optional(),
+  businessName: z.string().optional(),
+  businessType: z.string().optional(),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  password: z.string()
+    .min(1, 'Password is required'),
 });
 
 const forgotPasswordSchema = z.object({
@@ -119,7 +150,9 @@ function generateSlug(name: string): string {
 // ============================================
 router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
-    const data = registerSchema.parse(req.body);
+    // Normalize input before validation (trim whitespace, lowercase email)
+    const normalizedInput = normalizeAuthInput(req.body);
+    const data = registerSchema.parse(normalizedInput);
 
     // Check if email already exists
     const existingUser = await prisma.user.findFirst({
@@ -141,12 +174,21 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
     // Hash password
     const passwordHash = await bcrypt.hash(data.password, 12);
 
+    // Parse owner name into first/last
+    const nameParts = data.ownerName.trim().split(' ');
+    const firstName = nameParts[0] || 'Owner';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    // Auto-generate business name if not provided
+    const businessName = data.businessName || `${firstName}'s Business`;
+    const businessType = data.businessType || 'other';
+
     // Generate unique slug
-    let slug = generateSlug(data.businessName);
+    let slug = generateSlug(businessName);
     let slugExists = await prisma.salon.findUnique({ where: { slug } });
     let counter = 1;
     while (slugExists) {
-      slug = `${generateSlug(data.businessName)}-${counter}`;
+      slug = `${generateSlug(businessName)}-${counter}`;
       slugExists = await prisma.salon.findUnique({ where: { slug } });
       counter++;
     }
@@ -154,20 +196,15 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
     // Create salon first
     const salon = await prisma.salon.create({
       data: {
-        name: data.businessName,
+        name: businessName,
         slug,
         email: data.email,
-        phone: data.phone,
-        businessType: data.businessType,
+        phone: data.phone || null,
+        businessType,
         onboardingComplete: false,
         onboardingStep: 1,
       },
     });
-
-    // Parse owner name into first/last
-    const nameParts = data.ownerName.trim().split(' ');
-    const firstName = nameParts[0] || 'Owner';
-    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Create admin user
     const user = await prisma.user.create({
@@ -221,12 +258,19 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Get the first error message for a user-friendly response
+      const fieldErrors = error.flatten().fieldErrors;
+      const firstField = Object.keys(fieldErrors)[0];
+      const firstMessage = firstField && fieldErrors[firstField]?.[0]
+        ? fieldErrors[firstField]![0]
+        : 'Please check your input and try again';
+
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
-          details: error.flatten().fieldErrors,
+          message: firstMessage,
+          details: fieldErrors,
         },
       });
     }
@@ -239,7 +283,9 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
 // ============================================
 router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
-    const data = loginSchema.parse(req.body);
+    // Normalize input before validation (trim whitespace, lowercase email)
+    const normalizedInput = normalizeAuthInput(req.body);
+    const data = loginSchema.parse(normalizedInput);
 
     // Find user
     const user = await prisma.user.findFirst({
@@ -311,11 +357,19 @@ router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Resp
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Get the first error message for a user-friendly response
+      const fieldErrors = error.flatten().fieldErrors;
+      const firstField = Object.keys(fieldErrors)[0];
+      const firstMessage = firstField && fieldErrors[firstField]?.[0]
+        ? fieldErrors[firstField]![0]
+        : 'Please check your input and try again';
+
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
+          message: firstMessage,
+          details: fieldErrors,
         },
       });
     }
@@ -399,7 +453,7 @@ router.post('/verify-email', authRateLimit, async (req: Request, res: Response) 
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
+          message: 'Invalid verification token',
         },
       });
     }
@@ -412,7 +466,9 @@ router.post('/verify-email', authRateLimit, async (req: Request, res: Response) 
 // ============================================
 router.post('/resend-verification', strictRateLimit, async (req: Request, res: Response) => {
   try {
-    const data = resendVerificationSchema.parse(req.body);
+    // Normalize email before validation
+    const normalizedInput = normalizeAuthInput(req.body);
+    const data = resendVerificationSchema.parse(normalizedInput);
 
     // Find user by email
     const user = await prisma.user.findFirst({
@@ -459,7 +515,7 @@ router.post('/resend-verification', strictRateLimit, async (req: Request, res: R
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
+          message: 'Please enter a valid email address',
         },
       });
     }
@@ -586,7 +642,9 @@ router.post('/logout-csrf', (req: Request, res: Response) => {
 // ============================================
 router.post('/forgot-password', strictRateLimit, async (req: Request, res: Response) => {
   try {
-    const data = forgotPasswordSchema.parse(req.body);
+    // Normalize email before validation
+    const normalizedInput = normalizeAuthInput(req.body);
+    const data = forgotPasswordSchema.parse(normalizedInput);
 
     // Find user by email
     const user = await prisma.user.findFirst({
@@ -716,12 +774,19 @@ router.post('/reset-password', strictRateLimit, async (req: Request, res: Respon
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Get the first error message for a user-friendly response
+      const fieldErrors = error.flatten().fieldErrors;
+      const firstField = Object.keys(fieldErrors)[0];
+      const firstMessage = firstField && fieldErrors[firstField]?.[0]
+        ? fieldErrors[firstField]![0]
+        : 'Password must be at least 8 characters';
+
       return res.status(400).json({
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Invalid input data',
-          details: error.flatten().fieldErrors,
+          message: firstMessage,
+          details: fieldErrors,
         },
       });
     }

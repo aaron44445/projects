@@ -9,11 +9,16 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'owner' | 'admin' | 'staff';
+  role: 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist';
   avatarUrl?: string;
   phone?: string;
   emailVerified?: boolean;
   createdAt: string;
+  permissions?: string[]; // Permissions array from backend
+  staffLocations?: Array<{
+    location: { id: string; name: string };
+    isPrimary: boolean;
+  }>;
 }
 
 export interface Salon {
@@ -37,6 +42,7 @@ export interface Salon {
   businessType?: string;
   onboardingComplete?: boolean;
   onboardingStep?: number;
+  multiLocationEnabled?: boolean;
 }
 
 interface AuthTokens {
@@ -68,7 +74,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (ownerName: string, email: string, password: string, phone: string, businessName: string, businessType: string) => Promise<{ requiresVerification: boolean }>;
+  register: (ownerName: string, email: string, password: string) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
   refreshSalonData: () => Promise<void>;
@@ -198,8 +204,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login function
   const login = async (email: string, password: string): Promise<void> => {
+    // Normalize inputs before sending to API
+    const normalizedEmail = email.trim().toLowerCase();
+
     const response = await api.post<LoginResponse>('/auth/login', {
-      email,
+      email: normalizedEmail,
       password,
     });
 
@@ -218,18 +227,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (
     ownerName: string,
     email: string,
-    password: string,
-    phone: string,
-    businessName: string,
-    businessType: string
+    password: string
   ): Promise<{ requiresVerification: boolean }> => {
+    // Normalize inputs before sending to API
+    const normalizedOwnerName = ownerName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
     const response = await api.post<RegisterResponse>('/auth/register', {
-      ownerName,
-      email,
+      ownerName: normalizedOwnerName,
+      email: normalizedEmail,
       password,
-      phone,
-      businessName,
-      businessType,
     });
 
     if (response.success && response.data) {
@@ -247,7 +254,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Resend verification email
   const resendVerificationEmail = async (email: string): Promise<void> => {
-    await api.post('/auth/resend-verification', { email });
+    // Normalize email before sending to API
+    const normalizedEmail = email.trim().toLowerCase();
+    await api.post('/auth/resend-verification', { email: normalizedEmail });
   };
 
   // Refresh salon data (used after onboarding completion)
