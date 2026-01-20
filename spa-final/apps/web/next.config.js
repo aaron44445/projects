@@ -30,6 +30,25 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
   },
+
+  // Allow embedding the booking widget in iframes on any site
+  async headers() {
+    return [
+      {
+        source: '/embed/:slug*',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: 'frame-ancestors *',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

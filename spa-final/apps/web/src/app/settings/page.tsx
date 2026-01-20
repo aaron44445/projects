@@ -92,9 +92,10 @@ function SettingsContent() {
 
   // Embed widget customization state
   const [embedSettings, setEmbedSettings] = useState({
+    embedType: 'iframe' as 'iframe' | 'button',
     buttonText: 'Book Now',
     buttonColor: '#7C9A82',
-    position: 'inline' as 'inline' | 'floating',
+    iframeHeight: '700',
   });
   const [embedCopied, setEmbedCopied] = useState(false);
   const [activeInstallTab, setActiveInstallTab] = useState('wordpress');
@@ -747,10 +748,33 @@ function SettingsContent() {
 
       case 'booking':
         // Online booking is now included in the base plan - no paywall
-        const embedCode = `<script src="https://peacase.com/book.js" data-salon="${salon?.slug || 'your-salon'}"${embedSettings.buttonText !== 'Book Now' ? ` data-text="${embedSettings.buttonText}"` : ''}${embedSettings.buttonColor !== '#7C9A82' ? ` data-color="${embedSettings.buttonColor}"` : ''}${embedSettings.position !== 'inline' ? ` data-position="${embedSettings.position}"` : ''}></script>`;
+        const bookingUrl = `https://book.peacase.com/${salon?.slug || 'your-salon'}`;
+
+        // Generate embed code based on selected type
+        const embedCode = embedSettings.embedType === 'iframe'
+          ? `<iframe
+  src="${bookingUrl}"
+  width="100%"
+  height="${embedSettings.iframeHeight}px"
+  frameborder="0"
+  style="border: none; border-radius: 12px; max-width: 500px;"
+  title="Book an appointment"
+></iframe>`
+          : `<a
+  href="${bookingUrl}"
+  target="_blank"
+  rel="noopener noreferrer"
+  style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background-color: ${embedSettings.buttonColor}; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-family: system-ui, sans-serif;"
+>${embedSettings.buttonText}</a>`;
 
         const copyEmbedCode = () => {
-          navigator.clipboard.writeText(embedCode);
+          navigator.clipboard.writeText(embedCode.replace(/\n\s*/g, ' ').trim());
+          setEmbedCopied(true);
+          setTimeout(() => setEmbedCopied(false), 2000);
+        };
+
+        const copyDirectLink = () => {
+          navigator.clipboard.writeText(bookingUrl);
           setEmbedCopied(true);
           setTimeout(() => setEmbedCopied(false), 2000);
         };
@@ -758,47 +782,72 @@ function SettingsContent() {
         const installInstructions: Record<string, { title: string; steps: string[] }> = {
           wordpress: {
             title: 'WordPress',
-            steps: [
-              'Go to Appearance → Widgets in your WordPress admin',
-              'Add a "Custom HTML" widget to your desired location',
-              'Paste the embed code above into the widget',
-              'Click Save to publish the booking button',
+            steps: embedSettings.embedType === 'iframe' ? [
+              'Go to the page where you want the booking form',
+              'Add a "Custom HTML" block',
+              'Paste the embed code above',
+              'Preview and publish your page',
+            ] : [
+              'Edit the page or post where you want the booking button',
+              'Add a "Custom HTML" block',
+              'Paste the button code above',
+              'Save and publish your changes',
             ],
           },
           squarespace: {
             title: 'Squarespace',
-            steps: [
-              'Edit the page where you want the booking button',
+            steps: embedSettings.embedType === 'iframe' ? [
+              'Edit the page where you want the booking form',
               'Click Add Section → choose "Code" block',
-              'Paste the embed code above',
+              'Paste the embed code and set display to "HTML"',
               'Click Save to publish',
+            ] : [
+              'Edit the page where you want the booking button',
+              'Add a "Code" block where you want the button',
+              'Paste the button code above',
+              'Save and publish',
             ],
           },
           wix: {
             title: 'Wix',
-            steps: [
-              'In the Wix Editor, click Add → Embed → Custom HTML',
-              'Click "Enter Code" and paste the embed code',
-              'Adjust the size and position as needed',
+            steps: embedSettings.embedType === 'iframe' ? [
+              'In the Wix Editor, click Add → Embed → Embed a Site',
+              'Enter your booking URL or use Custom HTML',
+              'Adjust the size to fit your design',
               'Click Apply, then Publish your site',
+            ] : [
+              'In the Wix Editor, click Add → Embed → Custom HTML',
+              'Paste the button code above',
+              'Position the button where you want it',
+              'Click Apply, then Publish',
             ],
           },
           shopify: {
             title: 'Shopify',
-            steps: [
-              'Go to Online Store → Themes → Edit',
-              'Add a custom Liquid section or use theme.liquid',
-              'Paste the embed code before the closing </body> tag',
+            steps: embedSettings.embedType === 'iframe' ? [
+              'Go to Online Store → Pages',
+              'Edit the page and switch to HTML view',
+              'Paste the iframe code where you want the form',
               'Save and preview your changes',
+            ] : [
+              'Go to Online Store → Pages or Products',
+              'Edit the page and switch to HTML view',
+              'Paste the button code where you want it',
+              'Save your changes',
             ],
           },
           html: {
             title: 'Generic HTML',
-            steps: [
-              'Open your website\'s HTML file in a text editor',
-              'Paste the embed code before the </body> tag',
-              'Save the file and upload to your web server',
-              'The booking button will appear where you placed it',
+            steps: embedSettings.embedType === 'iframe' ? [
+              'Open your website\'s HTML file',
+              'Paste the iframe code where you want the booking form',
+              'Adjust width/height if needed',
+              'Save and upload to your server',
+            ] : [
+              'Open your website\'s HTML file',
+              'Paste the button code where you want it',
+              'Customize colors if needed',
+              'Save and upload to your server',
             ],
           },
         };
@@ -808,8 +857,92 @@ function SettingsContent() {
             <div>
               <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking Widget</h2>
               <p className="text-charcoal/60">
-                Add a booking button to your website with one line of code.
+                Let clients book appointments directly from your website.
               </p>
+            </div>
+
+            {/* Direct Booking Link */}
+            <div className="p-6 bg-gradient-to-br from-lavender/10 to-sage/10 rounded-2xl border border-lavender/20">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-lavender/20 flex items-center justify-center flex-shrink-0">
+                  <ExternalLink className="w-5 h-5 text-lavender" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-charcoal">Your Booking Page</h3>
+                  <p className="text-sm text-charcoal/60">Share this link directly or use the embed options below</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  readOnly
+                  value={bookingUrl}
+                  className="flex-1 px-4 py-3 bg-white rounded-xl border border-charcoal/10 text-charcoal font-mono text-sm"
+                />
+                <button
+                  onClick={copyDirectLink}
+                  className="flex items-center gap-2 px-4 py-3 bg-charcoal text-white rounded-xl font-medium hover:bg-charcoal/90 transition-colors"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </button>
+                <a
+                  href={bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage/90 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Preview
+                </a>
+              </div>
+            </div>
+
+            {/* Embed Type Selector */}
+            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4">Choose Embed Style</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setEmbedSettings(prev => ({ ...prev, embedType: 'iframe' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    embedSettings.embedType === 'iframe'
+                      ? 'border-sage bg-sage/5'
+                      : 'border-charcoal/10 hover:border-charcoal/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      embedSettings.embedType === 'iframe' ? 'bg-sage text-white' : 'bg-charcoal/10 text-charcoal'
+                    }`}>
+                      <Code className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-charcoal">Inline Form</span>
+                  </div>
+                  <p className="text-sm text-charcoal/60">
+                    Embed the full booking form directly on your page. Best for dedicated booking pages.
+                  </p>
+                </button>
+                <button
+                  onClick={() => setEmbedSettings(prev => ({ ...prev, embedType: 'button' }))}
+                  className={`p-4 rounded-xl border-2 text-left transition-all ${
+                    embedSettings.embedType === 'button'
+                      ? 'border-sage bg-sage/5'
+                      : 'border-charcoal/10 hover:border-charcoal/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      embedSettings.embedType === 'button' ? 'bg-sage text-white' : 'bg-charcoal/10 text-charcoal'
+                    }`}>
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-charcoal">Book Now Button</span>
+                  </div>
+                  <p className="text-sm text-charcoal/60">
+                    A styled button that opens booking in a new tab. Best for headers or sidebars.
+                  </p>
+                </button>
+              </div>
             </div>
 
             {/* Embed Code Section */}
@@ -819,7 +952,9 @@ function SettingsContent() {
                   <Code className="w-5 h-5 text-sage" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-charcoal">Your Embed Code</h3>
+                  <h3 className="font-semibold text-charcoal">
+                    {embedSettings.embedType === 'iframe' ? 'Iframe Embed Code' : 'Button Embed Code'}
+                  </h3>
                   <p className="text-sm text-charcoal/60">Copy and paste this into your website</p>
                 </div>
               </div>
@@ -850,60 +985,84 @@ function SettingsContent() {
             <div className="p-6 bg-white rounded-xl border border-charcoal/10">
               <h3 className="font-semibold text-charcoal mb-4">Live Preview</h3>
               <div className="flex items-center justify-center py-8 bg-charcoal/5 rounded-xl">
-                <button
-                  style={{ backgroundColor: embedSettings.buttonColor }}
-                  className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
-                >
-                  <Calendar className="w-5 h-5" />
-                  {embedSettings.buttonText}
-                </button>
+                {embedSettings.embedType === 'iframe' ? (
+                  <div className="w-full max-w-md bg-white rounded-xl border border-charcoal/10 p-4 shadow-sm">
+                    <div className="text-center text-charcoal/60 text-sm">
+                      <div className="w-12 h-12 bg-sage/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Calendar className="w-6 h-6 text-sage" />
+                      </div>
+                      <p className="font-medium text-charcoal mb-1">Booking Form Preview</p>
+                      <p className="text-xs">The full booking experience will appear here</p>
+                    </div>
+                  </div>
+                ) : (
+                  <a
+                    href={bookingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ backgroundColor: embedSettings.buttonColor }}
+                    className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity"
+                  >
+                    {embedSettings.buttonText}
+                  </a>
+                )}
               </div>
             </div>
 
-            {/* Customization Options */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Customize Your Button</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Button Text</label>
-                  <input
-                    type="text"
-                    value={embedSettings.buttonText}
-                    onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonText: e.target.value }))}
-                    placeholder="Book Now"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Button Color</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={embedSettings.buttonColor}
-                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
-                    />
+            {/* Customization Options - Conditional based on embed type */}
+            {embedSettings.embedType === 'button' ? (
+              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                <h3 className="font-semibold text-charcoal mb-4">Customize Your Button</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">Button Text</label>
                     <input
                       type="text"
-                      value={embedSettings.buttonColor}
-                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
+                      value={embedSettings.buttonText}
+                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonText: e.target.value }))}
+                      placeholder="Book Now"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Position</label>
-                  <select
-                    value={embedSettings.position}
-                    onChange={(e) => setEmbedSettings(prev => ({ ...prev, position: e.target.value as 'inline' | 'floating' }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none"
-                  >
-                    <option value="inline">Inline (where you place it)</option>
-                    <option value="floating">Floating (bottom-right corner)</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">Button Color</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={embedSettings.buttonColor}
+                        onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
+                        className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={embedSettings.buttonColor}
+                        onChange={(e) => setEmbedSettings(prev => ({ ...prev, buttonColor: e.target.value }))}
+                        className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                <h3 className="font-semibold text-charcoal mb-4">Customize Iframe</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">Height (pixels)</label>
+                    <input
+                      type="number"
+                      value={embedSettings.iframeHeight}
+                      onChange={(e) => setEmbedSettings(prev => ({ ...prev, iframeHeight: e.target.value }))}
+                      placeholder="700"
+                      min="400"
+                      max="1200"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    />
+                    <p className="text-xs text-charcoal/50 mt-1">Recommended: 700px for full form visibility</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Installation Instructions */}
             <div className="p-6 bg-white rounded-xl border border-charcoal/10">
