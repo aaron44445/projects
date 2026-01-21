@@ -9,7 +9,7 @@ import { staffOnly, ownDataOnly } from '../middleware/staffAuth.js';
 import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
 import { asyncHandler } from '../lib/errorUtils.js';
-import { authRateLimit } from '../middleware/rateLimit.js';
+import { loginRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
 
@@ -77,7 +77,7 @@ function generateTokens(userId: string, salonId: string, role: string) {
 
 // POST /api/v1/staff-portal/auth/login
 // Staff login via /auth/ path (frontend expects this)
-router.post('/auth/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/auth/login', loginRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const data = staffLoginSchema.parse(req.body);
 
   const user = await prisma.user.findFirst({
@@ -466,7 +466,7 @@ router.post('/setup', asyncHandler(async (req: Request, res: Response) => {
 // POST /api/v1/staff-portal/login
 // Staff-specific login (validates role)
 // ============================================
-router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', loginRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const data = staffLoginSchema.parse(req.body);
 
   const user = await prisma.user.findFirst({

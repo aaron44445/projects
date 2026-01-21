@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { prisma } from '@peacase/database';
-import { authRateLimit, strictRateLimit } from '../middleware/rateLimit.js';
+import { loginRateLimit, signupRateLimit, passwordResetRateLimit, emailVerificationRateLimit, tokenRefreshRateLimit } from '../middleware/rateLimit.js';
 import { sendEmail, passwordResetEmail, emailVerificationEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
 import { csrfTokenHandler, clearCsrfToken } from '../middleware/csrf.js';
@@ -114,18 +114,23 @@ const resendVerificationSchema = z.object({
   email: z.string().email(),
 });
 
+// Token expiration constants
+const ACCESS_TOKEN_EXPIRY = '7d';  // 7 days - long-lived for better UX
+const REFRESH_TOKEN_EXPIRY = '30d'; // 30 days - for "remember me" functionality
+const REFRESH_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+
 // Generate tokens
 function generateTokens(userId: string, salonId: string, role: string) {
   const accessToken = jwt.sign(
     { userId, salonId, role },
     env.JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
     { userId, salonId, role, type: 'refresh' },
     env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: REFRESH_TOKEN_EXPIRY }
   );
 
   return { accessToken, refreshToken };
@@ -142,7 +147,7 @@ function generateSlug(name: string): string {
 // ============================================
 // POST /api/v1/auth/register
 // ============================================
-router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/register', signupRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize input before validation (trim whitespace, lowercase email)
     const normalizedInput = normalizeAuthInput(req.body);
@@ -221,7 +226,7 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
       data: {
         userId: user.id,
         token: tokens.refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
       },
     });
 
@@ -275,7 +280,7 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
 // ============================================
 // POST /api/v1/auth/login
 // ============================================
-router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', loginRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize input before validation (trim whitespace, lowercase email)
     const normalizedInput = normalizeAuthInput(req.body);
@@ -323,7 +328,7 @@ router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Resp
       data: {
         userId: user.id,
         token: tokens.refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
       },
     });
 
@@ -374,7 +379,7 @@ router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Resp
 // ============================================
 // POST /api/v1/auth/verify-email
 // ============================================
-router.post('/verify-email', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/verify-email', emailVerificationRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = verifyEmailSchema.parse(req.body);
 
@@ -458,7 +463,7 @@ router.post('/verify-email', authRateLimit, asyncHandler(async (req: Request, re
 // ============================================
 // POST /api/v1/auth/resend-verification
 // ============================================
-router.post('/resend-verification', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/resend-verification', emailVerificationRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize email before validation
     const normalizedInput = normalizeAuthInput(req.body);
@@ -590,7 +595,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
       where: { id: storedToken.id },
       data: {
         token: tokens.refreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
       },
     });
 
@@ -634,7 +639,7 @@ router.post('/logout-csrf', (req: Request, res: Response) => {
 // ============================================
 // POST /api/v1/auth/forgot-password
 // ============================================
-router.post('/forgot-password', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/forgot-password', passwordResetRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize email before validation
     const normalizedInput = normalizeAuthInput(req.body);
@@ -714,7 +719,7 @@ router.post('/forgot-password', strictRateLimit, asyncHandler(async (req: Reques
 // ============================================
 // POST /api/v1/auth/reset-password
 // ============================================
-router.post('/reset-password', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
+router.post('/reset-password', passwordResetRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = resetPasswordSchema.parse(req.body);
 

@@ -1,26 +1,73 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
-// Standard error response format
-const createRateLimitResponse = (message: string) => ({
-  success: false,
-  error: {
-    code: 'RATE_LIMIT_EXCEEDED',
-    message,
-  },
-});
-
-// Skip rate limiting in test environment or development
+// ============================================
+// CONFIGURATION
+// ============================================
 const isTestEnvironment = process.env.NODE_ENV === 'test';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Middleware that skips rate limiting in test mode
-const skipInTest = (rateLimiter: ReturnType<typeof rateLimit>) => {
+// In development/test, use very high limits
+const DEV_MULTIPLIER = isDevelopment ? 100 : 1;
+
+// ============================================
+// HELPER: Generate key from IP + email
+// ============================================
+function getKeyFromIpAndEmail(req: Request): string {
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  // Try to get email from body (login/signup/reset requests)
+  const email = req.body?.email?.toLowerCase?.() || '';
+
+  if (email) {
+    return `${ip}:${email}`;
+  }
+  return ip;
+}
+
+// ============================================
+// HELPER: Create error response with time remaining
+// ============================================
+function createRateLimitHandler(baseMessage: string) {
+  return (req: Request, res: Response, next: NextFunction, options: any) => {
+    const retryAfterHeader = res.getHeader('Retry-After');
+    let seconds: number = 60; // Default to 60 seconds
+
+    if (typeof retryAfterHeader === 'string') {
+      seconds = parseInt(retryAfterHeader, 10) || 60;
+    } else if (typeof retryAfterHeader === 'number') {
+      seconds = retryAfterHeader;
+    }
+
+    let message = baseMessage;
+    if (seconds > 0) {
+      if (seconds < 60) {
+        message = `${baseMessage}. Try again in ${seconds} seconds.`;
+      } else {
+        const minutes = Math.ceil(seconds / 60);
+        message = `${baseMessage}. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`;
+      }
+    }
+
+    res.status(429).json({
+      success: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message,
+        retryAfterSeconds: seconds,
+      },
+    });
+  };
+}
+
+// ============================================
+// HELPER: Skip rate limiting in test environment
+// ============================================
+function skipInTest(rateLimiter: RateLimitRequestHandler) {
   if (isTestEnvironment) {
     return (req: Request, res: Response, next: NextFunction) => next();
   }
   return rateLimiter;
-};
+}
 
 // ============================================
 // GENERAL API RATE LIMIT
@@ -29,53 +76,90 @@ const skipInTest = (rateLimiter: ReturnType<typeof rateLimit>) => {
 // ============================================
 export const generalRateLimit = skipInTest(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDevelopment ? 10000 : 2000, // Higher in dev, 2000 in prod (~133 req/min)
+  max: 2000 * DEV_MULTIPLIER,
   standardHeaders: true,
-  legacyHeaders: true,
-  message: createRateLimitResponse('Too many requests, please try again later'),
-  handler: (req: Request, res: Response) => {
-    res.status(429).json(createRateLimitResponse('Too many requests, please try again later'));
-  },
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+  handler: createRateLimitHandler('Too many requests'),
 }));
 
 // ============================================
-// AUTH RATE LIMIT
-// 60 requests per minute per IP
-// Generous limit for auth - allows rapid testing/retries
-// while still providing brute force protection
+// LOGIN RATE LIMIT
+// 30 failed attempts per minute per IP+email
+// Only counts FAILED requests
 // ============================================
-export const authRateLimit = skipInTest(rateLimit({
+export const loginRateLimit = skipInTest(rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: isDevelopment ? 1000 : 60, // Higher in dev, 60 in prod (60 req/min)
+  max: 30 * DEV_MULTIPLIER,
   standardHeaders: true,
-  legacyHeaders: true,
-  message: createRateLimitResponse('Too many authentication attempts, please try again in a minute'),
-  handler: (req: Request, res: Response) => {
-    res.status(429).json(
-      createRateLimitResponse('Too many authentication attempts, please try again in a minute')
-    );
-  },
-  skipSuccessfulRequests: true, // Only count failed requests
+  legacyHeaders: false,
+  keyGenerator: getKeyFromIpAndEmail,
+  skipSuccessfulRequests: true, // Only count failed attempts
+  handler: createRateLimitHandler('Too many login attempts'),
 }));
 
 // ============================================
-// STRICT RATE LIMIT
-// 20 requests per 5 minutes per IP
-// For: password reset, email verification resend
-// Still protective but allows testing/retries
+// SIGNUP RATE LIMIT
+// 20 attempts per minute per IP
+// Prevents mass account creation
 // ============================================
-export const strictRateLimit = skipInTest(rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: isDevelopment ? 100 : 20, // Higher in dev, 20 in prod (4 req/min)
+export const signupRateLimit = skipInTest(rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20 * DEV_MULTIPLIER,
   standardHeaders: true,
-  legacyHeaders: true,
-  message: createRateLimitResponse(
-    'Too many attempts, please try again in a few minutes'
-  ),
-  handler: (req: Request, res: Response) => {
-    res.status(429).json(
-      createRateLimitResponse('Too many attempts, please try again in a few minutes')
-    );
-  },
-  skipSuccessfulRequests: true, // Only count failed requests
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+  skipSuccessfulRequests: true,
+  handler: createRateLimitHandler('Too many signup attempts'),
 }));
+
+// ============================================
+// PASSWORD RESET RATE LIMIT
+// 10 attempts per minute per IP+email
+// Prevents abuse of password reset emails
+// ============================================
+export const passwordResetRateLimit = skipInTest(rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10 * DEV_MULTIPLIER,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getKeyFromIpAndEmail,
+  skipSuccessfulRequests: true,
+  handler: createRateLimitHandler('Too many password reset attempts'),
+}));
+
+// ============================================
+// TOKEN REFRESH RATE LIMIT
+// 100 per minute - essentially unlimited for normal use
+// Just prevents extreme abuse
+// ============================================
+export const tokenRefreshRateLimit = skipInTest(rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100 * DEV_MULTIPLIER,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip || 'unknown',
+  handler: createRateLimitHandler('Too many token refresh requests'),
+}));
+
+// ============================================
+// EMAIL VERIFICATION RATE LIMIT
+// 5 resends per minute per IP+email
+// Prevents email bombing
+// ============================================
+export const emailVerificationRateLimit = skipInTest(rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5 * DEV_MULTIPLIER,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: getKeyFromIpAndEmail,
+  skipSuccessfulRequests: true,
+  handler: createRateLimitHandler('Too many verification email requests'),
+}));
+
+// ============================================
+// LEGACY EXPORTS (for backward compatibility)
+// These map to the new specific limiters
+// ============================================
+export const authRateLimit = loginRateLimit;
+export const strictRateLimit = passwordResetRateLimit;
