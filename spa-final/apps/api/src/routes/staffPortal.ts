@@ -8,15 +8,10 @@ import { authenticate } from '../middleware/auth.js';
 import { staffOnly, ownDataOnly } from '../middleware/staffAuth.js';
 import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import { asyncHandler } from '../lib/errorUtils.js';
+import { authRateLimit } from '../middleware/rateLimit.js';
 
 const router = Router();
-
-// Async error wrapper
-function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
 
 // Validation schemas
 const inviteStaffSchema = z.object({
@@ -53,22 +48,254 @@ const profileUpdateSchema = z.object({
   certifications: z.string().optional(),
 });
 
+// Token expiration constants
+const ACCESS_TOKEN_EXPIRY = '7d';  // 7 days - long-lived for better UX
+const REFRESH_TOKEN_EXPIRY = '30d'; // 30 days
+const REFRESH_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+
 // Generate tokens
 function generateTokens(userId: string, salonId: string, role: string) {
   const accessToken = jwt.sign(
     { userId, salonId, role },
     env.JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
     { userId, salonId, role, type: 'refresh' },
     env.JWT_REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: REFRESH_TOKEN_EXPIRY }
   );
 
   return { accessToken, refreshToken };
 }
+
+// ============================================
+// AUTH ROUTES (for frontend compatibility)
+// These mirror the main routes but at /auth/ path
+// ============================================
+
+// POST /api/v1/staff-portal/auth/login
+// Staff login via /auth/ path (frontend expects this)
+router.post('/auth/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
+  const data = staffLoginSchema.parse(req.body);
+
+  const user = await prisma.user.findFirst({
+    where: { email: data.email.toLowerCase().trim(), isActive: true },
+    include: { salon: true },
+  });
+
+  if (!user || !user.passwordHash) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' },
+    });
+  }
+
+  // Verify this is a staff account (staff, admin, owner, manager are all valid)
+  if (!['staff', 'admin', 'owner', 'manager', 'receptionist'].includes(user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'NOT_STAFF', message: 'Invalid account type for staff portal' },
+    });
+  }
+
+  const isValid = await bcrypt.compare(data.password, user.passwordHash);
+  if (!isValid) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' },
+    });
+  }
+
+  // Update last login
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { lastLogin: new Date() },
+  });
+
+  const tokens = generateTokens(user.id, user.salonId, user.role);
+
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      token: tokens.refreshToken,
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+    },
+  });
+
+  // Get staff locations for multi-location support
+  const staffLocations = await prisma.staffLocation.findMany({
+    where: { staffId: user.id },
+    include: { location: { select: { id: true, name: true } } },
+  });
+
+  res.json({
+    success: true,
+    data: {
+      staff: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+        phone: user.phone,
+        salonId: user.salonId,
+        salonName: user.salon.name,
+        isActive: user.isActive,
+        createdAt: user.createdAt.toISOString(),
+        assignedLocations: staffLocations.map(sl => ({
+          id: sl.location.id,
+          name: sl.location.name,
+          isPrimary: sl.isPrimary,
+        })),
+        primaryLocationId: staffLocations.find(sl => sl.isPrimary)?.location.id,
+      },
+      tokens,
+    },
+  });
+}));
+
+// POST /api/v1/staff-portal/auth/refresh
+// Refresh staff tokens
+router.post('/auth/refresh', asyncHandler(async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'MISSING_TOKEN', message: 'Refresh token is required' },
+    });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = jwt.verify(
+      refreshToken,
+      env.JWT_REFRESH_SECRET
+    ) as { userId: string; salonId: string; role: string };
+
+    // Check if token exists in database
+    const storedToken = await prisma.refreshToken.findFirst({
+      where: {
+        token: refreshToken,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!storedToken) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_TOKEN', message: 'Invalid or expired refresh token' },
+      });
+    }
+
+    // Generate new tokens
+    const tokens = generateTokens(decoded.userId, decoded.salonId, decoded.role);
+
+    // Update refresh token
+    await prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: {
+        token: tokens.refreshToken,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
+    });
+  } catch {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'INVALID_TOKEN', message: 'Invalid or expired refresh token' },
+    });
+  }
+}));
+
+// POST /api/v1/staff-portal/auth/logout
+// Staff logout
+router.post('/auth/logout', asyncHandler(async (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    try {
+      // Try to decode to get userId
+      const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
+      // Delete all refresh tokens for this user (logout from all devices)
+      await prisma.refreshToken.deleteMany({
+        where: { userId: decoded.userId },
+      });
+    } catch {
+      // Ignore errors - logout should always succeed
+    }
+  }
+
+  res.json({
+    success: true,
+    data: { message: 'Logged out successfully' },
+  });
+}));
+
+// GET /api/v1/staff-portal/me
+// Get current staff user data
+router.get('/me', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+    });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.userId },
+    include: { salon: true },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'User not found' },
+    });
+  }
+
+  // Get staff locations for multi-location support
+  const staffLocations = await prisma.staffLocation.findMany({
+    where: { staffId: user.id },
+    include: { location: { select: { id: true, name: true } } },
+  });
+
+  res.json({
+    success: true,
+    data: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+      phone: user.phone,
+      certifications: user.certifications,
+      commissionRate: user.commissionRate,
+      salonId: user.salonId,
+      salonName: user.salon.name,
+      isActive: user.isActive,
+      createdAt: user.createdAt.toISOString(),
+      assignedLocations: staffLocations.map(sl => ({
+        id: sl.location.id,
+        name: sl.location.name,
+        isPrimary: sl.isPrimary,
+      })),
+      primaryLocationId: staffLocations.find(sl => sl.isPrimary)?.location.id,
+    },
+  });
+}));
 
 // ============================================
 // POST /api/v1/staff-portal/invite
@@ -212,7 +439,7 @@ router.post('/setup', asyncHandler(async (req: Request, res: Response) => {
     data: {
       userId: staff.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
     },
   });
 
@@ -239,11 +466,11 @@ router.post('/setup', asyncHandler(async (req: Request, res: Response) => {
 // POST /api/v1/staff-portal/login
 // Staff-specific login (validates role)
 // ============================================
-router.post('/login', asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const data = staffLoginSchema.parse(req.body);
 
   const user = await prisma.user.findFirst({
-    where: { email: data.email, isActive: true },
+    where: { email: data.email.toLowerCase().trim(), isActive: true },
     include: { salon: true },
   });
 
@@ -282,7 +509,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
     data: {
       userId: user.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
     },
   });
 

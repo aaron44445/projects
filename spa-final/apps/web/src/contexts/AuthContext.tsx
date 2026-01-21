@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { api, ApiError, isTokenExpiringSoon } from '@/lib/api';
 
 // Types
 export interface User {
@@ -86,10 +86,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const ACCESS_TOKEN_KEY = 'peacase_access_token';
 const REFRESH_TOKEN_KEY = 'peacase_refresh_token';
 
+// How often to check token expiry (every 30 seconds for more responsive refresh)
+const TOKEN_CHECK_INTERVAL = 30 * 1000;
+// Refresh if token expires within this many minutes (more aggressive)
+const REFRESH_THRESHOLD_MINUTES = 30;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [salon, setSalon] = useState<Salon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Store tokens in localStorage
   const storeTokens = useCallback((tokens: AuthTokens) => {
@@ -107,6 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Get stored tokens
   const getStoredTokens = useCallback((): AuthTokens | null => {
+    if (typeof window === 'undefined') return null;
+
     const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
@@ -116,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
-  // Refresh authentication
+  // Refresh authentication - this is the core function
   const refreshAuth = useCallback(async (): Promise<boolean> => {
     const tokens = getStoredTokens();
     if (!tokens?.refreshToken) {
@@ -124,6 +132,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // Temporarily clear the API token to avoid using expired token for refresh
+      const currentToken = api.getAccessToken();
+      api.setAccessToken(null);
+
       const response = await api.post<RefreshResponse>('/auth/refresh', {
         refreshToken: tokens.refreshToken,
       });
@@ -139,11 +151,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return true;
       }
+
+      // Restore old token if refresh failed (might still be valid)
+      if (currentToken) {
+        api.setAccessToken(currentToken);
+      }
       return false;
-    } catch {
-      clearTokens();
-      setUser(null);
-      setSalon(null);
+    } catch (error) {
+      // Only clear tokens if refresh definitively failed
+      // (not just a network error)
+      if (error instanceof ApiError &&
+          (error.code === 'INVALID_TOKEN' || error.code === 'TOKEN_EXPIRED')) {
+        clearTokens();
+        setUser(null);
+        setSalon(null);
+      }
       return false;
     }
   }, [getStoredTokens, storeTokens, clearTokens]);
@@ -167,15 +189,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return true;
     } catch (error) {
-      if (error instanceof ApiError && error.code === 'TOKEN_EXPIRED') {
-        // Try to refresh the token
-        const refreshed = await refreshAuth();
-        if (refreshed) {
-          return fetchCurrentUser();
-        }
+      if (error instanceof ApiError &&
+          (error.code === 'TOKEN_EXPIRED' || error.code === 'SESSION_EXPIRED')) {
+        // Token refresh is handled by the API client, if we still get here,
+        // it means refresh failed and user needs to log in again
+        clearTokens();
+        setUser(null);
+        setSalon(null);
       }
       return false;
     }
+  }, [clearTokens]);
+
+  // Background token refresh timer
+  const startTokenRefreshTimer = useCallback(() => {
+    // Clear any existing timer
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+    }
+
+    // Check token expiry periodically
+    refreshTimerRef.current = setInterval(async () => {
+      const tokens = getStoredTokens();
+      if (!tokens?.accessToken) return;
+
+      // If token is expiring soon, refresh it
+      if (isTokenExpiringSoon(tokens.accessToken, REFRESH_THRESHOLD_MINUTES)) {
+        await refreshAuth();
+      }
+    }, TOKEN_CHECK_INTERVAL);
+  }, [getStoredTokens, refreshAuth]);
+
+  // Stop the refresh timer
+  const stopTokenRefreshTimer = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  }, []);
+
+  // Register refresh callback with API client
+  useEffect(() => {
+    api.setRefreshCallback(refreshAuth);
+    return () => {
+      api.setRefreshCallback(null);
+    };
   }, [refreshAuth]);
 
   // Initialize auth state on mount
@@ -186,21 +244,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (tokens?.accessToken) {
         api.setAccessToken(tokens.accessToken);
 
-        const success = await fetchCurrentUser();
-        if (!success) {
-          // Token might be expired, try refresh
+        // If token is expiring soon, refresh first
+        if (isTokenExpiringSoon(tokens.accessToken, REFRESH_THRESHOLD_MINUTES)) {
           const refreshed = await refreshAuth();
-          if (refreshed) {
-            await fetchCurrentUser();
+          if (!refreshed) {
+            // Token refresh failed, user needs to log in again
+            setIsLoading(false);
+            return;
           }
         }
+
+        await fetchCurrentUser();
+        startTokenRefreshTimer();
       }
 
       setIsLoading(false);
     };
 
     initAuth();
-  }, [getStoredTokens, fetchCurrentUser, refreshAuth]);
+
+    // Cleanup timer on unmount
+    return () => {
+      stopTokenRefreshTimer();
+    };
+  }, [getStoredTokens, fetchCurrentUser, refreshAuth, startTokenRefreshTimer, stopTokenRefreshTimer]);
+
+  // Handle storage events (for multi-tab sync)
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === ACCESS_TOKEN_KEY) {
+        if (event.newValue) {
+          // Token was added/updated in another tab
+          api.setAccessToken(event.newValue);
+          fetchCurrentUser();
+        } else {
+          // Token was removed in another tab (logout)
+          setUser(null);
+          setSalon(null);
+          stopTokenRefreshTimer();
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchCurrentUser, stopTokenRefreshTimer]);
+
+  // Handle visibility change (refresh token when user returns to tab)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        // User returned to the tab - check token validity
+        const tokens = getStoredTokens();
+        if (tokens?.accessToken) {
+          // Proactively refresh if token is expiring soon
+          if (isTokenExpiringSoon(tokens.accessToken, REFRESH_THRESHOLD_MINUTES)) {
+            await refreshAuth();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [getStoredTokens, refreshAuth]);
 
   // Login function
   const login = async (email: string, password: string): Promise<void> => {
@@ -218,6 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       storeTokens(tokens);
       setUser(userData);
       setSalon(salonData);
+      startTokenRefreshTimer();
     } else {
       throw new ApiError('LOGIN_FAILED', 'Login failed. Please try again.');
     }
@@ -250,6 +362,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       storeTokens(tokens);
       setUser(userData);
       setSalon(salonData);
+      startTokenRefreshTimer();
 
       return { requiresVerification: false }; // No longer blocking on verification
     } else {
@@ -278,6 +391,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout function
   const logout = async (): Promise<void> => {
+    stopTokenRefreshTimer();
+
     try {
       await api.post('/auth/logout');
     } catch {
