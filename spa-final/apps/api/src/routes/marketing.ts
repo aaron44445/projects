@@ -81,12 +81,12 @@ router.post('/campaigns/:id/send', authenticate, authorize('admin', 'manager'), 
     if (filter.hasAppointmentInLast) {
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - filter.hasAppointmentInLast);
-      whereFilter.appointments = { some: { createdAt: { gte: daysAgo } } };
+      whereFilter.appointments = { some: { startTime: { gte: daysAgo } } };
     }
     if (filter.noAppointmentInLast) {
       const daysAgo = new Date();
       daysAgo.setDate(daysAgo.getDate() - filter.noAppointmentInLast);
-      whereFilter.appointments = { none: { createdAt: { gte: daysAgo } } };
+      whereFilter.appointments = { none: { startTime: { gte: daysAgo } } };
     }
   }
 
