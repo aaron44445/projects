@@ -74,7 +74,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (ownerName: string, email: string, password: string) => Promise<{ requiresVerification: boolean }>;
+  register: (ownerName: string, email: string, password: string, businessName: string, businessType: string) => Promise<{ requiresVerification: boolean }>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
   refreshSalonData: () => Promise<void>;
@@ -227,16 +227,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (
     ownerName: string,
     email: string,
-    password: string
+    password: string,
+    businessName: string,
+    businessType: string
   ): Promise<{ requiresVerification: boolean }> => {
     // Normalize inputs before sending to API
     const normalizedOwnerName = ownerName.trim();
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedBusinessName = businessName.trim();
 
     const response = await api.post<RegisterResponse>('/auth/register', {
       ownerName: normalizedOwnerName,
       email: normalizedEmail,
       password,
+      businessName: normalizedBusinessName,
+      businessType,
     });
 
     if (response.success && response.data) {

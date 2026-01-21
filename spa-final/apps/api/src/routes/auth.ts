@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -8,15 +8,9 @@ import { authRateLimit, strictRateLimit } from '../middleware/rateLimit.js';
 import { sendEmail, passwordResetEmail, emailVerificationEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
 import { csrfTokenHandler, clearCsrfToken } from '../middleware/csrf.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
-
-// Async error wrapper to properly catch errors in async route handlers
-function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
 
 // Generate a secure random verification token
 function generateVerificationToken(): string {
@@ -380,7 +374,7 @@ router.post('/login', authRateLimit, asyncHandler(async (req: Request, res: Resp
 // ============================================
 // POST /api/v1/auth/verify-email
 // ============================================
-router.post('/verify-email', authRateLimit, async (req: Request, res: Response) => {
+router.post('/verify-email', authRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = verifyEmailSchema.parse(req.body);
 
@@ -459,12 +453,12 @@ router.post('/verify-email', authRateLimit, async (req: Request, res: Response) 
     }
     throw error;
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/resend-verification
 // ============================================
-router.post('/resend-verification', strictRateLimit, async (req: Request, res: Response) => {
+router.post('/resend-verification', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize email before validation
     const normalizedInput = normalizeAuthInput(req.body);
@@ -521,12 +515,12 @@ router.post('/resend-verification', strictRateLimit, async (req: Request, res: R
     }
     throw error;
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/logout
 // ============================================
-router.post('/logout', async (req: Request, res: Response) => {
+router.post('/logout', asyncHandler(async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -537,7 +531,7 @@ router.post('/logout', async (req: Request, res: Response) => {
         where: { token },
       });
     } catch {
-      // Ignore errors
+      // Ignore errors - logout should always succeed
     }
   }
 
@@ -545,12 +539,12 @@ router.post('/logout', async (req: Request, res: Response) => {
     success: true,
     data: { message: 'Logged out successfully' },
   });
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/refresh
 // ============================================
-router.post('/refresh', async (req: Request, res: Response) => {
+router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -616,7 +610,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       },
     });
   }
-});
+}));
 
 // ============================================
 // GET /api/v1/auth/csrf-token
@@ -640,7 +634,7 @@ router.post('/logout-csrf', (req: Request, res: Response) => {
 // ============================================
 // POST /api/v1/auth/forgot-password
 // ============================================
-router.post('/forgot-password', strictRateLimit, async (req: Request, res: Response) => {
+router.post('/forgot-password', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     // Normalize email before validation
     const normalizedInput = normalizeAuthInput(req.body);
@@ -715,12 +709,12 @@ router.post('/forgot-password', strictRateLimit, async (req: Request, res: Respo
     }
     throw error;
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/auth/reset-password
 // ============================================
-router.post('/reset-password', strictRateLimit, async (req: Request, res: Response) => {
+router.post('/reset-password', strictRateLimit, asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = resetPasswordSchema.parse(req.body);
 
@@ -792,6 +786,6 @@ router.post('/reset-password', strictRateLimit, async (req: Request, res: Respon
     }
     throw error;
   }
-});
+}));
 
 export { router as authRouter };

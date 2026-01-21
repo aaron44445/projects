@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Home,
   Calendar,
@@ -13,8 +14,10 @@ import {
   Star,
   Gift,
   CreditCard,
+  MapPin,
 } from 'lucide-react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const baseNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -22,6 +25,7 @@ const baseNavigation = [
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Services', href: '/services', icon: Scissors },
   { name: 'Staff', href: '/staff', icon: Users },
+  { name: 'Locations', href: '/locations', icon: MapPin },
   { name: 'Reports', href: '/reports', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
@@ -33,12 +37,43 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProps) {
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const { hasAddOn } = useSubscription();
+
+  // Get user initials for avatar
+  const getInitials = () => {
+    if (!user) return '?';
+    const first = user.firstName?.[0] || '';
+    const last = user.lastName?.[0] || '';
+    return (first + last).toUpperCase() || user.email?.[0]?.toUpperCase() || '?';
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (!user) return 'Loading...';
+    if (user.firstName || user.lastName) {
+      return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+    return user.email?.split('@')[0] || 'User';
+  };
+
+  // Get role display
+  const getRoleDisplay = () => {
+    if (!user?.role) return '';
+    return user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
 
   // Build navigation with add-ons integrated
   const navigation = [...baseNavigation];
 
-  // Add add-on items after Reports (index 5) but before Settings
+  // Add add-on items after Reports (index 6) but before Settings
   const addOnItems = [];
   if (hasAddOn('marketing')) addOnItems.push({ name: 'Marketing', href: '/marketing', icon: Sparkles });
   if (hasAddOn('reviews')) addOnItems.push({ name: 'Reviews', href: '/reviews', icon: Star });
@@ -47,7 +82,7 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
 
   // Insert add-on items before Settings
   if (addOnItems.length > 0) {
-    navigation.splice(6, 0, ...addOnItems);
+    navigation.splice(7, 0, ...addOnItems);
   }
 
   return (
@@ -103,13 +138,17 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
           <div className="p-4 border-t border-charcoal/10">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
-                <span className="text-sage font-semibold">JD</span>
+                <span className="text-sage font-semibold">{getInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-charcoal truncate">Jane Doe</p>
-                <p className="text-sm text-charcoal/60 truncate">Owner</p>
+                <p className="font-medium text-charcoal truncate">{getDisplayName()}</p>
+                <p className="text-sm text-charcoal/60 truncate">{getRoleDisplay()}</p>
               </div>
-              <button className="p-2 text-charcoal/40 hover:text-charcoal transition-colors">
+              <button
+                onClick={handleLogout}
+                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                title="Log out"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>

@@ -12,6 +12,8 @@ import {
   UserCheck,
   CalendarCheck,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   MoreHorizontal,
   X,
   Calendar,
@@ -25,6 +27,11 @@ import {
   Check,
   XCircle,
   Edit,
+  CreditCard,
+  Globe,
+  UserPlus,
+  CheckCircle2,
+  Circle,
 } from 'lucide-react';
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,7 +40,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
-import { useDashboard, useAppointments, useLocations } from '@/hooks';
+import { useDashboard, useAppointments, useLocations, useServices, useClients, useStaff } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -92,25 +99,91 @@ function DashboardContent() {
   const [showSetupGuide, setShowSetupGuide] = useState<AddOnId | null>(null);
   const [appointmentMenu, setAppointmentMenu] = useState<string | null>(null);
   const [showAllActivity, setShowAllActivity] = useState(false);
-  const [setupBannerDismissed, setSetupBannerDismissed] = useState(() => {
+  const [setupChecklistCollapsed, setSetupChecklistCollapsed] = useState(false);
+  const [skippedOptionalSteps, setSkippedOptionalSteps] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('setupBannerDismissed') === 'true';
+      const saved = localStorage.getItem('skippedSetupSteps');
+      return saved ? JSON.parse(saved) : [];
     }
-    return false;
+    return [];
   });
   const router = useRouter();
-  const { salon } = useAuth();
+  const { salon, user } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { selectedLocationId, locations } = useLocations();
   const { stats, todayAppointments, loading, error, refetch } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
+  const { services } = useServices();
+  const { clients } = useClients();
+  const { staff } = useStaff();
 
-  // Check if setup is incomplete (no address)
-  const needsSetup = salon && !salon.address?.street;
+  // Setup checklist items
+  const setupItems = [
+    {
+      id: 'hours',
+      label: 'Add business hours',
+      link: '/settings',
+      icon: Clock,
+      completed: salon?.settings && typeof salon.settings === 'object' && 'businessHours' in salon.settings,
+      optional: false,
+    },
+    {
+      id: 'services',
+      label: 'Add your first service',
+      link: '/services',
+      icon: Scissors,
+      completed: services && services.length > 0,
+      optional: false,
+    },
+    {
+      id: 'clients',
+      label: 'Add your first client',
+      link: '/clients',
+      icon: Users,
+      completed: clients && clients.length > 0,
+      optional: false,
+    },
+    {
+      id: 'booking',
+      label: 'Set up your booking page',
+      link: '/settings',
+      icon: Globe,
+      completed: salon?.slug ? true : false,
+      optional: false,
+    },
+    {
+      id: 'payments',
+      label: 'Connect payment processing',
+      link: '/settings',
+      icon: CreditCard,
+      completed: false, // Would check Stripe connection
+      optional: true,
+    },
+    {
+      id: 'team',
+      label: 'Invite team members',
+      link: '/staff',
+      icon: UserPlus,
+      completed: staff && staff.length > 1,
+      optional: true,
+    },
+  ];
 
-  const dismissSetupBanner = () => {
-    setSetupBannerDismissed(true);
-    localStorage.setItem('setupBannerDismissed', 'true');
+  // Filter out skipped optional steps
+  const visibleSetupItems = setupItems.filter(
+    item => !item.optional || !skippedOptionalSteps.includes(item.id)
+  );
+
+  // Calculate completion
+  const requiredItems = visibleSetupItems.filter(item => !item.optional);
+  const completedRequired = requiredItems.filter(item => item.completed).length;
+  const allRequiredComplete = completedRequired === requiredItems.length;
+  const totalCompleted = visibleSetupItems.filter(item => item.completed).length;
+
+  const skipOptionalStep = (stepId: string) => {
+    const newSkipped = [...skippedOptionalSteps, stepId];
+    setSkippedOptionalSteps(newSkipped);
+    localStorage.setItem('skippedSetupSteps', JSON.stringify(newSkipped));
   };
 
   // Handle appointment actions
@@ -216,8 +289,12 @@ function DashboardContent() {
                 <Menu className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">Dashboard</h1>
-                <p className="text-sm text-charcoal/60">Welcome back</p>
+                <h1 className="text-2xl font-bold text-charcoal">
+                  {salon?.name ? `Welcome to ${salon.name}` : 'Dashboard'}
+                </h1>
+                <p className="text-sm text-charcoal/60">
+                  {user?.firstName ? `Hi, ${user.firstName}!` : 'Manage your business'}
+                </p>
               </div>
             </div>
 
@@ -254,29 +331,103 @@ function DashboardContent() {
             </div>
           )}
 
-          {/* Setup Banner - shows when business setup is incomplete */}
-          {needsSetup && !setupBannerDismissed && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-sage/10 to-lavender/10 border border-sage/20 rounded-xl flex items-center gap-4">
-              <div className="w-10 h-10 bg-sage/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-sage" />
-              </div>
-              <div className="flex-1">
-                <p className="text-charcoal font-medium">Complete your business setup</p>
-                <p className="text-sm text-charcoal/60">Add your business details, services, and hours to get started.</p>
-              </div>
-              <Link
-                href="/settings"
-                className="px-4 py-2 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage-dark transition-colors"
-              >
-                Go to Settings
-              </Link>
+          {/* Setup Checklist Widget - shows until all required items complete */}
+          {!allRequiredComplete && (
+            <div className="mb-6 bg-white rounded-2xl border border-border shadow-soft overflow-hidden">
+              {/* Header - Always visible */}
               <button
-                onClick={dismissSetupBanner}
-                className="p-2 text-charcoal/40 hover:text-charcoal/60"
-                title="Dismiss"
+                onClick={() => setSetupChecklistCollapsed(!setupChecklistCollapsed)}
+                className="w-full px-5 py-4 flex items-center justify-between hover:bg-charcoal/5 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-sage" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-charcoal">Complete Your Setup</h3>
+                    <p className="text-sm text-charcoal/60">
+                      {totalCompleted} of {visibleSetupItems.length} tasks complete
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Progress bar */}
+                  <div className="w-24 h-2 bg-charcoal/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-sage rounded-full transition-all duration-500"
+                      style={{ width: `${(totalCompleted / visibleSetupItems.length) * 100}%` }}
+                    />
+                  </div>
+                  {setupChecklistCollapsed ? (
+                    <ChevronDown className="w-5 h-5 text-charcoal/40" />
+                  ) : (
+                    <ChevronUp className="w-5 h-5 text-charcoal/40" />
+                  )}
+                </div>
               </button>
+
+              {/* Checklist Items - Collapsible */}
+              {!setupChecklistCollapsed && (
+                <div className="px-5 pb-4 space-y-2">
+                  {visibleSetupItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                          item.completed
+                            ? 'bg-sage/5'
+                            : 'bg-charcoal/5 hover:bg-charcoal/10'
+                        }`}
+                      >
+                        {/* Checkbox */}
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          item.completed
+                            ? 'bg-sage text-white'
+                            : 'border-2 border-charcoal/20'
+                        }`}>
+                          {item.completed && <Check className="w-4 h-4" />}
+                        </div>
+
+                        {/* Icon & Label */}
+                        <Icon className={`w-5 h-5 flex-shrink-0 ${
+                          item.completed ? 'text-sage' : 'text-charcoal/40'
+                        }`} />
+                        <span className={`flex-1 ${
+                          item.completed
+                            ? 'text-charcoal/60 line-through'
+                            : 'text-charcoal font-medium'
+                        }`}>
+                          {item.label}
+                          {item.optional && (
+                            <span className="ml-2 text-xs text-charcoal/40 font-normal">(optional)</span>
+                          )}
+                        </span>
+
+                        {/* Action buttons */}
+                        {!item.completed && (
+                          <div className="flex items-center gap-2">
+                            {item.optional && (
+                              <button
+                                onClick={() => skipOptionalStep(item.id)}
+                                className="text-xs text-charcoal/40 hover:text-charcoal/60 transition-colors"
+                              >
+                                Skip
+                              </button>
+                            )}
+                            <Link
+                              href={item.link}
+                              className="px-3 py-1.5 bg-sage text-white text-sm font-medium rounded-lg hover:bg-sage-dark transition-colors"
+                            >
+                              Start
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
