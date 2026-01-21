@@ -12,6 +12,15 @@ interface DashboardStats {
   clientsChange: number;
 }
 
+// API response structure (what the backend actually returns)
+interface ApiStatsResponse {
+  revenue: { current: number; previous: number; change: number };
+  appointments: { current: number; previous: number; change: number };
+  newClients: { current: number; previous: number; change: number };
+  totalClients: number;
+  rating: { average: number | null; count: number };
+}
+
 interface TodayAppointment {
   id: string;
   startTime: string;
@@ -39,7 +48,7 @@ interface RecentAppointment {
   service: { name: string };
 }
 
-export function useDashboard() {
+export function useDashboard(locationId?: string | null) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [todayAppointments, setTodayAppointments] = useState<TodayAppointment[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
@@ -101,12 +110,29 @@ export function useDashboard() {
     setLoading(true);
     setError(null);
     try {
+      const locationParam = locationId ? `?locationId=${locationId}` : '';
       const [statsRes, todayRes, recentRes] = await Promise.all([
-        api.get<DashboardStats>('/dashboard/stats'),
-        api.get<TodayAppointment[]>('/dashboard/today'),
-        api.get<RecentAppointment[]>('/dashboard/recent-activity'),
+        api.get<ApiStatsResponse>(`/dashboard/stats${locationParam}`),
+        api.get<TodayAppointment[]>(`/dashboard/today${locationParam}`),
+        api.get<RecentAppointment[]>(`/dashboard/recent-activity${locationParam}`),
       ]);
-      if (statsRes.data) setStats(statsRes.data);
+      if (statsRes.data) {
+        // Transform API response to frontend format
+        const apiData = statsRes.data;
+        const todayData = todayRes.data as { appointments?: TodayAppointment[]; summary?: { total: number } } | TodayAppointment[];
+        const todayCount = Array.isArray(todayData)
+          ? todayData.length
+          : (todayData.summary?.total ?? todayData.appointments?.length ?? 0);
+
+        setStats({
+          todayAppointments: todayCount,
+          todayRevenue: 0, // Not tracked separately
+          monthRevenue: apiData.revenue?.current ?? 0,
+          revenueChange: `${apiData.revenue?.change ?? 0}%`,
+          newClients: apiData.newClients?.current ?? 0,
+          clientsChange: apiData.newClients?.change ?? 0,
+        });
+      }
       // Ensure arrays to prevent .filter()/.map() errors
       if (todayRes.data) {
         const todayData = todayRes.data as { appointments?: TodayAppointment[] } | TodayAppointment[];
@@ -124,11 +150,11 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locationId]);
 
   useEffect(() => {
     fetchDashboard();
-  }, [fetchDashboard]);
+  }, [fetchDashboard, locationId]);
 
   return { stats, todayAppointments, recentActivity, loading, error, refetch: fetchDashboard };
 }

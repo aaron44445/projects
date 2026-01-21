@@ -87,12 +87,7 @@ const fallbackStats = [
   },
 ];
 
-const recentActivity = [
-  { id: '1', action: 'New booking', detail: 'Sarah Johnson booked Haircut & Style', time: '5 min ago' },
-  { id: '2', action: 'Payment received', detail: '$85 from Michael Chen', time: '12 min ago' },
-  { id: '3', action: 'New client', detail: 'Robert Wilson signed up', time: '25 min ago' },
-  { id: '4', action: 'Review received', detail: '5 stars from Emily Davis', time: '1 hour ago' },
-];
+// No hardcoded demo data - recentActivity comes from useDashboard hook with real API data
 
 function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -111,7 +106,7 @@ function DashboardContent() {
   const { salon, user } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { selectedLocationId, locations } = useLocations();
-  const { stats, todayAppointments, loading, error, refetch } = useDashboard(selectedLocationId);
+  const { stats, todayAppointments, recentActivity, loading, error, refetch } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
   const { services } = useServices();
   const { clients } = useClients();
@@ -716,25 +711,37 @@ function DashboardContent() {
                 <h2 className="text-lg font-semibold text-charcoal">Recent Activity</h2>
               </div>
               <div className="p-4 space-y-4">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-charcoal">{activity.action}</p>
-                      <p className="text-sm text-charcoal/60 truncate">{activity.detail}</p>
-                      <p className="text-xs text-charcoal/40 mt-1">{activity.time}</p>
+                {recentActivity && recentActivity.length > 0 ? (
+                  recentActivity.slice(0, 4).map((activity) => (
+                    <div key={activity.id} className="flex gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-charcoal">{activity.action}</p>
+                        <p className="text-sm text-charcoal/60 truncate">{activity.detail}</p>
+                        <p className="text-xs text-charcoal/40 mt-1">{activity.time}</p>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock className="w-12 h-12 text-charcoal/20 mx-auto mb-3" />
+                    <p className="text-charcoal/60">No recent activity yet</p>
+                    <p className="text-sm text-charcoal/40 mt-1">
+                      Activity will appear here as you book appointments and add clients
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
-              <div className="p-4 border-t border-border">
-                <button
-                  onClick={() => setShowAllActivity(true)}
-                  className="w-full text-sm text-sage hover:text-sage-dark font-medium"
-                >
-                  View All Activity
-                </button>
-              </div>
+              {recentActivity && recentActivity.length > 0 && (
+                <div className="p-4 border-t border-border">
+                  <button
+                    onClick={() => setShowAllActivity(true)}
+                    className="w-full text-sm text-sage hover:text-sage-dark font-medium"
+                  >
+                    View All Activity
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -800,21 +807,33 @@ function DashboardContent() {
             </div>
 
             <div className="p-6 space-y-4">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex gap-3 p-4 bg-charcoal/5 rounded-xl">
-                  <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-charcoal">{activity.action}</p>
-                    <p className="text-charcoal/60">{activity.detail}</p>
-                    <p className="text-xs text-charcoal/40 mt-2">{activity.time}</p>
+              {recentActivity && recentActivity.length > 0 ? (
+                <>
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex gap-3 p-4 bg-charcoal/5 rounded-xl">
+                      <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-charcoal">{activity.action}</p>
+                        <p className="text-charcoal/60">{activity.detail}</p>
+                        <p className="text-xs text-charcoal/40 mt-2">{activity.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-4 text-center">
+                    <p className="text-sm text-charcoal/40">
+                      Showing recent activity from your business
+                    </p>
                   </div>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 text-charcoal/20 mx-auto mb-4" />
+                  <p className="text-lg text-charcoal/60">No activity yet</p>
+                  <p className="text-sm text-charcoal/40 mt-2">
+                    Your activity feed will show bookings, payments, and more
+                  </p>
                 </div>
-              ))}
-              <div className="pt-4 text-center">
-                <p className="text-sm text-charcoal/40">
-                  Showing recent activity from your salon
-                </p>
-              </div>
+              )}
             </div>
           </div>
         </>
