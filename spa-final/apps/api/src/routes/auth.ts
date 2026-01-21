@@ -201,8 +201,8 @@ router.post('/register', authRateLimit, asyncHandler(async (req: Request, res: R
         email: data.email,
         phone: data.phone || null,
         businessType,
-        onboardingComplete: false,
-        onboardingStep: 1,
+        onboardingComplete: true,  // Skip onboarding wizard - setup happens in Settings
+        onboardingStep: 6,  // Mark as complete
       },
     });
 

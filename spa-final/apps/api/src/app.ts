@@ -25,7 +25,7 @@ import { staffPortalRouter } from './routes/staffPortal.js';
 // import { clientPortalRouter } from './routes/clientPortal.js'; // WIP
 import { demoRouter } from './routes/demo.js';
 import { uploadsRouter } from './routes/uploads.js';
-// import { locationsRouter } from './routes/locations.js';
+// import { locationsRouter } from './routes/locations.js'; // WIP
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -95,7 +95,7 @@ export function createApp() {
   // app.use('/api/v1/client-portal', clientPortalRouter); // WIP
   app.use('/api/v1/demo', demoRouter);
   app.use('/api/v1/uploads', uploadsRouter);
-  // app.use('/api/v1/locations', locationsRouter);
+  // app.use('/api/v1/locations', locationsRouter); // WIP
 
   // ============================================
   // ERROR HANDLING

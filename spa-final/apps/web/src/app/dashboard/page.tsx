@@ -27,11 +27,13 @@ import {
   Edit,
 } from 'lucide-react';
 import { useSubscription, ADD_ON_DETAILS, AddOnId } from '@/contexts/SubscriptionContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
-import { useDashboard, useAppointments } from '@/hooks';
+import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { useDashboard, useAppointments, useLocations } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -90,10 +92,26 @@ function DashboardContent() {
   const [showSetupGuide, setShowSetupGuide] = useState<AddOnId | null>(null);
   const [appointmentMenu, setAppointmentMenu] = useState<string | null>(null);
   const [showAllActivity, setShowAllActivity] = useState(false);
+  const [setupBannerDismissed, setSetupBannerDismissed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('setupBannerDismissed') === 'true';
+    }
+    return false;
+  });
   const router = useRouter();
+  const { salon } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
-  const { stats, todayAppointments, loading, error, refetch } = useDashboard();
+  const { selectedLocationId, locations } = useLocations();
+  const { stats, todayAppointments, loading, error, refetch } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
+
+  // Check if setup is incomplete (no address)
+  const needsSetup = salon && !salon.address?.street;
+
+  const dismissSetupBanner = () => {
+    setSetupBannerDismissed(true);
+    localStorage.setItem('setupBannerDismissed', 'true');
+  };
 
   // Handle appointment actions
   const handleCompleteAppointment = async (id: string) => {
@@ -204,6 +222,7 @@ function DashboardContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              {locations.length > 1 && <LocationSwitcher />}
               <button
                 onClick={() => refetch()}
                 className="p-2 text-charcoal/60 hover:text-charcoal"
@@ -231,6 +250,32 @@ function DashboardContent() {
                 className="px-4 py-2 bg-white border border-charcoal/20 rounded-lg text-sm font-medium hover:bg-charcoal/5"
               >
                 Retry
+              </button>
+            </div>
+          )}
+
+          {/* Setup Banner - shows when business setup is incomplete */}
+          {needsSetup && !setupBannerDismissed && (
+            <div className="mb-6 p-4 bg-gradient-to-r from-sage/10 to-lavender/10 border border-sage/20 rounded-xl flex items-center gap-4">
+              <div className="w-10 h-10 bg-sage/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-sage" />
+              </div>
+              <div className="flex-1">
+                <p className="text-charcoal font-medium">Complete your business setup</p>
+                <p className="text-sm text-charcoal/60">Add your business details, services, and hours to get started.</p>
+              </div>
+              <Link
+                href="/settings"
+                className="px-4 py-2 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage-dark transition-colors"
+              >
+                Go to Settings
+              </Link>
+              <button
+                onClick={dismissSetupBanner}
+                className="p-2 text-charcoal/40 hover:text-charcoal/60"
+                title="Dismiss"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
           )}
