@@ -21,11 +21,11 @@ import { webhooksRouter } from './routes/webhooks.js';
 import { integrationsRouter } from './routes/integrations.js';
 import { staffRouter } from './routes/staff.js';
 import { staffPortalRouter } from './routes/staffPortal.js';
-import { clientAuthRouter } from './routes/clientAuth.js';
-// import { clientPortalRouter } from './routes/clientPortal.js'; // WIP - schema incomplete
+// import { clientAuthRouter } from './routes/clientAuth.js'; // WIP - schema incomplete
+// import { clientPortalRouter } from './routes/clientPortal.js';
 import { demoRouter } from './routes/demo.js';
 import { uploadsRouter } from './routes/uploads.js';
-// import { locationsRouter } from './routes/locations.js'; // WIP - schema incomplete
+// import { locationsRouter } from './routes/locations.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -91,10 +91,11 @@ export function createApp() {
   app.use('/api/v1/webhooks', webhooksRouter);
   app.use('/api/v1/integrations', integrationsRouter);
   app.use('/api/v1/staff-portal', staffPortalRouter);
-  // app.use('/api/v1/client-portal', clientPortalRouter); // WIP - schema incomplete
+  // app.use('/api/v1/client-auth', clientAuthRouter); // WIP - schema incomplete
+  // app.use('/api/v1/client-portal', clientPortalRouter);
   app.use('/api/v1/demo', demoRouter);
   app.use('/api/v1/uploads', uploadsRouter);
-  // app.use('/api/v1/locations', locationsRouter); // WIP - schema incomplete
+  // app.use('/api/v1/locations', locationsRouter);
 
   // ============================================
   // ERROR HANDLING
