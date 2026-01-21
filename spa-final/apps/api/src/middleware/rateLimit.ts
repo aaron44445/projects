@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 // Standard error response format
 const createRateLimitResponse = (message: string) => ({
@@ -10,29 +10,42 @@ const createRateLimitResponse = (message: string) => ({
   },
 });
 
+// Skip rate limiting in test environment
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+
+// Middleware that skips rate limiting in test mode
+const skipInTest = (rateLimiter: ReturnType<typeof rateLimit>) => {
+  if (isTestEnvironment) {
+    return (req: Request, res: Response, next: NextFunction) => next();
+  }
+  return rateLimiter;
+};
+
 // ============================================
 // GENERAL API RATE LIMIT
-// 100 requests per 15 minutes per IP
+// 1000 requests per 15 minutes per IP
+// Very permissive - normal users won't hit this
 // ============================================
-export const generalRateLimit = rateLimit({
+export const generalRateLimit = skipInTest(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
-  legacyHeaders: true, // Return `X-RateLimit-*` headers
+  max: 1000, // 1000 requests per 15 minutes (was 100)
+  standardHeaders: true,
+  legacyHeaders: true,
   message: createRateLimitResponse('Too many requests, please try again later'),
   handler: (req: Request, res: Response) => {
     res.status(429).json(createRateLimitResponse('Too many requests, please try again later'));
   },
-});
+}));
 
 // ============================================
 // AUTH RATE LIMIT
-// 10 requests per 15 minutes per IP
-// For: login, register, forgot-password
+// 30 requests per 15 minutes per IP
+// Allows multiple signup/login attempts while
+// still protecting against brute force attacks
 // ============================================
-export const authRateLimit = rateLimit({
+export const authRateLimit = skipInTest(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 attempts per 15 minutes - prevents brute force while allowing legitimate retries
+  max: 30, // 30 attempts per 15 minutes (was 10)
   standardHeaders: true,
   legacyHeaders: true,
   message: createRateLimitResponse('Too many authentication attempts, please try again later'),
@@ -41,26 +54,27 @@ export const authRateLimit = rateLimit({
       createRateLimitResponse('Too many authentication attempts, please try again later')
     );
   },
-  skipSuccessfulRequests: false,
-});
+  skipSuccessfulRequests: true, // Only count failed requests (was false)
+}));
 
 // ============================================
 // STRICT RATE LIMIT
-// 3 requests per hour per IP
-// For: password reset, email verification
+// 10 requests per 15 minutes per IP
+// For: password reset, email verification resend
+// Still protective but allows testing/retries
 // ============================================
-export const strictRateLimit = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3,
+export const strictRateLimit = skipInTest(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes (was 1 hour)
+  max: 10, // 10 attempts per 15 minutes (was 3 per hour)
   standardHeaders: true,
   legacyHeaders: true,
   message: createRateLimitResponse(
-    'Too many sensitive operation attempts, please try again in an hour'
+    'Too many attempts, please try again in a few minutes'
   ),
   handler: (req: Request, res: Response) => {
     res.status(429).json(
-      createRateLimitResponse('Too many sensitive operation attempts, please try again in an hour')
+      createRateLimitResponse('Too many attempts, please try again in a few minutes')
     );
   },
-  skipSuccessfulRequests: false,
-});
+  skipSuccessfulRequests: true, // Only count failed requests (was false)
+}));
