@@ -375,6 +375,24 @@ function ServiceStep({
   accentColor: string;
   borderRadius: string;
 }) {
+  // Check if there are any services available
+  const hasServices = categories.some(cat => cat.services.length > 0);
+
+  if (!hasServices) {
+    return (
+      <div className="text-center py-8">
+        <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-gray-900 mb-2">No Services Available</h2>
+        <p className="text-sm text-gray-500">
+          This business has not enabled any services for online booking yet.
+        </p>
+        <p className="text-sm text-gray-400 mt-2">
+          Please contact the business directly to schedule an appointment.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -1043,6 +1061,28 @@ export default function EmbedBookingPage() {
       }
     }
   }, [slug, booking.serviceId, booking.staffId, booking.date, isDemo]);
+
+  // Send height to parent window for iframe auto-resize
+  useEffect(() => {
+    const sendHeight = () => {
+      if (typeof window !== 'undefined' && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'peacase-resize',
+          height: document.body.scrollHeight
+        }, '*');
+      }
+    };
+
+    // Send initial height
+    sendHeight();
+
+    // Observe body for size changes
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(sendHeight);
+      observer.observe(document.body);
+      return () => observer.disconnect();
+    }
+  }, [step, isLoading, categories, staff, slots]); // Re-send when content changes
 
   const updateBooking = useCallback((field: keyof BookingData, value: string | boolean | null) => {
     setBooking((prev) => ({ ...prev, [field]: value }));

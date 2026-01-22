@@ -108,6 +108,7 @@ model User {
   magicLinkExpires        DateTime?                @map("magic_link_expires")
   emailVerified           Boolean                  @default(false) @map("email_verified")
   isActive                Boolean                  @default(true) @map("is_active")
+  onlineBookingEnabled    Boolean                  @default(true) @map("online_booking_enabled")
   lastLogin               DateTime?                @map("last_login")
   createdAt               DateTime                 @default(now()) @map("created_at")
   updatedAt               DateTime                 @updatedAt @map("updated_at")
@@ -218,11 +219,12 @@ model Service {
   price            Float
   memberPrice      Float?            @map("member_price")
   color            String            @default("#C7DCC8")
-  isActive         Boolean           @default(true) @map("is_active")
-  displayOrder     Int               @default(0) @map("display_order")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  appointments     Appointment[]
+  isActive              Boolean           @default(true) @map("is_active")
+  onlineBookingEnabled  Boolean           @default(true) @map("online_booking_enabled")
+  displayOrder          Int               @default(0) @map("display_order")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+  appointments          Appointment[]
   packageServices  PackageService[]
   serviceLocations ServiceLocation[]
   category         ServiceCategory?  @relation(fields: [categoryId], references: [id])

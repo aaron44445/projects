@@ -33,6 +33,8 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { useSalon, useLocations, type Salon } from '@/hooks';
+import { useServices, type Service } from '@/hooks/useServices';
+import { useStaff, type StaffMember } from '@/hooks/useStaff';
 import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
 import Link from 'next/link';
 
@@ -146,6 +148,12 @@ function SettingsContent() {
   // API hooks
   const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon } = useSalon();
   const { locations, isLoading: locationsLoading, error: locationsError } = useLocations();
+  const { services, isLoading: servicesLoading, updateService } = useServices();
+  const { staff, isLoading: staffLoading, updateStaff } = useStaff();
+
+  // Online booking toggle state
+  const [togglingServiceId, setTogglingServiceId] = useState<string | null>(null);
+  const [togglingStaffId, setTogglingStaffId] = useState<string | null>(null);
 
   // Multi-location toggle state
   const [isTogglingMultiLocation, setIsTogglingMultiLocation] = useState(false);
@@ -161,6 +169,30 @@ function SettingsContent() {
       console.error('Failed to toggle multi-location:', err);
     } finally {
       setIsTogglingMultiLocation(false);
+    }
+  };
+
+  // Handle service online booking toggle
+  const handleToggleServiceOnlineBooking = async (serviceId: string, enabled: boolean) => {
+    setTogglingServiceId(serviceId);
+    try {
+      await updateService(serviceId, { onlineBookingEnabled: enabled });
+    } catch (err) {
+      console.error('Failed to toggle service online booking:', err);
+    } finally {
+      setTogglingServiceId(null);
+    }
+  };
+
+  // Handle staff online booking toggle
+  const handleToggleStaffOnlineBooking = async (staffId: string, enabled: boolean) => {
+    setTogglingStaffId(staffId);
+    try {
+      await updateStaff(staffId, { onlineBookingEnabled: enabled });
+    } catch (err) {
+      console.error('Failed to toggle staff online booking:', err);
+    } finally {
+      setTogglingStaffId(null);
     }
   };
 
@@ -1454,6 +1486,133 @@ function SettingsContent() {
                   <strong>Need help?</strong> Contact our support team and we will help you install the booking widget on your website.
                 </p>
               </div>
+            </div>
+
+            {/* Service Online Booking Toggles */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-2">Services Available for Online Booking</h3>
+              <p className="text-sm text-charcoal/60 mb-4">
+                Choose which services clients can book online. Disabled services will only be bookable by staff.
+              </p>
+
+              {servicesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-sage" />
+                </div>
+              ) : services.filter(s => s.isActive).length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-charcoal/60">No active services found. Add services in the Services page.</p>
+                  <Link href="/services" className="text-sage hover:underline text-sm mt-2 inline-block">
+                    Go to Services →
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {services.filter(s => s.isActive).map((service) => (
+                    <div
+                      key={service.id}
+                      className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: service.color || '#7C9A82' }}
+                        />
+                        <div>
+                          <p className="font-medium text-charcoal text-sm">{service.name}</p>
+                          <p className="text-xs text-charcoal/60">
+                            {service.durationMinutes}min • ${service.price}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleToggleServiceOnlineBooking(service.id, !service.onlineBookingEnabled)}
+                        disabled={togglingServiceId === service.id}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          service.onlineBookingEnabled ? 'bg-sage' : 'bg-charcoal/20'
+                        } ${togglingServiceId === service.id ? 'opacity-50' : ''}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
+                            service.onlineBookingEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                        {togglingServiceId === service.id && (
+                          <Loader2 className="absolute w-3 h-3 text-white animate-spin left-1/2 -translate-x-1/2" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Staff Online Booking Toggles */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-2">Staff Available for Online Booking</h3>
+              <p className="text-sm text-charcoal/60 mb-4">
+                Choose which staff members can be booked online. Disabled staff will only be assignable by staff.
+              </p>
+
+              {staffLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-sage" />
+                </div>
+              ) : staff.filter(s => s.isActive).length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-charcoal/60">No active staff found. Add staff in the Staff page.</p>
+                  <Link href="/staff" className="text-sage hover:underline text-sm mt-2 inline-block">
+                    Go to Staff →
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {staff.filter(s => s.isActive).map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        {member.avatarUrl ? (
+                          <img
+                            src={member.avatarUrl}
+                            alt={`${member.firstName} ${member.lastName}`}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center">
+                            <span className="text-sage text-sm font-medium">
+                              {member.firstName[0]}{member.lastName[0]}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium text-charcoal text-sm">
+                            {member.firstName} {member.lastName}
+                          </p>
+                          <p className="text-xs text-charcoal/60 capitalize">{member.role}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleToggleStaffOnlineBooking(member.id, !member.onlineBookingEnabled)}
+                        disabled={togglingStaffId === member.id}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          member.onlineBookingEnabled ? 'bg-sage' : 'bg-charcoal/20'
+                        } ${togglingStaffId === member.id ? 'opacity-50' : ''}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
+                            member.onlineBookingEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                        {togglingStaffId === member.id && (
+                          <Loader2 className="absolute w-3 h-3 text-white animate-spin left-1/2 -translate-x-1/2" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Booking Settings */}

@@ -151,6 +151,7 @@ router.get('/:slug/services', asyncHandler(async (req: Request, res: Response) =
     where: {
       salonId: salon.id,
       isActive: true,
+      onlineBookingEnabled: true,
     },
     select: {
       id: true,
@@ -239,6 +240,7 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
     where: {
       salonId: salon.id,
       isActive: true,
+      onlineBookingEnabled: true,
       // If serviceId provided, only get staff who can perform that service
       ...(serviceId && {
         staffServices: {
@@ -405,10 +407,11 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   const [openHour, openMin] = businessHours.open.split(':').map(Number);
   const [closeHour, closeMin] = businessHours.close.split(':').map(Number);
 
-  // Get staff who can perform this service
+  // Get staff who can perform this service (must have online booking enabled)
   const staffQuery: Record<string, unknown> = {
     salonId: salon.id,
     isActive: true,
+    onlineBookingEnabled: true,
     staffServices: {
       some: { serviceId: serviceId as string, isAvailable: true },
     },

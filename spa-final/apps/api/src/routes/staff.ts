@@ -129,7 +129,7 @@ router.post(
 // Update staff member
 // ============================================
 router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { firstName, lastName, phone, role, certifications, avatarUrl, commissionRate, isActive } = req.body;
+  const { firstName, lastName, phone, role, certifications, avatarUrl, commissionRate, isActive, onlineBookingEnabled } = req.body;
 
   // Check if user can update this staff member
   const targetUser = await prisma.user.findFirst({
@@ -168,6 +168,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Respon
       ...(avatarUrl !== undefined && { avatarUrl }),
       ...(commissionRate !== undefined && { commissionRate: parseFloat(commissionRate) }),
       ...(isActive !== undefined && { isActive }),
+      ...(onlineBookingEnabled !== undefined && { onlineBookingEnabled }),
     },
     include: {
       staffServices: true,

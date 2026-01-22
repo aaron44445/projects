@@ -26,6 +26,7 @@ export interface Service {
   memberPrice?: number | null;
   color: string;
   isActive: boolean;
+  onlineBookingEnabled: boolean;
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -46,6 +47,7 @@ export interface CreateServiceInput {
 
 export interface UpdateServiceInput extends Partial<CreateServiceInput> {
   isActive?: boolean;
+  onlineBookingEnabled?: boolean;
 }
 
 export interface CreateCategoryInput {

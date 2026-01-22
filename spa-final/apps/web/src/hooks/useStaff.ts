@@ -3,6 +3,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api, ApiError } from '@/lib/api';
 
+// Role type matching backend
+export type StaffRole = 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist';
+
 // Types based on Prisma schema
 export interface StaffMember {
   id: string;
@@ -11,17 +14,22 @@ export interface StaffMember {
   firstName: string;
   lastName: string;
   phone?: string | null;
-  role: 'owner' | 'admin' | 'staff';
+  role: StaffRole;
   avatarUrl?: string | null;
   certifications?: string | null;
   commissionRate?: number | null;
   isActive: boolean;
+  onlineBookingEnabled: boolean;
   lastLogin?: string | null;
   createdAt: string;
   updatedAt: string;
   // Populated relations
   staffServices?: StaffService[];
   staffAvailability?: StaffAvailability[];
+  staffLocations?: Array<{
+    location: { id: string; name: string };
+    isPrimary: boolean;
+  }>;
 }
 
 export interface StaffService {
@@ -45,14 +53,16 @@ export interface CreateStaffInput {
   firstName: string;
   lastName: string;
   phone?: string;
-  role?: 'owner' | 'admin' | 'staff';
+  role?: StaffRole;
   certifications?: string;
   commissionRate?: number;
+  locationIds?: string[];
 }
 
 export interface UpdateStaffInput extends Partial<CreateStaffInput> {
   isActive?: boolean;
   avatarUrl?: string;
+  onlineBookingEnabled?: boolean;
 }
 
 export interface SetAvailabilityInput {
