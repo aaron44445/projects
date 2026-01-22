@@ -146,7 +146,7 @@ function SettingsContent() {
   // This allows users to explore all settings and see what's available
 
   // API hooks
-  const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon } = useSalon();
+  const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon, setError: setSalonError } = useSalon();
   const { locations, isLoading: locationsLoading, error: locationsError } = useLocations();
   const { services, isLoading: servicesLoading, updateService } = useServices();
   const { staff, isLoading: staffLoading, updateStaff } = useStaff();
@@ -157,16 +157,22 @@ function SettingsContent() {
 
   // Multi-location toggle state
   const [isTogglingMultiLocation, setIsTogglingMultiLocation] = useState(false);
+  const [multiLocationError, setMultiLocationError] = useState<string | null>(null);
+  const [multiLocationSuccess, setMultiLocationSuccess] = useState(false);
 
   // Handle multi-location toggle
   const handleToggleMultiLocation = async (enabled: boolean) => {
     setIsTogglingMultiLocation(true);
+    setMultiLocationError(null);
+    setMultiLocationSuccess(false);
     try {
       await updateSalon({ multiLocationEnabled: enabled });
-      // Refresh salon data to update the state
-      await fetchSalon();
+      setMultiLocationSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setMultiLocationSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to toggle multi-location:', err);
+      setMultiLocationError(err instanceof Error ? err.message : 'Failed to update setting');
     } finally {
       setIsTogglingMultiLocation(false);
     }
@@ -586,6 +592,20 @@ function SettingsContent() {
                   </button>
                 </div>
               </div>
+
+              {/* Error/Success feedback */}
+              {multiLocationError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {multiLocationError}
+                </div>
+              )}
+              {multiLocationSuccess && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700 text-sm">
+                  <Check className="w-4 h-4 flex-shrink-0" />
+                  Multi-location setting updated successfully!
+                </div>
+              )}
             </div>
 
             {/* Locations Summary */}

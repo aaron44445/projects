@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 
 export interface Salon {
   id: string;
@@ -20,6 +20,7 @@ export interface Salon {
   description: string | null;
   subscriptionPlan: string;
   featuresEnabled: string;
+  multiLocationEnabled: boolean;
 }
 
 export function useSalon() {
@@ -32,9 +33,12 @@ export function useSalon() {
     setError(null);
     try {
       const response = await api.get<Salon>('/salon');
-      if (response.data) setSalon(response.data);
+      if (response.success && response.data) {
+        setSalon(response.data);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch salon');
+      const message = err instanceof ApiError ? err.message : 'Failed to fetch salon';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -44,11 +48,21 @@ export function useSalon() {
     fetchSalon();
   }, [fetchSalon]);
 
-  const updateSalon = async (data: Partial<Salon>) => {
-    const response = await api.patch<Salon>('/salon', data);
-    if (response.data) setSalon(response.data);
-    return response.data;
-  };
+  const updateSalon = useCallback(async (data: Partial<Salon>): Promise<Salon> => {
+    setError(null);
+    try {
+      const response = await api.patch<Salon>('/salon', data);
+      if (response.success && response.data) {
+        setSalon(response.data);
+        return response.data;
+      }
+      throw new ApiError('UPDATE_FAILED', 'Failed to update salon');
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : 'Failed to update salon';
+      setError(message);
+      throw err;
+    }
+  }, []);
 
-  return { salon, loading, error, fetchSalon, updateSalon };
+  return { salon, loading, error, fetchSalon, updateSalon, setError };
 }

@@ -194,6 +194,7 @@ function LocationsContent() {
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Form state
   const [locationForm, setLocationForm] = useState<LocationFormState>(emptyFormState);
@@ -236,6 +237,7 @@ function LocationsContent() {
   const resetForm = () => {
     setLocationForm(emptyFormState);
     setLocationHours(getDefaultHours());
+    setFormError(null);
   };
 
   const openNewLocationModal = () => {
@@ -288,6 +290,7 @@ function LocationsContent() {
     if (!locationForm.name) return;
 
     setIsSubmitting(true);
+    setFormError(null);
     try {
       const data: CreateLocationInput = {
         name: locationForm.name,
@@ -317,6 +320,14 @@ function LocationsContent() {
       closeModal();
     } catch (err) {
       console.error('Failed to save location:', err);
+      // Show user-friendly error message
+      const message = err instanceof Error ? err.message : 'Failed to save location';
+      // Special handling for multi-location error
+      if (message.includes('Multi-location')) {
+        setFormError('To add additional locations, please enable Multi-Location Mode in Settings first.');
+      } else {
+        setFormError(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -597,6 +608,17 @@ function LocationsContent() {
             </div>
 
             <div className="p-6 space-y-6">
+              {/* Error Message */}
+              {formError && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-rose-700">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium">Unable to save location</p>
+                    <p className="text-sm text-rose-600 mt-1">{formError}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Location Name */}
               <div>
                 <label className="block text-sm font-medium text-charcoal mb-2">
