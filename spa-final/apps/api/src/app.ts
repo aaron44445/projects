@@ -76,16 +76,6 @@ export function createApp() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // Debug: test if locations router is loaded
-  app.get('/api/v1/test-locations-import', (req, res) => {
-    res.json({
-      success: true,
-      message: 'Direct route works',
-      hasLocationsRouter: !!locationsRouter,
-      locationsRouterType: typeof locationsRouter
-    });
-  });
-
   // API Routes
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/salon', salonRouter);

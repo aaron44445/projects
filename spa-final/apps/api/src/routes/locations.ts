@@ -5,11 +5,6 @@ import { asyncHandler } from '../lib/errorUtils.js';
 
 export const locationsRouter = Router();
 
-// Debug endpoint - no auth required
-locationsRouter.get('/debug', (req, res) => {
-  res.json({ success: true, message: 'Locations router is loaded' });
-});
-
 // All routes require authentication
 locationsRouter.use(authenticate);
 
