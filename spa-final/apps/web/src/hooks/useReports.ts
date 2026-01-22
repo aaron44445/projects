@@ -177,13 +177,14 @@ export function useReports() {
   const [clientsReport, setClientsReport] = useState<ClientsReport | null>(null);
 
   // Fetch overview report
-  const fetchOverview = useCallback(async (startDate?: string, endDate?: string) => {
+  const fetchOverview = useCallback(async (startDate?: string, endDate?: string, locationId?: string | null) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
+      if (locationId) params.append('locationId', locationId);
 
       const queryString = params.toString();
       const endpoint = `/reports/overview${queryString ? `?${queryString}` : ''}`;
@@ -206,7 +207,8 @@ export function useReports() {
   const fetchRevenueReport = useCallback(async (
     startDate?: string,
     endDate?: string,
-    groupBy: 'daily' | 'weekly' | 'monthly' = 'daily'
+    groupBy: 'daily' | 'weekly' | 'monthly' = 'daily',
+    locationId?: string | null
   ) => {
     setLoading(true);
     setError(null);
@@ -215,6 +217,7 @@ export function useReports() {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
       params.append('groupBy', groupBy);
+      if (locationId) params.append('locationId', locationId);
 
       const response = await api.get<RevenueReport>(`/reports/revenue?${params.toString()}`);
       if (response.data) {
@@ -231,13 +234,14 @@ export function useReports() {
   }, []);
 
   // Fetch services report
-  const fetchServicesReport = useCallback(async (startDate?: string, endDate?: string) => {
+  const fetchServicesReport = useCallback(async (startDate?: string, endDate?: string, locationId?: string | null) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
+      if (locationId) params.append('locationId', locationId);
 
       const queryString = params.toString();
       const endpoint = `/reports/services${queryString ? `?${queryString}` : ''}`;
@@ -257,13 +261,14 @@ export function useReports() {
   }, []);
 
   // Fetch staff report
-  const fetchStaffReport = useCallback(async (startDate?: string, endDate?: string) => {
+  const fetchStaffReport = useCallback(async (startDate?: string, endDate?: string, locationId?: string | null) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
+      if (locationId) params.append('locationId', locationId);
 
       const queryString = params.toString();
       const endpoint = `/reports/staff${queryString ? `?${queryString}` : ''}`;
@@ -283,13 +288,14 @@ export function useReports() {
   }, []);
 
   // Fetch clients report
-  const fetchClientsReport = useCallback(async (startDate?: string, endDate?: string) => {
+  const fetchClientsReport = useCallback(async (startDate?: string, endDate?: string, locationId?: string | null) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
+      if (locationId) params.append('locationId', locationId);
 
       const queryString = params.toString();
       const endpoint = `/reports/clients${queryString ? `?${queryString}` : ''}`;
@@ -312,17 +318,18 @@ export function useReports() {
   const fetchAllReports = useCallback(async (
     startDate?: string,
     endDate?: string,
-    groupBy: 'daily' | 'weekly' | 'monthly' = 'daily'
+    groupBy: 'daily' | 'weekly' | 'monthly' = 'daily',
+    locationId?: string | null
   ) => {
     setLoading(true);
     setError(null);
     try {
       await Promise.all([
-        fetchOverview(startDate, endDate),
-        fetchRevenueReport(startDate, endDate, groupBy),
-        fetchServicesReport(startDate, endDate),
-        fetchStaffReport(startDate, endDate),
-        fetchClientsReport(startDate, endDate),
+        fetchOverview(startDate, endDate, locationId),
+        fetchRevenueReport(startDate, endDate, groupBy, locationId),
+        fetchServicesReport(startDate, endDate, locationId),
+        fetchStaffReport(startDate, endDate, locationId),
+        fetchClientsReport(startDate, endDate, locationId),
       ]);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch reports';

@@ -22,6 +22,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useReports } from '@/hooks/useReports';
+import { useLocations } from '@/hooks/useLocations';
+import { LocationSwitcher } from '@/components/LocationSwitcher';
 
 // Date range presets
 const dateRangePresets = [
@@ -88,6 +90,8 @@ function ReportsContent() {
     fetchAllReports,
   } = useReports();
 
+  const { locations, selectedLocationId, selectedLocation } = useLocations();
+
   // Get current date range based on selected preset
   const dateRange = useMemo(() => {
     if (selectedPreset === 'Custom' && customStartDate && customEndDate) {
@@ -97,10 +101,10 @@ function ReportsContent() {
     return preset ? preset.getValue() : dateRangePresets[2].getValue(); // Default to This Month
   }, [selectedPreset, customStartDate, customEndDate]);
 
-  // Fetch reports when date range or groupBy changes
+  // Fetch reports when date range, groupBy, or location changes
   useEffect(() => {
-    fetchAllReports(dateRange.start, dateRange.end, groupBy);
-  }, [dateRange.start, dateRange.end, groupBy, fetchAllReports]);
+    fetchAllReports(dateRange.start, dateRange.end, groupBy, selectedLocationId);
+  }, [dateRange.start, dateRange.end, groupBy, selectedLocationId, fetchAllReports]);
 
   // Prepare overview stats
   const overviewStats = useMemo(() => {
@@ -365,6 +369,10 @@ function ReportsContent() {
                 <Menu className="w-6 h-6" />
               </button>
               <h1 className="text-2xl font-bold text-charcoal">Reports</h1>
+              {/* Location Switcher - only shows if multiple locations exist */}
+              {locations.length > 1 && (
+                <LocationSwitcher showAllOption={true} />
+              )}
             </div>
 
             <div className="flex items-center gap-4">

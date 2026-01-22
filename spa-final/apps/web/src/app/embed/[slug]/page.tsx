@@ -1120,7 +1120,7 @@ export default function EmbedBookingPage() {
 
   // Don't show error if we're in demo mode - demo data will be set by useEffect
   // This prevents flash of error during hydration
-  if (!isDemo && (!salon || loadError !== 'none')) {
+  if (!salon || (!isDemo && loadError !== 'none')) {
     const errorMessages = {
       not_found: {
         title: 'Business Not Found',
