@@ -1099,10 +1099,11 @@ function SettingsContent() {
       case 'booking':
         const bookingLocked = !hasAddOn('online_booking');
 
-        // Always use demo mode for preview - it shows sample data that always works
-        // The actual embed code will use the salon's real slug
-        const previewUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/demo`;
-        const embedUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${salon?.slug || 'your-salon-slug'}`;
+        // Use the salon's real slug for preview - shows exactly what customers will see
+        const salonSlug = salon?.slug || 'your-salon-slug';
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const previewUrl = `${baseUrl}/embed/${salonSlug}`;
+        const embedUrl = `${baseUrl}/embed/${salonSlug}`;
 
         // Font family CSS mapping
         const fontFamilyMap: Record<string, string> = {
@@ -1379,16 +1380,16 @@ function SettingsContent() {
                     </a>
                   </div>
                   <div className="bg-cream/50 rounded-2xl border border-charcoal/10 overflow-hidden" style={{ height: '500px' }}>
-                    {/* Demo preview - always works regardless of salon setup */}
+                    {/* Live preview using real business data */}
                     <iframe
                       src={`${previewUrl}?preview=true&t=${Date.now()}`}
                       className="w-full h-full border-0"
                       title="Booking widget preview"
-                      key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}`}
+                      key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}-${salonSlug}`}
                     />
                   </div>
                   <p className="text-xs text-charcoal/50 mt-2 text-center">
-                    Preview showing demo data. Your actual widget will display your real services and staff.
+                    This is exactly what customers will see on your website.
                   </p>
                 </div>
               </div>
