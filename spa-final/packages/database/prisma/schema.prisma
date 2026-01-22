@@ -9,77 +9,83 @@ datasource db {
 }
 
 model Salon {
-  id                        String              @id @default(uuid())
-  name                      String
-  slug                      String              @unique
-  email                     String
-  phone                     String?
-  address                   String?
-  city                      String?
-  state                     String?
-  zip                       String?
-  country                   String              @default("US")
-  timezone                  String              @default("America/Chicago")
-  logoUrl                   String?             @map("logo_url")
-  website                   String?
-  description               String?
-  subscriptionPlan          String              @default("essentials") @map("subscription_plan")
-  subscriptionTier          String              @default("free") @map("subscription_tier")
-  featuresEnabled           String              @default("[]") @map("features_enabled")
-  stripeAccountId           String?             @map("stripe_account_id")
-  stripeCustomerId          String?             @map("stripe_customer_id")
-  isActive                  Boolean             @default(true) @map("is_active")
-  createdAt                 DateTime            @default(now()) @map("created_at")
-  updatedAt                 DateTime            @updatedAt @map("updated_at")
-  marketingAddonEnabled     Boolean             @default(false) @map("marketing_addon_enabled")
-  marketingAddonSuspended   Boolean             @default(false) @map("marketing_addon_suspended")
-  marketingAddonEnabledAt   DateTime?           @map("marketing_addon_enabled_at")
-  stripeMarketingSubId      String?             @map("stripe_marketing_sub_id")
-  sendgridApiKeyEncrypted   String?             @map("sendgrid_api_key_encrypted")
-  sendgridFromEmail         String?             @map("sendgrid_from_email")
-  sendgridValidated         Boolean             @default(false) @map("sendgrid_validated")
-  sendgridLastValidatedAt   DateTime?           @map("sendgrid_last_validated_at")
-  twilioAccountSidEncrypted String?             @map("twilio_account_sid_encrypted")
-  twilioAuthTokenEncrypted  String?             @map("twilio_auth_token_encrypted")
-  twilioPhoneNumber         String?             @map("twilio_phone_number")
-  twilioValidated           Boolean             @default(false) @map("twilio_validated")
-  twilioLastValidatedAt     DateTime?           @map("twilio_last_validated_at")
-  businessType              String?             @map("business_type")
-  onboardingComplete        Boolean             @default(false) @map("onboarding_complete")
-  onboardingStep            Int                 @default(1) @map("onboarding_step")
-  widgetAccentColor         String              @default("#B5A8D5") @map("widget_accent_color")
-  widgetButtonStyle         String              @default("rounded") @map("widget_button_style")
-  widgetFontFamily          String              @default("system") @map("widget_font_family")
-  widgetPrimaryColor        String              @default("#7C9A82") @map("widget_primary_color")
-  brand_background_color    String              @default("#FAF8F3")
-  brand_primary_color       String              @default("#C7DCC8")
-  business_hours            String              @default("[]")
-  notification_settings     String              @default("{}")
-  multiLocationEnabled      Boolean             @default(false) @map("multi_location_enabled")
-  syncServicesFromFlagship  Boolean             @default(false) @map("sync_services_from_flagship")
-  syncPricingFromFlagship   Boolean             @default(false) @map("sync_pricing_from_flagship")
-  syncSettingsFromFlagship  Boolean             @default(false) @map("sync_settings_from_flagship")
+  id                           String              @id @default(uuid())
+  name                         String
+  slug                         String              @unique
+  email                        String
+  phone                        String?
+  address                      String?
+  city                         String?
+  state                        String?
+  zip                          String?
+  country                      String              @default("US")
+  timezone                     String              @default("America/Chicago")
+  logoUrl                      String?             @map("logo_url")
+  website                      String?
+  description                  String?
+  subscriptionPlan             String              @default("essentials") @map("subscription_plan")
+  subscriptionTier             String              @default("free") @map("subscription_tier")
+  featuresEnabled              String              @default("[]") @map("features_enabled")
+  stripeAccountId              String?             @map("stripe_account_id")
+  stripeCustomerId             String?             @map("stripe_customer_id")
+  isActive                     Boolean             @default(true) @map("is_active")
+  createdAt                    DateTime            @default(now()) @map("created_at")
+  updatedAt                    DateTime            @updatedAt @map("updated_at")
+  marketingAddonEnabled        Boolean             @default(false) @map("marketing_addon_enabled")
+  marketingAddonSuspended      Boolean             @default(false) @map("marketing_addon_suspended")
+  marketingAddonEnabledAt      DateTime?           @map("marketing_addon_enabled_at")
+  stripeMarketingSubId         String?             @map("stripe_marketing_sub_id")
+  sendgridApiKeyEncrypted      String?             @map("sendgrid_api_key_encrypted")
+  sendgridFromEmail            String?             @map("sendgrid_from_email")
+  sendgridValidated            Boolean             @default(false) @map("sendgrid_validated")
+  sendgridLastValidatedAt      DateTime?           @map("sendgrid_last_validated_at")
+  twilioAccountSidEncrypted    String?             @map("twilio_account_sid_encrypted")
+  twilioAuthTokenEncrypted     String?             @map("twilio_auth_token_encrypted")
+  twilioPhoneNumber            String?             @map("twilio_phone_number")
+  twilioValidated              Boolean             @default(false) @map("twilio_validated")
+  twilioLastValidatedAt        DateTime?           @map("twilio_last_validated_at")
+  businessType                 String?             @map("business_type")
+  onboardingComplete           Boolean             @default(false) @map("onboarding_complete")
+  onboardingStep               Int                 @default(1) @map("onboarding_step")
+  widgetAccentColor            String              @default("#B5A8D5") @map("widget_accent_color")
+  widgetButtonStyle            String              @default("rounded") @map("widget_button_style")
+  widgetFontFamily             String              @default("system") @map("widget_font_family")
+  widgetPrimaryColor           String              @default("#7C9A82") @map("widget_primary_color")
+  brand_background_color       String              @default("#FAF8F3")
+  brand_primary_color          String              @default("#C7DCC8")
+  business_hours               String              @default("[]")
+  notification_settings        String              @default("{}")
+  multiLocationEnabled         Boolean             @default(false) @map("multi_location_enabled")
+  syncServicesFromFlagship     Boolean             @default(false) @map("sync_services_from_flagship")
+  syncPricingFromFlagship      Boolean             @default(false) @map("sync_pricing_from_flagship")
+  syncSettingsFromFlagship     Boolean             @default(false) @map("sync_settings_from_flagship")
+  // Staff self-service settings
+  staffCanEditSchedule         Boolean             @default(true) @map("staff_can_edit_schedule")
+  staffScheduleNeedsApproval   Boolean             @default(false) @map("staff_schedule_needs_approval")
+  staffCanRequestTimeOff       Boolean             @default(true) @map("staff_can_request_time_off")
+  staffCanViewClientContact    Boolean             @default(true) @map("staff_can_view_client_contact")
+  staffCanCompleteAppointments Boolean             @default(true) @map("staff_can_complete_appointments")
   // Online booking settings
-  bookingEnabled            Boolean             @default(true) @map("booking_enabled")
-  bookingMinNoticeHours     Int                 @default(2) @map("booking_min_notice_hours")
-  bookingMaxAdvanceDays     Int                 @default(30) @map("booking_max_advance_days")
-  bookingSlotInterval       Int                 @default(30) @map("booking_slot_interval")
-  bookingRequirePhone       Boolean             @default(false) @map("booking_require_phone")
-  bookingRequireEmail       Boolean             @default(true) @map("booking_require_email")
-  appointments              Appointment[]
-  clients                   Client[]
-  commissionRecords         CommissionRecord[]
-  consultationForms         ConsultationForm[]
-  giftCards                 GiftCard[]
-  locations                 Location[]
-  marketingCampaigns        MarketingCampaign[]
-  packages                  Package[]
-  payments                  Payment[]
-  reviews                   Review[]
-  serviceCategories         ServiceCategory[]
-  services                  Service[]
-  subscription              Subscription?
-  users                     User[]
+  bookingEnabled               Boolean             @default(true) @map("booking_enabled")
+  bookingMinNoticeHours        Int                 @default(2) @map("booking_min_notice_hours")
+  bookingMaxAdvanceDays        Int                 @default(30) @map("booking_max_advance_days")
+  bookingSlotInterval          Int                 @default(30) @map("booking_slot_interval")
+  bookingRequirePhone          Boolean             @default(false) @map("booking_require_phone")
+  bookingRequireEmail          Boolean             @default(true) @map("booking_require_email")
+  appointments                 Appointment[]
+  clients                      Client[]
+  commissionRecords            CommissionRecord[]
+  consultationForms            ConsultationForm[]
+  giftCards                    GiftCard[]
+  locations                    Location[]
+  marketingCampaigns           MarketingCampaign[]
+  packages                     Package[]
+  payments                     Payment[]
+  reviews                      Review[]
+  serviceCategories            ServiceCategory[]
+  services                     Service[]
+  subscription                 Subscription?
+  users                        User[]
 
   @@map("salons")
 }
@@ -117,6 +123,9 @@ model User {
   staffLocations          StaffLocation[]
   staffServices           StaffService[]
   timeOff                 TimeOff[]
+  timeOffReviewed         TimeOff[]                @relation("TimeOffReviewer")
+  scheduleChangeRequests  ScheduleChangeRequest[]
+  scheduleChangesReviewed ScheduleChangeRequest[]  @relation("ScheduleChangeReviewer")
   salon                   Salon                    @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@unique([salonId, email])
@@ -256,44 +265,74 @@ model StaffAvailability {
 }
 
 model TimeOff {
-  id        String   @id @default(uuid())
-  staffId   String   @map("staff_id")
-  startDate DateTime @map("start_date")
-  endDate   DateTime @map("end_date")
-  reason    String?
-  notes     String?
-  createdAt DateTime @default(now()) @map("created_at")
-  staff     User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid())
+  staffId     String    @map("staff_id")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  type        String    @default("vacation") // vacation, sick, personal, other
+  reason      String?
+  notes       String?
+  status      String    @default("pending") // pending, approved, rejected
+  reviewedAt  DateTime? @map("reviewed_at")
+  reviewedBy  String?   @map("reviewed_by")
+  reviewNotes String?   @map("review_notes")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  staff       User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  reviewer    User?     @relation("TimeOffReviewer", fields: [reviewedBy], references: [id])
 
   @@index([staffId])
   @@index([startDate])
+  @@index([status])
   @@map("time_off")
 }
 
+model ScheduleChangeRequest {
+  id           String    @id @default(uuid())
+  staffId      String    @map("staff_id")
+  locationId   String?   @map("location_id")
+  dayOfWeek    Int       @map("day_of_week")
+  newStartTime String?   @map("new_start_time")
+  newEndTime   String?   @map("new_end_time")
+  newIsWorking Boolean   @map("new_is_working")
+  status       String    @default("pending") // pending, approved, rejected
+  requestedAt  DateTime  @default(now()) @map("requested_at")
+  reviewedAt   DateTime? @map("reviewed_at")
+  reviewedBy   String?   @map("reviewed_by")
+  reviewNotes  String?   @map("review_notes")
+  staff        User      @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  location     Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  reviewer     User?     @relation("ScheduleChangeReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([staffId])
+  @@index([status])
+  @@map("schedule_change_requests")
+}
+
 model Location {
-  id                 String              @id @default(uuid())
-  salonId            String              @map("salon_id")
-  name               String
-  address            String?
-  city               String?
-  state              String?
-  zip                String?
-  phone              String?
-  timezone           String?
-  hours              String?
-  isPrimary          Boolean             @default(false) @map("is_primary")
-  isActive           Boolean             @default(true) @map("is_active")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
-  appointments       Appointment[]
-  locationHours      LocationHours[]
-  salon              Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  serviceLocations   ServiceLocation[]
-  staffAvailability  StaffAvailability[]
-  staffLocations     StaffLocation[]
-  preferredByClients Client[]            @relation("PreferredLocation")
-  payments           Payment[]
-  reviews            Review[]
+  id                     String                  @id @default(uuid())
+  salonId                String                  @map("salon_id")
+  name                   String
+  address                String?
+  city                   String?
+  state                  String?
+  zip                    String?
+  phone                  String?
+  timezone               String?
+  hours                  String?
+  isPrimary              Boolean                 @default(false) @map("is_primary")
+  isActive               Boolean                 @default(true) @map("is_active")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  appointments           Appointment[]
+  locationHours          LocationHours[]
+  salon                  Salon                   @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  serviceLocations       ServiceLocation[]
+  staffAvailability      StaffAvailability[]
+  staffLocations         StaffLocation[]
+  scheduleChangeRequests ScheduleChangeRequest[]
+  preferredByClients     Client[]                @relation("PreferredLocation")
+  payments               Payment[]
+  reviews                Review[]
 
   @@index([salonId])
   @@index([isActive])
