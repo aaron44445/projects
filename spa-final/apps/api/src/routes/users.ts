@@ -482,6 +482,188 @@ router.delete(
 );
 
 // ============================================
+// GET /api/v1/users/:id/availability
+// Get staff member availability
+// Supports optional locationId query param for location-specific schedules
+// ============================================
+router.get('/:id/availability', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { locationId } = req.query;
+
+  // Staff can only view their own availability unless they have VIEW_ALL_STAFF permission
+  if (
+    !hasPermission(req.user!.role, PERMISSIONS.VIEW_ALL_STAFF) &&
+    id !== req.user!.userId
+  ) {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'You can only view your own availability',
+      },
+    });
+  }
+
+  // Verify staff member exists and belongs to this salon
+  const staff = await prisma.user.findFirst({
+    where: { id, salonId: req.user!.salonId },
+  });
+
+  if (!staff) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Staff member not found',
+      },
+    });
+  }
+
+  let availability;
+
+  if (locationId && typeof locationId === 'string') {
+    // Get both location-specific AND global (null locationId) availability
+    const [locationSpecific, globalAvailability] = await Promise.all([
+      prisma.staffAvailability.findMany({
+        where: { staffId: id, locationId },
+        include: { location: { select: { id: true, name: true } } },
+      }),
+      prisma.staffAvailability.findMany({
+        where: { staffId: id, locationId: null },
+      }),
+    ]);
+
+    // Merge: location-specific takes precedence over global for each dayOfWeek
+    const locationDays = new Set(locationSpecific.map(a => a.dayOfWeek));
+    const mergedAvailability = [
+      ...locationSpecific,
+      ...globalAvailability.filter(a => !locationDays.has(a.dayOfWeek)),
+    ];
+
+    // Sort by dayOfWeek for consistent output
+    availability = mergedAvailability.sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  } else {
+    // Return all availability records (global and location-specific)
+    availability = await prisma.staffAvailability.findMany({
+      where: { staffId: id },
+      include: { location: { select: { id: true, name: true } } },
+      orderBy: [{ locationId: 'asc' }, { dayOfWeek: 'asc' }],
+    });
+  }
+
+  res.json({
+    success: true,
+    data: availability,
+  });
+}));
+
+// ============================================
+// PUT /api/v1/users/:id/availability
+// Set staff member availability
+// Supports optional locationId in body for location-specific schedules
+// ============================================
+router.put('/:id/availability', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { availability, locationId } = req.body;
+
+  // Staff can only edit their own availability unless they have EDIT_STAFF permission
+  const isSelf = id === req.user!.userId;
+  const canEditOthers = hasPermission(req.user!.role, PERMISSIONS.EDIT_STAFF);
+
+  if (!isSelf && !canEditOthers) {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'You can only edit your own availability',
+      },
+    });
+  }
+
+  // Verify staff member exists and belongs to this salon
+  const staff = await prisma.user.findFirst({
+    where: { id, salonId: req.user!.salonId },
+  });
+
+  if (!staff) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Staff member not found',
+      },
+    });
+  }
+
+  // Validate availability array
+  if (!Array.isArray(availability)) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Availability must be an array',
+      },
+    });
+  }
+
+  // If locationId is provided, verify staff is assigned to that location
+  if (locationId) {
+    const staffLocation = await prisma.staffLocation.findFirst({
+      where: { staffId: id, locationId },
+    });
+
+    if (!staffLocation) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NOT_ASSIGNED',
+          message: 'Staff member is not assigned to this location',
+        },
+      });
+    }
+  }
+
+  // Upsert each availability record
+  const upsertedAvailability = await Promise.all(
+    availability.map(async (a: { dayOfWeek: number; startTime: string; endTime: string; isAvailable?: boolean }) => {
+      // Validate required fields
+      if (a.dayOfWeek === undefined || a.dayOfWeek < 0 || a.dayOfWeek > 6) {
+        throw new Error(`Invalid dayOfWeek: ${a.dayOfWeek}. Must be 0-6.`);
+      }
+
+      return prisma.staffAvailability.upsert({
+        where: {
+          staffId_locationId_dayOfWeek: {
+            staffId: id,
+            locationId: locationId || null,
+            dayOfWeek: a.dayOfWeek,
+          },
+        },
+        update: {
+          startTime: a.startTime,
+          endTime: a.endTime,
+          isAvailable: a.isAvailable ?? true,
+        },
+        create: {
+          staffId: id,
+          locationId: locationId || null,
+          dayOfWeek: a.dayOfWeek,
+          startTime: a.startTime,
+          endTime: a.endTime,
+          isAvailable: a.isAvailable ?? true,
+        },
+        include: { location: { select: { id: true, name: true } } },
+      });
+    })
+  );
+
+  res.json({
+    success: true,
+    data: upsertedAvailability,
+  });
+}));
+
+// ============================================
 // POST /api/v1/users/change-password
 // Change own password
 // ============================================
