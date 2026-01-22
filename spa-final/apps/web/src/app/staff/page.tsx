@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -22,10 +22,15 @@ import {
   Loader2,
   AlertCircle,
   Trash2,
+  MapPin,
+  Check,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
-import { useStaff, useServices, type StaffMember, type CreateStaffInput, type UpdateStaffInput } from '@/hooks';
+import { RequirePermission, PERMISSIONS } from '@/components/RequirePermission';
+import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useStaff, useServices, useLocations, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   active: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -36,8 +41,17 @@ const statusColors: Record<string, string> = {
 const roleLabels: Record<string, string> = {
   owner: 'Owner',
   admin: 'Admin',
+  manager: 'Manager',
   staff: 'Staff',
+  receptionist: 'Receptionist',
 };
+
+// Type for staff location assignments
+interface StaffLocationAssignment {
+  locationId: string;
+  locationName: string;
+  isPrimary: boolean;
+}
 
 function StaffContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,13 +73,27 @@ function StaffContent() {
     department: '',
   });
 
+  // Location assignment state
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationModalStaff, setLocationModalStaff] = useState<StaffMember | null>(null);
+  const [staffLocationAssignments, setStaffLocationAssignments] = useState<Map<string, StaffLocationAssignment[]>>(new Map());
+  const [pendingLocationChanges, setPendingLocationChanges] = useState<{
+    toAssign: { locationId: string; isPrimary: boolean }[];
+    toRemove: string[];
+    primaryLocationId: string | null;
+  }>({ toAssign: [], toRemove: [], primaryLocationId: null });
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+
+  // Get permissions
+  const { can, isAtLeast, role: currentUserRole } = usePermissions();
+
   // Form state for staff modal
   const [staffForm, setStaffForm] = useState<{
     firstName: string;
     lastName: string;
     email: string;
     phone: string;
-    role: 'owner' | 'admin' | 'staff';
+    role: 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist';
     certifications: string;
     commissionRate: string;
   }>({
@@ -89,6 +117,61 @@ function StaffContent() {
   } = useStaff();
 
   const { services } = useServices();
+
+  const {
+    locations,
+    isLoading: isLoadingLocationsList,
+    getStaffAtLocation,
+    assignStaffToLocation,
+    removeStaffFromLocation,
+  } = useLocations();
+
+  // Load location assignments for all staff
+  const loadAllStaffLocationAssignments = useCallback(async () => {
+    if (locations.length === 0 || staff.length === 0) return;
+
+    setIsLoadingLocations(true);
+    try {
+      const assignmentMap = new Map<string, StaffLocationAssignment[]>();
+
+      // Initialize empty arrays for all staff
+      staff.forEach((member) => {
+        assignmentMap.set(member.id, []);
+      });
+
+      // Fetch staff at each location
+      const locationPromises = locations.map(async (location) => {
+        const staffAtLocation = await getStaffAtLocation(location.id);
+        return { location, staffAtLocation };
+      });
+
+      const results = await Promise.all(locationPromises);
+
+      // Build assignment map
+      results.forEach(({ location, staffAtLocation }) => {
+        staffAtLocation.forEach((staffMember) => {
+          const currentAssignments = assignmentMap.get(staffMember.id) || [];
+          currentAssignments.push({
+            locationId: location.id,
+            locationName: location.name,
+            isPrimary: staffMember.isPrimaryLocation,
+          });
+          assignmentMap.set(staffMember.id, currentAssignments);
+        });
+      });
+
+      setStaffLocationAssignments(assignmentMap);
+    } catch (err) {
+      console.error('Failed to load staff location assignments:', err);
+    } finally {
+      setIsLoadingLocations(false);
+    }
+  }, [locations, staff, getStaffAtLocation]);
+
+  // Load assignments when locations and staff are available
+  useEffect(() => {
+    loadAllStaffLocationAssignments();
+  }, [loadAllStaffLocationAssignments]);
 
   const filteredStaff = useMemo(() => {
     let result = staff;
@@ -290,6 +373,131 @@ function StaffContent() {
     };
   };
 
+  // Get location assignments for a specific staff member
+  const getStaffLocations = (staffId: string): StaffLocationAssignment[] => {
+    return staffLocationAssignments.get(staffId) || [];
+  };
+
+  // Open location assignment modal
+  const openLocationModal = (member: StaffMember) => {
+    setLocationModalStaff(member);
+    const currentAssignments = getStaffLocations(member.id);
+    const primaryAssignment = currentAssignments.find((a) => a.isPrimary);
+
+    // Initialize pending changes based on current assignments
+    setPendingLocationChanges({
+      toAssign: currentAssignments.map((a) => ({
+        locationId: a.locationId,
+        isPrimary: a.isPrimary,
+      })),
+      toRemove: [],
+      primaryLocationId: primaryAssignment?.locationId || null,
+    });
+    setShowLocationModal(true);
+  };
+
+  // Close location modal
+  const closeLocationModal = () => {
+    setShowLocationModal(false);
+    setLocationModalStaff(null);
+    setPendingLocationChanges({ toAssign: [], toRemove: [], primaryLocationId: null });
+  };
+
+  // Toggle location assignment in modal
+  const toggleLocationAssignment = (locationId: string) => {
+    setPendingLocationChanges((prev) => {
+      const isCurrentlyAssigned = prev.toAssign.some((a) => a.locationId === locationId);
+
+      if (isCurrentlyAssigned) {
+        // Remove from assignments
+        const newAssignments = prev.toAssign.filter((a) => a.locationId !== locationId);
+        // If this was the primary, clear primary
+        const newPrimaryId = prev.primaryLocationId === locationId ? null : prev.primaryLocationId;
+        return {
+          ...prev,
+          toAssign: newAssignments,
+          primaryLocationId: newPrimaryId,
+        };
+      } else {
+        // Add to assignments
+        return {
+          ...prev,
+          toAssign: [...prev.toAssign, { locationId, isPrimary: false }],
+        };
+      }
+    });
+  };
+
+  // Set primary location in modal
+  const setPrimaryLocation = (locationId: string) => {
+    setPendingLocationChanges((prev) => ({
+      ...prev,
+      primaryLocationId: locationId,
+      toAssign: prev.toAssign.map((a) => ({
+        ...a,
+        isPrimary: a.locationId === locationId,
+      })),
+    }));
+  };
+
+  // Save location assignments
+  const handleSaveLocationAssignments = async () => {
+    if (!locationModalStaff) return;
+
+    setIsSubmitting(true);
+    try {
+      const currentAssignments = getStaffLocations(locationModalStaff.id);
+      const currentLocationIds = currentAssignments.map((a) => a.locationId);
+      const pendingLocationIds = pendingLocationChanges.toAssign.map((a) => a.locationId);
+
+      // Find locations to remove (in current but not in pending)
+      const toRemove = currentLocationIds.filter((id) => !pendingLocationIds.includes(id));
+
+      // Find locations to add (in pending but not in current)
+      const toAdd = pendingLocationChanges.toAssign.filter(
+        (a) => !currentLocationIds.includes(a.locationId)
+      );
+
+      // Find locations where primary status changed
+      const toUpdatePrimary = pendingLocationChanges.toAssign.filter((pending) => {
+        const current = currentAssignments.find((c) => c.locationId === pending.locationId);
+        return current && current.isPrimary !== pending.isPrimary;
+      });
+
+      // Execute removals
+      for (const locationId of toRemove) {
+        await removeStaffFromLocation(locationId, locationModalStaff.id);
+      }
+
+      // Execute additions
+      for (const assignment of toAdd) {
+        await assignStaffToLocation(
+          assignment.locationId,
+          locationModalStaff.id,
+          assignment.isPrimary
+        );
+      }
+
+      // Update primary status (remove and re-add with new primary flag)
+      for (const assignment of toUpdatePrimary) {
+        await removeStaffFromLocation(assignment.locationId, locationModalStaff.id);
+        await assignStaffToLocation(
+          assignment.locationId,
+          locationModalStaff.id,
+          assignment.isPrimary
+        );
+      }
+
+      // Reload all assignments
+      await loadAllStaffLocationAssignments();
+      closeLocationModal();
+    } catch (err) {
+      console.error('Failed to save location assignments:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-cream flex">
       <AppSidebar
@@ -319,13 +527,16 @@ function StaffContent() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button
-                onClick={openNewStaffModal}
-                className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"
-              >
-                <Plus className="w-5 h-5" />
-                <span className="hidden sm:inline">Add Staff</span>
-              </button>
+              {locations.length > 1 && <LocationSwitcher showAllOption={false} />}
+              <RequirePermission permission={PERMISSIONS.CREATE_STAFF}>
+                <button
+                  onClick={openNewStaffModal}
+                  className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span className="hidden sm:inline">Add Staff</span>
+                </button>
+              </RequirePermission>
             </div>
           </div>
         </header>
@@ -395,7 +606,9 @@ function StaffContent() {
                           <option value="">All roles</option>
                           <option value="owner">Owner</option>
                           <option value="admin">Admin</option>
+                          <option value="manager">Manager</option>
                           <option value="staff">Staff</option>
+                          <option value="receptionist">Receptionist</option>
                         </select>
                       </div>
 
@@ -511,6 +724,7 @@ function StaffContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredStaff.map((member) => {
                   const displayInfo = getStaffDisplayInfo(member);
+                  const staffLocations = getStaffLocations(member.id);
                   return (
                     <div
                       key={member.id}
@@ -573,6 +787,40 @@ function StaffContent() {
                           </span>
                         )}
                       </div>
+
+                      {/* Location Badges */}
+                      {staffLocations.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {staffLocations.slice(0, 2).map((loc) => (
+                            <span
+                              key={loc.locationId}
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${
+                                loc.isPrimary
+                                  ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                  : 'bg-lavender/20 text-lavender-dark border border-lavender/30'
+                              }`}
+                            >
+                              <MapPin className="w-3 h-3" />
+                              {loc.locationName}
+                              {loc.isPrimary && <Star className="w-3 h-3 fill-amber-500 text-amber-500" />}
+                            </span>
+                          ))}
+                          {staffLocations.length > 2 && (
+                            <span className="px-2 py-1 text-xs text-charcoal/50">
+                              +{staffLocations.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {staffLocations.length === 0 && locations.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal/5 rounded-lg text-xs text-charcoal/50">
+                            <MapPin className="w-3 h-3" />
+                            No locations assigned
+                          </span>
+                        </div>
+                      )}
 
                       {/* Stats */}
                       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-charcoal/10">
@@ -644,12 +892,14 @@ function StaffContent() {
                     {selectedStaff.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <button
-                  onClick={() => openEditStaffModal(selectedStaff)}
-                  className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
+                <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
+                  <button
+                    onClick={() => openEditStaffModal(selectedStaff)}
+                    className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                </RequirePermission>
               </div>
 
               {/* Contact Info */}
@@ -723,6 +973,72 @@ function StaffContent() {
                 </div>
               </div>
 
+              {/* Assigned Locations Section */}
+              {locations.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-charcoal flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-charcoal/60" />
+                      Assigned Locations
+                    </h4>
+                    <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
+                      <button
+                        onClick={() => openLocationModal(selectedStaff)}
+                        className="text-sm text-sage hover:text-sage-dark font-medium transition-colors"
+                      >
+                        Manage
+                      </button>
+                    </RequirePermission>
+                  </div>
+                  {(() => {
+                    const staffLocations = getStaffLocations(selectedStaff.id);
+                    if (staffLocations.length === 0) {
+                      return (
+                        <div className="p-4 bg-charcoal/5 rounded-xl text-center">
+                          <MapPin className="w-8 h-8 text-charcoal/20 mx-auto mb-2" />
+                          <p className="text-sm text-charcoal/50">No locations assigned</p>
+                          <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
+                            <button
+                              onClick={() => openLocationModal(selectedStaff)}
+                              className="mt-2 text-sm text-sage hover:text-sage-dark font-medium"
+                            >
+                              Assign to locations
+                            </button>
+                          </RequirePermission>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="space-y-2">
+                        {staffLocations.map((loc) => (
+                          <div
+                            key={loc.locationId}
+                            className={`flex items-center justify-between p-3 rounded-xl ${
+                              loc.isPrimary
+                                ? 'bg-amber-50 border border-amber-200'
+                                : 'bg-charcoal/5'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <MapPin className={`w-5 h-5 ${loc.isPrimary ? 'text-amber-600' : 'text-charcoal/40'}`} />
+                              <span className={`font-medium ${loc.isPrimary ? 'text-amber-800' : 'text-charcoal'}`}>
+                                {loc.locationName}
+                              </span>
+                            </div>
+                            {loc.isPrimary && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
+                                <Star className="w-3 h-3 fill-amber-500" />
+                                Primary
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
               {/* Services (Specialties) */}
               {(() => {
                 const displayInfo = getStaffDisplayInfo(selectedStaff);
@@ -785,18 +1101,149 @@ function StaffContent() {
               )}
 
               {/* Delete Button */}
-              <div className="pt-4 border-t border-charcoal/10">
-                <button
-                  onClick={() => setDeleteConfirm({ id: selectedStaff.id, name: `${selectedStaff.firstName} ${selectedStaff.lastName}` })}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-rose-200 text-rose-600 rounded-xl font-medium hover:bg-rose-50 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Delete Staff Member
-                </button>
-              </div>
+              <RequirePermission permission={PERMISSIONS.DELETE_STAFF}>
+                <div className="pt-4 border-t border-charcoal/10">
+                  <button
+                    onClick={() => setDeleteConfirm({ id: selectedStaff.id, name: `${selectedStaff.firstName} ${selectedStaff.lastName}` })}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-rose-200 text-rose-600 rounded-xl font-medium hover:bg-rose-50 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Delete Staff Member
+                  </button>
+                </div>
+              </RequirePermission>
             </div>
           </div>
         </>
+      )}
+
+      {/* Location Assignment Modal */}
+      {showLocationModal && locationModalStaff && (
+        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-charcoal">Assign Locations</h2>
+                <p className="text-sm text-charcoal/60 mt-1">
+                  {locationModalStaff.firstName} {locationModalStaff.lastName}
+                </p>
+              </div>
+              <button
+                onClick={closeLocationModal}
+                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {locations.length === 0 ? (
+                <div className="text-center py-8">
+                  <MapPin className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
+                  <p className="text-charcoal/60 mb-2">No locations available</p>
+                  <p className="text-sm text-charcoal/40">
+                    Create locations first to assign staff.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-charcoal/60">
+                    Select the locations where this staff member works. Mark one as their primary location.
+                  </p>
+
+                  <div className="space-y-3">
+                    {locations.map((location) => {
+                      const isAssigned = pendingLocationChanges.toAssign.some(
+                        (a) => a.locationId === location.id
+                      );
+                      const isPrimary = pendingLocationChanges.primaryLocationId === location.id;
+
+                      return (
+                        <div
+                          key={location.id}
+                          className={`p-4 rounded-xl border transition-all ${
+                            isAssigned
+                              ? isPrimary
+                                ? 'border-amber-300 bg-amber-50'
+                                : 'border-sage bg-sage/5'
+                              : 'border-charcoal/10 hover:border-charcoal/20'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* Checkbox */}
+                            <button
+                              onClick={() => toggleLocationAssignment(location.id)}
+                              className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                isAssigned
+                                  ? 'bg-sage border-sage text-white'
+                                  : 'border-charcoal/30 hover:border-charcoal/50'
+                              }`}
+                            >
+                              {isAssigned && <Check className="w-3 h-3" />}
+                            </button>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <MapPin className={`w-4 h-4 ${isAssigned ? 'text-sage' : 'text-charcoal/40'}`} />
+                                <span className={`font-medium ${isAssigned ? 'text-charcoal' : 'text-charcoal/70'}`}>
+                                  {location.name}
+                                </span>
+                                {location.isPrimary && (
+                                  <span className="px-1.5 py-0.5 bg-charcoal/10 text-charcoal/60 text-xs rounded">
+                                    Main
+                                  </span>
+                                )}
+                              </div>
+                              {location.address && (
+                                <p className="text-xs text-charcoal/50 mt-1 ml-6">
+                                  {location.address}
+                                  {location.city && `, ${location.city}`}
+                                </p>
+                              )}
+
+                              {/* Primary selector - only show if assigned */}
+                              {isAssigned && (
+                                <button
+                                  onClick={() => setPrimaryLocation(location.id)}
+                                  className={`mt-2 ml-6 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                    isPrimary
+                                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                      : 'bg-charcoal/5 text-charcoal/60 hover:bg-charcoal/10'
+                                  }`}
+                                >
+                                  <Star className={`w-3 h-3 ${isPrimary ? 'fill-amber-500 text-amber-500' : ''}`} />
+                                  {isPrimary ? 'Primary Location' : 'Set as Primary'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+              <button
+                onClick={closeLocationModal}
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveLocationAssignments}
+                disabled={isSubmitting || locations.length === 0}
+                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Save Assignments
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* New/Edit Staff Modal */}
@@ -864,13 +1311,19 @@ function StaffContent() {
                 <label className="block text-sm font-medium text-charcoal mb-2">Role</label>
                 <select
                   value={staffForm.role}
-                  onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'owner' | 'admin' | 'staff' }))}
+                  onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist' }))}
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
                 >
+                  <option value="receptionist">Receptionist</option>
                   <option value="staff">Staff</option>
-                  <option value="admin">Admin</option>
-                  <option value="owner">Owner</option>
+                  {/* Manager and above roles require higher permissions */}
+                  {isAtLeast('manager') && <option value="manager">Manager</option>}
+                  {isAtLeast('admin') && <option value="admin">Admin</option>}
+                  {currentUserRole === 'owner' && <option value="owner">Owner</option>}
                 </select>
+                <p className="mt-1 text-xs text-charcoal/50">
+                  You can only assign roles up to your own level
+                </p>
               </div>
 
               <div>

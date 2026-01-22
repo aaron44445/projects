@@ -1,7 +1,6 @@
 {
-  "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=@peacase/web",
-  "devCommand": "pnpm dev",
-  "installCommand": "echo 'skip install - done in buildCommand'",
   "framework": "nextjs",
+  "installCommand": "npm install -g pnpm@8.15.1 && cd ../.. && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm --filter @peacase/web build",
   "outputDirectory": ".next"
 }
