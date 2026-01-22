@@ -210,13 +210,13 @@ rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL
 
 ### Service ID
 ```
-srv-d5lha7re5dus73dppmv0
+srv-d5ooe2lactks738u6bo0
 ```
 
 ### Database Connection Strings (Supabase)
 ```
-DATABASE_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Peacase1576@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-DIRECT_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Peacase1576@aws-1-us-east-1.pooler.supabase.com:5432/postgres
+DATABASE_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Lambo57Bears@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.ubvgvbobnmlzsedtupuw:Lambo57Bears@aws-1-us-east-1.pooler.supabase.com:5432/postgres
 ```
 
 ### CRITICAL: render.yaml Location
@@ -235,13 +235,13 @@ DO NOT add `prisma db push` or `db:fix-schema` to the build command - they cause
 curl -X PUT -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
   -H "Content-Type: application/json" \
   -d '{"value":"NEW_VALUE"}' \
-  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/env-vars/DATABASE_URL"
+  "https://api.render.com/v1/services/srv-d5ooe2lactks738u6bo0/env-vars/DATABASE_URL"
 ```
 
 **Trigger deploy:**
 ```bash
 curl -X POST -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
-  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys"
+  "https://api.render.com/v1/services/srv-d5ooe2lactks738u6bo0/deploys"
 ```
 
 **Deploy specific commit (rollback):**
@@ -249,19 +249,19 @@ curl -X POST -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
 curl -X POST -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
   -H "Content-Type: application/json" \
   -d '{"commitId":"b30d14a"}' \
-  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys"
+  "https://api.render.com/v1/services/srv-d5ooe2lactks738u6bo0/deploys"
 ```
 
 **Check deploy status:**
 ```bash
 curl -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
-  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/deploys?limit=1"
+  "https://api.render.com/v1/services/srv-d5ooe2lactks738u6bo0/deploys?limit=1"
 ```
 
 **List all env vars:**
 ```bash
 curl -H "Authorization: Bearer rnd_Foa7Ck3kM3ht2K9yKAGHT9RG4pWL" \
-  "https://api.render.com/v1/services/srv-d5lha7re5dus73dppmv0/env-vars"
+  "https://api.render.com/v1/services/srv-d5ooe2lactks738u6bo0/env-vars"
 ```
 
 ### Last Known Working Commit
