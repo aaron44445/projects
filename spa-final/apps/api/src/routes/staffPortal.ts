@@ -36,6 +36,7 @@ const staffLoginSchema = z.object({
 const timeOffRequestSchema = z.object({
   startDate: z.string().transform(s => new Date(s)),
   endDate: z.string().transform(s => new Date(s)),
+  type: z.enum(['vacation', 'sick', 'personal', 'other']).default('vacation'),
   reason: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -796,11 +797,26 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
 
   const data = timeOffRequestSchema.parse(req.body);
   const staffId = req.user.userId;
+  const salonId = req.user.salonId;
 
-  // Check for overlapping time off
+  // Check if staff can request time off
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { staffCanRequestTimeOff: true },
+  });
+
+  if (!salon?.staffCanRequestTimeOff) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Time off requests are disabled. Contact your manager.' },
+    });
+  }
+
+  // Check for overlapping time off (excluding rejected)
   const overlap = await prisma.timeOff.findFirst({
     where: {
       staffId,
+      status: { not: 'rejected' },
       startDate: { lte: data.endDate },
       endDate: { gte: data.startDate },
     },
@@ -809,7 +825,7 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
   if (overlap) {
     return res.status(400).json({
       success: false,
-      error: { code: 'OVERLAP', message: 'You already have time off scheduled during this period' },
+      error: { code: 'OVERLAP', message: 'You already have a time off request for these dates' },
     });
   }
 
@@ -818,8 +834,10 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
       staffId,
       startDate: data.startDate,
       endDate: data.endDate,
+      type: data.type,
       reason: data.reason,
       notes: data.notes,
+      status: 'pending',
     },
   });
 
@@ -836,13 +854,37 @@ router.get('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reques
   }
 
   const staffId = req.user.userId;
+  const { status } = req.query;
 
-  const timeOff = await prisma.timeOff.findMany({
-    where: { staffId },
+  const timeOffs = await prisma.timeOff.findMany({
+    where: {
+      staffId,
+      ...(status ? { status: status as string } : {}),
+    },
     orderBy: { startDate: 'desc' },
+    include: {
+      reviewer: {
+        select: { firstName: true, lastName: true },
+      },
+    },
   });
 
-  res.json({ success: true, data: timeOff });
+  res.json({
+    success: true,
+    data: timeOffs.map(t => ({
+      id: t.id,
+      startDate: t.startDate,
+      endDate: t.endDate,
+      type: t.type,
+      reason: t.reason,
+      notes: t.notes,
+      status: t.status,
+      reviewedAt: t.reviewedAt,
+      reviewedBy: t.reviewer ? `${t.reviewer.firstName} ${t.reviewer.lastName}` : null,
+      reviewNotes: t.reviewNotes,
+      createdAt: t.createdAt,
+    })),
+  });
 }));
 
 // ============================================
@@ -866,6 +908,14 @@ router.delete('/time-off/:id', authenticate, staffOnly, asyncHandler(async (req:
     return res.status(404).json({
       success: false,
       error: { code: 'NOT_FOUND', message: 'Time off request not found' },
+    });
+  }
+
+  // Can only delete pending time off
+  if (timeOff.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_REVIEWED', message: 'Cannot cancel time off that has already been reviewed' },
     });
   }
 
@@ -1016,6 +1066,267 @@ router.get('/clients', authenticate, staffOnly, asyncHandler(async (req: Request
   });
 
   res.json({ success: true, data: clients });
+}));
+
+// ============================================
+// GET /api/v1/staff-portal/my-schedule
+// Get current staff member's working hours
+// ============================================
+router.get('/my-schedule', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  const staffId = req.user!.userId;
+  const { locationId } = req.query;
+
+  // Get staff's location assignments
+  const staffLocations = await prisma.staffLocation.findMany({
+    where: { staffId },
+    include: {
+      location: {
+        select: { id: true, name: true, isPrimary: true },
+      },
+    },
+  });
+
+  // Get availability for all locations or specific location
+  const availability = await prisma.staffAvailability.findMany({
+    where: {
+      staffId,
+      ...(locationId ? { locationId: locationId as string } : {}),
+    },
+    orderBy: [{ locationId: 'asc' }, { dayOfWeek: 'asc' }],
+  });
+
+  // Group by location
+  const scheduleByLocation: Record<string, {
+    location: { id: string; name: string; isPrimary: boolean };
+    isPrimary: boolean;
+    schedule: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      isAvailable: boolean;
+      locationId: string | null;
+    }>;
+  }> = {};
+
+  for (const loc of staffLocations) {
+    const locationAvailability = availability.filter(a =>
+      a.locationId === loc.locationId || (a.locationId === null && !locationId)
+    );
+
+    // Create 7-day schedule with defaults
+    const days = [0, 1, 2, 3, 4, 5, 6].map(dayOfWeek => {
+      const existing = locationAvailability.find(a => a.dayOfWeek === dayOfWeek);
+      return existing ? {
+        dayOfWeek: existing.dayOfWeek,
+        startTime: existing.startTime,
+        endTime: existing.endTime,
+        isAvailable: existing.isAvailable,
+        locationId: existing.locationId,
+      } : {
+        dayOfWeek,
+        startTime: '09:00',
+        endTime: '17:00',
+        isAvailable: false,
+        locationId: loc.locationId,
+      };
+    });
+
+    scheduleByLocation[loc.locationId] = {
+      location: loc.location,
+      isPrimary: loc.isPrimary,
+      schedule: days,
+    };
+  }
+
+  // Calculate total hours per week
+  const totalHoursPerWeek = availability
+    .filter(a => a.isAvailable)
+    .reduce((total, a) => {
+      const [startH, startM] = a.startTime.split(':').map(Number);
+      const [endH, endM] = a.endTime.split(':').map(Number);
+      const hours = (endH + endM / 60) - (startH + startM / 60);
+      return total + hours;
+    }, 0);
+
+  res.json({
+    success: true,
+    data: {
+      locations: staffLocations.map(sl => sl.location),
+      scheduleByLocation,
+      totalHoursPerWeek: Math.round(totalHoursPerWeek * 10) / 10,
+    },
+  });
+}));
+
+// ============================================
+// PUT /api/v1/staff-portal/my-schedule
+// Update staff member's working hours
+// ============================================
+router.put('/my-schedule', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  const staffId = req.user!.userId;
+  const salonId = req.user!.salonId;
+  const { locationId, schedule } = req.body;
+
+  if (!Array.isArray(schedule) || schedule.length !== 7) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'Schedule must be array of 7 days' },
+    });
+  }
+
+  // Check salon settings
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: {
+      staffCanEditSchedule: true,
+      staffScheduleNeedsApproval: true,
+    },
+  });
+
+  if (!salon?.staffCanEditSchedule) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Schedule editing is disabled. Contact your manager.' },
+    });
+  }
+
+  // Verify staff is assigned to this location (if locationId provided)
+  if (locationId) {
+    const staffLocation = await prisma.staffLocation.findUnique({
+      where: { staffId_locationId: { staffId, locationId } },
+    });
+    if (!staffLocation) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'NOT_ASSIGNED', message: 'You are not assigned to this location' },
+      });
+    }
+  }
+
+  // If approval required, create change requests instead
+  if (salon.staffScheduleNeedsApproval) {
+    const requests = await Promise.all(
+      schedule.map((s: { dayOfWeek: number; startTime: string; endTime: string; isWorking: boolean }) =>
+        prisma.scheduleChangeRequest.create({
+          data: {
+            staffId,
+            locationId: locationId || null,
+            dayOfWeek: s.dayOfWeek,
+            newStartTime: s.isWorking ? s.startTime : null,
+            newEndTime: s.isWorking ? s.endTime : null,
+            newIsWorking: s.isWorking,
+            status: 'pending',
+          },
+        })
+      )
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        pendingApproval: true,
+        message: 'Schedule changes submitted for approval',
+        requests,
+      },
+    });
+  }
+
+  // Direct update (no approval needed)
+  const updated = await Promise.all(
+    schedule.map((s: { dayOfWeek: number; startTime: string; endTime: string; isWorking: boolean }) =>
+      prisma.staffAvailability.upsert({
+        where: {
+          staffId_locationId_dayOfWeek: {
+            staffId,
+            locationId: locationId || null,
+            dayOfWeek: s.dayOfWeek,
+          },
+        },
+        create: {
+          staffId,
+          locationId: locationId || null,
+          dayOfWeek: s.dayOfWeek,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          isAvailable: s.isWorking,
+        },
+        update: {
+          startTime: s.startTime,
+          endTime: s.endTime,
+          isAvailable: s.isWorking,
+        },
+      })
+    )
+  );
+
+  res.json({
+    success: true,
+    data: {
+      pendingApproval: false,
+      schedule: updated,
+    },
+  });
+}));
+
+// ============================================
+// GET /api/v1/staff-portal/my-assignments
+// Get staff's location and service assignments
+// ============================================
+router.get('/my-assignments', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  const staffId = req.user!.userId;
+
+  // Get location assignments
+  const locations = await prisma.staffLocation.findMany({
+    where: { staffId },
+    include: {
+      location: {
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          city: true,
+          state: true,
+          isPrimary: true,
+        },
+      },
+    },
+    orderBy: { isPrimary: 'desc' },
+  });
+
+  // Get service assignments
+  const services = await prisma.staffService.findMany({
+    where: { staffId, isAvailable: true },
+    include: {
+      service: {
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          durationMinutes: true,
+          category: {
+            select: { name: true },
+          },
+        },
+      },
+    },
+  });
+
+  res.json({
+    success: true,
+    data: {
+      locations: locations.map(l => ({
+        ...l.location,
+        isPrimaryForStaff: l.isPrimary,
+      })),
+      services: services.map(s => ({
+        id: s.service.id,
+        name: s.service.name,
+        price: s.service.price,
+        durationMinutes: s.service.durationMinutes,
+        category: s.service.category?.name || 'Uncategorized',
+      })),
+    },
+  });
 }));
 
 export { router as staffPortalRouter };
