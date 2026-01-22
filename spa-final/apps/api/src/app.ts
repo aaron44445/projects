@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './lib/env.js';
 
-// Import routes
+// Import routes - locations, onboarding added 2026-01-22
 import { authRouter } from './routes/auth.js';
 import { salonRouter } from './routes/salon.js';
 import { clientsRouter } from './routes/clients.js';
@@ -27,6 +27,7 @@ import { clientPortalRouter } from './routes/clientPortal.js';
 import { demoRouter } from './routes/demo.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { locationsRouter } from './routes/locations.js';
+import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 
@@ -98,6 +99,7 @@ export function createApp() {
   app.use('/api/v1/demo', demoRouter);
   app.use('/api/v1/uploads', uploadsRouter);
   app.use('/api/v1/locations', locationsRouter);
+  app.use('/api/v1/onboarding', onboardingRouter);
 
   // ============================================
   // ERROR HANDLING
