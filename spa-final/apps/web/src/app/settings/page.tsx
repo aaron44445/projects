@@ -24,23 +24,93 @@ import {
   Calendar,
   ExternalLink,
   Code,
+  MapPin,
+  DollarSign,
 } from 'lucide-react';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
-import { useSalon, type Salon } from '@/hooks';
+import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { useSalon, useLocations, type Salon } from '@/hooks';
+import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
+import Link from 'next/link';
 
 const settingsSections = [
-  { id: 'business', name: 'Business Info', icon: Building2, description: 'Company details and address' },
-  { id: 'hours', name: 'Business Hours', icon: Clock, description: 'Operating hours and holidays' },
-  { id: 'subscription', name: 'Subscription', icon: Sparkles, description: 'Manage your plan and add-ons' },
-  { id: 'payments', name: 'Payments', icon: CreditCard, description: 'Payment methods and settings', requiredAddOn: 'payment_processing' as AddOnId },
+  { id: 'business', name: 'Business Info', icon: Building2, description: 'Company details and address', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'locations', name: 'Locations', icon: MapPin, description: 'Multi-location settings', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'hours', name: 'Business Hours', icon: Clock, description: 'Operating hours and holidays', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'subscription', name: 'Subscription', icon: Sparkles, description: 'Manage your plan and add-ons', requiresPermission: PERMISSIONS.MANAGE_BILLING },
+  { id: 'payments', name: 'Payments', icon: CreditCard, description: 'Payment methods and settings', requiredAddOn: 'payment_processing' as AddOnId, requiresPermission: PERMISSIONS.MANAGE_BILLING },
   { id: 'notifications', name: 'Notifications', icon: Mail, description: 'Email and SMS preferences', requiredAddOn: 'reminders' as AddOnId },
-  { id: 'booking', name: 'Online Booking', icon: Globe, description: 'Booking page settings', requiredAddOn: 'online_booking' as AddOnId },
-  { id: 'branding', name: 'Branding', icon: Palette, description: 'Colors, logo, and appearance' },
+  { id: 'booking', name: 'Online Booking', icon: Globe, description: 'Booking page settings', requiredAddOn: 'online_booking' as AddOnId, requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'branding', name: 'Branding', icon: Palette, description: 'Colors, logo, and appearance', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'security', name: 'Security', icon: Shield, description: 'Password and access settings' },
 ];
+
+// Add-on info for upsell banners
+const addOnInfo: Record<string, { name: string; description: string; price: number }> = {
+  payment_processing: {
+    name: 'Payment Processing',
+    description: 'Accept credit cards, Apple Pay, Google Pay, and more',
+    price: 25,
+  },
+  reminders: {
+    name: 'SMS/Email Reminders',
+    description: 'Reduce no-shows with automated appointment reminders',
+    price: 25,
+  },
+  online_booking: {
+    name: 'Online Booking',
+    description: 'Let clients book appointments 24/7 from your website',
+    price: 25,
+  },
+};
+
+// Upsell banner component for locked features
+function AddOnUpsellBanner({
+  addOnId,
+  onEnable,
+}: {
+  addOnId: AddOnId;
+  onEnable: () => void;
+}) {
+  const info = addOnInfo[addOnId];
+  if (!info) return null;
+
+  return (
+    <div className="mb-6 p-4 bg-gradient-to-r from-lavender/20 to-sage/10 rounded-xl border border-lavender/30">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-lavender/30 flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-5 h-5 text-lavender" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold text-charcoal mb-1">
+            Enable {info.name} to use this feature
+          </h3>
+          <p className="text-sm text-charcoal/60 mb-3">
+            {info.description}
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onEnable}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-lg font-medium hover:bg-sage-dark transition-colors text-sm"
+            >
+              <Sparkles className="w-4 h-4" />
+              Enable Add-on - ${info.price}/mo
+            </button>
+            <Link
+              href="/settings?section=subscription"
+              className="text-sm text-charcoal/60 hover:text-charcoal"
+            >
+              Learn more
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface BusinessHour {
   day: string;
@@ -61,15 +131,38 @@ const defaultHours: BusinessHour[] = [
 
 function SettingsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('business');
+  const [activeSection, setActiveSection] = useState('business'); // Start with Business Info
   const [hours, setHours] = useState<BusinessHour[]>(defaultHours);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const { activeAddOns, hasAddOn, setActiveAddOns, monthlyTotal, trialEndsAt, isTrialActive } = useSubscription();
+  const { can } = usePermissions();
+
+  // All sections are accessible - no permission-based filtering
+  // API will enforce permissions on save operations
+  // This allows users to explore all settings and see what's available
 
   // API hooks
   const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon } = useSalon();
+  const { locations, isLoading: locationsLoading, error: locationsError } = useLocations();
+
+  // Multi-location toggle state
+  const [isTogglingMultiLocation, setIsTogglingMultiLocation] = useState(false);
+
+  // Handle multi-location toggle
+  const handleToggleMultiLocation = async (enabled: boolean) => {
+    setIsTogglingMultiLocation(true);
+    try {
+      await updateSalon({ multiLocationEnabled: enabled });
+      // Refresh salon data to update the state
+      await fetchSalon();
+    } catch (err) {
+      console.error('Failed to toggle multi-location:', err);
+    } finally {
+      setIsTogglingMultiLocation(false);
+    }
+  };
 
   // Form state for business info - initialize from API data
   const [businessForm, setBusinessForm] = useState({
@@ -393,6 +486,170 @@ function SettingsContent() {
           </div>
         );
 
+      case 'locations':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-bold text-charcoal mb-1">Location Settings</h2>
+              <p className="text-charcoal/60">
+                Manage multiple locations for your business. Add locations, assign staff, and set location-specific pricing.
+              </p>
+            </div>
+
+            {/* Multi-Location Feature Toggle */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10 shadow-soft">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <MapPin className="w-5 h-5 text-sage" />
+                    <h3 className="font-semibold text-charcoal">Multi-Location Mode</h3>
+                    {salon?.multiLocationEnabled && (
+                      <span className="px-2 py-0.5 bg-sage/20 text-sage-dark text-xs font-medium rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-charcoal/60 mb-4">
+                    Enable multi-location mode to manage multiple business locations. Each location can have its own staff, services, pricing, and operating hours.
+                  </p>
+
+                  {/* Features list */}
+                  <ul className="text-sm space-y-2 text-charcoal/70">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-sage" />
+                      Assign staff to specific locations
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-sage" />
+                      Set location-specific service pricing
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-sage" />
+                      Filter reports and calendar by location
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-sage" />
+                      Clients choose location when booking
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Toggle Switch */}
+                <div className="flex-shrink-0 ml-6">
+                  <button
+                    onClick={() => handleToggleMultiLocation(!salon?.multiLocationEnabled)}
+                    disabled={isTogglingMultiLocation}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                      salon?.multiLocationEnabled ? 'bg-sage' : 'bg-charcoal/20'
+                    } ${isTogglingMultiLocation ? 'opacity-50' : ''}`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
+                        salon?.multiLocationEnabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                    {isTogglingMultiLocation && (
+                      <Loader2 className="absolute w-3 h-3 text-white animate-spin left-1/2 -translate-x-1/2" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Locations Summary */}
+            {salon?.multiLocationEnabled && (
+              <div className="p-6 bg-white rounded-2xl border border-charcoal/10 shadow-soft">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-charcoal">Your Locations</h3>
+                  <Link
+                    href="/locations"
+                    className="text-sm text-sage hover:text-sage-dark font-medium flex items-center gap-1"
+                  >
+                    Manage Locations
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                {locationsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-sage" />
+                  </div>
+                ) : locationsError ? (
+                  <div className="text-center py-4 text-red-500">
+                    Failed to load locations
+                  </div>
+                ) : locations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MapPin className="w-10 h-10 text-charcoal/20 mx-auto mb-3" />
+                    <p className="text-charcoal/60 mb-4">No locations added yet</p>
+                    <Link
+                      href="/locations"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
+                    >
+                      Add Your First Location
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {locations.slice(0, 5).map((location) => (
+                      <div
+                        key={location.id}
+                        className="flex items-center justify-between p-4 bg-charcoal/5 rounded-xl"
+                      >
+                        <div className="flex items-center gap-3">
+                          <MapPin className={`w-5 h-5 ${location.isPrimary ? 'text-amber-500' : 'text-charcoal/40'}`} />
+                          <div>
+                            <p className="font-medium text-charcoal flex items-center gap-2">
+                              {location.name}
+                              {location.isPrimary && (
+                                <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded">
+                                  Primary
+                                </span>
+                              )}
+                            </p>
+                            {location.city && (
+                              <p className="text-sm text-charcoal/60">{location.city}, {location.state}</p>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          location.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                        }`}>
+                          {location.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    ))}
+                    {locations.length > 5 && (
+                      <p className="text-sm text-charcoal/60 text-center pt-2">
+                        + {locations.length - 5} more locations
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Pricing Info */}
+            <div className="p-4 bg-lavender/10 rounded-xl border border-lavender/30">
+              <div className="flex items-start gap-3">
+                <DollarSign className="w-5 h-5 text-lavender flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-charcoal/70">
+                  <p className="font-medium text-charcoal mb-1">Multi-Location Pricing</p>
+                  <ul className="space-y-1">
+                    <li>• First location: <span className="font-medium">Included in your plan</span></li>
+                    <li>• Each additional location: <span className="font-medium text-charcoal">$100/month</span></li>
+                  </ul>
+                  {salon?.multiLocationEnabled && locations.length > 1 && (
+                    <p className="mt-2 pt-2 border-t border-lavender/30">
+                      You have <span className="font-medium text-charcoal">{locations.length} locations</span> ({locations.length - 1} additional = <span className="font-medium text-charcoal">${(locations.length - 1) * 100}/month</span>)
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'hours':
         return (
           <div className="space-y-8">
@@ -586,31 +843,19 @@ function SettingsContent() {
         );
 
       case 'payments':
-        if (!hasAddOn('payment_processing')) {
-          return (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-charcoal/10 flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-charcoal/40" />
-              </div>
-              <h3 className="text-xl font-bold text-charcoal mb-2">Payment Processing</h3>
-              <p className="text-charcoal/60 mb-6 max-w-md mx-auto">
-                Accept credit cards, Apple Pay, Google Pay, and more with our integrated payment processing.
-              </p>
-              <button
-                onClick={() => {
-                  toggleAddOn('payment_processing');
-                  setActiveSection('subscription');
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all"
-              >
-                <Sparkles className="w-5 h-5" />
-                Add to Your Plan - $25/mo
-              </button>
-            </div>
-          );
-        }
+        const paymentsLocked = !hasAddOn('payment_processing');
         return (
           <div className="space-y-8">
+            {/* Upsell Banner if locked */}
+            {paymentsLocked && (
+              <AddOnUpsellBanner
+                addOnId="payment_processing"
+                onEnable={() => {
+                  toggleAddOn('payment_processing');
+                }}
+              />
+            )}
+
             <div>
               <h2 className="text-xl font-bold text-charcoal mb-1">Payment Settings</h2>
               <p className="text-charcoal/60">
@@ -618,78 +863,85 @@ function SettingsContent() {
               </p>
             </div>
 
-            <div className="space-y-4">
-              {/* Stripe */}
-              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
-                    <span className="text-[#635BFF] font-bold text-lg">S</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-charcoal">Stripe</h3>
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
-                        Connected
-                      </span>
-                    </div>
-                    <p className="text-sm text-charcoal/60 mb-4">
-                      Accept credit cards, Apple Pay, and Google Pay
-                    </p>
-                    <button className="text-sm text-sage hover:text-sage-dark font-medium">
-                      Manage Stripe Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Square */}
-              <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-black/5 flex items-center justify-center">
-                    <span className="font-bold text-lg">Sq</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-charcoal">Square</h3>
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
-                        Not connected
-                      </span>
-                    </div>
-                    <p className="text-sm text-charcoal/60 mb-4">
-                      In-person and online payments with Square
-                    </p>
-                    <button className="text-sm text-sage hover:text-sage-dark font-medium">
-                      Connect Square
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Deposit Settings */}
-            <div className="p-6 bg-charcoal/5 rounded-xl">
-              <h3 className="font-semibold text-charcoal mb-4">Booking Deposits</h3>
+            {/* Content - disabled when locked */}
+            <div className={paymentsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
               <div className="space-y-4">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="mt-1 w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
-                  />
-                  <div>
-                    <p className="font-medium text-charcoal">Require deposit for online bookings</p>
-                    <p className="text-sm text-charcoal/60">
-                      Reduce no-shows by collecting a deposit when clients book online
-                    </p>
+                {/* Stripe */}
+                <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
+                      <span className="text-[#635BFF] font-bold text-lg">S</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-charcoal">Stripe</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                          Not connected
+                        </span>
+                      </div>
+                      <p className="text-sm text-charcoal/60 mb-4">
+                        Accept credit cards, Apple Pay, and Google Pay
+                      </p>
+                      <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
+                        Connect Stripe
+                      </button>
+                    </div>
                   </div>
-                </label>
-                <div className="flex items-center gap-3 ml-8">
-                  <label className="text-sm text-charcoal/60">Deposit amount:</label>
-                  <select className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm">
-                    <option value="20">20% of service</option>
-                    <option value="50">50% of service</option>
-                    <option value="100">Full amount</option>
-                  </select>
+                </div>
+
+                {/* Square */}
+                <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-black/5 flex items-center justify-center">
+                      <span className="font-bold text-lg">Sq</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-charcoal">Square</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                          Not connected
+                        </span>
+                      </div>
+                      <p className="text-sm text-charcoal/60 mb-4">
+                        In-person and online payments with Square
+                      </p>
+                      <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
+                        Connect Square
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deposit Settings */}
+              <div className="p-6 bg-charcoal/5 rounded-xl mt-4">
+                <h3 className="font-semibold text-charcoal mb-4">Booking Deposits</h3>
+                <div className="space-y-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      disabled={paymentsLocked}
+                      className="mt-1 w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50"
+                    />
+                    <div>
+                      <p className="font-medium text-charcoal">Require deposit for online bookings</p>
+                      <p className="text-sm text-charcoal/60">
+                        Reduce no-shows by collecting a deposit when clients book online
+                      </p>
+                    </div>
+                  </label>
+                  <div className="flex items-center gap-3 ml-8">
+                    <label className="text-sm text-charcoal/60">Deposit amount:</label>
+                    <select
+                      disabled={paymentsLocked}
+                      className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm disabled:opacity-50"
+                    >
+                      <option value="20">20% of service</option>
+                      <option value="50">50% of service</option>
+                      <option value="100">Full amount</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -697,31 +949,19 @@ function SettingsContent() {
         );
 
       case 'notifications':
-        if (!hasAddOn('reminders')) {
-          return (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-2xl bg-charcoal/10 flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-charcoal/40" />
-              </div>
-              <h3 className="text-xl font-bold text-charcoal mb-2">SMS/Email Reminders</h3>
-              <p className="text-charcoal/60 mb-6 max-w-md mx-auto">
-                Reduce no-shows by sending automated appointment reminders via SMS and email.
-              </p>
-              <button
-                onClick={() => {
-                  toggleAddOn('reminders');
-                  setActiveSection('subscription');
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all"
-              >
-                <Sparkles className="w-5 h-5" />
-                Add to Your Plan - $25/mo
-              </button>
-            </div>
-          );
-        }
+        const notificationsLocked = !hasAddOn('reminders');
         return (
           <div className="space-y-8">
+            {/* Upsell Banner if locked */}
+            {notificationsLocked && (
+              <AddOnUpsellBanner
+                addOnId="reminders"
+                onEnable={() => {
+                  toggleAddOn('reminders');
+                }}
+              />
+            )}
+
             <div>
               <h2 className="text-xl font-bold text-charcoal mb-1">Notification Settings</h2>
               <p className="text-charcoal/60">
@@ -729,92 +969,95 @@ function SettingsContent() {
               </p>
             </div>
 
-            {/* Client Notifications */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-charcoal">Client Notifications</h3>
+            {/* Content - disabled when locked */}
+            <div className={notificationsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
+              {/* Client Notifications */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-charcoal">Client Notifications</h3>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="font-medium text-charcoal">Appointment Confirmation</p>
-                    <p className="text-sm text-charcoal/60">Send when booking is confirmed</p>
+                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="font-medium text-charcoal">Appointment Confirmation</p>
+                      <p className="text-sm text-charcoal/60">Send when booking is confirmed</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
+                    </label>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
+                  <div className="flex gap-2">
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal">Email</span>
+                    </label>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal">SMS</span>
+                    </label>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-charcoal/20 text-sage focus:ring-sage" />
-                    <span className="text-sm text-charcoal">Email</span>
-                  </label>
-                  <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-charcoal/20 text-sage focus:ring-sage" />
-                    <span className="text-sm text-charcoal">SMS</span>
-                  </label>
+
+                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="font-medium text-charcoal">Appointment Reminder</p>
+                      <p className="text-sm text-charcoal/60">Remind clients before their appointment</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="text-sm text-charcoal/60">Send reminder:</label>
+                    <select disabled={notificationsLocked} className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm disabled:opacity-50">
+                      <option value="24">24 hours before</option>
+                      <option value="48">48 hours before</option>
+                      <option value="2">2 hours before</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal">Email</span>
+                    </label>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal">SMS</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="font-medium text-charcoal">Appointment Reminder</p>
-                    <p className="text-sm text-charcoal/60">Remind clients before their appointment</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
-                </div>
-                <div className="flex items-center gap-3 mb-3">
-                  <label className="text-sm text-charcoal/60">Send reminder:</label>
-                  <select className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm">
-                    <option value="24">24 hours before</option>
-                    <option value="48">48 hours before</option>
-                    <option value="2">2 hours before</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-charcoal/20 text-sage focus:ring-sage" />
-                    <span className="text-sm text-charcoal">Email</span>
-                  </label>
-                  <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-charcoal/20 text-sage focus:ring-sage" />
-                    <span className="text-sm text-charcoal">SMS</span>
-                  </label>
-                </div>
-              </div>
-            </div>
+              {/* Staff Notifications */}
+              <div className="space-y-4 mt-8">
+                <h3 className="font-semibold text-charcoal">Staff Notifications</h3>
 
-            {/* Staff Notifications */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-charcoal">Staff Notifications</h3>
-
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-charcoal">New Booking Alert</p>
-                    <p className="text-sm text-charcoal/60">Notify staff when a new booking is made</p>
+                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-charcoal">New Booking Alert</p>
+                      <p className="text-sm text-charcoal/60">Notify staff when a new booking is made</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
+                    </label>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
                 </div>
-              </div>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-charcoal">Cancellation Alert</p>
-                    <p className="text-sm text-charcoal/60">Notify staff when a booking is cancelled</p>
+                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-charcoal">Cancellation Alert</p>
+                      <p className="text-sm text-charcoal/60">Notify staff when a booking is cancelled</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
+                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
+                    </label>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                  </label>
                 </div>
               </div>
             </div>
@@ -822,8 +1065,12 @@ function SettingsContent() {
         );
 
       case 'booking':
-        // Generate embed URL using salon slug
-        const embedUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${salon?.slug || 'your-salon'}`;
+        const bookingLocked = !hasAddOn('online_booking');
+
+        // Always use demo mode for preview - it shows sample data that always works
+        // The actual embed code will use the salon's real slug
+        const previewUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/demo`;
+        const embedUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/embed/${salon?.slug || 'your-salon-slug'}`;
 
         // Font family CSS mapping
         const fontFamilyMap: Record<string, string> = {
@@ -901,6 +1148,16 @@ function SettingsContent() {
 
         return (
           <div className="space-y-8">
+            {/* Upsell Banner if locked */}
+            {bookingLocked && (
+              <AddOnUpsellBanner
+                addOnId="online_booking"
+                onEnable={() => {
+                  toggleAddOn('online_booking');
+                }}
+              />
+            )}
+
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
@@ -910,17 +1167,18 @@ function SettingsContent() {
                 </p>
               </div>
               {/* Auto-save status indicator */}
-              <div className="flex items-center gap-2 text-sm">
-                {widgetSaveStatus === 'saving' && (
-                  <span className="flex items-center gap-2 text-charcoal/50">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </span>
-                )}
-                {widgetSaveStatus === 'saved' && (
-                  <span className="flex items-center gap-2 text-sage">
-                    <Check className="w-4 h-4" />
-                    Saved
+              {!bookingLocked && (
+                <div className="flex items-center gap-2 text-sm">
+                  {widgetSaveStatus === 'saving' && (
+                    <span className="flex items-center gap-2 text-charcoal/50">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </span>
+                  )}
+                  {widgetSaveStatus === 'saved' && (
+                    <span className="flex items-center gap-2 text-sage">
+                      <Check className="w-4 h-4" />
+                      Saved
                   </span>
                 )}
                 {widgetSaveStatus === 'error' && (
@@ -930,8 +1188,11 @@ function SettingsContent() {
                   </span>
                 )}
               </div>
+              )}
             </div>
 
+            {/* Content - disabled when locked */}
+            <div className={bookingLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
             {/* Customization Section */}
             <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
               <h3 className="font-semibold text-charcoal mb-6">Customize Appearance</h3>
@@ -1077,7 +1338,7 @@ function SettingsContent() {
                       Live Preview
                     </label>
                     <a
-                      href={embedUrl}
+                      href={previewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-xs text-sage hover:underline"
@@ -1086,16 +1347,16 @@ function SettingsContent() {
                     </a>
                   </div>
                   <div className="bg-cream/50 rounded-2xl border border-charcoal/10 overflow-hidden" style={{ height: '500px' }}>
-                    {/* Real interactive iframe preview */}
+                    {/* Demo preview - always works regardless of salon setup */}
                     <iframe
-                      src={`${embedUrl}?preview=true&t=${Date.now()}`}
+                      src={`${previewUrl}?preview=true&t=${Date.now()}`}
                       className="w-full h-full border-0"
                       title="Booking widget preview"
                       key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}`}
                     />
                   </div>
                   <p className="text-xs text-charcoal/50 mt-2 text-center">
-                    This is a live preview of your actual booking widget. Changes save automatically.
+                    Preview showing demo data. Your actual widget will display your real services and staff.
                   </p>
                 </div>
               </div>
@@ -1234,12 +1495,13 @@ function SettingsContent() {
                 <p className="text-sm text-charcoal/60 mb-3">
                   Time before appointment that clients can cancel
                 </p>
-                <select className="px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none">
+                <select disabled={bookingLocked} className="px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none disabled:opacity-50">
                   <option value="24">24 hours</option>
                   <option value="48">48 hours</option>
                   <option value="72">72 hours</option>
                 </select>
               </div>
+            </div>
             </div>
           </div>
         );
@@ -1433,6 +1695,7 @@ function SettingsContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              {locations.length > 1 && <LocationSwitcher showAllOption={false} />}
               <NotificationDropdown />
             </div>
           </div>
@@ -1444,7 +1707,10 @@ function SettingsContent() {
             <div className="space-y-1">
               {settingsSections.map((section) => {
                 const Icon = section.icon;
-                const isLocked = section.requiredAddOn && !hasAddOn(section.requiredAddOn);
+                const isAddOnRequired = section.requiredAddOn && !hasAddOn(section.requiredAddOn);
+                // All sections are clickable - no locks in navigation
+                // Add-on locked sections show preview with upsell
+                // API will enforce permissions on actual save operations
                 return (
                   <button
                     key={section.id}
@@ -1452,24 +1718,21 @@ function SettingsContent() {
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                       activeSection === section.id
                         ? 'bg-sage/10 text-sage'
-                        : isLocked
-                          ? 'text-charcoal/40 hover:bg-charcoal/5'
-                          : 'text-charcoal/70 hover:bg-charcoal/5'
+                        : 'text-charcoal/70 hover:bg-charcoal/5'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{section.name}</p>
+                      {isAddOnRequired && (
+                        <p className="text-xs text-lavender font-medium">Premium</p>
+                      )}
                     </div>
-                    {isLocked ? (
-                      <Lock className="w-4 h-4 text-charcoal/30" />
-                    ) : (
-                      <ChevronRight
-                        className={`w-4 h-4 transition-transform ${
-                          activeSection === section.id ? 'rotate-90' : ''
-                        }`}
-                      />
-                    )}
+                    <ChevronRight
+                      className={`w-4 h-4 transition-transform ${
+                        activeSection === section.id ? 'rotate-90' : ''
+                      }`}
+                    />
                   </button>
                 );
               })}
@@ -1486,11 +1749,14 @@ function SettingsContent() {
                   onChange={(e) => setActiveSection(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none"
                 >
-                  {settingsSections.map((section) => (
-                    <option key={section.id} value={section.id}>
-                      {section.name}
-                    </option>
-                  ))}
+                  {settingsSections.map((section) => {
+                    const isAddOnRequired = section.requiredAddOn && !hasAddOn(section.requiredAddOn);
+                    return (
+                      <option key={section.id} value={section.id}>
+                        {section.name}{isAddOnRequired ? ' (Premium)' : ''}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
