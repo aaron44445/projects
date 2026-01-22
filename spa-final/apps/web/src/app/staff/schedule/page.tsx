@@ -506,7 +506,7 @@ function TimeOffRequestModal({
               <label className="block text-sm text-charcoal/60 mb-1">Type</label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => setType(e.target.value as 'vacation' | 'sick' | 'personal' | 'other')}
                 className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
               >
                 <option value="vacation">Vacation</option>
