@@ -524,3 +524,105 @@ locationsRouter.delete('/:id/services/:serviceId', authorize('admin', 'owner'), 
     next(error);
   }
 }));
+
+// ============================================
+// GET /api/v1/locations/:id/hours
+// Get structured business hours
+// ============================================
+locationsRouter.get('/:id/hours', asyncHandler(async (req, res, next) => {
+  try {
+    const { salonId } = req.user!;
+    const { id } = req.params;
+
+    const location = await prisma.location.findFirst({
+      where: { id, salonId },
+    });
+
+    if (!location) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Location not found' },
+      });
+    }
+
+    const hours = await prisma.locationHours.findMany({
+      where: { locationId: id },
+      orderBy: { dayOfWeek: 'asc' },
+    });
+
+    // If no hours exist, return default template
+    if (hours.length === 0) {
+      const defaultHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+        dayOfWeek: day,
+        openTime: day === 0 ? null : '09:00',
+        closeTime: day === 0 ? null : '17:00',
+        isClosed: day === 0,
+      }));
+      return res.json({ success: true, data: defaultHours });
+    }
+
+    res.json({ success: true, data: hours });
+  } catch (error) {
+    next(error);
+  }
+}));
+
+// ============================================
+// PUT /api/v1/locations/:id/hours
+// Update structured business hours
+// ============================================
+locationsRouter.put('/:id/hours', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
+  try {
+    const { salonId } = req.user!;
+    const { id } = req.params;
+    const { hours } = req.body;
+
+    if (!Array.isArray(hours) || hours.length !== 7) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Hours must be array of 7 days' },
+      });
+    }
+
+    const location = await prisma.location.findFirst({
+      where: { id, salonId },
+    });
+
+    if (!location) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Location not found' },
+      });
+    }
+
+    // Upsert all 7 days
+    const upsertedHours = await Promise.all(
+      hours.map((h: { dayOfWeek: number; openTime?: string; closeTime?: string; isClosed?: boolean }) =>
+        prisma.locationHours.upsert({
+          where: {
+            locationId_dayOfWeek: {
+              locationId: id,
+              dayOfWeek: h.dayOfWeek,
+            },
+          },
+          create: {
+            locationId: id,
+            dayOfWeek: h.dayOfWeek,
+            openTime: h.isClosed ? null : h.openTime,
+            closeTime: h.isClosed ? null : h.closeTime,
+            isClosed: h.isClosed ?? false,
+          },
+          update: {
+            openTime: h.isClosed ? null : h.openTime,
+            closeTime: h.isClosed ? null : h.closeTime,
+            isClosed: h.isClosed ?? false,
+          },
+        })
+      )
+    );
+
+    res.json({ success: true, data: upsertedHours });
+  } catch (error) {
+    next(error);
+  }
+}));
