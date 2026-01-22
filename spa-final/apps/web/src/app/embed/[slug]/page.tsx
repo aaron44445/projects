@@ -1224,6 +1224,16 @@ export default function EmbedBookingPage() {
     );
   }
 
+  // Final safety check - should never happen but TypeScript needs it
+  // This catches the brief moment in demo mode before useEffect sets the data
+  if (!salon) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[500px] bg-gray-50 flex flex-col" style={{ fontFamily: fontFamilyCSS }}>
       {/* Header */}
