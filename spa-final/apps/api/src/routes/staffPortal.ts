@@ -1329,4 +1329,281 @@ router.get('/my-assignments', authenticate, staffOnly, asyncHandler(async (req: 
   });
 }));
 
+// ============================================
+// ADMIN APPROVAL ENDPOINTS
+// ============================================
+
+// GET /api/v1/staff-portal/admin/pending-time-off
+// Get all pending time off requests for the salon (admin only)
+router.get('/admin/pending-time-off', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can view pending requests' },
+    });
+  }
+
+  const salonId = req.user.salonId;
+
+  const requests = await prisma.timeOff.findMany({
+    where: {
+      staff: { salonId },
+      status: 'pending',
+    },
+    include: {
+      staff: {
+        select: { id: true, firstName: true, lastName: true, email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  res.json({ success: true, data: requests });
+}));
+
+// PATCH /api/v1/staff-portal/admin/time-off/:id/approve
+// Approve a time off request
+router.patch('/admin/time-off/:id/approve', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can approve requests' },
+    });
+  }
+
+  const { id } = req.params;
+  const { notes } = req.body;
+  const salonId = req.user.salonId;
+
+  // Verify request belongs to this salon
+  const timeOff = await prisma.timeOff.findFirst({
+    where: { id, staff: { salonId } },
+  });
+
+  if (!timeOff) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Time off request not found' },
+    });
+  }
+
+  if (timeOff.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_REVIEWED', message: 'Request has already been reviewed' },
+    });
+  }
+
+  const updated = await prisma.timeOff.update({
+    where: { id },
+    data: {
+      status: 'approved',
+      reviewedAt: new Date(),
+      reviewedBy: req.user.userId,
+      reviewNotes: notes,
+    },
+  });
+
+  res.json({ success: true, data: updated });
+}));
+
+// PATCH /api/v1/staff-portal/admin/time-off/:id/reject
+// Reject a time off request
+router.patch('/admin/time-off/:id/reject', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can reject requests' },
+    });
+  }
+
+  const { id } = req.params;
+  const { notes } = req.body;
+  const salonId = req.user.salonId;
+
+  const timeOff = await prisma.timeOff.findFirst({
+    where: { id, staff: { salonId } },
+  });
+
+  if (!timeOff) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Time off request not found' },
+    });
+  }
+
+  if (timeOff.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_REVIEWED', message: 'Request has already been reviewed' },
+    });
+  }
+
+  const updated = await prisma.timeOff.update({
+    where: { id },
+    data: {
+      status: 'rejected',
+      reviewedAt: new Date(),
+      reviewedBy: req.user.userId,
+      reviewNotes: notes,
+    },
+  });
+
+  res.json({ success: true, data: updated });
+}));
+
+// GET /api/v1/staff-portal/admin/pending-schedule-changes
+// Get all pending schedule change requests for the salon (admin only)
+router.get('/admin/pending-schedule-changes', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can view pending requests' },
+    });
+  }
+
+  const salonId = req.user.salonId;
+
+  const requests = await prisma.scheduleChangeRequest.findMany({
+    where: {
+      staff: { salonId },
+      status: 'pending',
+    },
+    include: {
+      staff: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      location: {
+        select: { id: true, name: true },
+      },
+    },
+    orderBy: { requestedAt: 'desc' },
+  });
+
+  res.json({ success: true, data: requests });
+}));
+
+// PATCH /api/v1/staff-portal/admin/schedule-change/:id/approve
+// Approve a schedule change request (and apply it)
+router.patch('/admin/schedule-change/:id/approve', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can approve requests' },
+    });
+  }
+
+  const { id } = req.params;
+  const { notes } = req.body;
+  const salonId = req.user.salonId;
+
+  const request = await prisma.scheduleChangeRequest.findFirst({
+    where: { id, staff: { salonId } },
+  });
+
+  if (!request) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Schedule change request not found' },
+    });
+  }
+
+  if (request.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_REVIEWED', message: 'Request has already been reviewed' },
+    });
+  }
+
+  // Apply the change to staff availability
+  // Find existing availability record first
+  const existingAvailability = await prisma.staffAvailability.findFirst({
+    where: {
+      staffId: request.staffId,
+      locationId: request.locationId,
+      dayOfWeek: request.dayOfWeek,
+    },
+  });
+
+  if (existingAvailability) {
+    await prisma.staffAvailability.update({
+      where: { id: existingAvailability.id },
+      data: {
+        startTime: request.newStartTime || '09:00',
+        endTime: request.newEndTime || '17:00',
+        isAvailable: request.newIsWorking,
+      },
+    });
+  } else {
+    await prisma.staffAvailability.create({
+      data: {
+        staffId: request.staffId,
+        locationId: request.locationId,
+        dayOfWeek: request.dayOfWeek,
+        startTime: request.newStartTime || '09:00',
+        endTime: request.newEndTime || '17:00',
+        isAvailable: request.newIsWorking,
+      },
+    });
+  }
+
+  // Mark request as approved
+  const updated = await prisma.scheduleChangeRequest.update({
+    where: { id },
+    data: {
+      status: 'approved',
+      reviewedAt: new Date(),
+      reviewedBy: req.user.userId,
+      reviewNotes: notes,
+    },
+  });
+
+  res.json({ success: true, data: updated });
+}));
+
+// PATCH /api/v1/staff-portal/admin/schedule-change/:id/reject
+// Reject a schedule change request
+router.patch('/admin/schedule-change/:id/reject', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !['admin', 'owner', 'manager'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only admins can reject requests' },
+    });
+  }
+
+  const { id } = req.params;
+  const { notes } = req.body;
+  const salonId = req.user.salonId;
+
+  const request = await prisma.scheduleChangeRequest.findFirst({
+    where: { id, staff: { salonId } },
+  });
+
+  if (!request) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Schedule change request not found' },
+    });
+  }
+
+  if (request.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_REVIEWED', message: 'Request has already been reviewed' },
+    });
+  }
+
+  const updated = await prisma.scheduleChangeRequest.update({
+    where: { id },
+    data: {
+      status: 'rejected',
+      reviewedAt: new Date(),
+      reviewedBy: req.user.userId,
+      reviewNotes: notes,
+    },
+  });
+
+  res.json({ success: true, data: updated });
+}));
+
 export { router as staffPortalRouter };
