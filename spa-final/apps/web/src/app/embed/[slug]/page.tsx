@@ -862,9 +862,12 @@ export default function EmbedBookingPage() {
   // Check if this is demo mode - do this early and consistently
   const isDemo = slug === 'demo';
 
+  // Check if slug is not yet available (SSR/hydration)
+  const isSlugPending = !slug;
+
   const [step, setStep] = useState(1);
-  // In demo mode, we already have the data, so no loading needed
-  const [isLoading, setIsLoading] = useState(!isDemo);
+  // Show loading if: slug is pending, OR not in demo mode (waiting for API)
+  const [isLoading, setIsLoading] = useState(!isDemo || isSlugPending);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<'none' | 'not_found' | 'booking_disabled' | 'network_error'>('none');
@@ -924,6 +927,7 @@ export default function EmbedBookingPage() {
       setIsLoading(false);
     }
   }, [isDemo, salon]);
+
 
   // Widget styling from salon settings
   const primaryColor = salon?.widget?.primaryColor || '#7C9A82';
@@ -1157,7 +1161,8 @@ export default function EmbedBookingPage() {
     return true;
   };
 
-  if (isLoading) {
+  // Show loading if: still loading OR slug not yet available (SSR/hydration)
+  if (isLoading || !slug) {
     return (
       <div className="min-h-[400px] flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
@@ -1165,9 +1170,10 @@ export default function EmbedBookingPage() {
     );
   }
 
-  // Don't show error if we're in demo mode - demo data will be set by useEffect
-  // This prevents flash of error during hydration
-  if (!salon || (!isDemo && loadError !== 'none')) {
+  // Show error only if:
+  // 1. Not in demo mode (demo mode uses mock data)
+  // 2. AND either salon is null OR there was a load error
+  if (!isDemo && (!salon || loadError !== 'none')) {
     const errorMessages = {
       not_found: {
         title: 'Business Not Found',
