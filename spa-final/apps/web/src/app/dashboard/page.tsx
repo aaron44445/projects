@@ -102,6 +102,13 @@ function DashboardContent() {
     }
     return [];
   });
+
+  // Quick Add Client modal state
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [clientForm, setClientForm] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [isAddingClient, setIsAddingClient] = useState(false);
+  const [addClientError, setAddClientError] = useState<string | null>(null);
+
   const router = useRouter();
   const { salon, user } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
@@ -109,8 +116,35 @@ function DashboardContent() {
   const { stats, todayAppointments, recentActivity, loading, error, refetch } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
   const { services } = useServices();
-  const { clients } = useClients();
+  const { clients, createClient, refetch: refetchClients } = useClients();
   const { staff } = useStaff();
+
+  // Handle quick add client
+  const handleAddClient = async () => {
+    if (!clientForm.firstName.trim()) return;
+
+    setIsAddingClient(true);
+    setAddClientError(null);
+
+    try {
+      await createClient({
+        firstName: clientForm.firstName.trim(),
+        lastName: clientForm.lastName.trim() || undefined,
+        email: clientForm.email.trim() || undefined,
+        phone: clientForm.phone.trim() || undefined,
+      });
+
+      // Reset and close
+      setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
+      setShowAddClient(false);
+      refetchClients();
+      refetch(); // Refresh dashboard stats
+    } catch (err) {
+      setAddClientError(err instanceof Error ? err.message : 'Failed to add client');
+    } finally {
+      setIsAddingClient(false);
+    }
+  };
 
   // Setup checklist items
   const setupItems = [
@@ -295,6 +329,16 @@ function DashboardContent() {
 
             <div className="flex items-center gap-4">
               {locations.length > 1 && <LocationSwitcher />}
+
+              {/* Quick Add Client Button - Prominent */}
+              <button
+                onClick={() => setShowAddClient(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-all shadow-sm"
+              >
+                <UserPlus className="w-5 h-5" />
+                <span className="hidden sm:inline">Add Client</span>
+              </button>
+
               <button
                 onClick={() => refetch()}
                 className="p-2 text-charcoal/60 hover:text-charcoal"
@@ -745,6 +789,37 @@ function DashboardContent() {
             </div>
           </div>
 
+          {/* Location Comparison Cards - shown when "All Locations" is selected */}
+          {!selectedLocationId && locations.length > 1 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-charcoal mb-4">By Location</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {locations.map((loc) => (
+                  <div key={loc.id} className="bg-white rounded-xl p-4 border border-charcoal/10 hover:border-sage/30 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-medium text-charcoal">{loc.name}</h4>
+                        <p className="text-sm text-charcoal/60">
+                          {loc.isPrimary ? 'Primary Location' : 'Branch'}
+                        </p>
+                        {loc.city && (
+                          <p className="text-xs text-charcoal/40 mt-1">
+                            {loc.city}, {loc.state}
+                          </p>
+                        )}
+                      </div>
+                      {loc.isPrimary && (
+                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
@@ -837,6 +912,114 @@ function DashboardContent() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Quick Add Client Modal */}
+      {showAddClient && (
+        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
+                  <UserPlus className="w-5 h-5 text-sage" />
+                </div>
+                <h2 className="text-xl font-bold text-charcoal">Add Client</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAddClient(false);
+                  setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
+                  setAddClientError(null);
+                }}
+                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {addClientError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm">
+                  {addClientError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">
+                    First Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={clientForm.firstName}
+                    onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    placeholder="John"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    value={clientForm.lastName}
+                    onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">
+                  Email <span className="text-charcoal/40 text-xs">(optional)</span>
+                </label>
+                <input
+                  type="email"
+                  value={clientForm.email}
+                  onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">
+                  Phone <span className="text-charcoal/40 text-xs">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={clientForm.phone}
+                  onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowAddClient(false);
+                  setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
+                  setAddClientError(null);
+                }}
+                disabled={isAddingClient}
+                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddClient}
+                disabled={isAddingClient || !clientForm.firstName.trim()}
+                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isAddingClient && <Loader2 className="w-4 h-4 animate-spin" />}
+                Add Client
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
