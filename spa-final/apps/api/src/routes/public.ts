@@ -29,6 +29,13 @@ router.get('/:slug/salon', asyncHandler(async (req: Request, res: Response) => {
       widgetAccentColor: true,
       widgetButtonStyle: true,
       widgetFontFamily: true,
+      // Booking settings
+      bookingEnabled: true,
+      bookingMinNoticeHours: true,
+      bookingMaxAdvanceDays: true,
+      bookingSlotInterval: true,
+      bookingRequirePhone: true,
+      bookingRequireEmail: true,
     },
   });
 
@@ -55,11 +62,19 @@ router.get('/:slug/salon', asyncHandler(async (req: Request, res: Response) => {
       state: salon.state,
       zip: salon.zip,
       timezone: salon.timezone,
+      bookingEnabled: salon.bookingEnabled,
       widget: {
         primaryColor: salon.widgetPrimaryColor,
         accentColor: salon.widgetAccentColor,
         buttonStyle: salon.widgetButtonStyle,
         fontFamily: salon.widgetFontFamily,
+      },
+      bookingSettings: {
+        minNoticeHours: salon.bookingMinNoticeHours,
+        maxAdvanceDays: salon.bookingMaxAdvanceDays,
+        slotInterval: salon.bookingSlotInterval,
+        requirePhone: salon.bookingRequirePhone,
+        requireEmail: salon.bookingRequireEmail,
       },
     },
   });
@@ -276,7 +291,7 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
 
 // ============================================
 // GET /api/v1/public/:slug/availability
-// Get available time slots
+// Get available time slots with comprehensive checks
 // ============================================
 router.get('/:slug/availability', asyncHandler(async (req: Request, res: Response) => {
   const { date, serviceId, staffId, locationId } = req.query;
@@ -293,17 +308,42 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
 
   const salon = await prisma.salon.findUnique({
     where: { slug: req.params.slug },
-    select: { id: true },
+    select: {
+      id: true,
+      bookingEnabled: true,
+      bookingMinNoticeHours: true,
+      bookingMaxAdvanceDays: true,
+      bookingSlotInterval: true,
+    },
   });
 
   if (!salon) {
     return res.status(404).json({
       success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Salon not found',
-      },
+      error: { code: 'NOT_FOUND', message: 'Salon not found' },
     });
+  }
+
+  // Check if booking is enabled
+  if (!salon.bookingEnabled) {
+    return res.json({ success: true, data: [] });
+  }
+
+  const requestedDate = new Date(date as string);
+  const now = new Date();
+
+  // Check max advance days
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + salon.bookingMaxAdvanceDays);
+  if (requestedDate > maxDate) {
+    return res.json({ success: true, data: [] });
+  }
+
+  // Check if date is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (requestedDate < today) {
+    return res.json({ success: true, data: [] });
   }
 
   const service = await prisma.service.findFirst({
@@ -313,17 +353,15 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   if (!service) {
     return res.status(404).json({
       success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Service not found',
-      },
+      error: { code: 'NOT_FOUND', message: 'Service not found' },
     });
   }
 
-  const dayOfWeek = new Date(date as string).getDay();
+  const dayOfWeek = requestedDate.getDay();
+  const slotInterval = salon.bookingSlotInterval || 30;
 
-  // Check location hours if locationId provided
-  let todayHours: { open: string; close: string } | null = null;
+  // Get location hours if locationId provided
+  let businessHours: { open: string; close: string } | null = null;
   if (locationId) {
     const locationHoursRecord = await prisma.locationHours.findUnique({
       where: {
@@ -334,23 +372,20 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
       },
     });
 
-    // If location is closed, return empty slots
     if (locationHoursRecord?.isClosed) {
       return res.json({ success: true, data: [] });
     }
 
     if (locationHoursRecord?.openTime && locationHoursRecord?.closeTime) {
-      todayHours = {
+      businessHours = {
         open: locationHoursRecord.openTime,
         close: locationHoursRecord.closeTime,
       };
     }
   }
 
-  // Use default hours if no location hours available
-  if (!todayHours) {
-    // Default business hours (9am-5pm)
-    // Closed on Sunday (day 0), open Mon-Sat
+  // Default hours if not set
+  if (!businessHours) {
     const defaultHours: Record<number, { open: string; close: string } | null> = {
       0: null, // Sunday closed
       1: { open: '09:00', close: '17:00' },
@@ -358,65 +393,73 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
       3: { open: '09:00', close: '17:00' },
       4: { open: '09:00', close: '17:00' },
       5: { open: '09:00', close: '17:00' },
-      6: { open: '10:00', close: '16:00' }, // Saturday shorter
+      6: { open: '10:00', close: '16:00' },
     };
-    todayHours = defaultHours[dayOfWeek];
+    businessHours = defaultHours[dayOfWeek];
   }
 
-  // If closed this day, return empty slots
-  if (!todayHours) {
-    return res.json({
-      success: true,
-      data: [],
-    });
+  if (!businessHours) {
+    return res.json({ success: true, data: [] });
   }
 
-  // Parse hours
-  const [openHour, openMin] = todayHours.open.split(':').map(Number);
-  const [closeHour, closeMin] = todayHours.close.split(':').map(Number);
+  const [openHour, openMin] = businessHours.open.split(':').map(Number);
+  const [closeHour, closeMin] = businessHours.close.split(':').map(Number);
 
-  // Get existing appointments for the date
+  // Get staff who can perform this service
+  const staffQuery: Record<string, unknown> = {
+    salonId: salon.id,
+    isActive: true,
+    staffServices: {
+      some: { serviceId: serviceId as string, isAvailable: true },
+    },
+  };
+
+  if (staffId) {
+    staffQuery.id = staffId as string;
+  }
+
+  if (locationId) {
+    staffQuery.staffLocations = {
+      some: { locationId: locationId as string },
+    };
+  }
+
+  const staffMembers = await prisma.user.findMany({
+    where: staffQuery,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      staffAvailability: {
+        where: locationId
+          ? { dayOfWeek, OR: [{ locationId: locationId as string }, { locationId: null }] }
+          : { dayOfWeek },
+      },
+      timeOff: {
+        where: {
+          startDate: { lte: new Date(date as string + 'T23:59:59') },
+          endDate: { gte: new Date(date as string + 'T00:00:00') },
+        },
+      },
+    },
+  });
+
+  if (staffMembers.length === 0) {
+    return res.json({ success: true, data: [] });
+  }
+
+  // Get existing appointments for all relevant staff
   const startOfDay = new Date(date as string);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(date as string);
   endOfDay.setHours(23, 59, 59, 999);
 
-  // Build staff filter
-  let staffFilter = {};
-  if (staffId) {
-    staffFilter = { staffId: staffId as string };
-  } else {
-    // Get all staff who can perform this service (and optionally at this location)
-    const availableStaff = await prisma.user.findMany({
-      where: {
-        salonId: salon.id,
-        isActive: true,
-        staffServices: {
-          some: {
-            serviceId: serviceId as string,
-            isAvailable: true,
-          },
-        },
-        // Filter by location if provided
-        ...(locationId && {
-          staffLocations: {
-            some: {
-              locationId: locationId as string,
-            },
-          },
-        }),
-      },
-      select: { id: true },
-    });
-    staffFilter = { staffId: { in: availableStaff.map((s) => s.id) } };
-  }
-
   const existingAppointments = await prisma.appointment.findMany({
     where: {
       salonId: salon.id,
+      staffId: { in: staffMembers.map((s) => s.id) },
       startTime: { gte: startOfDay, lte: endOfDay },
       status: { notIn: ['cancelled'] },
-      ...staffFilter,
     },
     select: {
       staffId: true,
@@ -425,77 +468,110 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
     },
   });
 
-  // Generate available slots (30 min increments)
-  const slots: Array<{ time: string; available: boolean }> = [];
-  const slotDuration = 30; // minutes
+  // Calculate minimum allowed time (respecting min notice)
+  const minNoticeTime = new Date(now.getTime() + salon.bookingMinNoticeHours * 60 * 60 * 1000);
 
-  for (let hour = openHour; hour < closeHour; hour++) {
-    for (let min = (hour === openHour ? openMin : 0); min < 60; min += slotDuration) {
-      // Don't go past closing time
-      if (hour === closeHour - 1 && min + slotDuration > closeMin) break;
-      if (hour >= closeHour) break;
+  // Total time needed including buffer
+  const totalDuration = service.durationMinutes + (service.bufferMinutes || 0);
 
-      const slotTime = new Date(date as string);
+  // Generate slots
+  const slots: Array<{ time: string; staffId: string; staffName: string }> = [];
+
+  // Helper to check if slot has conflict
+  const hasConflict = (staffMemberId: string, slotStart: Date, slotEnd: Date) => {
+    return existingAppointments.some((apt) => {
+      if (apt.staffId !== staffMemberId) return false;
+      const aptStart = new Date(apt.startTime);
+      const aptEnd = new Date(apt.endTime);
+      return (
+        (slotStart >= aptStart && slotStart < aptEnd) ||
+        (slotEnd > aptStart && slotEnd <= aptEnd) ||
+        (slotStart <= aptStart && slotEnd >= aptEnd)
+      );
+    });
+  };
+
+  // Helper to check staff availability for day
+  const getStaffHours = (staffMember: typeof staffMembers[0]): { start: string; end: string } | null => {
+    // Check if staff is on time off
+    if (staffMember.timeOff.length > 0) {
+      return null;
+    }
+
+    // Get staff availability for this day
+    const availability = staffMember.staffAvailability.find((a) => a.isAvailable);
+    if (availability) {
+      return { start: availability.startTime, end: availability.endTime };
+    }
+
+    // No availability set - use business hours as default
+    if (businessHours) {
+      return { start: businessHours.open, end: businessHours.close };
+    }
+    return null;
+  };
+
+  // Generate all possible slots
+  for (let hour = openHour; hour <= closeHour; hour++) {
+    for (let min = (hour === openHour ? openMin : 0); min < 60; min += slotInterval) {
+      const slotTime = new Date(requestedDate);
       slotTime.setHours(hour, min, 0, 0);
 
-      // Skip past times for today
-      if (slotTime < new Date()) {
-        continue;
-      }
+      // Skip if before minimum notice
+      if (slotTime < minNoticeTime) continue;
 
-      const slotEnd = new Date(slotTime.getTime() + service.durationMinutes * 60000);
+      const slotEnd = new Date(slotTime.getTime() + totalDuration * 60000);
 
-      // Check if any staff member is available at this time
-      let hasAvailableStaff = false;
+      // Skip if would end after business hours
+      const closeTime = new Date(requestedDate);
+      closeTime.setHours(closeHour, closeMin, 0, 0);
+      if (slotEnd > closeTime) continue;
 
-      if (staffId) {
-        // Check specific staff
-        const hasConflict = existingAppointments.some((apt) => {
-          if (apt.staffId !== staffId) return false;
-          const aptStart = new Date(apt.startTime);
-          const aptEnd = new Date(apt.endTime);
-          return (
-            (slotTime >= aptStart && slotTime < aptEnd) ||
-            (slotEnd > aptStart && slotEnd <= aptEnd) ||
-            (slotTime <= aptStart && slotEnd >= aptEnd)
-          );
-        });
-        hasAvailableStaff = !hasConflict;
-      } else {
-        // Check if ANY staff who can do this service is available
-        // Use the already-fetched availableStaff from above (avoid N+1 query)
-        const staffIdsFromFilter = (staffFilter as { staffId: { in: string[] } }).staffId.in;
+      // Check each staff member
+      for (const staffMember of staffMembers) {
+        const staffHours = getStaffHours(staffMember);
+        if (!staffHours) continue;
 
-        for (const staffIdToCheck of staffIdsFromFilter) {
-          const hasConflict = existingAppointments.some((apt) => {
-            if (apt.staffId !== staffIdToCheck) return false;
-            const aptStart = new Date(apt.startTime);
-            const aptEnd = new Date(apt.endTime);
-            return (
-              (slotTime >= aptStart && slotTime < aptEnd) ||
-              (slotEnd > aptStart && slotEnd <= aptEnd) ||
-              (slotTime <= aptStart && slotEnd >= aptEnd)
-            );
-          });
-          if (!hasConflict) {
-            hasAvailableStaff = true;
-            break;
-          }
-        }
-      }
+        // Check if slot is within staff's working hours
+        const [staffStartHour, staffStartMin] = staffHours.start.split(':').map(Number);
+        const [staffEndHour, staffEndMin] = staffHours.end.split(':').map(Number);
+        const staffStart = new Date(requestedDate);
+        staffStart.setHours(staffStartHour, staffStartMin, 0, 0);
+        const staffEnd = new Date(requestedDate);
+        staffEnd.setHours(staffEndHour, staffEndMin, 0, 0);
 
-      if (hasAvailableStaff) {
+        if (slotTime < staffStart || slotEnd > staffEnd) continue;
+
+        // Check for conflicts with existing appointments
+        if (hasConflict(staffMember.id, slotTime, slotEnd)) continue;
+
+        // Slot is available for this staff member
         slots.push({
           time: `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`,
-          available: true,
+          staffId: staffMember.id,
+          staffName: `${staffMember.firstName} ${staffMember.lastName}`,
         });
       }
     }
   }
 
+  // Deduplicate by time if not filtering by specific staff
+  // Return unique times with first available staff
+  const uniqueSlots = staffId
+    ? slots
+    : Object.values(
+        slots.reduce(
+          (acc, slot) => {
+            if (!acc[slot.time]) acc[slot.time] = slot;
+            return acc;
+          },
+          {} as Record<string, typeof slots[0]>
+        )
+      );
+
   res.json({
     success: true,
-    data: slots,
+    data: uniqueSlots.sort((a, b) => a.time.localeCompare(b.time)),
   });
 }));
 

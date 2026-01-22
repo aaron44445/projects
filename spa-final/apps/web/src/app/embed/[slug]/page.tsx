@@ -20,6 +20,14 @@ import {
 // TYPES
 // ============================================
 
+interface BookingSettings {
+  minNoticeHours: number;
+  maxAdvanceDays: number;
+  slotInterval: number;
+  requirePhone: boolean;
+  requireEmail: boolean;
+}
+
 interface Salon {
   id: string;
   name: string;
@@ -30,12 +38,14 @@ interface Salon {
   city: string | null;
   state: string | null;
   zip: string | null;
+  bookingEnabled?: boolean;
   widget: {
     primaryColor: string;
     accentColor: string;
     buttonStyle: 'rounded' | 'square';
     fontFamily: 'system' | 'modern' | 'classic';
   };
+  bookingSettings?: BookingSettings;
 }
 
 interface Location {
@@ -74,7 +84,9 @@ interface Staff {
 
 interface TimeSlot {
   time: string;
-  available: boolean;
+  available?: boolean;
+  staffId?: string;
+  staffName?: string;
 }
 
 interface BookingData {
@@ -108,11 +120,19 @@ const DEMO_SALON: Salon = {
   city: 'Beverly Hills',
   state: 'CA',
   zip: '90210',
+  bookingEnabled: true,
   widget: {
     primaryColor: '#7C9A82',
     accentColor: '#B5A8D5',
     buttonStyle: 'rounded',
     fontFamily: 'modern',
+  },
+  bookingSettings: {
+    minNoticeHours: 2,
+    maxAdvanceDays: 30,
+    slotInterval: 30,
+    requirePhone: false,
+    requireEmail: true,
   },
 };
 
@@ -499,6 +519,7 @@ function DateTimeStep({
   isLoadingSlots,
   primaryColor,
   borderRadius,
+  maxAdvanceDays = 30,
 }: {
   slots: TimeSlot[];
   selectedDate: string;
@@ -508,9 +529,10 @@ function DateTimeStep({
   isLoadingSlots: boolean;
   primaryColor: string;
   borderRadius: string;
+  maxAdvanceDays?: number;
 }) {
-  // Generate next 30 days
-  const dates = Array.from({ length: 30 }, (_, i) => {
+  // Generate dates up to maxAdvanceDays
+  const dates = Array.from({ length: maxAdvanceDays }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() + i);
     return date.toISOString().split('T')[0];
@@ -546,7 +568,7 @@ function DateTimeStep({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-          {dates.slice(0, 14).map((date) => {
+          {dates.map((date) => {
             const isSelected = date === selectedDate;
             return (
               <button
@@ -611,11 +633,15 @@ function DetailsStep({
   onChange,
   primaryColor,
   borderRadius,
+  requirePhone = false,
+  requireEmail = true,
 }: {
   booking: BookingData;
   onChange: (field: keyof BookingData, value: string | boolean) => void;
   primaryColor: string;
   borderRadius: string;
+  requirePhone?: boolean;
+  requireEmail?: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -651,25 +677,30 @@ function DetailsStep({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email {requireEmail ? '*' : '(optional)'}
+          </label>
           <input
             type="email"
             value={booking.email}
             onChange={(e) => onChange('email', e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
             placeholder="jane@example.com"
-            required
+            required={requireEmail}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone {requirePhone ? '*' : '(optional)'}
+          </label>
           <input
             type="tel"
             value={booking.phone}
             onChange={(e) => onChange('phone', e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
             placeholder="(555) 123-4567"
+            required={requirePhone}
           />
         </div>
 
@@ -1053,8 +1084,19 @@ export default function EmbedBookingPage() {
   };
 
   const handleSubmit = async () => {
-    if (!booking.serviceId || !booking.date || !booking.time || !booking.firstName || !booking.lastName || !booking.email) {
+    const requirePhone = salon?.bookingSettings?.requirePhone || false;
+    const requireEmail = salon?.bookingSettings?.requireEmail !== false;
+
+    if (!booking.serviceId || !booking.date || !booking.time || !booking.firstName || !booking.lastName) {
       setError('Please fill in all required fields');
+      return;
+    }
+    if (requireEmail && !booking.email) {
+      setError('Email is required');
+      return;
+    }
+    if (requirePhone && !booking.phone) {
+      setError('Phone number is required');
       return;
     }
 
@@ -1105,7 +1147,12 @@ export default function EmbedBookingPage() {
       return booking.time !== null;
     }
     if (step === STEP_DETAILS) {
-      return booking.firstName && booking.lastName && booking.email;
+      const requirePhone = salon?.bookingSettings?.requirePhone || false;
+      const requireEmail = salon?.bookingSettings?.requireEmail !== false;
+      const hasRequiredFields = booking.firstName && booking.lastName;
+      const hasEmail = !requireEmail || booking.email;
+      const hasPhone = !requirePhone || booking.phone;
+      return hasRequiredFields && hasEmail && hasPhone;
     }
     return true;
   };
@@ -1271,6 +1318,7 @@ export default function EmbedBookingPage() {
             isLoadingSlots={isLoadingSlots}
             primaryColor={primaryColor}
             borderRadius={borderRadius}
+            maxAdvanceDays={salon?.bookingSettings?.maxAdvanceDays || 30}
           />
         )}
 
@@ -1280,6 +1328,8 @@ export default function EmbedBookingPage() {
             onChange={updateBooking}
             primaryColor={primaryColor}
             borderRadius={borderRadius}
+            requirePhone={salon?.bookingSettings?.requirePhone || false}
+            requireEmail={salon?.bookingSettings?.requireEmail !== false}
           />
         )}
 

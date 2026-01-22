@@ -59,6 +59,13 @@ model Salon {
   syncServicesFromFlagship  Boolean             @default(false) @map("sync_services_from_flagship")
   syncPricingFromFlagship   Boolean             @default(false) @map("sync_pricing_from_flagship")
   syncSettingsFromFlagship  Boolean             @default(false) @map("sync_settings_from_flagship")
+  // Online booking settings
+  bookingEnabled            Boolean             @default(true) @map("booking_enabled")
+  bookingMinNoticeHours     Int                 @default(2) @map("booking_min_notice_hours")
+  bookingMaxAdvanceDays     Int                 @default(30) @map("booking_max_advance_days")
+  bookingSlotInterval       Int                 @default(30) @map("booking_slot_interval")
+  bookingRequirePhone       Boolean             @default(false) @map("booking_require_phone")
+  bookingRequireEmail       Boolean             @default(true) @map("booking_require_email")
   appointments              Appointment[]
   clients                   Client[]
   commissionRecords         CommissionRecord[]
@@ -133,6 +140,7 @@ model Client {
   birthday                DateTime?
   notes                   String?
   preferredStaffId        String?                        @map("preferred_staff_id")
+  preferredLocationId     String?                        @map("preferred_location_id")
   communicationPreference String                         @default("email") @map("communication_preference")
   optedInReminders        Boolean                        @default(true) @map("opted_in_reminders")
   optedInMarketing        Boolean                        @default(true) @map("opted_in_marketing")
@@ -147,6 +155,7 @@ model Client {
   clientNotes             ClientNote[]
   clientPackages          ClientPackage[]
   preferredStaff          User?                          @relation("PreferredStaff", fields: [preferredStaffId], references: [id])
+  preferredLocation       Location?                      @relation("PreferredLocation", fields: [preferredLocationId], references: [id])
   salon                   Salon                          @relation(fields: [salonId], references: [id], onDelete: Cascade)
   formResponses           FormResponse[]
   payments                Payment[]
@@ -262,26 +271,29 @@ model TimeOff {
 }
 
 model Location {
-  id                String              @id @default(uuid())
-  salonId           String              @map("salon_id")
-  name              String
-  address           String?
-  city              String?
-  state             String?
-  zip               String?
-  phone             String?
-  timezone          String?
-  hours             String?
-  isPrimary         Boolean             @default(false) @map("is_primary")
-  isActive          Boolean             @default(true) @map("is_active")
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-  appointments      Appointment[]
-  locationHours     LocationHours[]
-  salon             Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  serviceLocations  ServiceLocation[]
-  staffAvailability StaffAvailability[]
-  staffLocations    StaffLocation[]
+  id                 String              @id @default(uuid())
+  salonId            String              @map("salon_id")
+  name               String
+  address            String?
+  city               String?
+  state              String?
+  zip                String?
+  phone              String?
+  timezone           String?
+  hours              String?
+  isPrimary          Boolean             @default(false) @map("is_primary")
+  isActive           Boolean             @default(true) @map("is_active")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  appointments       Appointment[]
+  locationHours      LocationHours[]
+  salon              Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  serviceLocations   ServiceLocation[]
+  staffAvailability  StaffAvailability[]
+  staffLocations     StaffLocation[]
+  preferredByClients Client[]            @relation("PreferredLocation")
+  payments           Payment[]
+  reviews            Review[]
 
   @@index([salonId])
   @@index([isActive])
@@ -376,6 +388,7 @@ model Appointment {
 model Payment {
   id                String             @id @default(uuid())
   salonId           String             @map("salon_id")
+  locationId        String?            @map("location_id")
   appointmentId     String?            @map("appointment_id")
   clientId          String             @map("client_id")
   amount            Float
@@ -392,9 +405,11 @@ model Payment {
   commissionRecords CommissionRecord[]
   appointment       Appointment?       @relation(fields: [appointmentId], references: [id])
   client            Client             @relation(fields: [clientId], references: [id])
+  location          Location?          @relation(fields: [locationId], references: [id])
   salon             Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@index([salonId])
+  @@index([locationId])
   @@index([clientId])
   @@index([status])
   @@index([createdAt])
@@ -473,6 +488,7 @@ model GiftCard {
 model Review {
   id            String           @id @default(uuid())
   salonId       String           @map("salon_id")
+  locationId    String?          @map("location_id")
   appointmentId String           @map("appointment_id")
   clientId      String           @map("client_id")
   staffId       String?          @map("staff_id")
@@ -484,9 +500,11 @@ model Review {
   responses     ReviewResponse[]
   appointment   Appointment      @relation(fields: [appointmentId], references: [id])
   client        Client           @relation(fields: [clientId], references: [id])
+  location      Location?        @relation(fields: [locationId], references: [id])
   salon         Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@index([salonId])
+  @@index([locationId])
   @@index([staffId])
   @@index([isApproved])
   @@index([salonId, isApproved])
