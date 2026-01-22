@@ -30,12 +30,15 @@ function getDateRange(startDate?: string, endDate?: string) {
 // ============================================
 router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
-  const { startDate, endDate, groupBy = 'daily' } = req.query;
+  const { startDate, endDate, groupBy = 'daily', locationId } = req.query;
 
   const { start, end, previousStart, previousEnd } = getDateRange(
     startDate as string,
     endDate as string
   );
+
+  // Location filter for payments (via appointment relation)
+  const locationFilter = locationId ? { appointment: { locationId: locationId as string } } : {};
 
   try {
     // Get total revenue for current period
@@ -44,6 +47,7 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
         salonId,
         status: 'completed',
         createdAt: { gte: start, lte: end },
+        ...locationFilter,
       },
       _sum: {
         totalAmount: true,
@@ -59,6 +63,7 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
         salonId,
         status: 'completed',
         createdAt: { gte: previousStart, lte: previousEnd },
+        ...locationFilter,
       },
       _sum: {
         totalAmount: true,
@@ -71,6 +76,7 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
         salonId,
         status: 'completed',
         createdAt: { gte: start, lte: end },
+        ...locationFilter,
       },
       select: {
         createdAt: true,
@@ -153,6 +159,7 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
       where: {
         salonId,
         createdAt: { gte: start, lte: end },
+        ...locationFilter,
       },
       include: {
         client: {
@@ -207,12 +214,15 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
 // ============================================
 router.get('/services', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate, locationId } = req.query;
 
   const { start, end, previousStart, previousEnd } = getDateRange(
     startDate as string,
     endDate as string
   );
+
+  // Location filter for appointments
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   try {
     // Get all completed appointments in the period with their services
@@ -221,6 +231,7 @@ router.get('/services', authenticate, asyncHandler(async (req: Request, res: Res
         salonId,
         startTime: { gte: start, lte: end },
         status: { notIn: ['cancelled'] },
+        ...locationFilter,
       },
       include: {
         service: {
@@ -334,12 +345,15 @@ router.get('/services', authenticate, asyncHandler(async (req: Request, res: Res
 // ============================================
 router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate, locationId } = req.query;
 
   const { start, end } = getDateRange(
     startDate as string,
     endDate as string
   );
+
+  // Location filter for appointments
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   try {
     // Get all staff members for this salon
@@ -369,6 +383,7 @@ router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Respon
             staffId: s.id,
             startTime: { gte: start, lte: end },
             status: { notIn: ['cancelled'] },
+            ...locationFilter,
           },
           include: {
             payments: {
@@ -454,12 +469,15 @@ router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Respon
 // ============================================
 router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate, locationId } = req.query;
 
   const { start, end, previousStart, previousEnd } = getDateRange(
     startDate as string,
     endDate as string
   );
+
+  // Location filter for appointments
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   try {
     // New clients in period
@@ -492,6 +510,7 @@ router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Resp
         salonId,
         startTime: { gte: start, lte: end },
         status: { notIn: ['cancelled'] },
+        ...locationFilter,
       },
       select: {
         clientId: true,
@@ -518,6 +537,7 @@ router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Resp
         salonId,
         startTime: { gte: previousStart, lte: previousEnd },
         status: { notIn: ['cancelled'] },
+        ...locationFilter,
       },
       select: { clientId: true },
       distinct: ['clientId'],
@@ -567,6 +587,7 @@ router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Resp
           where: {
             startTime: { gte: start, lte: end },
             status: { notIn: ['cancelled'] },
+            ...locationFilter,
           },
           include: {
             payments: {
@@ -637,12 +658,16 @@ router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Resp
 // ============================================
 router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate, locationId } = req.query;
 
   const { start, end, previousStart, previousEnd } = getDateRange(
     startDate as string,
     endDate as string
   );
+
+  // Location filters
+  const paymentLocationFilter = locationId ? { appointment: { locationId: locationId as string } } : {};
+  const appointmentLocationFilter = locationId ? { locationId: locationId as string } : {};
 
   try {
     // Revenue
@@ -652,6 +677,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
           salonId,
           status: 'completed',
           createdAt: { gte: start, lte: end },
+          ...paymentLocationFilter,
         },
         _sum: { totalAmount: true },
       }),
@@ -660,6 +686,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
           salonId,
           status: 'completed',
           createdAt: { gte: previousStart, lte: previousEnd },
+          ...paymentLocationFilter,
         },
         _sum: { totalAmount: true },
       }),
@@ -672,6 +699,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
           salonId,
           startTime: { gte: start, lte: end },
           status: { notIn: ['cancelled'] },
+          ...appointmentLocationFilter,
         },
       }),
       prisma.appointment.count({
@@ -679,6 +707,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
           salonId,
           startTime: { gte: previousStart, lte: previousEnd },
           status: { notIn: ['cancelled'] },
+          ...appointmentLocationFilter,
         },
       }),
     ]);
@@ -705,6 +734,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
         salonId,
         startTime: { gte: start, lte: end },
         status: { notIn: ['cancelled'] },
+        ...appointmentLocationFilter,
       },
       _avg: { durationMinutes: true },
     });
@@ -751,6 +781,86 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate overview report' },
+    });
+  }
+}));
+
+// ============================================
+// GET /api/v1/reports/by-location
+// Compare metrics across all locations
+// ============================================
+router.get('/by-location', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const salonId = req.user!.salonId;
+  const { startDate, endDate } = req.query;
+
+  const { start, end } = getDateRange(startDate as string, endDate as string);
+
+  try {
+    // Get all locations
+    const locations = await prisma.location.findMany({
+      where: { salonId, isActive: true },
+      select: { id: true, name: true, isPrimary: true },
+    });
+
+    // Get metrics per location
+    const locationStats = await Promise.all(
+      locations.map(async (loc) => {
+        const [revenue, appointments, clients] = await Promise.all([
+          prisma.payment.aggregate({
+            where: {
+              salonId,
+              status: 'completed',
+              createdAt: { gte: start, lte: end },
+              appointment: { locationId: loc.id },
+            },
+            _sum: { totalAmount: true },
+          }),
+          prisma.appointment.count({
+            where: {
+              salonId,
+              locationId: loc.id,
+              startTime: { gte: start, lte: end },
+              status: { notIn: ['cancelled'] },
+            },
+          }),
+          prisma.appointment.findMany({
+            where: {
+              salonId,
+              locationId: loc.id,
+              startTime: { gte: start, lte: end },
+              status: { notIn: ['cancelled'] },
+            },
+            select: { clientId: true },
+            distinct: ['clientId'],
+          }),
+        ]);
+
+        return {
+          id: loc.id,
+          name: loc.name,
+          isPrimary: loc.isPrimary,
+          revenue: revenue._sum.totalAmount || 0,
+          appointments,
+          uniqueClients: clients.length,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      data: {
+        locations: locationStats.sort((a, b) => b.revenue - a.revenue),
+        totals: {
+          revenue: locationStats.reduce((sum, l) => sum + l.revenue, 0),
+          appointments: locationStats.reduce((sum, l) => sum + l.appointments, 0),
+        },
+      },
+    });
+  } catch (error) {
+    console.error('By-location report error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'REPORT_ERROR', message: 'Failed to generate by-location report' },
     });
   }
 }));
