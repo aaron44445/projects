@@ -3,11 +3,12 @@ import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { sendBulkEmail, marketingCampaignEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
 // GET /api/v1/marketing/campaigns
-router.get('/campaigns', authenticate, async (req: Request, res: Response) => {
+router.get('/campaigns', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { status } = req.query;
 
   const campaigns = await prisma.marketingCampaign.findMany({
@@ -19,10 +20,10 @@ router.get('/campaigns', authenticate, async (req: Request, res: Response) => {
   });
 
   res.json({ success: true, data: campaigns });
-});
+}));
 
 // POST /api/v1/marketing/campaigns
-router.post('/campaigns', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.post('/campaigns', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const { name, type, subjectLine, message, audienceFilter, scheduledFor } = req.body;
 
   const campaign = await prisma.marketingCampaign.create({
@@ -38,10 +39,10 @@ router.post('/campaigns', authenticate, authorize('admin', 'manager'), async (re
   });
 
   res.status(201).json({ success: true, data: campaign });
-});
+}));
 
 // PATCH /api/v1/marketing/campaigns/:id
-router.patch('/campaigns/:id', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.patch('/campaigns/:id', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const campaign = await prisma.marketingCampaign.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -56,10 +57,10 @@ router.patch('/campaigns/:id', authenticate, authorize('admin', 'manager'), asyn
   });
 
   res.json({ success: true, data: updated });
-});
+}));
 
 // POST /api/v1/marketing/campaigns/:id/send - Send campaign via SendGrid
-router.post('/campaigns/:id/send', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.post('/campaigns/:id/send', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const campaign = await prisma.marketingCampaign.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
     include: { salon: true },
@@ -125,10 +126,10 @@ router.post('/campaigns/:id/send', authenticate, authorize('admin', 'manager'), 
   });
 
   res.json({ success: true, data: { ...updated, sent: results.sent, failed: results.failed } });
-});
+}));
 
 // DELETE /api/v1/marketing/campaigns/:id
-router.delete('/campaigns/:id', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.delete('/campaigns/:id', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const campaign = await prisma.marketingCampaign.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -140,6 +141,6 @@ router.delete('/campaigns/:id', authenticate, authorize('admin', 'manager'), asy
   await prisma.marketingCampaign.delete({ where: { id: req.params.id } });
 
   res.json({ success: true, data: { deleted: true } });
-});
+}));
 
 export { router as marketingRouter };

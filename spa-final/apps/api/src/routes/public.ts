@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { sendEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const router = Router();
 // GET /api/v1/public/:slug/salon
 // Get salon public info (name, logo, branding)
 // ============================================
-router.get('/:slug/salon', async (req: Request, res: Response) => {
+router.get('/:slug/salon', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { slug: req.params.slug },
     select: {
@@ -62,13 +63,60 @@ router.get('/:slug/salon', async (req: Request, res: Response) => {
       },
     },
   });
-});
+}));
+
+// ============================================
+// GET /api/v1/public/:slug/locations
+// Get salon's active locations
+// ============================================
+router.get('/:slug/locations', asyncHandler(async (req: Request, res: Response) => {
+  const salon = await prisma.salon.findUnique({
+    where: { slug: req.params.slug },
+    select: { id: true },
+  });
+
+  if (!salon) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Salon not found',
+      },
+    });
+  }
+
+  const locations = await prisma.location.findMany({
+    where: {
+      salonId: salon.id,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      address: true,
+      city: true,
+      state: true,
+      zip: true,
+      phone: true,
+      timezone: true,
+      hours: true,
+      isPrimary: true,
+    },
+    orderBy: [{ isPrimary: 'desc' }, { name: 'asc' }],
+  });
+
+  res.json({
+    success: true,
+    data: locations,
+  });
+}));
 
 // ============================================
 // GET /api/v1/public/:slug/services
-// Get salon's active services
+// Get salon's active services (optionally filtered by location)
 // ============================================
-router.get('/:slug/services', async (req: Request, res: Response) => {
+router.get('/:slug/services', asyncHandler(async (req: Request, res: Response) => {
+  const { locationId } = req.query;
   const salon = await prisma.salon.findUnique({
     where: { slug: req.params.slug },
     select: { id: true },
@@ -102,14 +150,27 @@ router.get('/:slug/services', async (req: Request, res: Response) => {
           name: true,
         },
       },
+      serviceLocations: locationId ? {
+        where: { locationId: locationId as string },
+      } : false,
     },
     orderBy: [{ displayOrder: 'asc' }, { name: 'asc' }],
   });
 
+  // Filter out disabled services for this location and apply overrides
+  const filteredServices = services.filter(service => {
+    if (!locationId) return true;
+    const locationSettings = (service as any).serviceLocations?.[0];
+    // If no settings exist, service is enabled by default
+    if (!locationSettings) return true;
+    return locationSettings.isEnabled;
+  });
+
   // Group by category
-  const categorized = services.reduce((acc, service) => {
+  const categorized = filteredServices.reduce((acc, service) => {
     const categoryName = service.category?.name || 'Other Services';
     const categoryId = service.category?.id || 'uncategorized';
+    const locationSettings = locationId ? (service as any).serviceLocations?.[0] : null;
 
     if (!acc[categoryId]) {
       acc[categoryId] = {
@@ -123,8 +184,8 @@ router.get('/:slug/services', async (req: Request, res: Response) => {
       id: service.id,
       name: service.name,
       description: service.description,
-      durationMinutes: service.durationMinutes,
-      price: service.price,
+      durationMinutes: locationSettings?.durationOverride || service.durationMinutes,
+      price: locationSettings?.priceOverride ? Number(locationSettings.priceOverride) : service.price,
       color: service.color,
     });
 
@@ -135,14 +196,14 @@ router.get('/:slug/services', async (req: Request, res: Response) => {
     success: true,
     data: Object.values(categorized),
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/public/:slug/staff
-// Get salon's bookable staff
+// Get salon's bookable staff (optionally filtered by location and/or service)
 // ============================================
-router.get('/:slug/staff', async (req: Request, res: Response) => {
-  const { serviceId } = req.query;
+router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
+  const { serviceId, locationId } = req.query;
 
   const salon = await prisma.salon.findUnique({
     where: { slug: req.params.slug },
@@ -172,6 +233,14 @@ router.get('/:slug/staff', async (req: Request, res: Response) => {
           },
         },
       }),
+      // If locationId provided, only get staff assigned to that location
+      ...(locationId && {
+        staffLocations: {
+          some: {
+            locationId: locationId as string,
+          },
+        },
+      }),
     },
     select: {
       id: true,
@@ -183,6 +252,10 @@ router.get('/:slug/staff', async (req: Request, res: Response) => {
           serviceId: true,
         },
       },
+      staffLocations: locationId ? {
+        where: { locationId: locationId as string },
+        select: { isPrimary: true },
+      } : false,
     },
     orderBy: { firstName: 'asc' },
   });
@@ -196,15 +269,16 @@ router.get('/:slug/staff', async (req: Request, res: Response) => {
       lastName: s.lastName,
       avatarUrl: s.avatarUrl,
       serviceIds: s.staffServices.map((ss) => ss.serviceId),
+      isPrimaryForLocation: locationId ? (s as any).staffLocations?.[0]?.isPrimary : undefined,
     })),
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/public/:slug/availability
 // Get available time slots
 // ============================================
-router.get('/:slug/availability', async (req: Request, res: Response) => {
+router.get('/:slug/availability', asyncHandler(async (req: Request, res: Response) => {
   const { date, serviceId, staffId } = req.query;
 
   if (!date || !serviceId) {
@@ -352,23 +426,12 @@ router.get('/:slug/availability', async (req: Request, res: Response) => {
         hasAvailableStaff = !hasConflict;
       } else {
         // Check if ANY staff who can do this service is available
-        const staffIds = await prisma.user.findMany({
-          where: {
-            salonId: salon.id,
-            isActive: true,
-            staffServices: {
-              some: {
-                serviceId: serviceId as string,
-                isAvailable: true,
-              },
-            },
-          },
-          select: { id: true },
-        });
+        // Use the already-fetched availableStaff from above (avoid N+1 query)
+        const staffIdsFromFilter = (staffFilter as { staffId: { in: string[] } }).staffId.in;
 
-        for (const staff of staffIds) {
+        for (const staffIdToCheck of staffIdsFromFilter) {
           const hasConflict = existingAppointments.some((apt) => {
-            if (apt.staffId !== staff.id) return false;
+            if (apt.staffId !== staffIdToCheck) return false;
             const aptStart = new Date(apt.startTime);
             const aptEnd = new Date(apt.endTime);
             return (
@@ -397,16 +460,17 @@ router.get('/:slug/availability', async (req: Request, res: Response) => {
     success: true,
     data: slots,
   });
-});
+}));
 
 // ============================================
 // POST /api/v1/public/:slug/book
 // Create a booking (creates client if needed)
 // ============================================
-router.post('/:slug/book', async (req: Request, res: Response) => {
+router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
   const {
     serviceId,
     staffId,
+    locationId,
     startTime,
     firstName,
     lastName,
@@ -600,18 +664,34 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
 
   // Create appointment
   const start = new Date(startTime);
-  const end = new Date(start.getTime() + service.durationMinutes * 60000);
+
+  // Get location-specific service settings if locationId provided
+  let effectiveDuration = service.durationMinutes;
+  let effectivePrice = service.price;
+
+  if (locationId) {
+    const serviceLocation = await prisma.serviceLocation.findUnique({
+      where: { serviceId_locationId: { serviceId, locationId } },
+    });
+    if (serviceLocation) {
+      if (serviceLocation.durationOverride) effectiveDuration = serviceLocation.durationOverride;
+      if (serviceLocation.priceOverride) effectivePrice = Number(serviceLocation.priceOverride);
+    }
+  }
+
+  const end = new Date(start.getTime() + effectiveDuration * 60000);
 
   const appointment = await prisma.appointment.create({
     data: {
       salonId: salon.id,
+      locationId: locationId || null,
       clientId: client.id,
       staffId: assignedStaffId,
       serviceId: serviceId,
       startTime: start,
       endTime: end,
-      durationMinutes: service.durationMinutes,
-      price: service.price,
+      durationMinutes: effectiveDuration,
+      price: effectivePrice,
       status: 'confirmed',
       notes,
       source: 'online_booking',
@@ -626,6 +706,9 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
       service: {
         select: { name: true },
       },
+      location: {
+        select: { name: true, address: true, city: true, state: true, zip: true },
+      },
     },
   });
 
@@ -637,6 +720,12 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
     hour: 'numeric',
     minute: '2-digit',
   });
+
+  // Build address - use location address if available, otherwise salon address
+  const loc = appointment.location;
+  const appointmentAddress = loc
+    ? `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zip || ''}`.trim()
+    : `${salon.address || ''}, ${salon.city || ''}, ${salon.state || ''} ${salon.zip || ''}`.trim();
 
   // Send confirmation email
   if (client.email) {
@@ -650,7 +739,7 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
           staffName: `${appointment.staff.firstName} ${appointment.staff.lastName}`,
           dateTime: formattedDateTime,
           salonName: salon.name,
-          salonAddress: `${salon.address || ''}, ${salon.city || ''}, ${salon.state || ''} ${salon.zip || ''}`.trim(),
+          salonAddress: appointmentAddress,
         }),
       });
     } catch (e) {
@@ -683,6 +772,10 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
       staff: `${appointment.staff.firstName} ${appointment.staff.lastName}`,
       startTime: appointment.startTime,
       endTime: appointment.endTime,
+      location: loc ? {
+        name: loc.name,
+        address: appointmentAddress,
+      } : null,
       client: {
         firstName: appointment.client.firstName,
         lastName: appointment.client.lastName,
@@ -690,6 +783,6 @@ router.post('/:slug/book', async (req: Request, res: Response) => {
       },
     },
   });
-});
+}));
 
 export { router as publicRouter };

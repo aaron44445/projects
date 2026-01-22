@@ -13,6 +13,7 @@ import {
   validateMimeType,
   UPLOAD_PRESETS,
 } from '../services/upload.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -126,7 +127,7 @@ router.post(
   authenticate,
   upload.single('file'),
   handleMulterError,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const file = req.file;
 
@@ -208,7 +209,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 /**
@@ -225,7 +226,7 @@ router.post(
   authenticate,
   upload.single('file'),
   handleMulterError,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const file = req.file;
 
@@ -274,7 +275,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 /**
@@ -287,7 +288,7 @@ router.post(
 router.delete(
   '/:publicId(*)',
   authenticate,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const { publicId } = req.params;
 
@@ -349,7 +350,7 @@ router.delete(
         },
       });
     }
-  }
+  })
 );
 
 /**

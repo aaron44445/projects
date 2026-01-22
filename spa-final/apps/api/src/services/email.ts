@@ -154,6 +154,51 @@ export function appointmentConfirmationEmail(data: {
   `;
 }
 
+export function appointmentCancellationEmail(data: {
+  clientName: string;
+  salonName: string;
+  serviceName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+}): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #F5E6E6 0%, #FAF8F3 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
+        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
+        .cancelled { background: #FEF3E7; border-left: 4px solid #E57373; padding: 15px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; color: #2C2C2C;">Appointment Cancelled</h1>
+          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Your appointment has been cancelled</p>
+        </div>
+        <div class="content">
+          <p>Hi ${data.clientName},</p>
+          <p>This is to confirm that your appointment has been cancelled.</p>
+          <div class="cancelled">
+            <p style="margin: 0;"><strong>Service:</strong> ${data.serviceName}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Originally scheduled:</strong> ${data.appointmentDate} at ${data.appointmentTime}</p>
+          </div>
+          <p>If you'd like to book another appointment, please visit our booking page or contact us directly.</p>
+          <p>We hope to see you again soon!</p>
+        </div>
+        <div class="footer">
+          <p>${data.salonName}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 export function appointmentReminderEmail(data: {
   clientName: string;
   serviceName: string;
@@ -414,6 +459,158 @@ export function marketingCampaignEmail(data: {
         <div class="footer">
           <p>${data.salonName}</p>
           <p><a href="${data.unsubscribeUrl}" style="color: #666;">Unsubscribe</a></p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// ============================================
+// CLIENT PORTAL EMAIL TEMPLATES
+// ============================================
+
+export function clientWelcomeEmail(data: {
+  clientName: string;
+  salonName: string;
+  verificationToken: string;
+  portalUrl: string;
+}): string {
+  const verifyUrl = `${data.portalUrl}/verify-email?token=${data.verificationToken}`;
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
+        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
+        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .features { background: #FAF8F3; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .feature-item { margin: 10px 0; padding-left: 20px; position: relative; }
+        .feature-item:before { content: "✓"; position: absolute; left: 0; color: #6B9B76; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; color: #2C2C2C;">Welcome to ${data.salonName}!</h1>
+          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Your account has been created</p>
+        </div>
+        <div class="content">
+          <p>Hi ${data.clientName},</p>
+          <p>Thank you for creating your client account with ${data.salonName}. We're excited to have you!</p>
+          <p style="text-align: center;">
+            <a href="${verifyUrl}" class="button">Verify Your Email</a>
+          </p>
+          <div class="features">
+            <p style="margin: 0 0 10px 0; font-weight: 600;">With your account you can:</p>
+            <div class="feature-item">Book appointments online 24/7</div>
+            <div class="feature-item">View your appointment history</div>
+            <div class="feature-item">Manage your packages and gift cards</div>
+            <div class="feature-item">Leave reviews for your visits</div>
+            <div class="feature-item">Update your preferences</div>
+          </div>
+          <p>If you didn't create this account, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>${data.salonName}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function clientVerificationEmail(data: {
+  clientName: string;
+  salonName: string;
+  verificationToken: string;
+  portalUrl: string;
+}): string {
+  const verifyUrl = `${data.portalUrl}/verify-email?token=${data.verificationToken}`;
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
+        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
+        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .info { background: #E8F4EA; border-left: 4px solid #6B9B76; padding: 15px; margin: 20px 0; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; color: #2C2C2C;">Verify Your Email</h1>
+          <p style="margin: 10px 0 0 0; color: #4A4A4A;">${data.salonName}</p>
+        </div>
+        <div class="content">
+          <p>Hi ${data.clientName},</p>
+          <p>Please verify your email address by clicking the button below:</p>
+          <p style="text-align: center;">
+            <a href="${verifyUrl}" class="button">Verify Email Address</a>
+          </p>
+          <div class="info">
+            <p style="margin: 0;"><strong>This link will expire in 24 hours.</strong></p>
+          </div>
+          <p>If you didn't create an account, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+          <p>${data.salonName}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+export function clientPasswordResetEmail(data: {
+  clientName: string;
+  salonName: string;
+  resetToken: string;
+  portalUrl: string;
+}): string {
+  const resetUrl = `${data.portalUrl}/reset-password?token=${data.resetToken}`;
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
+        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
+        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .warning { background: #FEF3E7; border-left: 4px solid #F5A623; padding: 15px; margin: 20px 0; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 style="margin: 0; color: #2C2C2C;">Reset Your Password</h1>
+          <p style="margin: 10px 0 0 0; color: #4A4A4A;">${data.salonName}</p>
+        </div>
+        <div class="content">
+          <p>Hi ${data.clientName},</p>
+          <p>We received a request to reset your password. Click the button below to create a new password:</p>
+          <p style="text-align: center;">
+            <a href="${resetUrl}" class="button">Reset Password</a>
+          </p>
+          <div class="warning">
+            <p style="margin: 0;"><strong>This link will expire in 1 hour.</strong></p>
+            <p style="margin: 5px 0 0 0;">If you didn't request a password reset, you can safely ignore this email.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>${data.salonName}</p>
         </div>
       </div>
     </body>

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -8,28 +9,34 @@ const router = Router();
 // GET /api/v1/clients
 // List clients with search and pagination
 // ============================================
-router.get('/', authenticate, async (req: Request, res: Response) => {
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { search, page = '1', pageSize = '25' } = req.query;
 
-  const where = {
+  const parsedPage = parseInt(page as string);
+  const parsedPageSize = parseInt(pageSize as string);
+  const skip = (parsedPage - 1) * parsedPageSize;
+
+  let where: any = {
     salonId: req.user!.salonId,
     isActive: true,
-    ...(search && {
-      OR: [
-        { firstName: { contains: search as string, mode: 'insensitive' as const } },
-        { lastName: { contains: search as string, mode: 'insensitive' as const } },
-        { email: { contains: search as string, mode: 'insensitive' as const } },
-        { phone: { contains: search as string } },
-      ],
-    }),
   };
+
+  // Add search filter using Prisma's case-insensitive search
+  if (search) {
+    where.OR = [
+      { firstName: { contains: search as string, mode: 'insensitive' } },
+      { lastName: { contains: search as string, mode: 'insensitive' } },
+      { email: { contains: search as string, mode: 'insensitive' } },
+      { phone: { contains: search as string } },
+    ];
+  }
 
   const [clients, total] = await Promise.all([
     prisma.client.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      skip: (parseInt(page as string) - 1) * parseInt(pageSize as string),
-      take: parseInt(pageSize as string),
+      skip,
+      take: parsedPageSize,
     }),
     prisma.client.count({ where }),
   ]);
@@ -39,18 +46,18 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     data: {
       items: clients,
       total,
-      page: parseInt(page as string),
-      pageSize: parseInt(pageSize as string),
-      totalPages: Math.ceil(total / parseInt(pageSize as string)),
+      page: parsedPage,
+      pageSize: parsedPageSize,
+      totalPages: Math.ceil(total / parsedPageSize),
     },
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/clients/:id
 // Get client details with history
 // ============================================
-router.get('/:id', authenticate, async (req: Request, res: Response) => {
+router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
     where: {
       id: req.params.id,
@@ -92,13 +99,13 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: client,
   });
-});
+}));
 
 // ============================================
 // POST /api/v1/clients
 // Create new client
 // ============================================
-router.post('/', authenticate, async (req: Request, res: Response) => {
+router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const {
     firstName,
     lastName,
@@ -116,15 +123,28 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
   // Check for duplicate by phone or email
   if (phone || email) {
+    // Build where clause based on what fields are provided
+    const whereClause: any = {
+      salonId: req.user!.salonId,
+      isActive: true,
+    };
+
+    // If both phone and email, use OR
+    if (phone && email) {
+      whereClause.OR = [
+        { phone },
+        { email },
+      ];
+    } else if (phone) {
+      // Only phone
+      whereClause.phone = phone;
+    } else if (email) {
+      // Only email
+      whereClause.email = email;
+    }
+
     const existing = await prisma.client.findFirst({
-      where: {
-        salonId: req.user!.salonId,
-        isActive: true,
-        OR: [
-          ...(phone ? [{ phone }] : []),
-          ...(email ? [{ email }] : []),
-        ],
-      },
+      where: whereClause,
     });
 
     if (existing) {
@@ -160,13 +180,13 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: client,
   });
-});
+}));
 
 // ============================================
 // PATCH /api/v1/clients/:id
 // Update client
 // ============================================
-router.patch('/:id', authenticate, async (req: Request, res: Response) => {
+router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -190,13 +210,13 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: updated,
   });
-});
+}));
 
 // ============================================
 // POST /api/v1/clients/:id/notes
 // Add note to client
 // ============================================
-router.post('/:id/notes', authenticate, async (req: Request, res: Response) => {
+router.post('/:id/notes', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { content } = req.body;
 
   const client = await prisma.client.findFirst({
@@ -230,13 +250,13 @@ router.post('/:id/notes', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: note,
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/clients/segments/counts
 // Get client counts by segment for marketing
 // ============================================
-router.get('/segments/counts', authenticate, async (req: Request, res: Response) => {
+router.get('/segments/counts', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const now = new Date();
   const thirtyDaysAgo = new Date(now);
@@ -293,6 +313,6 @@ router.get('/segments/counts', authenticate, async (req: Request, res: Response)
       vip: vipClientsCount,
     },
   });
-});
+}));
 
 export { router as clientsRouter };

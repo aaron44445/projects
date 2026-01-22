@@ -5,6 +5,7 @@ import { authenticate, authorize } from '../middleware/auth.js';
 import { encrypt } from '../lib/encryption.js';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -81,7 +82,7 @@ router.get(
   '/status',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const salon = await prisma.salon.findUnique({
         where: { id: req.user!.salonId },
@@ -167,7 +168,7 @@ router.get(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -178,7 +179,7 @@ router.put(
   '/sendgrid',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = sendgridSchema.parse(req.body);
 
@@ -264,7 +265,7 @@ router.put(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -275,7 +276,7 @@ router.post(
   '/sendgrid/test',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = sendgridTestSchema.parse(req.body);
       const fromEmail = req.body.fromEmail;
@@ -356,7 +357,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -367,7 +368,7 @@ router.delete(
   '/sendgrid',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       await prisma.salon.update({
         where: { id: req.user!.salonId },
@@ -395,7 +396,7 @@ router.delete(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -406,7 +407,7 @@ router.put(
   '/twilio',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = twilioSchema.parse(req.body);
 
@@ -487,7 +488,7 @@ router.put(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -498,7 +499,7 @@ router.post(
   '/twilio/test',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = twilioTestSchema.parse(req.body);
 
@@ -551,7 +552,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -562,7 +563,7 @@ router.delete(
   '/twilio',
   authenticate,
   authorize('owner', 'admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       await prisma.salon.update({
         where: { id: req.user!.salonId },
@@ -591,7 +592,7 @@ router.delete(
         },
       });
     }
-  }
+  })
 );
 
 export { router as integrationsRouter };

@@ -3,11 +3,12 @@ import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { createPackageCheckoutSession } from '../services/payments.js';
 import { env } from '../lib/env.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
 // GET /api/v1/packages
-router.get('/', authenticate, async (req: Request, res: Response) => {
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const packages = await prisma.package.findMany({
     where: { salonId: req.user!.salonId, isActive: true },
     include: { packageServices: { include: { service: true } } },
@@ -15,10 +16,10 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
   });
 
   res.json({ success: true, data: packages });
-});
+}));
 
 // POST /api/v1/packages
-router.post('/', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.post('/', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const { name, description, price, type, durationDays, renewalPrice, serviceIds } = req.body;
 
   const pkg = await prisma.package.create({
@@ -41,10 +42,10 @@ router.post('/', authenticate, authorize('admin', 'manager'), async (req: Reques
   });
 
   res.status(201).json({ success: true, data: pkg });
-});
+}));
 
 // GET /api/v1/packages/members
-router.get('/members', authenticate, async (req: Request, res: Response) => {
+router.get('/members', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const members = await prisma.clientPackage.findMany({
     where: { package: { salonId: req.user!.salonId }, isActive: true },
     include: {
@@ -55,10 +56,10 @@ router.get('/members', authenticate, async (req: Request, res: Response) => {
   });
 
   res.json({ success: true, data: members });
-});
+}));
 
 // POST /api/v1/packages/:id/checkout - Create Stripe checkout session
-router.post('/:id/checkout', authenticate, async (req: Request, res: Response) => {
+router.post('/:id/checkout', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = req.body;
 
   const pkg = await prisma.package.findFirst({
@@ -85,10 +86,10 @@ router.post('/:id/checkout', authenticate, async (req: Request, res: Response) =
   });
 
   res.json({ success: true, data: { checkoutUrl: session.url, sessionId: session.id } });
-});
+}));
 
 // POST /api/v1/packages/:id/purchase - Direct purchase (admin assigns)
-router.post('/:id/purchase', authenticate, async (req: Request, res: Response) => {
+router.post('/:id/purchase', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = req.body;
 
   const pkg = await prisma.package.findFirst({
@@ -115,10 +116,10 @@ router.post('/:id/purchase', authenticate, async (req: Request, res: Response) =
   });
 
   res.status(201).json({ success: true, data: clientPackage });
-});
+}));
 
 // DELETE /api/v1/packages/:id
-router.delete('/:id', authenticate, authorize('admin', 'manager'), async (req: Request, res: Response) => {
+router.delete('/:id', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
   const pkg = await prisma.package.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -133,6 +134,6 @@ router.delete('/:id', authenticate, authorize('admin', 'manager'), async (req: R
   });
 
   res.json({ success: true, data: { deleted: true } });
-});
+}));
 
 export { router as packagesRouter };

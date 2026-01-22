@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { prisma } from '@peacase/database';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 export const locationsRouter = Router();
 
@@ -11,7 +12,7 @@ locationsRouter.use(authenticate);
  * GET /api/v1/locations
  * List all locations for the authenticated user's salon
  */
-locationsRouter.get('/', async (req, res, next) => {
+locationsRouter.get('/', asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
 
@@ -27,13 +28,13 @@ locationsRouter.get('/', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * GET /api/v1/locations/:id
  * Get specific location details
  */
-locationsRouter.get('/:id', async (req, res, next) => {
+locationsRouter.get('/:id', asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -53,13 +54,13 @@ locationsRouter.get('/:id', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * POST /api/v1/locations
  * Create a new location (admin/owner only)
  */
-locationsRouter.post('/', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.post('/', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { name, address, city, state, zip, phone, timezone, isPrimary } = req.body;
@@ -113,7 +114,6 @@ locationsRouter.post('/', authorize('admin', 'owner'), async (req, res, next) =>
         phone,
         timezone,
         isPrimary: isPrimary || existingLocationCount === 0, // First location is always primary
-        updated_at: new Date(),
       },
     });
 
@@ -121,13 +121,13 @@ locationsRouter.post('/', authorize('admin', 'owner'), async (req, res, next) =>
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * PATCH /api/v1/locations/:id
  * Update location details (admin/owner only)
  */
-locationsRouter.patch('/:id', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.patch('/:id', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -161,13 +161,13 @@ locationsRouter.patch('/:id', authorize('admin', 'owner'), async (req, res, next
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * DELETE /api/v1/locations/:id
  * Delete a location (admin/owner only)
  */
-locationsRouter.delete('/:id', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.delete('/:id', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -230,13 +230,13 @@ locationsRouter.delete('/:id', authorize('admin', 'owner'), async (req, res, nex
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * GET /api/v1/locations/:id/staff
  * Get staff assigned to this location
  */
-locationsRouter.get('/:id/staff', async (req, res, next) => {
+locationsRouter.get('/:id/staff', asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -276,13 +276,13 @@ locationsRouter.get('/:id/staff', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * POST /api/v1/locations/:id/staff
  * Assign staff to location (admin/owner only)
  */
-locationsRouter.post('/:id/staff', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.post('/:id/staff', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -329,13 +329,13 @@ locationsRouter.post('/:id/staff', authorize('admin', 'owner'), async (req, res,
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * DELETE /api/v1/locations/:id/staff/:staffId
  * Remove staff from location (admin/owner only)
  */
-locationsRouter.delete('/:id/staff/:staffId', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.delete('/:id/staff/:staffId', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id, staffId } = req.params;
@@ -384,13 +384,13 @@ locationsRouter.delete('/:id/staff/:staffId', authorize('admin', 'owner'), async
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * GET /api/v1/locations/:id/services
  * Get services available at this location with overrides
  */
-locationsRouter.get('/:id/services', async (req, res, next) => {
+locationsRouter.get('/:id/services', asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id } = req.params;
@@ -415,8 +415,8 @@ locationsRouter.get('/:id/services', async (req, res, next) => {
 
     const services = serviceLocations.map((sl) => ({
       ...sl.service,
-      effectivePrice: sl.priceOverride ?? sl.service.price,
-      effectiveDuration: sl.durationOverride ?? sl.service.durationMinutes,
+      effectivePrice: sl.priceOverride !== null ? Number(sl.priceOverride) : sl.service.price,
+      effectiveDuration: sl.durationOverride !== null ? Number(sl.durationOverride) : sl.service.durationMinutes,
       hasOverride: !!(sl.priceOverride || sl.durationOverride),
     }));
 
@@ -424,13 +424,13 @@ locationsRouter.get('/:id/services', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * PUT /api/v1/locations/:id/services/:serviceId
  * Update service settings for location (admin/owner only)
  */
-locationsRouter.put('/:id/services/:serviceId', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.put('/:id/services/:serviceId', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { salonId } = req.user!;
     const { id, serviceId } = req.params;
@@ -479,13 +479,13 @@ locationsRouter.put('/:id/services/:serviceId', authorize('admin', 'owner'), asy
   } catch (error) {
     next(error);
   }
-});
+}));
 
 /**
  * DELETE /api/v1/locations/:id/services/:serviceId
  * Remove service overrides for location (admin/owner only)
  */
-locationsRouter.delete('/:id/services/:serviceId', authorize('admin', 'owner'), async (req, res, next) => {
+locationsRouter.delete('/:id/services/:serviceId', authorize('admin', 'owner'), asyncHandler(async (req, res, next) => {
   try {
     const { id, serviceId } = req.params;
 
@@ -518,4 +518,4 @@ locationsRouter.delete('/:id/services/:serviceId', authorize('admin', 'owner'), 
   } catch (error) {
     next(error);
   }
-});
+}));

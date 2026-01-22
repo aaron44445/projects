@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -8,8 +9,10 @@ const router = Router();
 // GET /api/v1/dashboard/stats
 // Revenue stats, appointment counts, new clients with comparisons
 // ============================================
-router.get('/stats', authenticate, async (req: Request, res: Response) => {
+router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
+  const { locationId } = req.query;
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   // Get date ranges
   const now = new Date();
@@ -49,6 +52,7 @@ router.get('/stats', authenticate, async (req: Request, res: Response) => {
     prisma.appointment.count({
       where: {
         salonId,
+        ...locationFilter,
         startTime: { gte: startOfThisMonth },
         status: { notIn: ['cancelled'] },
       },
@@ -56,6 +60,7 @@ router.get('/stats', authenticate, async (req: Request, res: Response) => {
     prisma.appointment.count({
       where: {
         salonId,
+        ...locationFilter,
         startTime: {
           gte: startOfLastMonth,
           lte: endOfLastMonth,
@@ -146,14 +151,16 @@ router.get('/stats', authenticate, async (req: Request, res: Response) => {
       },
     },
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/dashboard/today
 // Today's appointments
 // ============================================
-router.get('/today', authenticate, async (req: Request, res: Response) => {
+router.get('/today', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
+  const { locationId } = req.query;
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   // Get today's date range
   const now = new Date();
@@ -163,6 +170,7 @@ router.get('/today', authenticate, async (req: Request, res: Response) => {
   const appointments = await prisma.appointment.findMany({
     where: {
       salonId,
+      ...locationFilter,
       startTime: {
         gte: startOfToday,
         lte: endOfToday,
@@ -214,14 +222,16 @@ router.get('/today', authenticate, async (req: Request, res: Response) => {
       summary,
     },
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/dashboard/recent-activity
 // Recent activity feed (bookings, payments, cancellations)
 // ============================================
-router.get('/recent-activity', authenticate, async (req: Request, res: Response) => {
+router.get('/recent-activity', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
+  const { locationId } = req.query;
+  const locationFilter = locationId ? { locationId: locationId as string } : {};
 
   // Get recent appointments (last 7 days)
   const sevenDaysAgo = new Date();
@@ -230,6 +240,7 @@ router.get('/recent-activity', authenticate, async (req: Request, res: Response)
   const recentAppointments = await prisma.appointment.findMany({
     where: {
       salonId,
+      ...locationFilter,
       createdAt: { gte: sevenDaysAgo },
     },
     select: {
@@ -257,6 +268,6 @@ router.get('/recent-activity', authenticate, async (req: Request, res: Response)
     success: true,
     data: recentAppointments,
   });
-});
+}));
 
 export { router as dashboardRouter };

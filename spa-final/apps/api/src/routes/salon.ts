@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -8,7 +9,7 @@ const router = Router();
 // GET /api/v1/salon
 // Get current salon details
 // ============================================
-router.get('/', authenticate, async (req: Request, res: Response) => {
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
   });
@@ -27,13 +28,13 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: salon,
   });
-});
+}));
 
 // ============================================
 // PATCH /api/v1/salon
 // Update salon details
 // ============================================
-router.patch('/', authenticate, async (req: Request, res: Response) => {
+router.patch('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { name, phone, address, city, state, zip, timezone, website, description } = req.body;
 
   const salon = await prisma.salon.update({
@@ -55,13 +56,13 @@ router.patch('/', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: salon,
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/salon/features
 // Get enabled features
 // ============================================
-router.get('/features', authenticate, async (req: Request, res: Response) => {
+router.get('/features', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: { featuresEnabled: true, subscriptionPlan: true },
@@ -84,13 +85,13 @@ router.get('/features', authenticate, async (req: Request, res: Response) => {
       features: salon.featuresEnabled,
     },
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/salon/widget-settings
 // Get widget customization settings
 // ============================================
-router.get('/widget-settings', authenticate, async (req: Request, res: Response) => {
+router.get('/widget-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: {
@@ -120,13 +121,13 @@ router.get('/widget-settings', authenticate, async (req: Request, res: Response)
       fontFamily: salon.widgetFontFamily,
     },
   });
-});
+}));
 
 // ============================================
 // PATCH /api/v1/salon/widget-settings
 // Update widget customization settings
 // ============================================
-router.patch('/widget-settings', authenticate, async (req: Request, res: Response) => {
+router.patch('/widget-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { primaryColor, accentColor, buttonStyle, fontFamily } = req.body;
 
   // Validate color format (hex)
@@ -199,6 +200,6 @@ router.patch('/widget-settings', authenticate, async (req: Request, res: Respons
       fontFamily: salon.widgetFontFamily,
     },
   });
-});
+}));
 
 export { router as salonRouter };

@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto';
 import { createGiftCardCheckoutSession } from '../services/payments.js';
 import { sendEmail, giftCardEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -13,7 +14,7 @@ function generateGiftCardCode(): string {
 }
 
 // GET /api/v1/gift-cards
-router.get('/', authenticate, async (req: Request, res: Response) => {
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { status } = req.query;
 
   const giftCards = await prisma.giftCard.findMany({
@@ -25,10 +26,10 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
   });
 
   res.json({ success: true, data: giftCards });
-});
+}));
 
 // POST /api/v1/gift-cards - Create gift card (admin creates directly)
-router.post('/', authenticate, async (req: Request, res: Response) => {
+router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { amount, purchaserEmail, recipientEmail, recipientName, message, expiresAt } = req.body;
 
   const salon = await prisma.salon.findUnique({ where: { id: req.user!.salonId } });
@@ -66,10 +67,10 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
   }
 
   res.status(201).json({ success: true, data: giftCard });
-});
+}));
 
 // POST /api/v1/gift-cards/checkout - Create Stripe checkout session
-router.post('/checkout', async (req: Request, res: Response) => {
+router.post('/checkout', asyncHandler(async (req: Request, res: Response) => {
   const { amount, recipientEmail, recipientName, senderEmail, message, salonId } = req.body;
 
   if (!amount || amount < 10 || amount > 500) {
@@ -96,10 +97,10 @@ router.post('/checkout', async (req: Request, res: Response) => {
   });
 
   res.json({ success: true, data: { checkoutUrl: session.url, sessionId: session.id } });
-});
+}));
 
 // GET /api/v1/gift-cards/:code/balance
-router.get('/:code/balance', async (req: Request, res: Response) => {
+router.get('/:code/balance', asyncHandler(async (req: Request, res: Response) => {
   const giftCard = await prisma.giftCard.findUnique({
     where: { code: req.params.code },
   });
@@ -109,10 +110,10 @@ router.get('/:code/balance', async (req: Request, res: Response) => {
   }
 
   res.json({ success: true, data: { balance: giftCard.balance, expiresAt: giftCard.expiresAt } });
-});
+}));
 
 // POST /api/v1/gift-cards/:code/redeem
-router.post('/:code/redeem', authenticate, async (req: Request, res: Response) => {
+router.post('/:code/redeem', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { amount } = req.body;
 
   const giftCard = await prisma.giftCard.findUnique({
@@ -138,6 +139,6 @@ router.post('/:code/redeem', authenticate, async (req: Request, res: Response) =
   });
 
   res.json({ success: true, data: updated });
-});
+}));
 
 export { router as giftCardsRouter };

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -8,26 +9,13 @@ const router = Router();
 // GET /api/v1/staff
 // List staff members with services and availability
 // ============================================
-router.get('/', authenticate, async (req: Request, res: Response) => {
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const users = await prisma.user.findMany({
     where: {
       salonId: req.user!.salonId,
       isActive: true,
     },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      role: true,
-      avatarUrl: true,
-      certifications: true,
-      commissionRate: true,
-      isActive: true,
-      lastLogin: true,
-      createdAt: true,
-      updatedAt: true,
+    include: {
       staffServices: {
         include: { service: true },
       },
@@ -40,13 +28,13 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: users,
   });
-});
+}));
 
 // ============================================
 // GET /api/v1/staff/:id
 // Get staff member details
 // ============================================
-router.get('/:id', authenticate, async (req: Request, res: Response) => {
+router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const user = await prisma.user.findFirst({
     where: {
       id: req.params.id,
@@ -74,7 +62,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: user,
   });
-});
+}));
 
 // ============================================
 // POST /api/v1/staff
@@ -84,7 +72,7 @@ router.post(
   '/',
   authenticate,
   authorize('admin', 'owner'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const { email, firstName, lastName, phone, role, certifications, commissionRate } = req.body;
 
     if (!email || !firstName || !lastName) {
@@ -133,14 +121,14 @@ router.post(
       success: true,
       data: user,
     });
-  }
+  })
 );
 
 // ============================================
 // PATCH /api/v1/staff/:id
 // Update staff member
 // ============================================
-router.patch('/:id', authenticate, async (req: Request, res: Response) => {
+router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { firstName, lastName, phone, role, certifications, avatarUrl, commissionRate, isActive } = req.body;
 
   // Check if user can update this staff member
@@ -191,7 +179,7 @@ router.patch('/:id', authenticate, async (req: Request, res: Response) => {
     success: true,
     data: user,
   });
-});
+}));
 
 // ============================================
 // DELETE /api/v1/staff/:id
@@ -201,7 +189,7 @@ router.delete(
   '/:id',
   authenticate,
   authorize('admin', 'owner'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     const user = await prisma.user.findFirst({
       where: { id: req.params.id, salonId: req.user!.salonId },
     });
@@ -226,14 +214,14 @@ router.delete(
       success: true,
       data: { message: 'Staff member deactivated' },
     });
-  }
+  })
 );
 
 // ============================================
 // PUT /api/v1/staff/:id/availability
 // Set staff availability schedule
 // ============================================
-router.put('/:id/availability', authenticate, async (req: Request, res: Response) => {
+router.put('/:id/availability', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { availability } = req.body;
   const staffId = req.params.id;
 
@@ -267,27 +255,29 @@ router.put('/:id/availability', authenticate, async (req: Request, res: Response
     where: { staffId },
   });
 
-  await prisma.staffAvailability.createMany({
-    data: availability.map((a: { dayOfWeek: number; startTime: string; endTime: string; isAvailable?: boolean }) => ({
-      staffId,
-      dayOfWeek: a.dayOfWeek,
-      startTime: a.startTime,
-      endTime: a.endTime,
-      isAvailable: a.isAvailable !== false,
-    })),
-  });
+  if (availability.length > 0) {
+    await prisma.staffAvailability.createMany({
+      data: availability.map((a: { dayOfWeek: number; startTime: string; endTime: string; isAvailable?: boolean }) => ({
+        staffId,
+        dayOfWeek: a.dayOfWeek,
+        startTime: a.startTime,
+        endTime: a.endTime,
+        isAvailable: a.isAvailable !== false,
+      })),
+    });
+  }
 
   res.json({
     success: true,
     data: { message: 'Availability updated' },
   });
-});
+}));
 
 // ============================================
 // PUT /api/v1/staff/:id/services
 // Set staff services (which services they can perform)
 // ============================================
-router.put('/:id/services', authenticate, async (req: Request, res: Response) => {
+router.put('/:id/services', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { serviceIds } = req.body;
   const staffId = req.params.id;
 
@@ -317,21 +307,27 @@ router.put('/:id/services', authenticate, async (req: Request, res: Response) =>
   }
 
   // Verify all services belong to this salon
-  const services = await prisma.service.findMany({
-    where: {
-      id: { in: serviceIds },
-      salonId: req.user!.salonId,
-    },
-  });
-
-  if (services.length !== serviceIds.length) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'INVALID_SERVICES',
-        message: 'One or more services not found',
+  if (serviceIds.length > 0) {
+    const services = await prisma.service.findMany({
+      where: {
+        id: { in: serviceIds },
+        salonId: req.user!.salonId,
       },
     });
+
+    // Verify that all requested service IDs were found
+    const foundServiceIds = services.map(s => s.id);
+    const missingServiceIds = serviceIds.filter(id => !foundServiceIds.includes(id));
+
+    if (missingServiceIds.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SERVICES',
+          message: 'One or more services not found',
+        },
+      });
+    }
   }
 
   // Delete existing staff services and create new
@@ -339,18 +335,20 @@ router.put('/:id/services', authenticate, async (req: Request, res: Response) =>
     where: { staffId },
   });
 
-  await prisma.staffService.createMany({
-    data: serviceIds.map((serviceId: string) => ({
-      staffId,
-      serviceId,
-      isAvailable: true,
-    })),
-  });
+  if (serviceIds.length > 0) {
+    await prisma.staffService.createMany({
+      data: serviceIds.map((serviceId: string) => ({
+        staffId,
+        serviceId,
+        isAvailable: true,
+      })),
+    });
+  }
 
   res.json({
     success: true,
     data: { message: 'Staff services updated' },
   });
-});
+}));
 
 export { router as staffRouter };

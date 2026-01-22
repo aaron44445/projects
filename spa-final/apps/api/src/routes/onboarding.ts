@@ -1,16 +1,10 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
-
-// Async error wrapper to properly catch errors in async route handlers
-function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-}
 
 // Time format validation regex (HH:MM format)
 const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;

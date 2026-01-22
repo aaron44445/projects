@@ -13,6 +13,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: JWTPayload;
+      userLocations?: string[] | null; // null = all locations, array = specific locations
     }
   }
 }
@@ -25,7 +26,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
       success: false,
       error: {
         code: 'UNAUTHORIZED',
-        message: 'No token provided',
+        message: 'Please log in to continue.',
       },
     });
   }
@@ -48,12 +49,44 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     });
 
     next();
-  } catch {
+  } catch (error) {
+    // Provide specific error messages based on JWT error type
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'TOKEN_EXPIRED',
+          message: 'Your session has expired. Please log in again.',
+        },
+      });
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN',
+          message: 'Your session is invalid. Please log in again.',
+        },
+      });
+    }
+
+    if (error instanceof jwt.NotBeforeError) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'TOKEN_NOT_ACTIVE',
+          message: 'Your session is not yet active. Please try again.',
+        },
+      });
+    }
+
+    // Generic error fallback
     return res.status(401).json({
       success: false,
       error: {
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired token',
+        message: 'Authentication failed. Please log in again.',
       },
     });
   }
@@ -66,7 +99,7 @@ export function authorize(...roles: string[]) {
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Not authenticated',
+          message: 'Please log in to continue.',
         },
       });
     }
@@ -76,7 +109,7 @@ export function authorize(...roles: string[]) {
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'You do not have permission to access this resource',
+          message: 'You don\'t have permission to perform this action.',
         },
       });
     }

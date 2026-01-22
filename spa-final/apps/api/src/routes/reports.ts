@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ function getDateRange(startDate?: string, endDate?: string) {
 // GET /api/v1/reports/revenue
 // Revenue report with daily/weekly/monthly aggregations
 // ============================================
-router.get('/revenue', authenticate, async (req: Request, res: Response) => {
+router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate, groupBy = 'daily' } = req.query;
 
@@ -198,13 +199,13 @@ router.get('/revenue', authenticate, async (req: Request, res: Response) => {
       error: { code: 'REPORT_ERROR', message: 'Failed to generate revenue report' },
     });
   }
-});
+}));
 
 // ============================================
 // GET /api/v1/reports/services
 // Popular services report with usage counts and revenue by service
 // ============================================
-router.get('/services', authenticate, async (req: Request, res: Response) => {
+router.get('/services', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate } = req.query;
 
@@ -325,13 +326,13 @@ router.get('/services', authenticate, async (req: Request, res: Response) => {
       error: { code: 'REPORT_ERROR', message: 'Failed to generate services report' },
     });
   }
-});
+}));
 
 // ============================================
 // GET /api/v1/reports/staff
 // Staff performance report with appointments count and revenue generated
 // ============================================
-router.get('/staff', authenticate, async (req: Request, res: Response) => {
+router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate } = req.query;
 
@@ -445,13 +446,13 @@ router.get('/staff', authenticate, async (req: Request, res: Response) => {
       error: { code: 'REPORT_ERROR', message: 'Failed to generate staff report' },
     });
   }
-});
+}));
 
 // ============================================
 // GET /api/v1/reports/clients
 // Client analytics with new clients, retention, and visit frequency
 // ============================================
-router.get('/clients', authenticate, async (req: Request, res: Response) => {
+router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate } = req.query;
 
@@ -628,13 +629,13 @@ router.get('/clients', authenticate, async (req: Request, res: Response) => {
       error: { code: 'REPORT_ERROR', message: 'Failed to generate clients report' },
     });
   }
-});
+}));
 
 // ============================================
 // GET /api/v1/reports/overview
 // Combined overview of all key metrics
 // ============================================
-router.get('/overview', authenticate, async (req: Request, res: Response) => {
+router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate } = req.query;
 
@@ -752,6 +753,6 @@ router.get('/overview', authenticate, async (req: Request, res: Response) => {
       error: { code: 'REPORT_ERROR', message: 'Failed to generate overview report' },
     });
   }
-});
+}));
 
 export { router as reportsRouter };

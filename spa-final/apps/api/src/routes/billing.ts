@@ -10,6 +10,7 @@ import {
   getBillingHistory,
   checkPlanLimits,
 } from '../services/subscriptions.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -28,7 +29,7 @@ const createPortalSchema = z.object({
 // GET /api/v1/billing/plans
 // List available subscription plans
 // ============================================
-router.get('/plans', async (req: Request, res: Response) => {
+router.get('/plans', asyncHandler(async (req: Request, res: Response) => {
   try {
     const plans = Object.values(SUBSCRIPTION_PLANS).map((plan) => ({
       id: plan.id,
@@ -53,7 +54,7 @@ router.get('/plans', async (req: Request, res: Response) => {
       },
     });
   }
-});
+}));
 
 // ============================================
 // POST /api/v1/billing/create-checkout
@@ -63,7 +64,7 @@ router.post(
   '/create-checkout',
   authenticate,
   authorize('admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = createCheckoutSchema.parse(req.body);
       const salonId = req.user!.salonId;
@@ -102,7 +103,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -113,7 +114,7 @@ router.post(
   '/create-portal',
   authenticate,
   authorize('admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = createPortalSchema.parse(req.body);
       const salonId = req.user!.salonId;
@@ -149,7 +150,7 @@ router.post(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -159,7 +160,7 @@ router.post(
 router.get(
   '/subscription',
   authenticate,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const salonId = req.user!.salonId;
 
@@ -193,7 +194,7 @@ router.get(
         },
       });
     }
-  }
+  })
 );
 
 // ============================================
@@ -204,7 +205,7 @@ router.get(
   '/history',
   authenticate,
   authorize('admin'),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const salonId = req.user!.salonId;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -225,7 +226,7 @@ router.get(
         },
       });
     }
-  }
+  })
 );
 
 export { router as billingRouter };

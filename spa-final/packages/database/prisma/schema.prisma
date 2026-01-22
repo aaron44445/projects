@@ -1,6 +1,3 @@
-// Peacase Database Schema
-// PostgreSQL with Prisma ORM
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,152 +8,154 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ============================================
-// CORE TABLES
-// ============================================
-
 model Salon {
-  id               String   @id @default(uuid())
-  name             String
-  slug             String   @unique
-  email            String
-  phone            String?
-  address          String?
-  city             String?
-  state            String?
-  zip              String?
-  country          String   @default("US")
-  timezone         String   @default("America/Chicago")
-  logoUrl          String?  @map("logo_url")
-  website          String?
-  description      String?
-  subscriptionPlan String   @default("essentials") @map("subscription_plan")
-  subscriptionTier String   @default("free") @map("subscription_tier") // free, professional, enterprise
-  featuresEnabled  String   @default("[]") @map("features_enabled")
-  stripeAccountId  String?  @map("stripe_account_id")
-  stripeCustomerId String?  @map("stripe_customer_id")
-  isActive         Boolean  @default(true) @map("is_active")
-  businessType        String?   @map("business_type")
-  onboardingComplete  Boolean   @default(false) @map("onboarding_complete")
-  onboardingStep      Int       @default(1) @map("onboarding_step")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  // Marketing & Reminders Add-On
-  marketingAddonEnabled   Boolean   @default(false) @map("marketing_addon_enabled")
-  marketingAddonSuspended Boolean   @default(false) @map("marketing_addon_suspended")
-  marketingAddonEnabledAt DateTime? @map("marketing_addon_enabled_at")
-  stripeMarketingSubId    String?   @map("stripe_marketing_sub_id")
-
-  // SendGrid Configuration (Encrypted at application level)
-  sendgridApiKeyEncrypted String?   @map("sendgrid_api_key_encrypted")
-  sendgridFromEmail       String?   @map("sendgrid_from_email")
-  sendgridValidated       Boolean   @default(false) @map("sendgrid_validated")
-  sendgridLastValidatedAt DateTime? @map("sendgrid_last_validated_at")
-
-  // Twilio Configuration (Encrypted at application level)
-  twilioAccountSidEncrypted String?   @map("twilio_account_sid_encrypted")
-  twilioAuthTokenEncrypted  String?   @map("twilio_auth_token_encrypted")
-  twilioPhoneNumber         String?   @map("twilio_phone_number")
-  twilioValidated           Boolean   @default(false) @map("twilio_validated")
-  twilioLastValidatedAt     DateTime? @map("twilio_last_validated_at")
-
-  // Widget Customization
-  widgetPrimaryColor  String @default("#7C9A82") @map("widget_primary_color")
-  widgetAccentColor   String @default("#B5A8D5") @map("widget_accent_color")
-  widgetButtonStyle   String @default("rounded") @map("widget_button_style")
-  widgetFontFamily    String @default("system") @map("widget_font_family")
-
-  // Relations
-  users              User[]
-  clients            Client[]
-  services           Service[]
-  serviceCategories  ServiceCategory[]
-  appointments       Appointment[]
-  payments           Payment[]
-  locations          Location[]
-  packages           Package[]
-  giftCards          GiftCard[]
-  reviews            Review[]
-  marketingCampaigns MarketingCampaign[]
-  consultationForms  ConsultationForm[]
-  commissionRecords  CommissionRecord[]
-  subscription       Subscription?
+  id                        String              @id @default(uuid())
+  name                      String
+  slug                      String              @unique
+  email                     String
+  phone                     String?
+  address                   String?
+  city                      String?
+  state                     String?
+  zip                       String?
+  country                   String              @default("US")
+  timezone                  String              @default("America/Chicago")
+  logoUrl                   String?             @map("logo_url")
+  website                   String?
+  description               String?
+  subscriptionPlan          String              @default("essentials") @map("subscription_plan")
+  subscriptionTier          String              @default("free") @map("subscription_tier")
+  featuresEnabled           String              @default("[]") @map("features_enabled")
+  stripeAccountId           String?             @map("stripe_account_id")
+  stripeCustomerId          String?             @map("stripe_customer_id")
+  isActive                  Boolean             @default(true) @map("is_active")
+  createdAt                 DateTime            @default(now()) @map("created_at")
+  updatedAt                 DateTime            @updatedAt @map("updated_at")
+  marketingAddonEnabled     Boolean             @default(false) @map("marketing_addon_enabled")
+  marketingAddonSuspended   Boolean             @default(false) @map("marketing_addon_suspended")
+  marketingAddonEnabledAt   DateTime?           @map("marketing_addon_enabled_at")
+  stripeMarketingSubId      String?             @map("stripe_marketing_sub_id")
+  sendgridApiKeyEncrypted   String?             @map("sendgrid_api_key_encrypted")
+  sendgridFromEmail         String?             @map("sendgrid_from_email")
+  sendgridValidated         Boolean             @default(false) @map("sendgrid_validated")
+  sendgridLastValidatedAt   DateTime?           @map("sendgrid_last_validated_at")
+  twilioAccountSidEncrypted String?             @map("twilio_account_sid_encrypted")
+  twilioAuthTokenEncrypted  String?             @map("twilio_auth_token_encrypted")
+  twilioPhoneNumber         String?             @map("twilio_phone_number")
+  twilioValidated           Boolean             @default(false) @map("twilio_validated")
+  twilioLastValidatedAt     DateTime?           @map("twilio_last_validated_at")
+  businessType              String?             @map("business_type")
+  onboardingComplete        Boolean             @default(false) @map("onboarding_complete")
+  onboardingStep            Int                 @default(1) @map("onboarding_step")
+  widgetAccentColor         String              @default("#B5A8D5") @map("widget_accent_color")
+  widgetButtonStyle         String              @default("rounded") @map("widget_button_style")
+  widgetFontFamily          String              @default("system") @map("widget_font_family")
+  widgetPrimaryColor        String              @default("#7C9A82") @map("widget_primary_color")
+  brand_background_color    String              @default("#FAF8F3")
+  brand_primary_color       String              @default("#C7DCC8")
+  business_hours            String              @default("[]")
+  notification_settings     String              @default("{}")
+  multiLocationEnabled      Boolean             @default(false) @map("multi_location_enabled")
+  appointments              Appointment[]
+  clients                   Client[]
+  commissionRecords         CommissionRecord[]
+  consultationForms         ConsultationForm[]
+  giftCards                 GiftCard[]
+  locations                 Location[]
+  marketingCampaigns        MarketingCampaign[]
+  packages                  Package[]
+  payments                  Payment[]
+  reviews                   Review[]
+  serviceCategories         ServiceCategory[]
+  services                  Service[]
+  subscription              Subscription?
+  users                     User[]
 
   @@map("salons")
 }
 
 model User {
-  id               String    @id @default(uuid())
-  salonId          String    @map("salon_id")
-  email            String
-  passwordHash     String?   @map("password_hash")
-  firstName        String    @map("first_name")
-  lastName         String    @map("last_name")
-  phone            String?
-  role             String    @default("staff")
-  avatarUrl        String?   @map("avatar_url")
-  certifications   String?
-  commissionRate   Float?    @map("commission_rate")
-  googleId         String?   @map("google_id")
-  appleId          String?   @map("apple_id")
-  magicLinkToken   String?   @map("magic_link_token")
-  magicLinkExpires DateTime? @map("magic_link_expires")
-  emailVerified    Boolean   @default(false) @map("email_verified")
-  isActive         Boolean   @default(true) @map("is_active")
-  lastLogin        DateTime? @map("last_login")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  salon                   Salon                    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  id                      String                   @id @default(uuid())
+  salonId                 String                   @map("salon_id")
+  email                   String
+  passwordHash            String?                  @map("password_hash")
+  firstName               String                   @map("first_name")
+  lastName                String                   @map("last_name")
+  phone                   String?
+  role                    String                   @default("staff")
+  avatarUrl               String?                  @map("avatar_url")
+  certifications          String?
+  commissionRate          Float?                   @map("commission_rate")
+  googleId                String?                  @map("google_id")
+  appleId                 String?                  @map("apple_id")
+  magicLinkToken          String?                  @map("magic_link_token")
+  magicLinkExpires        DateTime?                @map("magic_link_expires")
+  emailVerified           Boolean                  @default(false) @map("email_verified")
+  isActive                Boolean                  @default(true) @map("is_active")
+  lastLogin               DateTime?                @map("last_login")
+  createdAt               DateTime                 @default(now()) @map("created_at")
+  updatedAt               DateTime                 @updatedAt @map("updated_at")
   appointments            Appointment[]
   clientNotes             ClientNote[]
-  staffServices           StaffService[]
-  staffAvailability       StaffAvailability[]
-  timeOff                 TimeOff[]
-  reviewResponses         ReviewResponse[]
-  commissionRecords       CommissionRecord[]
-  refreshTokens           RefreshToken[]
-  passwordResetTokens     PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
   preferredByClients      Client[]                 @relation("PreferredStaff")
+  commissionRecords       CommissionRecord[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  refreshTokens           RefreshToken[]
+  reviewResponses         ReviewResponse[]
+  staffAvailability       StaffAvailability[]
+  staffLocations          StaffLocation[]
+  staffServices           StaffService[]
+  timeOff                 TimeOff[]
+  salon                   Salon                    @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@unique([salonId, email])
+  @@index([salonId])
+  @@index([email])
+  @@index([isActive])
   @@map("users")
 }
 
 model Client {
-  id                      String    @id @default(uuid())
-  salonId                 String    @map("salon_id")
-  firstName               String    @map("first_name")
-  lastName                String    @map("last_name")
-  email                   String?
-  phone                   String?
-  address                 String?
-  city                    String?
-  state                   String?
-  zip                     String?
-  birthday                DateTime?
-  notes                   String?
-  preferredStaffId        String?   @map("preferred_staff_id")
-  communicationPreference String    @default("email") @map("communication_preference")
-  optedInReminders        Boolean   @default(true) @map("opted_in_reminders")
-  optedInMarketing        Boolean   @default(true) @map("opted_in_marketing")
-  isActive                Boolean   @default(true) @map("is_active")
-  createdAt               DateTime  @default(now()) @map("created_at")
-  updatedAt               DateTime  @updatedAt @map("updated_at")
+  id                         String                           @id @default(uuid())
+  salonId                    String                           @map("salon_id")
+  firstName                  String                           @map("first_name")
+  lastName                   String                           @map("last_name")
+  email                      String?
+  phone                      String?
+  address                    String?
+  city                       String?
+  state                      String?
+  zip                        String?
+  birthday                   DateTime?
+  notes                      String?
+  preferredStaffId           String?                          @map("preferred_staff_id")
+  communicationPreference    String                           @default("email") @map("communication_preference")
+  optedInReminders           Boolean                          @default(true) @map("opted_in_reminders")
+  optedInMarketing           Boolean                          @default(true) @map("opted_in_marketing")
+  isActive                   Boolean                          @default(true) @map("is_active")
+  passwordHash               String?                          @map("password_hash")
+  emailVerified              Boolean                          @default(false) @map("email_verified")
+  lastLogin                  DateTime?                        @map("last_login")
+  loyaltyPoints              Int                              @default(0) @map("loyalty_points")
+  createdAt                  DateTime                         @default(now()) @map("created_at")
+  updatedAt                  DateTime                         @updatedAt @map("updated_at")
+  appointments               Appointment[]
+  clientNotes                ClientNote[]
+  clientPackages             ClientPackage[]
+  preferredStaff             User?                            @relation("PreferredStaff", fields: [preferredStaffId], references: [id])
+  salon                      Salon                            @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  formResponses              FormResponse[]
+  payments                   Payment[]
+  reviews                    Review[]
+  refreshTokens              ClientRefreshToken[]
+  passwordResetTokens        ClientPasswordResetToken[]
+  emailVerificationTokens    ClientEmailVerificationToken[]
 
-  // Relations
-  salon          Salon           @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  preferredStaff User?           @relation("PreferredStaff", fields: [preferredStaffId], references: [id])
-  appointments   Appointment[]
-  payments       Payment[]
-  clientNotes    ClientNote[]
-  clientPackages ClientPackage[]
-  reviews        Review[]
-  formResponses  FormResponse[]
-
+  @@index([salonId])
+  @@index([email])
+  @@index([salonId, email])
+  @@index([isActive])
   @@map("clients")
 }
 
@@ -166,52 +165,52 @@ model ClientNote {
   staffId   String   @map("staff_id")
   content   String
   createdAt DateTime @default(now()) @map("created_at")
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff     User     @relation(fields: [staffId], references: [id])
 
-  // Relations
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  staff  User   @relation(fields: [staffId], references: [id])
-
+  @@index([clientId])
   @@map("client_notes")
 }
 
 model ServiceCategory {
-  id           String   @id @default(uuid())
-  salonId      String   @map("salon_id")
+  id           String    @id @default(uuid())
+  salonId      String    @map("salon_id")
   name         String
   description  String?
-  displayOrder Int      @default(0) @map("display_order")
-  createdAt    DateTime @default(now()) @map("created_at")
+  displayOrder Int       @default(0) @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  salon        Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  services     Service[]
 
-  // Relations
-  salon    Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  services Service[]
-
+  @@index([salonId])
   @@map("service_categories")
 }
 
 model Service {
-  id              String   @id @default(uuid())
-  salonId         String   @map("salon_id")
-  categoryId      String?  @map("category_id")
-  name            String
-  description     String?
-  durationMinutes Int      @default(30) @map("duration_minutes")
-  bufferMinutes   Int      @default(0) @map("buffer_minutes")
-  price           Float
-  memberPrice     Float?   @map("member_price")
-  color           String   @default("#C7DCC8")
-  isActive        Boolean  @default(true) @map("is_active")
-  displayOrder    Int      @default(0) @map("display_order")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String            @id @default(uuid())
+  salonId          String            @map("salon_id")
+  categoryId       String?           @map("category_id")
+  name             String
+  description      String?
+  durationMinutes  Int               @default(30) @map("duration_minutes")
+  bufferMinutes    Int               @default(0) @map("buffer_minutes")
+  price            Float
+  memberPrice      Float?            @map("member_price")
+  color            String            @default("#C7DCC8")
+  isActive         Boolean           @default(true) @map("is_active")
+  displayOrder     Int               @default(0) @map("display_order")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  appointments     Appointment[]
+  packageServices  PackageService[]
+  serviceLocations ServiceLocation[]
+  category         ServiceCategory?  @relation(fields: [categoryId], references: [id])
+  salon            Salon             @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  staffServices    StaffService[]
 
-  // Relations
-  salon           Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  category        ServiceCategory? @relation(fields: [categoryId], references: [id])
-  appointments    Appointment[]
-  staffServices   StaffService[]
-  packageServices PackageService[]
-
+  @@index([salonId])
+  @@index([isActive])
+  @@index([salonId, isActive])
   @@map("services")
 }
 
@@ -220,10 +219,8 @@ model StaffService {
   staffId     String  @map("staff_id")
   serviceId   String  @map("service_id")
   isAvailable Boolean @default(true) @map("is_available")
-
-  // Relations
-  staff   User    @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  service     Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  staff       User    @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, serviceId])
   @@map("staff_services")
@@ -236,9 +233,7 @@ model StaffAvailability {
   startTime   String  @map("start_time")
   endTime     String  @map("end_time")
   isAvailable Boolean @default(true) @map("is_available")
-
-  // Relations
-  staff User @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staff       User    @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   @@unique([staffId, dayOfWeek])
   @@map("staff_availability")
@@ -252,129 +247,163 @@ model TimeOff {
   reason    String?
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
+  staff     User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
-  // Relations
-  staff User @relation(fields: [staffId], references: [id], onDelete: Cascade)
-
+  @@index([staffId])
+  @@index([startDate])
   @@map("time_off")
 }
 
 model Location {
-  id        String   @id @default(uuid())
-  salonId   String   @map("salon_id")
-  name      String
-  address   String?
-  city      String?
-  state     String?
-  zip       String?
-  phone     String?
-  timezone  String?
-  hours     String?
-  isPrimary Boolean  @default(false) @map("is_primary")
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
+  id               String            @id @default(uuid())
+  salonId          String            @map("salon_id")
+  name             String
+  address          String?
+  city             String?
+  state            String?
+  zip              String?
+  phone            String?
+  timezone         String?
+  hours            String?
+  isPrimary        Boolean           @default(false) @map("is_primary")
+  isActive         Boolean           @default(true) @map("is_active")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  appointments     Appointment[]
+  salon            Salon             @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  serviceLocations ServiceLocation[]
+  staffLocations   StaffLocation[]
 
-  // Relations
-  salon        Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  appointments Appointment[]
-
+  @@index([salonId])
+  @@index([isActive])
   @@map("locations")
 }
 
+model StaffLocation {
+  id         String   @id @default(uuid())
+  staffId    String   @map("staff_id")
+  locationId String   @map("location_id")
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  staff      User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, locationId])
+  @@map("staff_locations")
+}
+
+model ServiceLocation {
+  id               String   @id @default(uuid())
+  serviceId        String   @map("service_id")
+  locationId       String   @map("location_id")
+  isEnabled        Boolean  @default(true) @map("is_enabled")
+  priceOverride    Decimal? @map("price_override") @db.Decimal(10, 2)
+  durationOverride Int?     @map("duration_override")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  location         Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  service          Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, locationId])
+  @@map("service_locations")
+}
+
 model Appointment {
-  id                 String    @id @default(uuid())
-  salonId            String    @map("salon_id")
-  locationId         String?   @map("location_id")
-  clientId           String    @map("client_id")
-  staffId            String    @map("staff_id")
-  serviceId          String    @map("service_id")
-  startTime          DateTime  @map("start_time")
-  endTime            DateTime  @map("end_time")
-  durationMinutes    Int       @map("duration_minutes")
+  id                 String             @id @default(uuid())
+  salonId            String             @map("salon_id")
+  locationId         String?            @map("location_id")
+  clientId           String             @map("client_id")
+  staffId            String             @map("staff_id")
+  serviceId          String             @map("service_id")
+  startTime          DateTime           @map("start_time")
+  endTime            DateTime           @map("end_time")
+  durationMinutes    Int                @map("duration_minutes")
   price              Float
-  priceOverride      Float?    @map("price_override")
-  status             String    @default("confirmed")
-  cancellationReason String?   @map("cancellation_reason")
+  priceOverride      Float?             @map("price_override")
+  status             String             @default("confirmed")
+  cancellationReason String?            @map("cancellation_reason")
   notes              String?
-  source             String    @default("manual")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
-  cancelledAt        DateTime? @map("cancelled_at")
+  source             String             @default("manual")
+  reviewToken        String?            @map("review_token")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  cancelledAt        DateTime?          @map("cancelled_at")
+  client             Client             @relation(fields: [clientId], references: [id])
+  location           Location?          @relation(fields: [locationId], references: [id])
+  salon              Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  service            Service            @relation(fields: [serviceId], references: [id])
+  staff              User               @relation(fields: [staffId], references: [id])
+  commissionRecords  CommissionRecord[]
+  formResponses      FormResponse[]
+  payments           Payment[]
+  reminderLogs       ReminderLog[]
+  reviews            Review[]
 
-  // Relations
-  salon             Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  location          Location?          @relation(fields: [locationId], references: [id])
-  client            Client             @relation(fields: [clientId], references: [id])
-  staff             User               @relation(fields: [staffId], references: [id])
-  service           Service            @relation(fields: [serviceId], references: [id])
-  payments          Payment[]
-  reviews           Review[]
-  formResponses     FormResponse[]
-  commissionRecords CommissionRecord[]
-  reminderLogs      ReminderLog[]
-
+  @@index([salonId])
+  @@index([staffId])
+  @@index([clientId])
+  @@index([startTime])
+  @@index([status])
+  @@index([salonId, startTime])
+  @@index([staffId, startTime])
+  @@index([salonId, status])
   @@map("appointments")
 }
 
 model Payment {
-  id              String    @id @default(uuid())
-  salonId         String    @map("salon_id")
-  appointmentId   String?   @map("appointment_id")
-  clientId        String    @map("client_id")
-  amount          Float
-  tipAmount       Float     @default(0) @map("tip_amount")
-  totalAmount     Float     @map("total_amount")
-  method          String?
-  status          String    @default("pending")
-  stripePaymentId String?   @map("stripe_payment_id")
-  stripeRefundId  String?   @map("stripe_refund_id")
-  refundAmount    Float?    @map("refund_amount")
-  refundReason    String?   @map("refund_reason")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  refundedAt      DateTime? @map("refunded_at")
-
-  // Relations
-  salon             Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  id                String             @id @default(uuid())
+  salonId           String             @map("salon_id")
+  appointmentId     String?            @map("appointment_id")
+  clientId          String             @map("client_id")
+  amount            Float
+  tipAmount         Float              @default(0) @map("tip_amount")
+  totalAmount       Float              @map("total_amount")
+  method            String?
+  status            String             @default("pending")
+  stripePaymentId   String?            @map("stripe_payment_id")
+  stripeRefundId    String?            @map("stripe_refund_id")
+  refundAmount      Float?             @map("refund_amount")
+  refundReason      String?            @map("refund_reason")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  refundedAt        DateTime?          @map("refunded_at")
+  commissionRecords CommissionRecord[]
   appointment       Appointment?       @relation(fields: [appointmentId], references: [id])
   client            Client             @relation(fields: [clientId], references: [id])
-  commissionRecords CommissionRecord[]
+  salon             Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
+  @@index([salonId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([salonId, status])
   @@map("payments")
 }
 
-// ============================================
-// ADD-ON FEATURE TABLES
-// ============================================
-
 model Package {
-  id           String   @id @default(uuid())
-  salonId      String   @map("salon_id")
-  name         String
-  description  String?
-  price        Float
-  type         String   @default("one_time")
-  durationDays Int?     @map("duration_days")
-  renewalPrice Float?   @map("renewal_price")
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relations
-  salon           Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  packageServices PackageService[]
+  id              String           @id @default(uuid())
+  salonId         String           @map("salon_id")
+  name            String
+  description     String?
+  price           Float
+  type            String           @default("one_time")
+  durationDays    Int?             @map("duration_days")
+  renewalPrice    Float?           @map("renewal_price")
+  isActive        Boolean          @default(true) @map("is_active")
+  createdAt       DateTime         @default(now()) @map("created_at")
   clientPackages  ClientPackage[]
+  packageServices PackageService[]
+  salon           Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@map("packages")
 }
 
 model PackageService {
-  id        String @id @default(uuid())
-  packageId String @map("package_id")
-  serviceId String @map("service_id")
-  quantity  Int    @default(1)
-
-  // Relations
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  service Service @relation(fields: [serviceId], references: [id])
+  id        String  @id @default(uuid())
+  packageId String  @map("package_id")
+  serviceId String  @map("service_id")
+  quantity  Int     @default(1)
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id])
 
   @@map("package_services")
 }
@@ -391,10 +420,8 @@ model ClientPackage {
   stripeSubscriptionId String?   @map("stripe_subscription_id")
   isActive             Boolean   @default(true) @map("is_active")
   createdAt            DateTime  @default(now()) @map("created_at")
-
-  // Relations
-  client  Client  @relation(fields: [clientId], references: [id])
-  package Package @relation(fields: [packageId], references: [id])
+  client               Client    @relation(fields: [clientId], references: [id])
+  package              Package   @relation(fields: [packageId], references: [id])
 
   @@map("client_packages")
 }
@@ -413,31 +440,33 @@ model GiftCard {
   recipientEmail String?   @map("recipient_email")
   recipientName  String?   @map("recipient_name")
   message        String?
+  salon          Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
-  // Relations
-  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
-
+  @@index([salonId])
+  @@index([status])
   @@map("gift_cards")
 }
 
 model Review {
-  id            String    @id @default(uuid())
-  salonId       String    @map("salon_id")
-  appointmentId String    @map("appointment_id")
-  clientId      String    @map("client_id")
-  staffId       String?   @map("staff_id")
+  id            String           @id @default(uuid())
+  salonId       String           @map("salon_id")
+  appointmentId String           @map("appointment_id")
+  clientId      String           @map("client_id")
+  staffId       String?          @map("staff_id")
   rating        Int
   comment       String?
-  isApproved    Boolean   @default(false) @map("is_approved")
-  submittedAt   DateTime  @default(now()) @map("submitted_at")
-  approvedAt    DateTime? @map("approved_at")
+  isApproved    Boolean          @default(false) @map("is_approved")
+  submittedAt   DateTime         @default(now()) @map("submitted_at")
+  approvedAt    DateTime?        @map("approved_at")
+  responses     ReviewResponse[]
+  appointment   Appointment      @relation(fields: [appointmentId], references: [id])
+  client        Client           @relation(fields: [clientId], references: [id])
+  salon         Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
-  // Relations
-  salon       Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  appointment Appointment      @relation(fields: [appointmentId], references: [id])
-  client      Client           @relation(fields: [clientId], references: [id])
-  responses   ReviewResponse[]
-
+  @@index([salonId])
+  @@index([staffId])
+  @@index([isApproved])
+  @@index([salonId, isApproved])
   @@map("reviews")
 }
 
@@ -447,10 +476,8 @@ model ReviewResponse {
   responseText  String   @map("response_text")
   respondedById String   @map("responded_by_id")
   respondedAt   DateTime @default(now()) @map("responded_at")
-
-  // Relations
-  review      Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  respondedBy User   @relation(fields: [respondedById], references: [id])
+  respondedBy   User     @relation(fields: [respondedById], references: [id])
+  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@map("review_responses")
 }
@@ -470,68 +497,66 @@ model MarketingCampaign {
   openedCount     Int       @default(0) @map("opened_count")
   clickedCount    Int       @default(0) @map("clicked_count")
   createdAt       DateTime  @default(now()) @map("created_at")
+  salon           Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
-  // Relations
-  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
-
+  @@index([salonId])
+  @@index([status])
   @@map("marketing_campaigns")
 }
 
 model ConsultationForm {
-  id          String   @id @default(uuid())
-  salonId     String   @map("salon_id")
+  id          String         @id @default(uuid())
+  salonId     String         @map("salon_id")
   name        String
   description String?
   fields      String
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  // Relations
-  salon     Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  responses FormResponse[]
+  isActive    Boolean        @default(true) @map("is_active")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  salon       Salon          @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  responses   FormResponse[]
 
   @@map("consultation_forms")
 }
 
 model FormResponse {
-  id            String   @id @default(uuid())
-  formId        String   @map("form_id")
-  clientId      String   @map("client_id")
-  appointmentId String?  @map("appointment_id")
-  responseData  String   @map("response_data")
-  signatureUrl  String?  @map("signature_url")
-  submittedAt   DateTime @default(now()) @map("submitted_at")
-
-  // Relations
-  form        ConsultationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
-  client      Client           @relation(fields: [clientId], references: [id])
-  appointment Appointment?     @relation(fields: [appointmentId], references: [id])
+  id            String           @id @default(uuid())
+  formId        String           @map("form_id")
+  clientId      String           @map("client_id")
+  appointmentId String?          @map("appointment_id")
+  responseData  String           @map("response_data")
+  signatureUrl  String?          @map("signature_url")
+  submittedAt   DateTime         @default(now()) @map("submitted_at")
+  appointment   Appointment?     @relation(fields: [appointmentId], references: [id])
+  client        Client           @relation(fields: [clientId], references: [id])
+  form          ConsultationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
 
   @@map("form_responses")
 }
 
 model CommissionRecord {
-  id               String    @id @default(uuid())
-  salonId          String    @map("salon_id")
-  staffId          String    @map("staff_id")
-  appointmentId    String    @map("appointment_id")
-  paymentId        String    @map("payment_id")
-  serviceAmount    Float     @map("service_amount")
-  tipAmount        Float     @default(0) @map("tip_amount")
-  commissionRate   Float     @map("commission_rate")
-  commissionAmount Float     @map("commission_amount")
-  periodStart      DateTime? @map("period_start")
-  periodEnd        DateTime? @map("period_end")
-  isPaid           Boolean   @default(false) @map("is_paid")
-  paidAt           DateTime? @map("paid_at")
-  createdAt        DateTime  @default(now()) @map("created_at")
+  id               String      @id @default(uuid())
+  salonId          String      @map("salon_id")
+  staffId          String      @map("staff_id")
+  appointmentId    String      @map("appointment_id")
+  paymentId        String      @map("payment_id")
+  serviceAmount    Float       @map("service_amount")
+  tipAmount        Float       @default(0) @map("tip_amount")
+  commissionRate   Float       @map("commission_rate")
+  commissionAmount Float       @map("commission_amount")
+  periodStart      DateTime?   @map("period_start")
+  periodEnd        DateTime?   @map("period_end")
+  isPaid           Boolean     @default(false) @map("is_paid")
+  paidAt           DateTime?   @map("paid_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  appointment      Appointment @relation(fields: [appointmentId], references: [id])
+  payment          Payment     @relation(fields: [paymentId], references: [id])
+  salon            Salon       @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  staff            User        @relation(fields: [staffId], references: [id])
 
-  // Relations
-  salon       Salon       @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  staff       User        @relation(fields: [staffId], references: [id])
-  appointment Appointment @relation(fields: [appointmentId], references: [id])
-  payment     Payment     @relation(fields: [paymentId], references: [id])
-
+  @@index([salonId])
+  @@index([staffId])
+  @@index([isPaid])
+  @@index([createdAt])
   @@map("commission_records")
 }
 
@@ -541,9 +566,7 @@ model RefreshToken {
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
@@ -555,9 +578,7 @@ model PasswordResetToken {
   expiresAt DateTime @map("expires_at")
   used      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tokenHash])
   @@index([userId])
@@ -570,49 +591,36 @@ model EmailVerificationToken {
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userId])
   @@map("email_verification_tokens")
 }
 
-// ============================================
-// REMINDER TRACKING
-// ============================================
-
 model ReminderLog {
-  id            String   @id @default(uuid())
-  appointmentId String   @map("appointment_id")
-  reminderType  String   @map("reminder_type") // REMINDER_24H, REMINDER_2H
-  channel       String // email, sms, both
-  success       Boolean  @default(true)
+  id            String      @id @default(uuid())
+  appointmentId String      @map("appointment_id")
+  reminderType  String      @map("reminder_type")
+  channel       String
+  success       Boolean     @default(true)
   error         String?
-  sentAt        DateTime @default(now()) @map("sent_at")
+  sentAt        DateTime    @default(now()) @map("sent_at")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
-  // Relations
-  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-
-  // Ensure we don't send duplicate reminders
   @@unique([appointmentId, reminderType])
   @@index([appointmentId])
   @@index([sentAt])
   @@map("reminder_logs")
 }
 
-// ============================================
-// SUBSCRIPTION & BILLING
-// ============================================
-
 model Subscription {
   id                   String    @id @default(uuid())
   salonId              String    @unique @map("salon_id")
   stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
   stripeCustomerId     String?   @map("stripe_customer_id")
-  plan                 String    @default("free") // free, professional, enterprise
-  status               String    @default("active") // active, canceled, past_due, trialing, incomplete
+  plan                 String    @default("free")
+  status               String    @default("active")
   currentPeriodStart   DateTime? @map("current_period_start")
   currentPeriodEnd     DateTime? @map("current_period_end")
   cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
@@ -620,9 +628,7 @@ model Subscription {
   trialEndsAt          DateTime? @map("trial_ends_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  salon                Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
 
   @@index([stripeSubscriptionId])
   @@index([status])
@@ -635,7 +641,7 @@ model BillingHistory {
   stripeInvoiceId  String?   @unique @map("stripe_invoice_id")
   amount           Float
   currency         String    @default("usd")
-  status           String // paid, open, void, uncollectible
+  status           String
   description      String?
   invoicePdfUrl    String?   @map("invoice_pdf_url")
   hostedInvoiceUrl String?   @map("hosted_invoice_url")
@@ -649,10 +655,6 @@ model BillingHistory {
   @@map("billing_history")
 }
 
-// ============================================
-// LEADS & DEMO REQUESTS
-// ============================================
-
 model DemoRequest {
   id            String   @id @default(uuid())
   firstName     String   @map("first_name")
@@ -664,7 +666,7 @@ model DemoRequest {
   preferredDate String   @map("preferred_date")
   preferredTime String   @map("preferred_time")
   message       String?
-  status        String   @default("pending") // pending, scheduled, completed, cancelled
+  status        String   @default("pending")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -672,4 +674,43 @@ model DemoRequest {
   @@index([status])
   @@index([createdAt])
   @@map("demo_requests")
+}
+
+model ClientRefreshToken {
+  id        String   @id @default(uuid())
+  clientId  String   @map("client_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([expiresAt])
+  @@map("client_refresh_tokens")
+}
+
+model ClientPasswordResetToken {
+  id        String   @id @default(uuid())
+  clientId  String   @map("client_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([tokenHash])
+  @@map("client_password_reset_tokens")
+}
+
+model ClientEmailVerificationToken {
+  id        String   @id @default(uuid())
+  clientId  String   @map("client_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("client_email_verification_tokens")
 }

@@ -11,6 +11,7 @@ import {
 import { prisma } from '@peacase/database';
 import { randomBytes } from 'crypto';
 import { env } from '../lib/env.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ function generateGiftCardCode(): string {
   return randomBytes(8).toString('hex').toUpperCase().match(/.{1,4}/g)!.join('-');
 }
 
-router.post('/stripe', async (req: Request, res: Response) => {
+router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
   const signature = req.headers['stripe-signature'] as string;
 
   if (!signature) {
@@ -168,6 +169,6 @@ router.post('/stripe', async (req: Request, res: Response) => {
   }
 
   res.json({ received: true });
-});
+}));
 
 export { router as webhooksRouter };

@@ -3,6 +3,15 @@ import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { sendEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
+import {
+  PERMISSIONS,
+  ROLES,
+  hasPermission,
+  requirePermission,
+  requireAnyPermission,
+  getUserLocationIds,
+} from '../middleware/permissions.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -10,29 +19,63 @@ const router = Router();
 // GET /api/v1/appointments
 // List appointments with filters
 // ============================================
-router.get('/', authenticate, async (req: Request, res: Response) => {
-  const { dateFrom, dateTo, staffId, status, page = '1', pageSize = '50' } = req.query;
+router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { dateFrom, dateTo, staffId, status, locationId, page = '1', pageSize = '50' } = req.query;
 
-  const where = {
+  // Build base filter
+  const where: any = {
     salonId: req.user!.salonId,
     ...(dateFrom && { startTime: { gte: new Date(dateFrom as string) } }),
     ...(dateTo && { startTime: { lte: new Date(dateTo as string) } }),
-    ...(staffId && { staffId: staffId as string }),
     ...(status && { status: status as string }),
+    ...(locationId && { locationId: locationId as string }),
   };
+
+  // Staff role: can only view their own appointments
+  if (!hasPermission(req.user!.role, PERMISSIONS.VIEW_ALL_APPOINTMENTS)) {
+    where.staffId = req.user!.userId;
+  } else if (staffId) {
+    // If they can view all but specified a staff filter
+    where.staffId = staffId as string;
+  }
+
+  // Location-based filtering for managers
+  const userLocations = await getUserLocationIds(
+    req.user!.userId,
+    req.user!.salonId,
+    req.user!.role
+  );
+
+  if (userLocations !== null) {
+    // User is restricted to specific locations
+    if (userLocations.length === 0) {
+      // No location access
+      return res.json({
+        success: true,
+        data: { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 },
+      });
+    }
+    where.OR = [
+      { locationId: { in: userLocations } },
+      { locationId: null }, // Include appointments without location
+    ];
+  }
 
   const [appointments, total] = await Promise.all([
     prisma.appointment.findMany({
       where,
       include: {
         client: {
-          select: { id: true, firstName: true, lastName: true, phone: true },
+          select: { id: true, firstName: true, lastName: true, phone: true, email: true },
         },
         staff: {
           select: { id: true, firstName: true, lastName: true },
         },
         service: {
-          select: { id: true, name: true, color: true, durationMinutes: true },
+          select: { id: true, name: true, color: true, durationMinutes: true, price: true },
+        },
+        location: {
+          select: { id: true, name: true },
         },
       },
       orderBy: { startTime: 'asc' },
@@ -52,325 +95,14 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
       totalPages: Math.ceil(total / parseInt(pageSize as string)),
     },
   });
-});
-
-// ============================================
-// GET /api/v1/appointments/:id
-// Get appointment details
-// ============================================
-router.get('/:id', authenticate, async (req: Request, res: Response) => {
-  const appointment = await prisma.appointment.findFirst({
-    where: {
-      id: req.params.id,
-      salonId: req.user!.salonId,
-    },
-    include: {
-      client: true,
-      staff: {
-        select: { id: true, firstName: true, lastName: true, email: true },
-      },
-      service: true,
-      payments: true,
-    },
-  });
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Appointment not found',
-      },
-    });
-  }
-
-  res.json({
-    success: true,
-    data: appointment,
-  });
-});
-
-// ============================================
-// POST /api/v1/appointments
-// Create new appointment
-// ============================================
-router.post('/', authenticate, async (req: Request, res: Response) => {
-  const {
-    clientId,
-    staffId,
-    serviceId,
-    startTime,
-    notes,
-    status = 'confirmed',
-  } = req.body;
-
-  // Get service details
-  const service = await prisma.service.findFirst({
-    where: { id: serviceId, salonId: req.user!.salonId },
-  });
-
-  if (!service) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'INVALID_SERVICE',
-        message: 'Service not found',
-      },
-    });
-  }
-
-  // Calculate end time
-  const start = new Date(startTime);
-  const end = new Date(start.getTime() + service.durationMinutes * 60000);
-
-  // Check for conflicts
-  const conflict = await prisma.appointment.findFirst({
-    where: {
-      salonId: req.user!.salonId,
-      staffId,
-      status: { notIn: ['cancelled'] },
-      OR: [
-        {
-          AND: [
-            { startTime: { lte: start } },
-            { endTime: { gt: start } },
-          ],
-        },
-        {
-          AND: [
-            { startTime: { lt: end } },
-            { endTime: { gte: end } },
-          ],
-        },
-        {
-          AND: [
-            { startTime: { gte: start } },
-            { endTime: { lte: end } },
-          ],
-        },
-      ],
-    },
-  });
-
-  if (conflict) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: 'TIME_CONFLICT',
-        message: 'Staff member is not available at this time',
-      },
-    });
-  }
-
-  // Fetch client and staff for notifications
-  const [client, staff] = await Promise.all([
-    prisma.client.findUnique({ where: { id: clientId } }),
-    prisma.user.findUnique({ where: { id: staffId } }),
-  ]);
-
-  const appointment = await prisma.appointment.create({
-    data: {
-      salonId: req.user!.salonId,
-      clientId,
-      staffId,
-      serviceId,
-      startTime: start,
-      endTime: end,
-      durationMinutes: service.durationMinutes,
-      price: service.price,
-      status,
-      notes,
-      source: 'manual',
-    },
-    include: {
-      client: {
-        select: { firstName: true, lastName: true },
-      },
-      staff: {
-        select: { firstName: true, lastName: true },
-      },
-      service: {
-        select: { name: true, color: true },
-      },
-    },
-  });
-
-  // Send confirmation notifications
-  const salon = await prisma.salon.findUnique({ where: { id: req.user!.salonId } });
-  const formattedDateTime = new Date(appointment.startTime).toLocaleString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-
-  // Send email confirmation
-  if (client?.email && client?.optedInReminders) {
-    await sendEmail({
-      to: client.email,
-      subject: `Appointment Confirmed - ${salon?.name}`,
-      html: appointmentConfirmationEmail({
-        clientName: client.firstName,
-        serviceName: service.name,
-        staffName: `${staff?.firstName} ${staff?.lastName}`,
-        dateTime: formattedDateTime,
-        salonName: salon?.name || '',
-        salonAddress: salon?.address || '',
-      }),
-    });
-  }
-
-  // Send SMS confirmation
-  if (client?.phone && client?.optedInReminders) {
-    await sendSms({
-      to: client.phone,
-      message: appointmentConfirmationSms({
-        clientName: client.firstName,
-        serviceName: service.name,
-        dateTime: formattedDateTime,
-        salonName: salon?.name || '',
-      }),
-    });
-  }
-
-  res.status(201).json({
-    success: true,
-    data: appointment,
-  });
-});
-
-// ============================================
-// PATCH /api/v1/appointments/:id
-// Update appointment
-// ============================================
-router.patch('/:id', authenticate, async (req: Request, res: Response) => {
-  const appointment = await prisma.appointment.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
-  });
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Appointment not found',
-      },
-    });
-  }
-
-  const { status, notes, startTime, staffId, serviceId, cancellationReason } = req.body;
-
-  const updateData: Record<string, unknown> = {};
-
-  if (status) updateData.status = status;
-  if (notes !== undefined) updateData.notes = notes;
-  if (cancellationReason) updateData.cancellationReason = cancellationReason;
-  if (status === 'cancelled') updateData.cancelledAt = new Date();
-
-  // Handle time change
-  if (startTime && serviceId) {
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-    if (service) {
-      const start = new Date(startTime);
-      updateData.startTime = start;
-      updateData.endTime = new Date(start.getTime() + service.durationMinutes * 60000);
-      updateData.durationMinutes = service.durationMinutes;
-      updateData.price = service.price;
-    }
-  }
-
-  if (staffId) updateData.staffId = staffId;
-  if (serviceId) updateData.serviceId = serviceId;
-
-  const updated = await prisma.appointment.update({
-    where: { id: req.params.id },
-    data: updateData,
-    include: {
-      client: {
-        select: { firstName: true, lastName: true },
-      },
-      staff: {
-        select: { firstName: true, lastName: true },
-      },
-      service: {
-        select: { name: true, color: true },
-      },
-    },
-  });
-
-  res.json({
-    success: true,
-    data: updated,
-  });
-});
-
-// ============================================
-// POST /api/v1/appointments/:id/complete
-// Mark appointment as completed
-// ============================================
-router.post('/:id/complete', authenticate, async (req: Request, res: Response) => {
-  const appointment = await prisma.appointment.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
-  });
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Appointment not found',
-      },
-    });
-  }
-
-  const updated = await prisma.appointment.update({
-    where: { id: req.params.id },
-    data: { status: 'completed' },
-  });
-
-  res.json({
-    success: true,
-    data: updated,
-  });
-});
-
-// ============================================
-// POST /api/v1/appointments/:id/no-show
-// Mark appointment as no-show
-// ============================================
-router.post('/:id/no-show', authenticate, async (req: Request, res: Response) => {
-  const appointment = await prisma.appointment.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
-  });
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-        message: 'Appointment not found',
-      },
-    });
-  }
-
-  const updated = await prisma.appointment.update({
-    where: { id: req.params.id },
-    data: { status: 'no_show' },
-  });
-
-  res.json({
-    success: true,
-    data: updated,
-  });
-});
+}));
 
 // ============================================
 // GET /api/v1/appointments/availability
 // Get available time slots
 // ============================================
-router.get('/availability', authenticate, async (req: Request, res: Response) => {
-  const { date, serviceId, staffId } = req.query;
+router.get('/availability', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { date, serviceId, staffId, locationId } = req.query;
 
   if (!date || !serviceId) {
     return res.status(400).json({
@@ -408,6 +140,7 @@ router.get('/availability', authenticate, async (req: Request, res: Response) =>
       startTime: { gte: startOfDay, lte: endOfDay },
       status: { notIn: ['cancelled'] },
       ...(staffId && { staffId: staffId as string }),
+      ...(locationId && { locationId: locationId as string }),
     },
   });
 
@@ -441,6 +174,413 @@ router.get('/availability', authenticate, async (req: Request, res: Response) =>
     success: true,
     data: slots,
   });
-});
+}));
+
+// ============================================
+// GET /api/v1/appointments/:id
+// Get appointment details
+// ============================================
+router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const appointment = await prisma.appointment.findFirst({
+    where: {
+      id: req.params.id,
+      salonId: req.user!.salonId,
+    },
+    include: {
+      client: true,
+      staff: {
+        select: { id: true, firstName: true, lastName: true, email: true },
+      },
+      service: true,
+      location: true,
+      payments: true,
+    },
+  });
+
+  if (!appointment) {
+    return res.status(404).json({
+      success: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Appointment not found',
+      },
+    });
+  }
+
+  // Staff can only view their own appointments
+  if (
+    !hasPermission(req.user!.role, PERMISSIONS.VIEW_ALL_APPOINTMENTS) &&
+    appointment.staffId !== req.user!.userId
+  ) {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'You can only view your own appointments',
+      },
+    });
+  }
+
+  res.json({
+    success: true,
+    data: appointment,
+  });
+}));
+
+// ============================================
+// POST /api/v1/appointments
+// Create new appointment (requires BOOK_APPOINTMENTS permission)
+// ============================================
+router.post(
+  '/',
+  authenticate,
+  requirePermission(PERMISSIONS.BOOK_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const {
+      clientId,
+      staffId,
+      serviceId,
+      startTime,
+      notes,
+      locationId,
+      status = 'confirmed',
+    } = req.body;
+
+    // Verify staff belongs to user's accessible locations (for managers)
+    const userLocations = await getUserLocationIds(
+      req.user!.userId,
+      req.user!.salonId,
+      req.user!.role
+    );
+
+    if (userLocations !== null && locationId) {
+      if (!userLocations.includes(locationId)) {
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: 'FORBIDDEN',
+            message: 'You cannot book appointments for this location',
+          },
+        });
+      }
+    }
+
+    // Get service details
+    const service = await prisma.service.findFirst({
+      where: { id: serviceId, salonId: req.user!.salonId },
+    });
+
+    if (!service) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_SERVICE',
+          message: 'Service not found',
+        },
+      });
+    }
+
+    // Calculate end time
+    const start = new Date(startTime);
+    const end = new Date(start.getTime() + service.durationMinutes * 60000);
+
+    // Check for conflicts
+    const conflict = await prisma.appointment.findFirst({
+      where: {
+        salonId: req.user!.salonId,
+        staffId,
+        status: { notIn: ['cancelled'] },
+        OR: [
+          {
+            AND: [{ startTime: { lte: start } }, { endTime: { gt: start } }],
+          },
+          {
+            AND: [{ startTime: { lt: end } }, { endTime: { gte: end } }],
+          },
+          {
+            AND: [{ startTime: { gte: start } }, { endTime: { lte: end } }],
+          },
+        ],
+      },
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'TIME_CONFLICT',
+          message: 'Staff member is not available at this time',
+        },
+      });
+    }
+
+    // Fetch client and staff for notifications
+    const [client, staff] = await Promise.all([
+      prisma.client.findUnique({ where: { id: clientId } }),
+      prisma.user.findUnique({ where: { id: staffId } }),
+    ]);
+
+    const appointment = await prisma.appointment.create({
+      data: {
+        salonId: req.user!.salonId,
+        clientId,
+        staffId,
+        serviceId,
+        locationId: locationId || null,
+        startTime: start,
+        endTime: end,
+        durationMinutes: service.durationMinutes,
+        price: service.price,
+        status,
+        notes,
+        source: 'manual',
+      },
+      include: {
+        client: {
+          select: { firstName: true, lastName: true },
+        },
+        staff: {
+          select: { firstName: true, lastName: true },
+        },
+        service: {
+          select: { name: true, color: true },
+        },
+        location: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    // Send confirmation notifications
+    const salon = await prisma.salon.findUnique({ where: { id: req.user!.salonId } });
+    const formattedDateTime = new Date(appointment.startTime).toLocaleString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    // Send email confirmation
+    if (client?.email && client?.optedInReminders) {
+      await sendEmail({
+        to: client.email,
+        subject: `Appointment Confirmed - ${salon?.name}`,
+        html: appointmentConfirmationEmail({
+          clientName: client.firstName,
+          serviceName: service.name,
+          staffName: `${staff?.firstName} ${staff?.lastName}`,
+          dateTime: formattedDateTime,
+          salonName: salon?.name || '',
+          salonAddress: salon?.address || '',
+        }),
+      });
+    }
+
+    // Send SMS confirmation
+    if (client?.phone && client?.optedInReminders) {
+      await sendSms({
+        to: client.phone,
+        message: appointmentConfirmationSms({
+          clientName: client.firstName,
+          serviceName: service.name,
+          dateTime: formattedDateTime,
+          salonName: salon?.name || '',
+        }),
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      data: appointment,
+    });
+  })
+);
+
+// ============================================
+// PATCH /api/v1/appointments/:id
+// Update appointment (requires EDIT_APPOINTMENTS permission)
+// ============================================
+router.patch(
+  '/:id',
+  authenticate,
+  requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: req.params.id, salonId: req.user!.salonId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found',
+        },
+      });
+    }
+
+    const { status, notes, startTime, staffId, serviceId, locationId, cancellationReason } =
+      req.body;
+
+    const updateData: Record<string, unknown> = {};
+
+    if (status) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+    if (cancellationReason) updateData.cancellationReason = cancellationReason;
+    if (status === 'cancelled') updateData.cancelledAt = new Date();
+    if (locationId !== undefined) updateData.locationId = locationId;
+
+    // Handle time change
+    if (startTime && serviceId) {
+      const service = await prisma.service.findUnique({ where: { id: serviceId } });
+      if (service) {
+        const start = new Date(startTime);
+        updateData.startTime = start;
+        updateData.endTime = new Date(start.getTime() + service.durationMinutes * 60000);
+        updateData.durationMinutes = service.durationMinutes;
+        updateData.price = service.price;
+      }
+    }
+
+    if (staffId) updateData.staffId = staffId;
+    if (serviceId) updateData.serviceId = serviceId;
+
+    const updated = await prisma.appointment.update({
+      where: { id: req.params.id },
+      data: updateData,
+      include: {
+        client: {
+          select: { firstName: true, lastName: true },
+        },
+        staff: {
+          select: { firstName: true, lastName: true },
+        },
+        service: {
+          select: { name: true, color: true },
+        },
+        location: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  })
+);
+
+// ============================================
+// POST /api/v1/appointments/:id/cancel
+// Cancel appointment (requires CANCEL_APPOINTMENTS permission)
+// ============================================
+router.post(
+  '/:id/cancel',
+  authenticate,
+  requirePermission(PERMISSIONS.CANCEL_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: req.params.id, salonId: req.user!.salonId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found',
+        },
+      });
+    }
+
+    const { cancellationReason } = req.body;
+
+    const updated = await prisma.appointment.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'cancelled',
+        cancellationReason,
+        cancelledAt: new Date(),
+      },
+    });
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  })
+);
+
+// ============================================
+// POST /api/v1/appointments/:id/complete
+// Mark appointment as completed
+// ============================================
+router.post(
+  '/:id/complete',
+  authenticate,
+  requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: req.params.id, salonId: req.user!.salonId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found',
+        },
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: req.params.id },
+      data: { status: 'completed' },
+    });
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  })
+);
+
+// ============================================
+// POST /api/v1/appointments/:id/no-show
+// Mark appointment as no-show
+// ============================================
+router.post(
+  '/:id/no-show',
+  authenticate,
+  requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: req.params.id, salonId: req.user!.salonId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found',
+        },
+      });
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: req.params.id },
+      data: { status: 'no_show' },
+    });
+
+    res.json({
+      success: true,
+      data: updated,
+    });
+  })
+);
 
 export { router as appointmentsRouter };

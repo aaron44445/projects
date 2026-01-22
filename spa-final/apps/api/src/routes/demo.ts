@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '@peacase/database';
 import { sendEmail } from '../services/email.js';
+import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ const demoRequestSchema = z.object({
 // POST /api/v1/demo
 // Create a demo request (public endpoint)
 // ============================================
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = demoRequestSchema.parse(req.body);
 
@@ -119,6 +120,6 @@ router.post('/', async (req: Request, res: Response) => {
       },
     });
   }
-});
+}));
 
 export { router as demoRouter };

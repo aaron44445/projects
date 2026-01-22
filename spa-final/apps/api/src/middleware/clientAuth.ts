@@ -31,7 +31,7 @@ export const authenticateClient = async (
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
-        error: { code: 'UNAUTHORIZED', message: 'No token provided' }
+        error: { code: 'UNAUTHORIZED', message: 'Please log in to continue.' }
       });
     }
 
@@ -40,17 +40,32 @@ export const authenticateClient = async (
     let payload: ClientJwtPayload;
     try {
       payload = jwt.verify(token, env.JWT_SECRET) as ClientJwtPayload;
-    } catch (err) {
+    } catch (error) {
+      // Provide specific error messages based on JWT error type
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.status(401).json({
+          success: false,
+          error: { code: 'TOKEN_EXPIRED', message: 'Your session has expired. Please log in again.' }
+        });
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.status(401).json({
+          success: false,
+          error: { code: 'INVALID_TOKEN', message: 'Your session is invalid. Please log in again.' }
+        });
+      }
+
       return res.status(401).json({
         success: false,
-        error: { code: 'INVALID_TOKEN', message: 'Invalid or expired token' }
+        error: { code: 'UNAUTHORIZED', message: 'Authentication failed. Please log in again.' }
       });
     }
 
     if (payload.type !== 'client') {
       return res.status(401).json({
         success: false,
-        error: { code: 'INVALID_TOKEN', message: 'Invalid token type' }
+        error: { code: 'INVALID_TOKEN', message: 'Invalid session type. Please use the client portal to log in.' }
       });
     }
 
@@ -68,7 +83,7 @@ export const authenticateClient = async (
     console.error('Client auth middleware error:', error);
     return res.status(500).json({
       success: false,
-      error: { code: 'AUTH_ERROR', message: 'Authentication error' }
+      error: { code: 'AUTH_ERROR', message: 'Something went wrong. Please try again.' }
     });
   }
 };
