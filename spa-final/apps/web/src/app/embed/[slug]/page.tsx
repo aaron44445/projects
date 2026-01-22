@@ -13,6 +13,7 @@ import {
   Loader2,
   X,
   AlertCircle,
+  MapPin,
 } from 'lucide-react';
 
 // ============================================
@@ -35,6 +36,16 @@ interface Salon {
     buttonStyle: 'rounded' | 'square';
     fontFamily: 'system' | 'modern' | 'classic';
   };
+}
+
+interface Location {
+  id: string;
+  name: string;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  isPrimary: boolean;
+  isActive: boolean;
 }
 
 interface Service {
@@ -67,6 +78,8 @@ interface TimeSlot {
 }
 
 interface BookingData {
+  locationId: string | null;
+  locationName: string | null;
   serviceId: string | null;
   serviceName: string | null;
   staffId: string | null;
@@ -82,24 +95,107 @@ interface BookingData {
 }
 
 // ============================================
+// DEMO MODE DATA
+// ============================================
+
+const DEMO_SALON: Salon = {
+  id: 'demo',
+  name: 'Serenity Spa & Salon',
+  slug: 'demo',
+  logoUrl: null,
+  phone: '(555) 123-4567',
+  address: '123 Wellness Way',
+  city: 'Beverly Hills',
+  state: 'CA',
+  zip: '90210',
+  widget: {
+    primaryColor: '#7C9A82',
+    accentColor: '#B5A8D5',
+    buttonStyle: 'rounded',
+    fontFamily: 'modern',
+  },
+};
+
+const DEMO_CATEGORIES: ServiceCategory[] = [
+  {
+    id: 'cat-hair',
+    name: 'Hair Services',
+    services: [
+      { id: 'svc-1', name: 'Haircut & Style', description: 'Professional cut and blow-dry styling', durationMinutes: 45, price: 65, color: '#C7DCC8' },
+      { id: 'svc-2', name: 'Full Color', description: 'Single-process all-over color', durationMinutes: 90, price: 120, color: '#E8D5C4' },
+      { id: 'svc-3', name: 'Highlights', description: 'Partial or full foil highlights', durationMinutes: 120, price: 150, color: '#D4C5E8' },
+    ],
+  },
+  {
+    id: 'cat-spa',
+    name: 'Spa Treatments',
+    services: [
+      { id: 'svc-4', name: 'Swedish Massage', description: 'Relaxing full-body massage', durationMinutes: 60, price: 95, color: '#E8C5D4' },
+      { id: 'svc-5', name: 'Deep Tissue Massage', description: 'Therapeutic deep tissue work', durationMinutes: 60, price: 110, color: '#C8E0D4' },
+      { id: 'svc-6', name: 'Facial Treatment', description: 'Customized facial for your skin type', durationMinutes: 60, price: 85, color: '#D4E0C8' },
+    ],
+  },
+  {
+    id: 'cat-nails',
+    name: 'Nail Services',
+    services: [
+      { id: 'svc-7', name: 'Manicure', description: 'Classic manicure with polish', durationMinutes: 30, price: 35, color: '#E0D4C8' },
+      { id: 'svc-8', name: 'Pedicure', description: 'Relaxing pedicure treatment', durationMinutes: 45, price: 50, color: '#C8D4E0' },
+    ],
+  },
+];
+
+const DEMO_STAFF: Staff[] = [
+  { id: 'staff-1', name: 'Sarah Johnson', firstName: 'Sarah', lastName: 'Johnson', avatarUrl: null, serviceIds: ['svc-1', 'svc-2', 'svc-3'] },
+  { id: 'staff-2', name: 'Michael Chen', firstName: 'Michael', lastName: 'Chen', avatarUrl: null, serviceIds: ['svc-4', 'svc-5'] },
+  { id: 'staff-3', name: 'Emily Davis', firstName: 'Emily', lastName: 'Davis', avatarUrl: null, serviceIds: ['svc-6', 'svc-7', 'svc-8'] },
+];
+
+// Generate demo time slots for today
+function generateDemoSlots(): TimeSlot[] {
+  const slots: TimeSlot[] = [];
+  const times = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'];
+  times.forEach(time => {
+    // Randomly mark some slots as unavailable
+    slots.push({ time, available: Math.random() > 0.3 });
+  });
+  return slots;
+}
+
+// ============================================
 // API HELPERS
 // ============================================
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://peacase-api.onrender.com';
 
-async function fetchSalon(slug: string): Promise<Salon | null> {
+interface SalonFetchResult {
+  salon: Salon | null;
+  errorType: 'none' | 'not_found' | 'booking_disabled' | 'network_error';
+}
+
+async function fetchSalon(slug: string): Promise<SalonFetchResult> {
   try {
     const res = await fetch(`${API_BASE}/api/v1/public/${slug}/salon`);
     const data = await res.json();
-    return data.success ? data.data : null;
+
+    if (data.success && data.data) {
+      // Check if booking is enabled for this salon
+      const bookingEnabled = data.data.bookingEnabled !== false;
+      if (!bookingEnabled) {
+        return { salon: null, errorType: 'booking_disabled' };
+      }
+      return { salon: data.data, errorType: 'none' };
+    }
+
+    return { salon: null, errorType: 'not_found' };
   } catch {
-    return null;
+    return { salon: null, errorType: 'network_error' };
   }
 }
 
-async function fetchServices(slug: string): Promise<ServiceCategory[]> {
+async function fetchLocations(slug: string): Promise<Location[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/public/${slug}/services`);
+    const res = await fetch(`${API_BASE}/api/v1/public/${slug}/locations`);
     const data = await res.json();
     return data.success ? data.data : [];
   } catch {
@@ -107,11 +203,25 @@ async function fetchServices(slug: string): Promise<ServiceCategory[]> {
   }
 }
 
-async function fetchStaff(slug: string, serviceId?: string): Promise<Staff[]> {
+async function fetchServices(slug: string, locationId?: string): Promise<ServiceCategory[]> {
   try {
-    const url = serviceId
-      ? `${API_BASE}/api/v1/public/${slug}/staff?serviceId=${serviceId}`
-      : `${API_BASE}/api/v1/public/${slug}/staff`;
+    let url = `${API_BASE}/api/v1/public/${slug}/services`;
+    if (locationId) url += `?locationId=${locationId}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.success ? data.data : [];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchStaff(slug: string, serviceId?: string, locationId?: string): Promise<Staff[]> {
+  try {
+    const params = new URLSearchParams();
+    if (serviceId) params.append('serviceId', serviceId);
+    if (locationId) params.append('locationId', locationId);
+    const queryString = params.toString();
+    const url = `${API_BASE}/api/v1/public/${slug}/staff${queryString ? `?${queryString}` : ''}`;
     const res = await fetch(url);
     const data = await res.json();
     return data.success ? data.data : [];
@@ -142,6 +252,7 @@ async function createBooking(
   booking: {
     serviceId: string;
     staffId?: string;
+    locationId?: string;
     startTime: string;
     firstName: string;
     lastName: string;
@@ -177,6 +288,57 @@ function formatDuration(minutes: number): string {
 
 function formatPrice(price: number): string {
   return `$${price.toFixed(0)}`;
+}
+
+// Step 0: Select Location (when multiple locations exist)
+function LocationStep({
+  locations,
+  onSelect,
+  primaryColor,
+  borderRadius,
+}: {
+  locations: Location[];
+  onSelect: (location: Location) => void;
+  primaryColor: string;
+  borderRadius: string;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-xl font-bold text-gray-900">Select Location</h2>
+        <p className="text-sm text-gray-500 mt-1">Choose which location you&apos;d like to visit</p>
+      </div>
+      <div className="space-y-3">
+        {locations.map((location) => (
+          <button
+            key={location.id}
+            onClick={() => onSelect(location)}
+            className="w-full p-4 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all text-left"
+            style={{ borderRadius }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: primaryColor + '20' }}
+              >
+                <MapPin className="w-5 h-5" style={{ color: primaryColor }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900">{location.name}</p>
+                {location.address && (
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {location.address}
+                    {location.city && `, ${location.city}`}
+                    {location.state && `, ${location.state}`}
+                  </p>
+                )}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // Step 1: Select Service
@@ -590,6 +752,21 @@ function ConfirmationStep({
       </div>
 
       <div className="bg-gray-50 rounded-xl p-4 text-left space-y-3">
+        {booking.locationName && (
+          <div className="flex items-start gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: primaryColor + '20' }}
+            >
+              <MapPin className="w-4 h-4" style={{ color: primaryColor }} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Location</p>
+              <p className="font-medium text-gray-900">{booking.locationName}</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-start gap-3">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -649,18 +826,35 @@ function ConfirmationStep({
 
 export default function EmbedBookingPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string) || '';
+
+  // Check if this is demo mode - do this early and consistently
+  const isDemo = slug === 'demo';
 
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  // In demo mode, we already have the data, so no loading needed
+  const [isLoading, setIsLoading] = useState(!isDemo);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<'none' | 'not_found' | 'booking_disabled' | 'network_error'>('none');
 
-  const [salon, setSalon] = useState<Salon | null>(null);
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  // Initialize salon with demo data if in demo mode to avoid flicker
+  const [salon, setSalon] = useState<Salon | null>(isDemo ? DEMO_SALON : null);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>(isDemo ? DEMO_CATEGORIES : []);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+  // If there are multiple locations, we need an extra step
+  const hasMultipleLocations = locations.length > 1;
+  // Step offset: if multiple locations, step 1 is location selection
+  // Otherwise step 1 is service selection
+  const getActualStep = (displayStep: number) => {
+    if (hasMultipleLocations) return displayStep;
+    return displayStep + 1; // Skip location step
+  };
+  const totalSteps = hasMultipleLocations ? 6 : 5;
 
   // Check if in preview mode (for settings page preview iframe)
   const [isPreview, setIsPreview] = useState(false);
@@ -672,6 +866,8 @@ export default function EmbedBookingPage() {
   }, []);
 
   const [booking, setBooking] = useState<BookingData>({
+    locationId: null,
+    locationName: null,
     serviceId: null,
     serviceName: null,
     staffId: null,
@@ -685,6 +881,18 @@ export default function EmbedBookingPage() {
     notes: '',
     optInReminders: true,
   });
+
+  // Ensure demo mode is always properly initialized
+  // This catches edge cases where useState initializers might not have the correct isDemo value
+  useEffect(() => {
+    if (isDemo && (!salon || salon.id !== 'demo')) {
+      setSalon(DEMO_SALON);
+      setCategories(DEMO_CATEGORIES);
+      setLocations([]);
+      setLoadError('none');
+      setIsLoading(false);
+    }
+  }, [isDemo, salon]);
 
   // Widget styling from salon settings
   const primaryColor = salon?.widget?.primaryColor || '#7C9A82';
@@ -704,55 +912,144 @@ export default function EmbedBookingPage() {
 
   // Load initial data
   useEffect(() => {
+    // Track if this effect is still active (for cleanup)
+    let cancelled = false;
+
     async function load() {
+      // Demo mode - use mock data, no API calls needed
+      if (isDemo) {
+        setSalon(DEMO_SALON);
+        setLocations([]);
+        setCategories(DEMO_CATEGORIES);
+        setLoadError('none');
+        setIsLoading(false);
+        return;
+      }
+
+      // Don't fetch if slug is empty - params might not be hydrated yet
+      // This prevents race conditions where we get "not_found" before slug is set
+      if (!slug) {
+        return;
+      }
+
       setIsLoading(true);
-      const [salonData, servicesData] = await Promise.all([
+      setLoadError('none');
+
+      // Real salon - fetch from API
+      const [salonResult, locationsData] = await Promise.all([
         fetchSalon(slug),
-        fetchServices(slug),
+        fetchLocations(slug),
       ]);
-      setSalon(salonData);
-      setCategories(servicesData);
+
+      // If effect was cancelled (slug changed), don't update state
+      if (cancelled) return;
+
+      if (salonResult.errorType !== 'none') {
+        setLoadError(salonResult.errorType);
+        setIsLoading(false);
+        return;
+      }
+
+      setSalon(salonResult.salon);
+      setLocations(locationsData);
+
+      // If only one location (or no locations), auto-select it and load services
+      if (locationsData.length <= 1) {
+        const locationId = locationsData.length === 1 ? locationsData[0].id : undefined;
+        const locationName = locationsData.length === 1 ? locationsData[0].name : null;
+        setBooking(prev => ({
+          ...prev,
+          locationId: locationId || null,
+          locationName,
+        }));
+        const servicesData = await fetchServices(slug, locationId);
+        if (cancelled) return;
+        setCategories(servicesData);
+      }
+      // If multiple locations, services will be loaded when location is selected
+
       setIsLoading(false);
     }
     load();
-  }, [slug]);
+
+    // Cleanup: cancel this effect if dependencies change
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, isDemo]);
 
   // Load staff when service is selected
   useEffect(() => {
     if (booking.serviceId) {
-      fetchStaff(slug, booking.serviceId).then(setStaff);
+      if (isDemo) {
+        // Demo mode - filter demo staff by service
+        const filteredStaff = DEMO_STAFF.filter(s => s.serviceIds.includes(booking.serviceId!));
+        setStaff(filteredStaff);
+      } else {
+        fetchStaff(slug, booking.serviceId, booking.locationId || undefined).then(setStaff);
+      }
     }
-  }, [slug, booking.serviceId]);
+  }, [slug, booking.serviceId, booking.locationId, isDemo]);
 
   // Load availability when date/service/staff changes
   useEffect(() => {
     if (booking.serviceId && booking.date) {
       setIsLoadingSlots(true);
-      fetchAvailability(slug, booking.date, booking.serviceId, booking.staffId || undefined)
-        .then(setSlots)
-        .finally(() => setIsLoadingSlots(false));
+      if (isDemo) {
+        // Demo mode - use generated demo slots
+        setTimeout(() => {
+          setSlots(generateDemoSlots());
+          setIsLoadingSlots(false);
+        }, 500); // Simulate network delay
+      } else {
+        fetchAvailability(slug, booking.date, booking.serviceId, booking.staffId || undefined)
+          .then(setSlots)
+          .finally(() => setIsLoadingSlots(false));
+      }
     }
-  }, [slug, booking.serviceId, booking.staffId, booking.date]);
+  }, [slug, booking.serviceId, booking.staffId, booking.date, isDemo]);
 
   const updateBooking = useCallback((field: keyof BookingData, value: string | boolean | null) => {
     setBooking((prev) => ({ ...prev, [field]: value }));
   }, []);
 
+  // Step numbers based on whether we have multiple locations
+  // With multiple locations: 1=Location, 2=Service, 3=Staff, 4=DateTime, 5=Details, 6=Confirm
+  // Without multiple locations: 1=Service, 2=Staff, 3=DateTime, 4=Details, 5=Confirm
+  const STEP_LOCATION = hasMultipleLocations ? 1 : 0; // 0 means skip
+  const STEP_SERVICE = hasMultipleLocations ? 2 : 1;
+  const STEP_STAFF = hasMultipleLocations ? 3 : 2;
+  const STEP_DATETIME = hasMultipleLocations ? 4 : 3;
+  const STEP_DETAILS = hasMultipleLocations ? 5 : 4;
+  const STEP_CONFIRM = hasMultipleLocations ? 6 : 5;
+
+  const handleLocationSelect = async (location: Location) => {
+    setBooking(prev => ({
+      ...prev,
+      locationId: location.id,
+      locationName: location.name,
+    }));
+    // Load services for the selected location
+    const servicesData = await fetchServices(slug, location.id);
+    setCategories(servicesData);
+    setStep(STEP_SERVICE);
+  };
+
   const handleServiceSelect = (service: Service) => {
     updateBooking('serviceId', service.id);
     updateBooking('serviceName', service.name);
-    setStep(2);
+    setStep(STEP_STAFF);
   };
 
   const handleStaffSelect = (staffId: string | null, staffName: string) => {
     updateBooking('staffId', staffId);
     updateBooking('staffName', staffName);
-    setStep(3);
+    setStep(STEP_DATETIME);
   };
 
   const handleTimeSelect = (time: string) => {
     updateBooking('time', time);
-    setStep(4);
+    setStep(STEP_DETAILS);
   };
 
   const handleSubmit = async () => {
@@ -764,10 +1061,21 @@ export default function EmbedBookingPage() {
     setIsSubmitting(true);
     setError(null);
 
+    // Demo mode - simulate successful booking
+    if (isDemo) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+      setIsSubmitting(false);
+      setStep(STEP_CONFIRM);
+      window.parent?.postMessage({ type: 'peacase-booking-complete' }, '*');
+      return;
+    }
+
+    // Real booking
     const startTime = `${booking.date}T${booking.time}:00`;
     const result = await createBooking(slug, {
       serviceId: booking.serviceId,
       staffId: booking.staffId || undefined,
+      locationId: booking.locationId || undefined,
       startTime,
       firstName: booking.firstName,
       lastName: booking.lastName,
@@ -780,7 +1088,7 @@ export default function EmbedBookingPage() {
     setIsSubmitting(false);
 
     if (result.success) {
-      setStep(5);
+      setStep(STEP_CONFIRM);
       // Notify parent window
       window.parent?.postMessage({ type: 'peacase-booking-complete' }, '*');
     } else {
@@ -793,14 +1101,13 @@ export default function EmbedBookingPage() {
   };
 
   const canGoNext = () => {
-    switch (step) {
-      case 3:
-        return booking.time !== null;
-      case 4:
-        return booking.firstName && booking.lastName && booking.email;
-      default:
-        return true;
+    if (step === STEP_DATETIME) {
+      return booking.time !== null;
     }
+    if (step === STEP_DETAILS) {
+      return booking.firstName && booking.lastName && booking.email;
+    }
+    return true;
   };
 
   if (isLoading) {
@@ -811,13 +1118,54 @@ export default function EmbedBookingPage() {
     );
   }
 
-  if (!salon) {
+  // Don't show error if we're in demo mode - demo data will be set by useEffect
+  // This prevents flash of error during hydration
+  if (!isDemo && (!salon || loadError !== 'none')) {
+    const errorMessages = {
+      not_found: {
+        title: 'Business Not Found',
+        description: 'Please check the URL and try again.',
+        icon: 'error' as const,
+      },
+      booking_disabled: {
+        title: 'Online Booking Unavailable',
+        description: 'Online booking is not available for this business. Please contact them directly to schedule an appointment.',
+        icon: 'info' as const,
+      },
+      network_error: {
+        title: 'Connection Error',
+        description: 'Unable to load booking page. Please check your internet connection and try again.',
+        icon: 'error' as const,
+      },
+      none: {
+        title: 'Something Went Wrong',
+        description: 'Please try again later.',
+        icon: 'error' as const,
+      },
+    };
+
+    const errorInfo = errorMessages[loadError];
+
     return (
       <div className="min-h-[400px] flex items-center justify-center bg-gray-50 p-6">
-        <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Salon Not Found</h2>
-          <p className="text-gray-500">This booking page is not available.</p>
+        <div className="text-center max-w-sm">
+          {errorInfo.icon === 'error' ? (
+            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-6 h-6 text-amber-600" />
+            </div>
+          )}
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{errorInfo.title}</h2>
+          <p className="text-gray-500">{errorInfo.description}</p>
+          {loadError === 'network_error' && (
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            >
+              Try Again
+            </button>
+          )}
         </div>
       </div>
     );
@@ -846,7 +1194,14 @@ export default function EmbedBookingPage() {
                 </span>
               </div>
             )}
-            <span className="font-semibold text-gray-900">{salon.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900">{salon.name}</span>
+              {isDemo && (
+                <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                  Demo
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={handleClose}
@@ -858,11 +1213,11 @@ export default function EmbedBookingPage() {
       </header>
 
       {/* Progress Bar */}
-      {step < 5 && (
+      {step < STEP_CONFIRM && (
         <div className="bg-white border-b border-gray-200 px-4 py-2">
           <div className="max-w-lg mx-auto">
             <div className="flex gap-1">
-              {[1, 2, 3, 4].map((s) => (
+              {Array.from({ length: totalSteps - 1 }, (_, i) => i + 1).map((s) => (
                 <div
                   key={s}
                   className="flex-1 h-1 rounded-full transition-colors"
@@ -878,7 +1233,16 @@ export default function EmbedBookingPage() {
 
       {/* Content */}
       <main className="max-w-lg mx-auto p-6 flex-1">
-        {step === 1 && (
+        {step === STEP_LOCATION && hasMultipleLocations && (
+          <LocationStep
+            locations={locations}
+            onSelect={handleLocationSelect}
+            primaryColor={primaryColor}
+            borderRadius={borderRadius}
+          />
+        )}
+
+        {step === STEP_SERVICE && (
           <ServiceStep
             categories={categories}
             onSelect={handleServiceSelect}
@@ -888,7 +1252,7 @@ export default function EmbedBookingPage() {
           />
         )}
 
-        {step === 2 && (
+        {step === STEP_STAFF && (
           <StaffStep
             staff={staff}
             onSelect={handleStaffSelect}
@@ -897,7 +1261,7 @@ export default function EmbedBookingPage() {
           />
         )}
 
-        {step === 3 && (
+        {step === STEP_DATETIME && (
           <DateTimeStep
             slots={slots}
             selectedDate={booking.date || ''}
@@ -910,7 +1274,7 @@ export default function EmbedBookingPage() {
           />
         )}
 
-        {step === 4 && (
+        {step === STEP_DETAILS && (
           <DetailsStep
             booking={booking}
             onChange={updateBooking}
@@ -919,7 +1283,7 @@ export default function EmbedBookingPage() {
           />
         )}
 
-        {step === 5 && (
+        {step === STEP_CONFIRM && (
           <ConfirmationStep
             booking={booking}
             salon={salon}
@@ -937,7 +1301,7 @@ export default function EmbedBookingPage() {
       </main>
 
       {/* Footer Navigation */}
-      {step < 5 && (
+      {step < STEP_CONFIRM && (
         <footer className="bg-white border-t border-gray-200 px-4 py-4 mt-auto">
           <div className="max-w-lg mx-auto flex gap-3">
             {step > 1 && (
@@ -949,7 +1313,7 @@ export default function EmbedBookingPage() {
                 Back
               </button>
             )}
-            {step === 4 && (
+            {step === STEP_DETAILS && (
               <button
                 onClick={handleSubmit}
                 disabled={!canGoNext() || isSubmitting}
@@ -966,9 +1330,9 @@ export default function EmbedBookingPage() {
                 )}
               </button>
             )}
-            {step === 3 && booking.time && (
+            {step === STEP_DATETIME && booking.time && (
               <button
-                onClick={() => setStep(4)}
+                onClick={() => setStep(STEP_DETAILS)}
                 className="flex-1 flex items-center justify-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all"
                 style={{ backgroundColor: primaryColor }}
               >
@@ -981,7 +1345,7 @@ export default function EmbedBookingPage() {
       )}
 
       {/* Done Button */}
-      {step === 5 && (
+      {step === STEP_CONFIRM && (
         <footer className="bg-white border-t border-gray-200 px-4 py-4 mt-auto">
           <div className="max-w-lg mx-auto">
             <button
