@@ -16,7 +16,7 @@ import { env } from './lib/env.js';
 
 import { authRouter } from './routes/auth.js';
 import { salonRouter } from './routes/salon.js';
-// import { locationsRouter } from './routes/locations.js'; // WIP - schema incomplete
+import { locationsRouter } from './routes/locations.js';
 import { clientsRouter } from './routes/clients.js';
 import { servicesRouter } from './routes/services.js';
 import { appointmentsRouter } from './routes/appointments.js';
@@ -34,8 +34,8 @@ import { uploadsRouter } from './routes/uploads.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { demoRouter } from './routes/demo.js';
 import { staffPortalRouter } from './routes/staffPortal.js';
-// import { clientAuthRouter } from './routes/clientAuth.js'; // WIP - schema incomplete
-// import { clientPortalRouter } from './routes/clientPortal.js'; // WIP - schema incomplete
+import { clientAuthRouter } from './routes/clientAuth.js';
+import { clientPortalRouter } from './routes/clientPortal.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { generalRateLimit } from './middleware/rateLimit.js';
@@ -145,7 +145,7 @@ app.post('/api/v1/debug/auth', async (req, res) => {
 // API Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/salon', salonRouter);
-// app.use('/api/v1/locations', locationsRouter); // WIP - schema incomplete
+app.use('/api/v1/locations', locationsRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/clients', clientsRouter);
@@ -166,9 +166,9 @@ app.use('/api/v1/public', publicRouter);
 // Staff Portal Routes
 app.use('/api/v1/staff-portal', staffPortalRouter);
 
-// Client Portal Routes (WIP - schema incomplete)
-// app.use('/api/v1/client-auth', clientAuthRouter);
-// app.use('/api/v1/client-portal', clientPortalRouter);
+// Client Portal Routes
+app.use('/api/v1/client-auth', clientAuthRouter);
+app.use('/api/v1/client-portal', clientPortalRouter);
 
 // ============================================
 // ERROR HANDLING
