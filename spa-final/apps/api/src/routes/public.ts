@@ -279,7 +279,7 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
 // Get available time slots
 // ============================================
 router.get('/:slug/availability', asyncHandler(async (req: Request, res: Response) => {
-  const { date, serviceId, staffId } = req.query;
+  const { date, serviceId, staffId, locationId } = req.query;
 
   if (!date || !serviceId) {
     return res.status(400).json({
@@ -320,19 +320,48 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
     });
   }
 
-  // Default business hours (9am-5pm)
   const dayOfWeek = new Date(date as string).getDay();
-  // Closed on Sunday (day 0), open Mon-Sat
-  const defaultHours: Record<number, { open: string; close: string } | null> = {
-    0: null, // Sunday closed
-    1: { open: '09:00', close: '17:00' },
-    2: { open: '09:00', close: '17:00' },
-    3: { open: '09:00', close: '17:00' },
-    4: { open: '09:00', close: '17:00' },
-    5: { open: '09:00', close: '17:00' },
-    6: { open: '10:00', close: '16:00' }, // Saturday shorter
-  };
-  const todayHours = defaultHours[dayOfWeek];
+
+  // Check location hours if locationId provided
+  let todayHours: { open: string; close: string } | null = null;
+  if (locationId) {
+    const locationHoursRecord = await prisma.locationHours.findUnique({
+      where: {
+        locationId_dayOfWeek: {
+          locationId: locationId as string,
+          dayOfWeek,
+        },
+      },
+    });
+
+    // If location is closed, return empty slots
+    if (locationHoursRecord?.isClosed) {
+      return res.json({ success: true, data: [] });
+    }
+
+    if (locationHoursRecord?.openTime && locationHoursRecord?.closeTime) {
+      todayHours = {
+        open: locationHoursRecord.openTime,
+        close: locationHoursRecord.closeTime,
+      };
+    }
+  }
+
+  // Use default hours if no location hours available
+  if (!todayHours) {
+    // Default business hours (9am-5pm)
+    // Closed on Sunday (day 0), open Mon-Sat
+    const defaultHours: Record<number, { open: string; close: string } | null> = {
+      0: null, // Sunday closed
+      1: { open: '09:00', close: '17:00' },
+      2: { open: '09:00', close: '17:00' },
+      3: { open: '09:00', close: '17:00' },
+      4: { open: '09:00', close: '17:00' },
+      5: { open: '09:00', close: '17:00' },
+      6: { open: '10:00', close: '16:00' }, // Saturday shorter
+    };
+    todayHours = defaultHours[dayOfWeek];
+  }
 
   // If closed this day, return empty slots
   if (!todayHours) {
@@ -357,7 +386,7 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   if (staffId) {
     staffFilter = { staffId: staffId as string };
   } else {
-    // Get all staff who can perform this service
+    // Get all staff who can perform this service (and optionally at this location)
     const availableStaff = await prisma.user.findMany({
       where: {
         salonId: salon.id,
@@ -368,6 +397,14 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
             isAvailable: true,
           },
         },
+        // Filter by location if provided
+        ...(locationId && {
+          staffLocations: {
+            some: {
+              locationId: locationId as string,
+            },
+          },
+        }),
       },
       select: { id: true },
     });
@@ -459,6 +496,139 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   res.json({
     success: true,
     data: slots,
+  });
+}));
+
+// ============================================
+// GET /api/v1/public/:slug/soonest-available
+// Find soonest available slot across all locations for a service
+// ============================================
+router.get('/:slug/soonest-available', asyncHandler(async (req: Request, res: Response) => {
+  const { serviceId } = req.query;
+
+  if (!serviceId) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'MISSING_PARAMS', message: 'serviceId is required' },
+    });
+  }
+
+  const salon = await prisma.salon.findUnique({
+    where: { slug: req.params.slug },
+    select: { id: true },
+  });
+
+  if (!salon) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Salon not found' },
+    });
+  }
+
+  const service = await prisma.service.findFirst({
+    where: { id: serviceId as string, salonId: salon.id, isActive: true },
+  });
+
+  if (!service) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Service not found' },
+    });
+  }
+
+  const locations = await prisma.location.findMany({
+    where: { salonId: salon.id, isActive: true },
+    select: { id: true, name: true, address: true, city: true, state: true },
+  });
+
+  const results: Array<{
+    locationId: string;
+    locationName: string;
+    address: string;
+    date: string;
+    time: string;
+  }> = [];
+
+  // Check next 14 days for availability at each location
+  for (const location of locations) {
+    // Get staff available at this location who can do this service
+    const availableStaff = await prisma.user.findMany({
+      where: {
+        salonId: salon.id,
+        isActive: true,
+        staffServices: { some: { serviceId: serviceId as string, isAvailable: true } },
+        staffLocations: { some: { locationId: location.id } },
+      },
+      select: { id: true },
+    });
+
+    if (availableStaff.length === 0) continue;
+
+    let foundForLocation = false;
+    for (let dayOffset = 0; dayOffset < 14 && !foundForLocation; dayOffset++) {
+      const checkDate = new Date();
+      checkDate.setDate(checkDate.getDate() + dayOffset);
+      const dayOfWeek = checkDate.getDay();
+      const dateStr = checkDate.toISOString().split('T')[0];
+
+      // Check location hours
+      const locationHours = await prisma.locationHours.findUnique({
+        where: { locationId_dayOfWeek: { locationId: location.id, dayOfWeek } },
+      });
+
+      if (locationHours?.isClosed || !locationHours?.openTime) continue;
+
+      const [openHour, openMin] = locationHours.openTime.split(':').map(Number);
+      const [closeHour, closeMin] = locationHours.closeTime!.split(':').map(Number);
+
+      // Check for first available slot
+      for (let hour = openHour; hour < closeHour && !foundForLocation; hour++) {
+        for (let min = 0; min < 60 && !foundForLocation; min += 30) {
+          const slotTime = new Date(checkDate);
+          slotTime.setHours(hour, min, 0, 0);
+
+          // Skip past times
+          if (slotTime <= new Date()) continue;
+
+          const slotEnd = new Date(slotTime.getTime() + service.durationMinutes * 60000);
+
+          // Check if any staff is available
+          for (const staff of availableStaff) {
+            const conflict = await prisma.appointment.findFirst({
+              where: {
+                staffId: staff.id,
+                status: { notIn: ['cancelled'] },
+                OR: [
+                  { AND: [{ startTime: { lte: slotTime } }, { endTime: { gt: slotTime } }] },
+                  { AND: [{ startTime: { lt: slotEnd } }, { endTime: { gte: slotEnd } }] },
+                  { AND: [{ startTime: { gte: slotTime } }, { endTime: { lte: slotEnd } }] },
+                ],
+              },
+            });
+
+            if (!conflict) {
+              const address = [location.address, location.city, location.state].filter(Boolean).join(', ');
+              results.push({
+                locationId: location.id,
+                locationName: location.name,
+                address,
+                date: dateStr,
+                time: `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`,
+              });
+              foundForLocation = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  res.json({
+    success: true,
+    data: results.sort((a, b) =>
+      new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()
+    ),
   });
 }));
 
