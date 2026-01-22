@@ -1381,15 +1381,24 @@ function SettingsContent() {
                   </div>
                   <div className="bg-cream/50 rounded-2xl border border-charcoal/10 overflow-hidden" style={{ height: '500px' }}>
                     {/* Live preview using real business data */}
-                    <iframe
-                      src={`${previewUrl}?preview=true&t=${Date.now()}`}
-                      className="w-full h-full border-0"
-                      title="Booking widget preview"
-                      key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}-${salonSlug}`}
-                    />
+                    {salonLoading || !salon?.slug ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-3" />
+                          <p className="text-sm text-charcoal/60">Loading preview...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <iframe
+                        src={`${previewUrl}?preview=true&t=${Date.now()}`}
+                        className="w-full h-full border-0"
+                        title="Booking widget preview"
+                        key={`${widgetSettings.primaryColor}-${widgetSettings.accentColor}-${widgetSettings.buttonStyle}-${widgetSettings.fontFamily}-${salonSlug}`}
+                      />
+                    )}
                   </div>
                   <p className="text-xs text-charcoal/50 mt-2 text-center">
-                    This is exactly what customers will see on your website.
+                    {salon?.slug ? 'This is exactly what customers will see on your website.' : 'Loading your business data...'}
                   </p>
                 </div>
               </div>
