@@ -74,11 +74,17 @@ export function useClients(): UseClientsReturn {
 
     try {
       const endpoint = search ? `/clients?search=${encodeURIComponent(search)}` : '/clients';
-      const response = await api.get<Client[]>(endpoint);
+      const response = await api.get<{ items: Client[]; total: number } | Client[]>(endpoint);
 
       if (response.success && response.data) {
-        // Ensure data is an array to prevent .filter() errors
-        setClients(Array.isArray(response.data) ? response.data : []);
+        // Handle both paginated response { items: [...] } and direct array response
+        if (Array.isArray(response.data)) {
+          setClients(response.data);
+        } else if (response.data.items && Array.isArray(response.data.items)) {
+          setClients(response.data.items);
+        } else {
+          setClients([]);
+        }
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch clients';
