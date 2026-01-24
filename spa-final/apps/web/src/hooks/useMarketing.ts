@@ -1,69 +1,115 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { useState, useCallback } from 'react';
 
 export interface Campaign {
   id: string;
   name: string;
-  type: string;
-  subjectLine: string | null;
-  message: string;
-  audienceFilter: string | null;
-  status: string;
-  scheduledFor: string | null;
-  sentAt: string | null;
-  recipientsCount: number | null;
-  openedCount: number;
-  clickedCount: number;
+  type: 'email' | 'sms';
+  status: 'draft' | 'scheduled' | 'sent' | 'active';
+  audience: 'all' | 'new' | 'inactive' | 'vip';
+  subject?: string;
+  content: string;
+  scheduledAt?: string;
+  sentAt?: string;
+  recipients?: number;
+  opened?: number;
+  clicked?: number;
   createdAt: string;
+  updatedAt: string;
 }
 
-export function useMarketing() {
+export interface CreateCampaignInput {
+  name: string;
+  type: 'email' | 'sms';
+  audience: 'all' | 'new' | 'inactive' | 'vip';
+  subject?: string;
+  content: string;
+  scheduledAt?: string;
+}
+
+export interface UpdateCampaignInput extends Partial<CreateCampaignInput> {
+  status?: Campaign['status'];
+}
+
+interface UseMarketingReturn {
+  campaigns: Campaign[];
+  isLoading: boolean;
+  error: string | null;
+  fetchCampaigns: () => Promise<void>;
+  createCampaign: (data: CreateCampaignInput) => Promise<Campaign>;
+  updateCampaign: (id: string, data: UpdateCampaignInput) => Promise<Campaign>;
+  deleteCampaign: (id: string) => Promise<void>;
+  sendCampaign: (id: string) => Promise<void>;
+}
+
+export function useMarketing(): UseMarketingReturn {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCampaigns = useCallback(async (status?: string) => {
-    setLoading(true);
+  const fetchCampaigns = useCallback(async () => {
+    setIsLoading(true);
     setError(null);
     try {
-      const params = status ? `?status=${status}` : '';
-      const response = await api.get<Campaign[]>(`/marketing/campaigns${params}`);
-      if (response.data) setCampaigns(response.data);
+      // Stub - marketing feature not yet implemented
+      setCampaigns([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch campaigns');
+      setError('Failed to fetch campaigns');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, [fetchCampaigns]);
+  const createCampaign = useCallback(async (data: CreateCampaignInput): Promise<Campaign> => {
+    const newCampaign: Campaign = {
+      id: `temp-${Date.now()}`,
+      ...data,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setCampaigns((prev) => [...prev, newCampaign]);
+    return newCampaign;
+  }, []);
 
-  const createCampaign = async (data: Partial<Campaign>) => {
-    const response = await api.post<Campaign>('/marketing/campaigns', data);
-    if (response.data) setCampaigns(prev => [response.data!, ...prev]);
-    return response.data;
+  const updateCampaign = useCallback(async (id: string, data: UpdateCampaignInput): Promise<Campaign> => {
+    let updated: Campaign | undefined;
+    setCampaigns((prev) =>
+      prev.map((c) => {
+        if (c.id === id) {
+          updated = { ...c, ...data, updatedAt: new Date().toISOString() };
+          return updated;
+        }
+        return c;
+      })
+    );
+    if (!updated) throw new Error('Campaign not found');
+    return updated;
+  }, []);
+
+  const deleteCampaign = useCallback(async (id: string): Promise<void> => {
+    setCampaigns((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  const sendCampaign = useCallback(async (id: string): Promise<void> => {
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, status: 'sent' as const, sentAt: new Date().toISOString() }
+          : c
+      )
+    );
+  }, []);
+
+  return {
+    campaigns,
+    isLoading,
+    error,
+    fetchCampaigns,
+    createCampaign,
+    updateCampaign,
+    deleteCampaign,
+    sendCampaign,
   };
-
-  const updateCampaign = async (id: string, data: Partial<Campaign>) => {
-    const response = await api.patch<Campaign>(`/marketing/campaigns/${id}`, data);
-    if (response.data) setCampaigns(prev => prev.map(c => c.id === id ? response.data! : c));
-    return response.data;
-  };
-
-  const sendCampaign = async (id: string) => {
-    const response = await api.post<Campaign & { sent: number; failed: number }>(`/marketing/campaigns/${id}/send`);
-    if (response.data) setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: 'sent', sentAt: new Date().toISOString() } : c));
-    return response.data;
-  };
-
-  const deleteCampaign = async (id: string) => {
-    await api.delete(`/marketing/campaigns/${id}`);
-    setCampaigns(prev => prev.filter(c => c.id !== id));
-  };
-
-  return { campaigns, loading, error, fetchCampaigns, createCampaign, updateCampaign, sendCampaign, deleteCampaign };
 }

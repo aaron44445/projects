@@ -83,3 +83,6 @@ export type {
   ServiceLocationSettings,
   LocationHours,
 } from './useLocations';
+
+export { useMarketing } from './useMarketing';
+export type { Campaign, CreateCampaignInput, UpdateCampaignInput } from './useMarketing';
