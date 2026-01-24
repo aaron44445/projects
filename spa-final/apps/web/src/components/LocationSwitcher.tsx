@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, ChevronDown, Building2, Check } from 'lucide-react';
-import { useLocations } from '@/hooks/useLocations';
+import { useLocationContext } from '@/hooks/useLocations';
 
 interface LocationSwitcherProps {
   showAllOption?: boolean;
@@ -12,7 +12,7 @@ interface LocationSwitcherProps {
 export function LocationSwitcher({ showAllOption = true, className = '' }: LocationSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { locations, selectedLocationId, selectedLocation, selectLocation, isLoading } = useLocations();
+  const { locations, selectedLocationId, selectedLocation, selectLocation, isLoading } = useLocationContext();
 
   // Close dropdown when clicking outside
   useEffect(() => {

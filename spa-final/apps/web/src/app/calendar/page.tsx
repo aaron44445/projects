@@ -33,7 +33,7 @@ import {
   useStaff,
   useClients,
   useServices,
-  useLocations,
+  useLocationContext,
   type Appointment,
   type CreateAppointmentInput,
   type UpdateAppointmentInput,
@@ -378,7 +378,7 @@ function CalendarContent() {
   const { staff, isLoading: staffLoading, error: staffError, fetchStaff } = useStaff();
   const { clients, fetchClients } = useClients();
   const { services, isLoading: servicesLoading } = useServices();
-  const { selectedLocationId, locations } = useLocations();
+  const { selectedLocationId, locations } = useLocationContext();
 
   // Get date range for current view
   const dateRange = useMemo(() => {

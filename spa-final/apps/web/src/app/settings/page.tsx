@@ -32,7 +32,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
-import { useSalon, useLocations, type Salon } from '@/hooks';
+import { useSalon, useLocationContext, type Salon } from '@/hooks';
 import { useServices, type Service } from '@/hooks/useServices';
 import { useStaff, type StaffMember } from '@/hooks/useStaff';
 import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
@@ -147,7 +147,7 @@ function SettingsContent() {
 
   // API hooks
   const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon, setError: setSalonError } = useSalon();
-  const { locations, isLoading: locationsLoading, error: locationsError } = useLocations();
+  const { locations, isLoading: locationsLoading, error: locationsError } = useLocationContext();
   const { services, isLoading: servicesLoading, updateService } = useServices();
   const { staff, isLoading: staffLoading, updateStaff } = useStaff();
 

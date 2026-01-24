@@ -21,7 +21,7 @@ import {
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
-import { useLocations, type Location, type CreateLocationInput, type UpdateLocationInput, type LocationHours } from '@/hooks/useLocations';
+import { useLocationContext, type Location, type CreateLocationInput, type UpdateLocationInput, type LocationHours } from '@/hooks/useLocations';
 
 // US Timezones for dropdown
 const TIMEZONES = [
@@ -210,7 +210,7 @@ function LocationsContent() {
     getLocationHours,
     updateLocationHours,
     refetch,
-  } = useLocations();
+  } = useLocationContext();
 
   // Filter locations based on search query
   const filteredLocations = useMemo(() => {

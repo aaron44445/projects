@@ -22,7 +22,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useReports } from '@/hooks/useReports';
-import { useLocations } from '@/hooks/useLocations';
+import { useLocationContext } from '@/hooks/useLocations';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 
 // Date range presets
@@ -90,7 +90,7 @@ function ReportsContent() {
     fetchAllReports,
   } = useReports();
 
-  const { locations, selectedLocationId, selectedLocation } = useLocations();
+  const { locations, selectedLocationId, selectedLocation } = useLocationContext();
 
   // Get current date range based on selected preset
   const dateRange = useMemo(() => {

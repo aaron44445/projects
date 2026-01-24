@@ -30,7 +30,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { RequirePermission, PERMISSIONS } from '@/components/RequirePermission';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useStaff, useServices, useLocations, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
+import { useStaff, useServices, useLocationContext, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   active: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -124,7 +124,7 @@ function StaffContent() {
     getStaffAtLocation,
     assignStaffToLocation,
     removeStaffFromLocation,
-  } = useLocations();
+  } = useLocationContext();
 
   // Load location assignments for all staff
   const loadAllStaffLocationAssignments = useCallback(async () => {

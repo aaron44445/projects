@@ -40,7 +40,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
-import { useDashboard, useAppointments, useLocations, useServices, useClients, useStaff } from '@/hooks';
+import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -112,7 +112,7 @@ function DashboardContent() {
   const router = useRouter();
   const { salon, user } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
-  const { selectedLocationId, locations } = useLocations();
+  const { selectedLocationId, locations } = useLocationContext();
   const { stats, todayAppointments, recentActivity, loading, error, refetch } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
   const { services } = useServices();
