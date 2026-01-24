@@ -19,6 +19,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 
   if (locationId) {
     // Filter by location - get staff assigned to this location
+    // ALSO include staff with NO location assignments (they work at all locations)
     const staffAtLocation = await prisma.staffLocation.findMany({
       where: {
         locationId: locationId as string,
@@ -46,7 +47,37 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
       },
     });
 
-    users = staffAtLocation.map((sl) => sl.staff);
+    const assignedStaff = staffAtLocation.map((sl) => sl.staff);
+    const assignedStaffIds = assignedStaff.map((s) => s.id);
+
+    // Also get staff with NO location assignments (treat them as available at all locations)
+    const unassignedStaff = await prisma.user.findMany({
+      where: {
+        salonId: req.user!.salonId,
+        isActive: true,
+        staffLocations: {
+          none: {},
+        },
+        id: {
+          notIn: assignedStaffIds,
+        },
+      },
+      include: {
+        staffServices: {
+          include: { service: true },
+        },
+        staffAvailability: true,
+        staffLocations: {
+          include: {
+            location: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    users = [...assignedStaff, ...unassignedStaff];
   } else {
     // No location filter - return all staff
     users = await prisma.user.findMany({
@@ -132,9 +163,9 @@ router.post(
       });
     }
 
-    // Check if email exists in this salon
+    // Check if email exists in this salon (only check active staff)
     const existing = await prisma.user.findFirst({
-      where: { salonId: req.user!.salonId, email },
+      where: { salonId: req.user!.salonId, email, isActive: true },
     });
 
     if (existing) {
@@ -144,6 +175,19 @@ router.post(
           code: 'EMAIL_EXISTS',
           message: 'A staff member with this email already exists',
         },
+      });
+    }
+
+    // Check if there's a deactivated user with this email - clear their email to allow reuse
+    const deactivatedUser = await prisma.user.findFirst({
+      where: { salonId: req.user!.salonId, email, isActive: false },
+    });
+
+    if (deactivatedUser) {
+      // Anonymize the deactivated user's email to free up the address
+      await prisma.user.update({
+        where: { id: deactivatedUser.id },
+        data: { email: `deleted_${Date.now()}_${email}` },
       });
     }
 
@@ -327,10 +371,14 @@ router.delete(
       });
     }
 
-    // Soft delete
+    // Soft delete - also anonymize email to allow reuse
     await prisma.user.update({
       where: { id: req.params.id },
-      data: { isActive: false },
+      data: {
+        isActive: false,
+        // Anonymize email so it can be reused for new staff
+        email: `deleted_${Date.now()}_${user.email}`,
+      },
     });
 
     res.json({
