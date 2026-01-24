@@ -12,6 +12,7 @@ export interface Location {
   city?: string | null;
   state?: string | null;
   zip?: string | null;
+  country?: string | null;
   phone?: string | null;
   timezone?: string | null;
   hours?: string | null;
@@ -57,6 +58,7 @@ export interface CreateLocationInput {
   city?: string;
   state?: string;
   zip?: string;
+  country?: string;
   phone?: string;
   timezone?: string;
   hours?: string;
