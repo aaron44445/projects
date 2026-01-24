@@ -236,46 +236,90 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const staff = await prisma.user.findMany({
-    where: {
-      salonId: salon.id,
-      isActive: true,
-      onlineBookingEnabled: true,
-      // If serviceId provided, only get staff who can perform that service
-      ...(serviceId && {
-        staffServices: {
-          some: {
-            serviceId: serviceId as string,
-            isAvailable: true,
-          },
-        },
-      }),
-      // If locationId provided, only get staff assigned to that location
-      ...(locationId && {
+  // Build base query for staff who can perform the service (if specified)
+  const baseWhere: any = {
+    salonId: salon.id,
+    isActive: true,
+    onlineBookingEnabled: true,
+  };
+
+  // If serviceId provided, only get staff who can perform that service
+  if (serviceId) {
+    baseWhere.staffServices = {
+      some: {
+        serviceId: serviceId as string,
+        isAvailable: true,
+      },
+    };
+  }
+
+  let staff: any[] = [];
+
+  if (locationId) {
+    // Get staff explicitly assigned to this location
+    const assignedStaff = await prisma.user.findMany({
+      where: {
+        ...baseWhere,
         staffLocations: {
           some: {
             locationId: locationId as string,
           },
         },
-      }),
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      avatarUrl: true,
-      staffServices: {
-        select: {
-          serviceId: true,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        staffServices: {
+          select: { serviceId: true },
+        },
+        staffLocations: {
+          where: { locationId: locationId as string },
+          select: { isPrimary: true },
         },
       },
-      staffLocations: locationId ? {
-        where: { locationId: locationId as string },
-        select: { isPrimary: true },
-      } : false,
-    },
-    orderBy: { firstName: 'asc' },
-  });
+      orderBy: { firstName: 'asc' },
+    });
+
+    const assignedIds = assignedStaff.map(s => s.id);
+
+    // Also get staff with NO location assignments (available at all locations)
+    const unassignedStaff = await prisma.user.findMany({
+      where: {
+        ...baseWhere,
+        staffLocations: { none: {} },
+        id: { notIn: assignedIds },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        staffServices: {
+          select: { serviceId: true },
+        },
+      },
+      orderBy: { firstName: 'asc' },
+    });
+
+    staff = [...assignedStaff, ...unassignedStaff];
+  } else {
+    // No location filter - return all online-bookable staff
+    staff = await prisma.user.findMany({
+      where: baseWhere,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        staffServices: {
+          select: { serviceId: true },
+        },
+      },
+      orderBy: { firstName: 'asc' },
+    });
+  }
 
   res.json({
     success: true,
@@ -285,8 +329,8 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
       firstName: s.firstName,
       lastName: s.lastName,
       avatarUrl: s.avatarUrl,
-      serviceIds: s.staffServices.map((ss) => ss.serviceId),
-      isPrimaryForLocation: locationId ? (s as any).staffLocations?.[0]?.isPrimary : undefined,
+      serviceIds: s.staffServices.map((ss: any) => ss.serviceId),
+      isPrimaryForLocation: locationId ? s.staffLocations?.[0]?.isPrimary : undefined,
     })),
   });
 }));
@@ -408,7 +452,7 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   const [closeHour, closeMin] = businessHours.close.split(':').map(Number);
 
   // Get staff who can perform this service (must have online booking enabled)
-  const staffQuery: Record<string, unknown> = {
+  const baseStaffQuery: Record<string, unknown> = {
     salonId: salon.id,
     isActive: true,
     onlineBookingEnabled: true,
@@ -418,34 +462,57 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
   };
 
   if (staffId) {
-    staffQuery.id = staffId as string;
+    baseStaffQuery.id = staffId as string;
   }
 
-  if (locationId) {
-    staffQuery.staffLocations = {
-      some: { locationId: locationId as string },
-    };
-  }
-
-  const staffMembers = await prisma.user.findMany({
-    where: staffQuery,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      staffAvailability: {
-        where: locationId
-          ? { dayOfWeek, OR: [{ locationId: locationId as string }, { locationId: null }] }
-          : { dayOfWeek },
-      },
-      timeOff: {
-        where: {
-          startDate: { lte: new Date(date as string + 'T23:59:59') },
-          endDate: { gte: new Date(date as string + 'T00:00:00') },
-        },
+  const staffSelect = {
+    id: true,
+    firstName: true,
+    lastName: true,
+    staffAvailability: {
+      where: locationId
+        ? { dayOfWeek, OR: [{ locationId: locationId as string }, { locationId: null }] }
+        : { dayOfWeek },
+    },
+    timeOff: {
+      where: {
+        startDate: { lte: new Date(date as string + 'T23:59:59') },
+        endDate: { gte: new Date(date as string + 'T00:00:00') },
       },
     },
-  });
+  };
+
+  let staffMembers: any[] = [];
+
+  if (locationId && !staffId) {
+    // Get staff assigned to this location
+    const assignedStaff = await prisma.user.findMany({
+      where: {
+        ...baseStaffQuery,
+        staffLocations: { some: { locationId: locationId as string } },
+      },
+      select: staffSelect,
+    });
+
+    const assignedIds = assignedStaff.map(s => s.id);
+
+    // Also get staff with no location assignments (available at all locations)
+    const unassignedStaff = await prisma.user.findMany({
+      where: {
+        ...baseStaffQuery,
+        staffLocations: { none: {} },
+        id: { notIn: assignedIds },
+      },
+      select: staffSelect,
+    });
+
+    staffMembers = [...assignedStaff, ...unassignedStaff];
+  } else {
+    staffMembers = await prisma.user.findMany({
+      where: baseStaffQuery,
+      select: staffSelect,
+    });
+  }
 
   if (staffMembers.length === 0) {
     return res.json({ success: true, data: [] });
@@ -777,19 +844,51 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     const start = new Date(startTime);
     const end = new Date(start.getTime() + service.durationMinutes * 60000);
 
-    const availableStaff = await prisma.user.findMany({
-      where: {
-        salonId: salon.id,
-        isActive: true,
-        staffServices: {
-          some: {
-            serviceId: serviceId,
-            isAvailable: true,
-          },
+    // Build query for available staff (must be active, online-bookable, and can perform service)
+    const staffQuery: any = {
+      salonId: salon.id,
+      isActive: true,
+      onlineBookingEnabled: true,
+      staffServices: {
+        some: {
+          serviceId: serviceId,
+          isAvailable: true,
         },
       },
-      select: { id: true },
-    });
+    };
+
+    // If location specified, filter by location (but include staff with no location assignments)
+    let availableStaff: { id: string }[] = [];
+
+    if (locationId) {
+      // Staff assigned to this location
+      const assignedStaff = await prisma.user.findMany({
+        where: {
+          ...staffQuery,
+          staffLocations: { some: { locationId } },
+        },
+        select: { id: true },
+      });
+
+      const assignedIds = assignedStaff.map(s => s.id);
+
+      // Staff with no location assignments (available at all locations)
+      const unassignedStaff = await prisma.user.findMany({
+        where: {
+          ...staffQuery,
+          staffLocations: { none: {} },
+          id: { notIn: assignedIds },
+        },
+        select: { id: true },
+      });
+
+      availableStaff = [...assignedStaff, ...unassignedStaff];
+    } else {
+      availableStaff = await prisma.user.findMany({
+        where: staffQuery,
+        select: { id: true },
+      });
+    }
 
     for (const staff of availableStaff) {
       const conflict = await prisma.appointment.findFirst({
