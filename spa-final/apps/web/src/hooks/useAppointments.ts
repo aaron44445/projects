@@ -89,7 +89,7 @@ interface UseAppointmentsReturn {
   appointments: Appointment[];
   isLoading: boolean;
   error: string | null;
-  fetchAppointments: (dateRange?: DateRange, staffId?: string) => Promise<void>;
+  fetchAppointments: (dateRange?: DateRange, staffId?: string, locationId?: string | null) => Promise<void>;
   getAppointment: (id: string) => Promise<Appointment | null>;
   createAppointment: (data: CreateAppointmentInput) => Promise<Appointment>;
   updateAppointment: (id: string, data: UpdateAppointmentInput) => Promise<Appointment>;
@@ -105,7 +105,7 @@ export function useAppointments(initialDateRange?: DateRange): UseAppointmentsRe
   const [error, setError] = useState<string | null>(null);
   const [currentDateRange, setCurrentDateRange] = useState<DateRange | undefined>(initialDateRange);
 
-  const fetchAppointments = useCallback(async (dateRange?: DateRange, staffId?: string) => {
+  const fetchAppointments = useCallback(async (dateRange?: DateRange, staffId?: string, locationId?: string | null) => {
     setIsLoading(true);
     setError(null);
 
@@ -123,6 +123,11 @@ export function useAppointments(initialDateRange?: DateRange): UseAppointmentsRe
 
       if (staffId) {
         params.append('staffId', staffId);
+      }
+
+      // Add location filter - locationId passed means filter by that location
+      if (locationId) {
+        params.append('locationId', locationId);
       }
 
       const queryString = params.toString();
