@@ -80,7 +80,7 @@ interface UseStaffReturn {
   staff: StaffMember[];
   isLoading: boolean;
   error: string | null;
-  fetchStaff: () => Promise<void>;
+  fetchStaff: (locationId?: string | null) => Promise<void>;
   getStaffMember: (id: string) => Promise<StaffMember | null>;
   createStaff: (data: CreateStaffInput) => Promise<StaffMember>;
   updateStaff: (id: string, data: UpdateStaffInput) => Promise<StaffMember>;
@@ -95,12 +95,19 @@ export function useStaff(): UseStaffReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStaff = useCallback(async () => {
+  const fetchStaff = useCallback(async (locationId?: string | null) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await api.get<StaffMember[]>('/staff');
+      const params = new URLSearchParams();
+      if (locationId) {
+        params.append('locationId', locationId);
+      }
+      const queryString = params.toString();
+      const endpoint = queryString ? `/staff?${queryString}` : '/staff';
+
+      const response = await api.get<StaffMember[]>(endpoint);
 
       if (response.success && response.data) {
         // Ensure data is an array to prevent .filter() errors
