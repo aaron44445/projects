@@ -10,19 +10,63 @@ const router = Router();
 // List staff members with services and availability
 // ============================================
 router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const users = await prisma.user.findMany({
-    where: {
-      salonId: req.user!.salonId,
-      isActive: true,
-    },
-    include: {
-      staffServices: {
-        include: { service: true },
+  const { locationId } = req.query;
+
+  let users;
+
+  if (locationId) {
+    // Filter by location - get staff assigned to this location
+    const staffAtLocation = await prisma.staffLocation.findMany({
+      where: {
+        locationId: locationId as string,
+        staff: {
+          salonId: req.user!.salonId,
+          isActive: true,
+        },
       },
-      staffAvailability: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+      include: {
+        staff: {
+          include: {
+            staffServices: {
+              include: { service: true },
+            },
+            staffAvailability: true,
+            staffLocations: {
+              include: {
+                location: {
+                  select: { id: true, name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    users = staffAtLocation.map((sl) => sl.staff);
+  } else {
+    // No location filter - return all staff
+    users = await prisma.user.findMany({
+      where: {
+        salonId: req.user!.salonId,
+        isActive: true,
+      },
+      include: {
+        staffServices: {
+          include: { service: true },
+        },
+        staffAvailability: true,
+        staffLocations: {
+          include: {
+            location: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 
   res.json({
     success: true,
