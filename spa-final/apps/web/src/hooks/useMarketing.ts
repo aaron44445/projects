@@ -13,8 +13,11 @@ export interface Campaign {
   scheduledAt?: string;
   sentAt?: string;
   recipients?: number;
+  recipientsCount?: number;
   opened?: number;
+  openedCount: number;
   clicked?: number;
+  clickedCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,6 +70,8 @@ export function useMarketing(): UseMarketingReturn {
       id: `temp-${Date.now()}`,
       ...data,
       status: 'draft',
+      openedCount: 0,
+      clickedCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
