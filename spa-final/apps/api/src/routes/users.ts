@@ -227,9 +227,9 @@ router.post(
       });
     }
 
-    // Check if email exists in this salon
+    // Check if email exists in this salon (only check active staff)
     const existing = await prisma.user.findFirst({
-      where: { salonId: req.user!.salonId, email },
+      where: { salonId: req.user!.salonId, email, isActive: true },
     });
 
     if (existing) {
@@ -239,6 +239,18 @@ router.post(
           code: 'EMAIL_EXISTS',
           message: 'A staff member with this email already exists',
         },
+      });
+    }
+
+    // If there's a deactivated user with this email, anonymize it to free up the address
+    const deactivatedUser = await prisma.user.findFirst({
+      where: { salonId: req.user!.salonId, email, isActive: false },
+    });
+
+    if (deactivatedUser) {
+      await prisma.user.update({
+        where: { id: deactivatedUser.id },
+        data: { email: `deleted_${Date.now()}_${email}` },
       });
     }
 

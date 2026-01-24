@@ -312,15 +312,27 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
 
   const data = inviteStaffSchema.parse(req.body);
 
-  // Check if email already exists in this salon
+  // Check if email already exists in this salon (only check active staff)
   const existingUser = await prisma.user.findFirst({
-    where: { salonId: req.user.salonId, email: data.email },
+    where: { salonId: req.user.salonId, email: data.email, isActive: true },
   });
 
   if (existingUser) {
     return res.status(400).json({
       success: false,
       error: { code: 'EMAIL_EXISTS', message: 'A staff member with this email already exists' },
+    });
+  }
+
+  // If there's a deactivated user with this email, anonymize it to free up the address
+  const deactivatedUser = await prisma.user.findFirst({
+    where: { salonId: req.user.salonId, email: data.email, isActive: false },
+  });
+
+  if (deactivatedUser) {
+    await prisma.user.update({
+      where: { id: deactivatedUser.id },
+      data: { email: `deleted_${Date.now()}_${data.email}` },
     });
   }
 
