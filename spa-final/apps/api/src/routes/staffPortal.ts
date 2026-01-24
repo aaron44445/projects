@@ -374,9 +374,10 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
 
   // Send invite email
   const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
+  console.log(`[STAFF PORTAL INVITE] Sending invite email to ${data.email}, inviteUrl: ${inviteUrl}`);
 
   try {
-    await sendEmail({
+    const emailSent = await sendEmail({
       to: data.email,
       subject: `You're invited to join ${salon?.name || 'the team'} on Peacase`,
       html: `
@@ -388,8 +389,9 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
         <p>If you didn't expect this invitation, you can safely ignore this email.</p>
       `,
     });
+    console.log(`[STAFF PORTAL INVITE] Email ${emailSent ? 'sent' : 'failed'} for ${data.email}`);
   } catch (emailError) {
-    console.error('Failed to send invite email:', emailError);
+    console.error('[STAFF PORTAL INVITE] Failed to send invite email:', emailError);
   }
 
   res.status(201).json({
