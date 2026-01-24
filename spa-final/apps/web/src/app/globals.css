@@ -63,6 +63,42 @@
   .dark ::selection {
     @apply bg-sage/30 text-white;
   }
+
+  /* Form inputs - ensure text is always visible */
+  input,
+  textarea,
+  select {
+    @apply text-charcoal;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-charcoal/50;
+  }
+
+  /* Dark mode inputs with light backgrounds need dark text */
+  .dark input:not(.dark-input),
+  .dark textarea:not(.dark-input),
+  .dark select:not(.dark-input) {
+    @apply text-charcoal;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    @apply text-charcoal/50;
+  }
+
+  /* Dark mode inputs with dark backgrounds */
+  .dark input.dark-input,
+  .dark textarea.dark-input,
+  .dark select.dark-input {
+    @apply text-white;
+  }
+
+  .dark input.dark-input::placeholder,
+  .dark textarea.dark-input::placeholder {
+    @apply text-white/50;
+  }
 }
 
 @layer components {
