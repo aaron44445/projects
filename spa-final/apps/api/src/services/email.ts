@@ -1,17 +1,5 @@
 import { env } from '../lib/env.js';
 
-// Lazy load SendGrid to avoid module initialization issues
-let sgMail: any = null;
-
-async function getSendGrid() {
-  if (!sgMail && env.SENDGRID_API_KEY) {
-    const sendgridModule = await import('@sendgrid/mail');
-    sgMail = sendgridModule.default;
-    sgMail.setApiKey(env.SENDGRID_API_KEY);
-  }
-  return sgMail;
-}
-
 interface EmailOptions {
   to: string;
   subject: string;
@@ -29,77 +17,106 @@ interface BulkEmailOptions {
   from?: string;
 }
 
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
+// Use SMTP2GO REST API (no npm packages needed)
+async function sendViaSMTP2GO(options: EmailOptions): Promise<boolean> {
+  const apiKey = env.SMTP_PASS; // SMTP2GO uses the API key as SMTP_PASS
+  const fromEmail = options.from || env.SMTP_FROM_EMAIL || 'noreply@peacase.com';
+  const fromName = env.SMTP_FROM_NAME || 'Peacase';
+
+  try {
+    const response = await fetch('https://api.smtp2go.com/v3/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        api_key: apiKey,
+        to: [`${options.to}`],
+        sender: `${fromName} <${fromEmail}>`,
+        subject: options.subject,
+        html_body: options.html,
+        text_body: options.text || options.html.replace(/<[^>]*>/g, ''),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.data?.succeeded > 0) {
+      console.log(`Email sent successfully to ${options.to} via SMTP2GO`);
+      return true;
+    } else {
+      console.error('SMTP2GO error:', result);
+      return false;
+    }
+  } catch (error) {
+    console.error('SMTP2GO request failed:', error);
+    return false;
+  }
+}
+
+// Fallback to SendGrid if configured
+async function sendViaSendGrid(options: EmailOptions): Promise<boolean> {
   if (!env.SENDGRID_API_KEY) {
-    console.warn('SendGrid not configured - email not sent to:', options.to);
     return false;
   }
 
   try {
-    const sendgrid = await getSendGrid();
-    if (!sendgrid) {
-      console.warn('SendGrid initialization failed - email not sent to:', options.to);
-      return false;
-    }
+    const sendgridModule = await import('@sendgrid/mail');
+    const sgMail = sendgridModule.default;
+    sgMail.setApiKey(env.SENDGRID_API_KEY);
 
-    const fromEmail = options.from || env.SENDGRID_FROM_EMAIL;
-    console.log(`Sending email to ${options.to} from ${fromEmail} - Subject: ${options.subject}`);
-
-    await sendgrid.send({
+    await sgMail.send({
       to: options.to,
-      from: fromEmail,
+      from: options.from || env.SENDGRID_FROM_EMAIL,
       subject: options.subject,
       html: options.html,
       text: options.text || options.html.replace(/<[^>]*>/g, ''),
       replyTo: options.replyTo,
     });
-    console.log(`Email sent successfully to ${options.to}`);
+    console.log(`Email sent successfully to ${options.to} via SendGrid`);
     return true;
   } catch (error: any) {
     console.error('SendGrid error:', error?.message || error);
-    if (error?.response?.body) {
-      console.error('SendGrid response body:', JSON.stringify(error.response.body, null, 2));
-    }
     return false;
   }
+}
+
+export async function sendEmail(options: EmailOptions): Promise<boolean> {
+  // Try SMTP2GO first (if configured)
+  if (env.SMTP_PASS) {
+    console.log(`Attempting to send email to ${options.to} via SMTP2GO...`);
+    const sent = await sendViaSMTP2GO(options);
+    if (sent) return true;
+  }
+
+  // Fall back to SendGrid
+  if (env.SENDGRID_API_KEY) {
+    console.log(`Attempting to send email to ${options.to} via SendGrid...`);
+    const sent = await sendViaSendGrid(options);
+    if (sent) return true;
+  }
+
+  console.warn('No email provider configured - email not sent to:', options.to);
+  return false;
 }
 
 export async function sendBulkEmail(options: BulkEmailOptions): Promise<{ sent: number; failed: number }> {
   const results = { sent: 0, failed: 0 };
 
-  if (!env.SENDGRID_API_KEY) {
-    console.warn('SendGrid not configured - bulk emails not sent');
-    results.failed = options.recipients.length;
-    return results;
-  }
-
-  const sendgrid = await getSendGrid();
-  if (!sendgrid) {
-    console.warn('SendGrid initialization failed - bulk emails not sent');
-    results.failed = options.recipients.length;
-    return results;
-  }
-
-  const batches: string[][] = [];
-  for (let i = 0; i < options.recipients.length; i += 1000) {
-    batches.push(options.recipients.slice(i, i + 1000));
-  }
-
-  for (const batch of batches) {
-    const messages = batch.map(email => ({
-      to: email,
-      from: options.from || env.SENDGRID_FROM_EMAIL,
+  // Send individually for now (SMTP2GO bulk API is different)
+  for (const recipient of options.recipients) {
+    const success = await sendEmail({
+      to: recipient,
       subject: options.subject,
       html: options.html,
-      text: options.text || options.html.replace(/<[^>]*>/g, ''),
-    }));
+      text: options.text,
+      from: options.from,
+    });
 
-    try {
-      await sendgrid.send(messages);
-      results.sent += batch.length;
-    } catch (error) {
-      console.error('Bulk email error:', error);
-      results.failed += batch.length;
+    if (success) {
+      results.sent++;
+    } else {
+      results.failed++;
     }
   }
 
@@ -147,51 +164,6 @@ export function appointmentConfirmationEmail(data: {
         <div class="footer">
           <p>${data.salonName}</p>
           <p>This email was sent because you have an upcoming appointment.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-export function appointmentCancellationEmail(data: {
-  clientName: string;
-  salonName: string;
-  serviceName: string;
-  appointmentDate: string;
-  appointmentTime: string;
-}): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #F5E6E6 0%, #FAF8F3 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
-        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
-        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
-        .cancelled { background: #FEF3E7; border-left: 4px solid #E57373; padding: 15px; margin: 20px 0; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">Appointment Cancelled</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Your appointment has been cancelled</p>
-        </div>
-        <div class="content">
-          <p>Hi ${data.clientName},</p>
-          <p>This is to confirm that your appointment has been cancelled.</p>
-          <div class="cancelled">
-            <p style="margin: 0;"><strong>Service:</strong> ${data.serviceName}</p>
-            <p style="margin: 5px 0 0 0;"><strong>Originally scheduled:</strong> ${data.appointmentDate} at ${data.appointmentTime}</p>
-          </div>
-          <p>If you'd like to book another appointment, please visit our booking page or contact us directly.</p>
-          <p>We hope to see you again soon!</p>
-        </div>
-        <div class="footer">
-          <p>${data.salonName}</p>
         </div>
       </div>
     </body>
@@ -466,17 +438,13 @@ export function marketingCampaignEmail(data: {
   `;
 }
 
-// ============================================
-// CLIENT PORTAL EMAIL TEMPLATES
-// ============================================
-
 export function clientWelcomeEmail(data: {
   clientName: string;
   salonName: string;
   verificationToken: string;
   portalUrl: string;
 }): string {
-  const verifyUrl = `${data.portalUrl}/verify-email?token=${data.verificationToken}`;
+  const verifyUrl = `${data.portalUrl}/verify?token=${data.verificationToken}`;
   return `
     <!DOCTYPE html>
     <html>
@@ -488,79 +456,21 @@ export function clientWelcomeEmail(data: {
         .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
         .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
         .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-        .features { background: #FAF8F3; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .feature-item { margin: 10px 0; padding-left: 20px; position: relative; }
-        .feature-item:before { content: "✓"; position: absolute; left: 0; color: #6B9B76; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">Welcome to ${data.salonName}!</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Your account has been created</p>
-        </div>
-        <div class="content">
-          <p>Hi ${data.clientName},</p>
-          <p>Thank you for creating your client account with ${data.salonName}. We're excited to have you!</p>
-          <p style="text-align: center;">
-            <a href="${verifyUrl}" class="button">Verify Your Email</a>
-          </p>
-          <div class="features">
-            <p style="margin: 0 0 10px 0; font-weight: 600;">With your account you can:</p>
-            <div class="feature-item">Book appointments online 24/7</div>
-            <div class="feature-item">View your appointment history</div>
-            <div class="feature-item">Manage your packages and gift cards</div>
-            <div class="feature-item">Leave reviews for your visits</div>
-            <div class="feature-item">Update your preferences</div>
-          </div>
-          <p>If you didn't create this account, you can safely ignore this email.</p>
-        </div>
-        <div class="footer">
-          <p>${data.salonName}</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-export function clientVerificationEmail(data: {
-  clientName: string;
-  salonName: string;
-  verificationToken: string;
-  portalUrl: string;
-}): string {
-  const verifyUrl = `${data.portalUrl}/verify-email?token=${data.verificationToken}`;
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
-        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
-        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
-        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-        .info { background: #E8F4EA; border-left: 4px solid #6B9B76; padding: 15px; margin: 20px 0; font-size: 14px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">Verify Your Email</h1>
+          <h1 style="margin: 0; color: #2C2C2C;">Welcome!</h1>
           <p style="margin: 10px 0 0 0; color: #4A4A4A;">${data.salonName}</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
-          <p>Please verify your email address by clicking the button below:</p>
+          <p>Welcome to ${data.salonName}! Your account has been created successfully.</p>
+          <p>Please verify your email to start booking appointments:</p>
           <p style="text-align: center;">
-            <a href="${verifyUrl}" class="button">Verify Email Address</a>
+            <a href="${verifyUrl}" class="button">Verify Email & Get Started</a>
           </p>
-          <div class="info">
-            <p style="margin: 0;"><strong>This link will expire in 24 hours.</strong></p>
-          </div>
-          <p>If you didn't create an account, you can safely ignore this email.</p>
         </div>
         <div class="footer">
           <p>${data.salonName}</p>
@@ -576,8 +486,37 @@ export function clientPasswordResetEmail(data: {
   salonName: string;
   resetToken: string;
   portalUrl: string;
+  expiresInMinutes?: number;
 }): string {
   const resetUrl = `${data.portalUrl}/reset-password?token=${data.resetToken}`;
+  return passwordResetEmail({
+    recipientName: data.clientName,
+    resetUrl,
+    expiresInMinutes: data.expiresInMinutes || 60,
+  });
+}
+
+export function clientVerificationEmail(data: {
+  clientName: string;
+  salonName: string;
+  verificationToken: string;
+  portalUrl: string;
+}): string {
+  const verificationUrl = `${data.portalUrl}/verify?token=${data.verificationToken}`;
+  return emailVerificationEmail({
+    salonName: data.salonName,
+    verificationUrl,
+  });
+}
+
+export function appointmentCancellationEmail(data: {
+  clientName: string;
+  serviceName: string;
+  salonName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  reason?: string;
+}): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -585,29 +524,28 @@ export function clientPasswordResetEmail(data: {
       <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+        .header { background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
         .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
-        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-        .warning { background: #FEF3E7; border-left: 4px solid #F5A623; padding: 15px; margin: 20px 0; font-size: 14px; }
+        .details { background: #FEF2F2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">Reset Your Password</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">${data.salonName}</p>
+          <h1 style="margin: 0; color: #991B1B;">Appointment Cancelled</h1>
+          <p style="margin: 10px 0 0 0; color: #7F1D1D;">${data.salonName}</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <p style="text-align: center;">
-            <a href="${resetUrl}" class="button">Reset Password</a>
-          </p>
-          <div class="warning">
-            <p style="margin: 0;"><strong>This link will expire in 1 hour.</strong></p>
-            <p style="margin: 5px 0 0 0;">If you didn't request a password reset, you can safely ignore this email.</p>
+          <p>Your appointment has been cancelled:</p>
+          <div class="details">
+            <p><strong>Service:</strong> ${data.serviceName}</p>
+            <p><strong>Date:</strong> ${data.appointmentDate}</p>
+            <p><strong>Time:</strong> ${data.appointmentTime}</p>
+            ${data.reason ? `<p><strong>Reason:</strong> ${data.reason}</p>` : ''}
           </div>
+          <p>If you'd like to rebook, please visit our booking page or contact us.</p>
         </div>
         <div class="footer">
           <p>${data.salonName}</p>
