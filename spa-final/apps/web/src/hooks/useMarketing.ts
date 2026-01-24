@@ -34,6 +34,7 @@ export interface UpdateCampaignInput extends Partial<CreateCampaignInput> {
 
 interface UseMarketingReturn {
   campaigns: Campaign[];
+  loading: boolean;
   isLoading: boolean;
   error: string | null;
   fetchCampaigns: () => Promise<void>;
@@ -104,6 +105,7 @@ export function useMarketing(): UseMarketingReturn {
 
   return {
     campaigns,
+    loading: isLoading,
     isLoading,
     error,
     fetchCampaigns,
