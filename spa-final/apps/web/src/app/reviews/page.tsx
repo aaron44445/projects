@@ -22,6 +22,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useReviews, Review } from '@/hooks';
 
 function ReviewsContent() {
@@ -155,6 +156,7 @@ function ReviewsContent() {
               <h1 className="text-2xl font-bold text-charcoal">Reviews</h1>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={handleRequestReview}

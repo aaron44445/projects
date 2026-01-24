@@ -26,6 +26,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useMarketing, useClients, useReports, Campaign, CreateCampaignInput, Client } from '@/hooks';
 
 // Audience segment calculation helpers
@@ -775,6 +776,7 @@ function MarketingContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={() => openModal('email')}

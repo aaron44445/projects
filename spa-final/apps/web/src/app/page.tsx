@@ -765,6 +765,7 @@ function Footer() {
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
+              <li><button type="button" onClick={() => { if (typeof window !== 'undefined') { window.dispatchEvent(new CustomEvent('open-cookie-preferences')); } }} className="hover:text-white transition-colors">Cookie Preferences</button></li>
             </ul>
           </div>
         </div>

@@ -32,6 +32,7 @@ import {
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useClients, Client, CreateClientInput, UpdateClientInput } from '@/hooks';
 
 // Filter types
@@ -361,6 +362,7 @@ function ClientsContent() {
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={handleOpenNewClient}

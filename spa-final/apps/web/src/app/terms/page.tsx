@@ -1,13 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { Sparkles, ArrowLeft, FileText, UserCheck, AlertTriangle, CreditCard, BookOpen, Shield, XCircle, Scale, RefreshCw } from 'lucide-react';
+import { Sparkles, ArrowLeft, FileText, UserCheck, AlertTriangle, CreditCard, BookOpen, Shield, XCircle, Scale, RefreshCw, Mail, List } from 'lucide-react';
 
 // ============================================
 // TERMS OF SERVICE PAGE - PEACASE
 // ============================================
 
+const tableOfContents = [
+  { id: 'service-description', title: '1. Service Description' },
+  { id: 'account-responsibilities', title: '2. Account Responsibilities' },
+  { id: 'acceptable-use', title: '3. Acceptable Use Policy' },
+  { id: 'payment-terms', title: '4. Payment Terms' },
+  { id: 'intellectual-property', title: '5. Intellectual Property' },
+  { id: 'limitation-liability', title: '6. Limitation of Liability' },
+  { id: 'termination', title: '7. Termination' },
+  { id: 'dispute-resolution', title: '8. Dispute Resolution' },
+  { id: 'changes-terms', title: '9. Changes to Terms' },
+  { id: 'contact', title: '10. Contact Information' },
+];
+
 export default function TermsOfServicePage() {
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 100; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-cream">
       {/* Navigation */}
@@ -44,8 +67,29 @@ export default function TermsOfServicePage() {
               Terms of Service
             </h1>
             <p className="text-charcoal/60">
-              Last updated: January 13, 2026
+              Last updated: January 24, 2026
             </p>
+          </div>
+
+          {/* Table of Contents */}
+          <div className="bg-white rounded-2xl border border-charcoal/5 shadow-card p-6 lg:p-8 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-lg bg-sage/10 text-sage">
+                <List className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-semibold text-charcoal">Table of Contents</h2>
+            </div>
+            <nav className="grid sm:grid-cols-2 gap-2">
+              {tableOfContents.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className="text-left px-3 py-2 rounded-lg text-sm text-charcoal/70 hover:text-charcoal hover:bg-sage/5 transition-colors"
+                >
+                  {item.title}
+                </button>
+              ))}
+            </nav>
           </div>
 
           {/* Content Card */}
@@ -66,6 +110,7 @@ export default function TermsOfServicePage() {
 
             {/* Service Description */}
             <TermsSection
+              id="service-description"
               icon={Sparkles}
               title="1. Service Description"
               content={
@@ -94,6 +139,7 @@ export default function TermsOfServicePage() {
 
             {/* Account Responsibilities */}
             <TermsSection
+              id="account-responsibilities"
               icon={UserCheck}
               title="2. Account Responsibilities"
               content={
@@ -124,6 +170,7 @@ export default function TermsOfServicePage() {
 
             {/* Acceptable Use */}
             <TermsSection
+              id="acceptable-use"
               icon={AlertTriangle}
               title="3. Acceptable Use Policy"
               content={
@@ -156,6 +203,7 @@ export default function TermsOfServicePage() {
 
             {/* Payment Terms */}
             <TermsSection
+              id="payment-terms"
               icon={CreditCard}
               title="4. Payment Terms"
               content={
@@ -194,6 +242,7 @@ export default function TermsOfServicePage() {
 
             {/* Intellectual Property */}
             <TermsSection
+              id="intellectual-property"
               icon={BookOpen}
               title="5. Intellectual Property"
               content={
@@ -223,6 +272,7 @@ export default function TermsOfServicePage() {
 
             {/* Limitation of Liability */}
             <TermsSection
+              id="limitation-liability"
               icon={Shield}
               title="6. Limitation of Liability"
               content={
@@ -252,6 +302,7 @@ export default function TermsOfServicePage() {
 
             {/* Termination */}
             <TermsSection
+              id="termination"
               icon={XCircle}
               title="7. Termination"
               content={
@@ -286,6 +337,7 @@ export default function TermsOfServicePage() {
 
             {/* Dispute Resolution */}
             <TermsSection
+              id="dispute-resolution"
               icon={Scale}
               title="8. Dispute Resolution"
               content={
@@ -322,6 +374,7 @@ export default function TermsOfServicePage() {
 
             {/* Changes to Terms */}
             <TermsSection
+              id="changes-terms"
               icon={RefreshCw}
               title="9. Changes to Terms"
               content={
@@ -347,7 +400,7 @@ export default function TermsOfServicePage() {
             />
 
             {/* Contact */}
-            <section className="pt-8 border-t border-charcoal/10">
+            <section id="contact" className="pt-8 border-t border-charcoal/10 scroll-mt-28">
               <h3 className="text-xl font-semibold text-charcoal mb-4">10. Contact Information</h3>
               <p className="text-charcoal/80 leading-relaxed mb-4">
                 If you have any questions about these Terms, please contact us:
@@ -397,14 +450,15 @@ export default function TermsOfServicePage() {
 // ============================================
 
 interface TermsSectionProps {
+  id?: string;
   icon: React.ElementType;
   title: string;
   content: React.ReactNode;
 }
 
-function TermsSection({ icon: Icon, title, content }: TermsSectionProps) {
+function TermsSection({ id, icon: Icon, title, content }: TermsSectionProps) {
   return (
-    <section className="mb-10 pb-10 border-b border-charcoal/10 last:border-b-0 last:pb-0 last:mb-0">
+    <section id={id} className="mb-10 pb-10 border-b border-charcoal/10 last:border-b-0 last:pb-0 last:mb-0 scroll-mt-28">
       <div className="flex items-start gap-4 mb-4">
         <div className="p-2 rounded-lg bg-sage/10 text-sage flex-shrink-0">
           <Icon className="w-5 h-5" />

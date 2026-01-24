@@ -27,6 +27,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
@@ -287,6 +288,7 @@ function PackagesContent() {
               <h1 className="text-2xl font-bold text-charcoal">Packages & Memberships</h1>
             </div>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={() => setShowModal(activeTab === 'memberships' ? 'membership' : 'package')}

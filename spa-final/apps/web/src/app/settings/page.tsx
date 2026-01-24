@@ -26,11 +26,15 @@ import {
   Code,
   MapPin,
   DollarSign,
+  Languages,
+  Receipt,
 } from 'lucide-react';
+import { SUPPORTED_CURRENCIES, TIMEZONE_OPTIONS, type CurrencyCode, type DateFormatStyle, type TimeFormatStyle } from '@/lib/i18n';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { useSalon, useLocationContext, type Salon } from '@/hooks';
 import { useServices, type Service } from '@/hooks/useServices';
@@ -42,6 +46,8 @@ const settingsSections = [
   { id: 'business', name: 'Business Info', icon: Building2, description: 'Company details and address', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'locations', name: 'Locations', icon: MapPin, description: 'Multi-location settings', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'hours', name: 'Business Hours', icon: Clock, description: 'Operating hours and holidays', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'regional', name: 'Regional Settings', icon: Languages, description: 'Currency, date, and time formats', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
+  { id: 'tax', name: 'Tax / VAT Settings', icon: Receipt, description: 'Tax rates and configuration', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'subscription', name: 'Subscription', icon: Sparkles, description: 'Manage your plan and add-ons', requiresPermission: PERMISSIONS.MANAGE_BILLING },
   { id: 'payments', name: 'Payments', icon: CreditCard, description: 'Payment methods and settings', requiredAddOn: 'payment_processing' as AddOnId, requiresPermission: PERMISSIONS.MANAGE_BILLING },
   { id: 'notifications', name: 'Notifications', icon: Mail, description: 'Email and SMS preferences', requiredAddOn: 'reminders' as AddOnId },
@@ -217,6 +223,32 @@ function SettingsContent() {
     description: '',
   });
 
+  // Regional settings form state
+  const [regionalForm, setRegionalForm] = useState({
+    currency: 'USD' as CurrencyCode,
+    dateFormat: 'MDY' as DateFormatStyle,
+    timeFormat: '12h' as TimeFormatStyle,
+    weekStartsOn: 0,
+    timezone: 'America/Los_Angeles',
+  });
+
+  // Tax settings form state
+  const [taxForm, setTaxForm] = useState({
+    taxEnabled: false,
+    taxName: 'Sales Tax',
+    taxRate: 0,
+    taxIncluded: false,
+    vatNumber: '',
+  });
+
+  // Saving states for regional and tax
+  const [isSavingRegional, setIsSavingRegional] = useState(false);
+  const [regionalSaved, setRegionalSaved] = useState(false);
+  const [regionalError, setRegionalError] = useState<string | null>(null);
+  const [isSavingTax, setIsSavingTax] = useState(false);
+  const [taxSaved, setTaxSaved] = useState(false);
+  const [taxError, setTaxError] = useState<string | null>(null);
+
   // Branding form state
   const [brandingForm, setBrandingForm] = useState({
     primaryColor: '#C7DCC8',
@@ -322,6 +354,24 @@ function SettingsContent() {
         timezone: salon.timezone || 'America/Los_Angeles',
         description: salon.description || '',
       });
+
+      // Sync regional settings
+      setRegionalForm({
+        currency: (salon.currency as CurrencyCode) || 'USD',
+        dateFormat: (salon.dateFormat as DateFormatStyle) || 'MDY',
+        timeFormat: (salon.timeFormat as TimeFormatStyle) || '12h',
+        weekStartsOn: salon.weekStartsOn ?? 0,
+        timezone: salon.timezone || 'America/Los_Angeles',
+      });
+
+      // Sync tax settings
+      setTaxForm({
+        taxEnabled: salon.taxEnabled ?? false,
+        taxName: salon.taxName || 'Sales Tax',
+        taxRate: salon.taxRate ?? 0,
+        taxIncluded: salon.taxIncluded ?? false,
+        vatNumber: salon.vatNumber || '',
+      });
     }
   }, [salon]);
 
@@ -355,6 +405,52 @@ function SettingsContent() {
     }
   };
 
+  // Save regional settings
+  const handleSaveRegional = async () => {
+    setIsSavingRegional(true);
+    setRegionalError(null);
+    setRegionalSaved(false);
+
+    try {
+      await updateSalon({
+        currency: regionalForm.currency,
+        dateFormat: regionalForm.dateFormat,
+        timeFormat: regionalForm.timeFormat,
+        weekStartsOn: regionalForm.weekStartsOn,
+        timezone: regionalForm.timezone,
+      });
+      setRegionalSaved(true);
+      setTimeout(() => setRegionalSaved(false), 2000);
+    } catch (err) {
+      setRegionalError(err instanceof Error ? err.message : 'Failed to save regional settings');
+    } finally {
+      setIsSavingRegional(false);
+    }
+  };
+
+  // Save tax settings
+  const handleSaveTax = async () => {
+    setIsSavingTax(true);
+    setTaxError(null);
+    setTaxSaved(false);
+
+    try {
+      await updateSalon({
+        taxEnabled: taxForm.taxEnabled,
+        taxName: taxForm.taxName,
+        taxRate: taxForm.taxRate,
+        taxIncluded: taxForm.taxIncluded,
+        vatNumber: taxForm.vatNumber || null,
+      });
+      setTaxSaved(true);
+      setTimeout(() => setTaxSaved(false), 2000);
+    } catch (err) {
+      setTaxError(err instanceof Error ? err.message : 'Failed to save tax settings');
+    } finally {
+      setIsSavingTax(false);
+    }
+  };
+
   const toggleAddOn = (addOnId: AddOnId) => {
     if (hasAddOn(addOnId)) {
       setActiveAddOns(activeAddOns.filter((id) => id !== addOnId));
@@ -376,20 +472,23 @@ function SettingsContent() {
   ];
 
   const renderSection = () => {
-    // Show loading state for business section
-    if (activeSection === 'business' && salonLoading) {
+    // Sections that depend on salon data
+    const salonDependentSections = ['business', 'regional', 'tax'];
+
+    // Show loading state for salon-dependent sections
+    if (salonDependentSections.includes(activeSection) && salonLoading) {
       return (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-4" />
-            <p className="text-charcoal/60">Loading business information...</p>
+            <p className="text-charcoal/60">Loading settings...</p>
           </div>
         </div>
       );
     }
 
-    // Show error state
-    if (activeSection === 'business' && salonError) {
+    // Show error state for salon-dependent sections
+    if (salonDependentSections.includes(activeSection) && salonError) {
       return (
         <div className="text-center py-12">
           <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -777,6 +876,416 @@ function SettingsContent() {
                 <strong>Note:</strong> To set up holiday closures or special hours, go to Calendar
                 and use the Block Time feature.
               </p>
+            </div>
+          </div>
+        );
+
+      case 'regional':
+        // Group timezones by region for the dropdown
+        const groupedTimezones = TIMEZONE_OPTIONS.reduce((acc, tz) => {
+          if (!acc[tz.region]) acc[tz.region] = [];
+          acc[tz.region].push(tz);
+          return acc;
+        }, {} as Record<string, typeof TIMEZONE_OPTIONS[number][]>);
+
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-bold text-charcoal mb-1">Regional Settings</h2>
+              <p className="text-charcoal/60">
+                Configure currency, date format, time format, and timezone for your business.
+              </p>
+            </div>
+
+            {/* Currency */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-sage" />
+                Currency
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">Display Currency</label>
+                <p className="text-xs text-charcoal/50 mb-3">
+                  This currency will be used throughout the app for prices, invoices, and reports.
+                </p>
+                <select
+                  value={regionalForm.currency}
+                  onChange={(e) => setRegionalForm((prev) => ({ ...prev, currency: e.target.value as CurrencyCode }))}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                >
+                  {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
+                    <option key={code} value={code}>
+                      {info.symbol} {info.name} ({code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Date & Time Format */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-sage" />
+                Date & Time Format
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Date Format</label>
+                  <p className="text-xs text-charcoal/50 mb-3">
+                    How dates are displayed (e.g., January 15, 2026)
+                  </p>
+                  <select
+                    value={regionalForm.dateFormat}
+                    onChange={(e) => setRegionalForm((prev) => ({ ...prev, dateFormat: e.target.value as DateFormatStyle }))}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  >
+                    <option value="MDY">MM/DD/YYYY (US)</option>
+                    <option value="DMY">DD/MM/YYYY (UK/Europe)</option>
+                    <option value="YMD">YYYY-MM-DD (ISO)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Time Format</label>
+                  <p className="text-xs text-charcoal/50 mb-3">
+                    How times are displayed (e.g., 2:30 PM vs 14:30)
+                  </p>
+                  <select
+                    value={regionalForm.timeFormat}
+                    onChange={(e) => setRegionalForm((prev) => ({ ...prev, timeFormat: e.target.value as TimeFormatStyle }))}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  >
+                    <option value="12h">12-hour (2:30 PM)</option>
+                    <option value="24h">24-hour (14:30)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Week Starts On</label>
+                  <p className="text-xs text-charcoal/50 mb-3">
+                    First day of the week in calendar views
+                  </p>
+                  <select
+                    value={regionalForm.weekStartsOn}
+                    onChange={(e) => setRegionalForm((prev) => ({ ...prev, weekStartsOn: parseInt(e.target.value) }))}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  >
+                    <option value={0}>Sunday</option>
+                    <option value={1}>Monday</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Timezone</label>
+                  <p className="text-xs text-charcoal/50 mb-3">
+                    Your business timezone for appointments
+                  </p>
+                  <select
+                    value={regionalForm.timezone}
+                    onChange={(e) => setRegionalForm((prev) => ({ ...prev, timezone: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  >
+                    {Object.entries(groupedTimezones).map(([region, timezones]) => (
+                      <optgroup key={region} label={region}>
+                        {timezones.map((tz) => (
+                          <option key={tz.value} value={tz.value}>
+                            {tz.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
+              <h4 className="font-medium text-charcoal mb-3">Preview</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-charcoal/60 mb-1">Currency</p>
+                  <p className="font-medium text-charcoal">
+                    {SUPPORTED_CURRENCIES[regionalForm.currency]?.symbol}125.00
+                  </p>
+                </div>
+                <div>
+                  <p className="text-charcoal/60 mb-1">Date</p>
+                  <p className="font-medium text-charcoal">
+                    {regionalForm.dateFormat === 'MDY' ? '01/15/2026' :
+                     regionalForm.dateFormat === 'DMY' ? '15/01/2026' : '2026-01-15'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-charcoal/60 mb-1">Time</p>
+                  <p className="font-medium text-charcoal">
+                    {regionalForm.timeFormat === '12h' ? '2:30 PM' : '14:30'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-charcoal/60 mb-1">Week Starts</p>
+                  <p className="font-medium text-charcoal">
+                    {regionalForm.weekStartsOn === 0 ? 'Sunday' : 'Monday'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button for Regional */}
+            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10">
+              <div>
+                {regionalSaved && (
+                  <span className="flex items-center gap-2 text-green-600">
+                    <Check className="w-4 h-4" />
+                    Regional settings saved
+                  </span>
+                )}
+                {regionalError && (
+                  <span className="flex items-center gap-2 text-red-600">
+                    <AlertCircle className="w-4 h-4" />
+                    {regionalError}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleSaveRegional}
+                disabled={isSavingRegional}
+                className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSavingRegional ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Regional Settings'
+                )}
+              </button>
+            </div>
+          </div>
+        );
+
+      case 'tax':
+        return (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-bold text-charcoal mb-1">Tax / VAT Settings</h2>
+              <p className="text-charcoal/60">
+                Configure tax rates and VAT settings for your invoices and receipts.
+              </p>
+            </div>
+
+            {/* Tax Enable Toggle */}
+            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Receipt className="w-5 h-5 text-sage" />
+                    <h3 className="font-semibold text-charcoal">Enable Tax</h3>
+                    {taxForm.taxEnabled && (
+                      <span className="px-2 py-0.5 bg-sage/20 text-sage-dark text-xs font-medium rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-charcoal/60">
+                    When enabled, tax will be calculated and shown on invoices and receipts.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTaxForm((prev) => ({ ...prev, taxEnabled: !prev.taxEnabled }))}
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                    taxForm.taxEnabled ? 'bg-sage' : 'bg-charcoal/20'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${
+                      taxForm.taxEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Tax Configuration - Only shown when enabled */}
+            {taxForm.taxEnabled && (
+              <>
+                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+                  <h3 className="font-semibold text-charcoal mb-4">Tax Configuration</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal mb-2">Tax Name</label>
+                      <p className="text-xs text-charcoal/50 mb-3">
+                        The label shown on invoices (e.g., VAT, GST, Sales Tax)
+                      </p>
+                      <input
+                        type="text"
+                        value={taxForm.taxName}
+                        onChange={(e) => setTaxForm((prev) => ({ ...prev, taxName: e.target.value }))}
+                        placeholder="Sales Tax"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-charcoal mb-2">Tax Rate (%)</label>
+                      <p className="text-xs text-charcoal/50 mb-3">
+                        The percentage rate applied to services
+                      </p>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={taxForm.taxRate}
+                          onChange={(e) => setTaxForm((prev) => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          className="w-full px-4 py-3 pr-10 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40">%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+                  <h3 className="font-semibold text-charcoal mb-4">Pricing Display</h3>
+
+                  <div className="space-y-4">
+                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-sage/30"
+                      onClick={() => setTaxForm((prev) => ({ ...prev, taxIncluded: false }))}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        !taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30'
+                      }`}>
+                        {!taxForm.taxIncluded && <div className="w-2.5 h-2.5 rounded-full bg-sage" />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-charcoal">Tax added at checkout (exclusive)</p>
+                        <p className="text-sm text-charcoal/60">
+                          Service prices shown without tax. Tax is calculated and added separately.
+                        </p>
+                        <p className="text-xs text-charcoal/40 mt-1">
+                          Example: $100 service + {taxForm.taxRate}% tax = ${(100 + (100 * taxForm.taxRate / 100)).toFixed(2)} total
+                        </p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-sage/30"
+                      onClick={() => setTaxForm((prev) => ({ ...prev, taxIncluded: true }))}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30'
+                      }`}>
+                        {taxForm.taxIncluded && <div className="w-2.5 h-2.5 rounded-full bg-sage" />}
+                      </div>
+                      <div>
+                        <p className="font-medium text-charcoal">Tax included in price (inclusive)</p>
+                        <p className="text-sm text-charcoal/60">
+                          Service prices already include tax. Tax amount shown as breakdown.
+                        </p>
+                        <p className="text-xs text-charcoal/40 mt-1">
+                          Example: $100 service includes ${(100 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)} tax
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+                  <h3 className="font-semibold text-charcoal mb-4">VAT / Tax ID (Optional)</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-charcoal mb-2">VAT Number / Tax ID</label>
+                    <p className="text-xs text-charcoal/50 mb-3">
+                      Your business VAT or tax registration number. This will appear on invoices.
+                    </p>
+                    <input
+                      type="text"
+                      value={taxForm.vatNumber}
+                      onChange={(e) => setTaxForm((prev) => ({ ...prev, vatNumber: e.target.value }))}
+                      placeholder="e.g., GB123456789"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Tax Preview */}
+            {taxForm.taxEnabled && (
+              <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
+                <h4 className="font-medium text-charcoal mb-3">Invoice Preview</h4>
+                <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-charcoal/60">Haircut</span>
+                    <span className="text-charcoal">${taxForm.taxIncluded ? '50.00' : '50.00'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-charcoal/60">Color Treatment</span>
+                    <span className="text-charcoal">${taxForm.taxIncluded ? '100.00' : '100.00'}</span>
+                  </div>
+                  <div className="border-t border-charcoal/10 pt-2 mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">Subtotal</span>
+                      <span className="text-charcoal">$150.00</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-charcoal/60">{taxForm.taxName} ({taxForm.taxRate}%)</span>
+                      <span className="text-charcoal">
+                        ${taxForm.taxIncluded
+                          ? (150 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)
+                          : (150 * taxForm.taxRate / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-charcoal pt-2 border-t border-charcoal/10 mt-2">
+                      <span>Total</span>
+                      <span>
+                        ${taxForm.taxIncluded
+                          ? '150.00'
+                          : (150 + 150 * taxForm.taxRate / 100).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  {taxForm.vatNumber && (
+                    <div className="text-xs text-charcoal/40 pt-2 border-t border-charcoal/10 mt-2">
+                      VAT/Tax ID: {taxForm.vatNumber}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Save Button for Tax */}
+            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10">
+              <div>
+                {taxSaved && (
+                  <span className="flex items-center gap-2 text-green-600">
+                    <Check className="w-4 h-4" />
+                    Tax settings saved
+                  </span>
+                )}
+                {taxError && (
+                  <span className="flex items-center gap-2 text-red-600">
+                    <AlertCircle className="w-4 h-4" />
+                    {taxError}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleSaveTax}
+                disabled={isSavingTax}
+                className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSavingTax ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Tax Settings'
+                )}
+              </button>
             </div>
           </div>
         );
@@ -1886,6 +2395,7 @@ function SettingsContent() {
 
             <div className="flex items-center gap-4">
               {locations.length > 1 && <LocationSwitcher showAllOption={false} />}
+              <ThemeToggle />
               <NotificationDropdown />
             </div>
           </div>

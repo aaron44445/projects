@@ -22,6 +22,7 @@ import {
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
@@ -455,6 +456,7 @@ function ServicesContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={openNewCategoryModal}

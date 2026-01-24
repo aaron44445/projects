@@ -21,6 +21,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useReports } from '@/hooks/useReports';
 import { useLocationContext } from '@/hooks/useLocations';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
@@ -378,6 +379,7 @@ function ReportsContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={handleExportCSV}

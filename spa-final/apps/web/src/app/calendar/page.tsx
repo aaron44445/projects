@@ -28,6 +28,7 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   useAppointments,
   useStaff,
@@ -703,6 +704,7 @@ function CalendarContent() {
               {locations.length > 1 && (
                 <LocationSwitcher className="hidden sm:block" />
               )}
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={() => {

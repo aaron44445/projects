@@ -27,6 +27,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useGiftCards, GiftCard, useSalon } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
@@ -444,6 +445,7 @@ function GiftCardsContent() {
                 <CreditCard className="w-5 h-5" />
                 <span className="hidden sm:inline">Redeem</span>
               </button>
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={() => setShowModal(true)}

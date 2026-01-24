@@ -22,6 +22,7 @@ import {
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useLocationContext, type Location, type CreateLocationInput, type UpdateLocationInput, type LocationHours } from '@/hooks/useLocations';
 import { COUNTRIES, TIMEZONE_OPTIONS, formatAddress as formatAddressUtil } from '@/lib/i18n';
 
@@ -343,6 +344,7 @@ function LocationsContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <NotificationDropdown />
               <button
                 onClick={openNewLocationModal}

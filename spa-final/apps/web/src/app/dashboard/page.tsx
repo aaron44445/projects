@@ -40,6 +40,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 
@@ -343,11 +344,12 @@ function DashboardContent() {
 
               <button
                 onClick={() => refetch()}
-                className="p-2 text-charcoal/60 hover:text-charcoal"
+                className="p-2 text-charcoal/60 hover:text-charcoal dark:text-white/60 dark:hover:text-white"
                 title="Refresh data"
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </button>
+              <ThemeToggle />
               <NotificationDropdown />
             </div>
           </div>
