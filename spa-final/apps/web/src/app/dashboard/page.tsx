@@ -129,7 +129,7 @@ function DashboardContent() {
     try {
       await createClient({
         firstName: clientForm.firstName.trim(),
-        lastName: clientForm.lastName.trim() || undefined,
+        lastName: clientForm.lastName.trim() || '',
         email: clientForm.email.trim() || undefined,
         phone: clientForm.phone.trim() || undefined,
       });
