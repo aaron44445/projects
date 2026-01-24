@@ -41,6 +41,7 @@ import { OnboardingGuard } from '@/components/OnboardingGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -118,6 +119,7 @@ function DashboardContent() {
   const { services } = useServices();
   const { clients, createClient, refetch: refetchClients } = useClients();
   const { staff } = useStaff();
+  const { formatPrice } = useSalonSettings();
 
   // Handle quick add client
   const handleAddClient = async () => {
@@ -264,7 +266,7 @@ function DashboardContent() {
     ? [
         {
           label: "Today's Revenue",
-          value: `$${stats.todayRevenue?.toLocaleString() ?? 0}`,
+          value: formatPrice(stats.todayRevenue ?? 0),
           change: stats.revenueChange || '+0%',
           trend: (stats.revenueChange?.startsWith('-') ? 'down' : 'up') as 'up' | 'down',
           icon: DollarSign,
@@ -288,7 +290,7 @@ function DashboardContent() {
         },
         {
           label: 'Monthly Revenue',
-          value: `$${stats.monthRevenue?.toLocaleString() ?? 0}`,
+          value: formatPrice(stats.monthRevenue ?? 0),
           change: stats.revenueChange || '+0%',
           trend: (stats.revenueChange?.startsWith('-') ? 'down' : 'up') as 'up' | 'down',
           icon: Clock,

@@ -28,6 +28,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
 
 const services = [
   'Haircut & Style',
@@ -52,6 +54,8 @@ function PackagesContent() {
 
   // API hook
   const { packages, members, loading, error, fetchPackages, fetchMembers, createPackage, updatePackage, deletePackage, updateMember, cancelMembership } = usePackages();
+  const { formatPrice, currency } = useSalonSettings();
+  const currencySymbol = SUPPORTED_CURRENCIES[currency as CurrencyCode]?.symbol || '$';
 
   // View details modal state
   const [viewingItem, setViewingItem] = useState<PackageType | null>(null);
@@ -85,7 +89,7 @@ function PackagesContent() {
 
   const stats = [
     { label: 'Active Members', value: activeMembers.length.toString(), icon: Users, color: 'bg-sage' },
-    { label: 'Monthly Revenue', value: `$${(monthlyRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'bg-lavender' },
+    { label: 'Monthly Revenue', value: formatPrice(monthlyRevenue), icon: DollarSign, color: 'bg-lavender' },
     { label: 'Packages Sold', value: packageItems.length.toString(), icon: Package, color: 'bg-peach' },
     { label: 'Retention Rate', value: `${retentionRate}%`, icon: TrendingUp, color: 'bg-mint' },
   ];
@@ -447,7 +451,7 @@ function PackagesContent() {
                         )}
 
                         <h3 className="font-semibold text-charcoal mb-1">{pkg.name}</h3>
-                        <p className="text-2xl font-bold text-charcoal mb-2">${pkg.price}</p>
+                        <p className="text-2xl font-bold text-charcoal mb-2">{formatPrice(pkg.price)}</p>
                         {pkg.description && (
                           <p className="text-sm text-charcoal/60 mb-2">{pkg.description}</p>
                         )}
@@ -542,7 +546,7 @@ function PackagesContent() {
 
                         <h3 className="font-semibold text-charcoal mb-1">{pkg.name}</h3>
                         <p className="text-2xl font-bold text-charcoal mb-2">
-                          ${pkg.renewalPrice || pkg.price}<span className="text-sm font-normal text-charcoal/60">/mo</span>
+                          {formatPrice(pkg.renewalPrice || pkg.price)}<span className="text-sm font-normal text-charcoal/60">/mo</span>
                         </p>
                         {pkg.description && (
                           <p className="text-sm text-charcoal/60 mb-2">{pkg.description}</p>
@@ -713,7 +717,7 @@ function PackagesContent() {
                   Price {showModal === 'membership' && '(per month)'}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">{currencySymbol}</span>
                   <input
                     type="number"
                     placeholder="0"
@@ -858,7 +862,7 @@ function PackagesContent() {
               <div className="bg-cream rounded-xl p-4">
                 <p className="text-sm text-charcoal/60 mb-1">Price</p>
                 <p className="text-3xl font-bold text-charcoal">
-                  ${viewingItem.renewalPrice || viewingItem.price}
+                  {formatPrice(viewingItem.renewalPrice || viewingItem.price)}
                   {(viewingItem.type === 'MEMBERSHIP' || viewingItem.type === 'membership') && (
                     <span className="text-base font-normal text-charcoal/60">/month</span>
                   )}
@@ -895,7 +899,7 @@ function PackagesContent() {
                       <div key={ps.id} className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
                         <span className="font-medium text-charcoal">{ps.service.name}</span>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm text-charcoal/60">${ps.service.price} each</span>
+                          <span className="text-sm text-charcoal/60">{formatPrice(ps.service.price)} each</span>
                           <span className="px-2 py-1 bg-sage/20 text-sage-dark text-xs font-medium rounded">
                             x{ps.quantity}
                           </span>
@@ -1035,7 +1039,7 @@ function PackagesContent() {
               <div className="bg-cream rounded-xl p-4">
                 <p className="text-sm text-charcoal/60 mb-2">Current Package/Membership</p>
                 <p className="font-bold text-charcoal text-lg">{viewingMember.package.name}</p>
-                <p className="text-charcoal/70">${viewingMember.package.price}</p>
+                <p className="text-charcoal/70">{formatPrice(viewingMember.package.price)}</p>
               </div>
 
               {/* Services */}

@@ -139,6 +139,7 @@ function SettingsContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const { activeAddOns, hasAddOn, setActiveAddOns, monthlyTotal, trialEndsAt, isTrialActive } = useSubscription();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { can } = usePermissions();
 
   // All sections are accessible - no permission-based filtering

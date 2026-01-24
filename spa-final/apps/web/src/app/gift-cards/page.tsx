@@ -28,6 +28,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useGiftCards, GiftCard, useSalon } from '@/hooks';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
 
 const presetAmounts = [25, 50, 75, 100, 150, 200];
 
@@ -58,6 +60,8 @@ function GiftCardsContent() {
   // API hooks
   const { giftCards, loading, error, createGiftCard, checkBalance, redeemGiftCard, fetchGiftCards } = useGiftCards();
   const { salon } = useSalon();
+  const { formatPrice, currency } = useSalonSettings();
+  const currencySymbol = SUPPORTED_CURRENCIES[currency as CurrencyCode]?.symbol || '$';
 
   // Build dynamic share URL based on salon slug
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://peacase.com';
@@ -107,8 +111,8 @@ function GiftCardsContent() {
 
   const stats = [
     { label: 'Cards Sold', value: giftCards.length.toString(), icon: Gift, color: 'bg-sage' },
-    { label: 'Revenue', value: `$${(totalSold / 1000).toFixed(1)}k`, icon: DollarSign, color: 'bg-lavender' },
-    { label: 'Outstanding', value: `$${totalOutstanding}`, icon: CreditCard, color: 'bg-peach' },
+    { label: 'Revenue', value: formatPrice(totalSold), icon: DollarSign, color: 'bg-lavender' },
+    { label: 'Outstanding', value: formatPrice(totalOutstanding), icon: CreditCard, color: 'bg-peach' },
     { label: 'Active', value: activeCards.length.toString(), icon: TrendingUp, color: 'bg-mint' },
   ];
 
@@ -237,7 +241,7 @@ function GiftCardsContent() {
           <div class="gift-card">
             <div class="salon-name">${salonName}</div>
             <div class="subtitle">Gift Card</div>
-            <div class="amount">$${card.balance}</div>
+            <div class="amount">${currencySymbol}${card.balance}</div>
             <div class="amount-label">Available Balance</div>
             <div class="code-label">Card Code</div>
             <div class="code">${card.code}</div>
@@ -572,8 +576,8 @@ function GiftCardsContent() {
                                 <span className="font-mono font-medium text-charcoal">{card.code}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 font-medium text-charcoal">${card.initialAmount}</td>
-                            <td className="px-6 py-4 font-medium text-charcoal">${card.balance}</td>
+                            <td className="px-6 py-4 font-medium text-charcoal">{formatPrice(card.initialAmount)}</td>
+                            <td className="px-6 py-4 font-medium text-charcoal">{formatPrice(card.balance)}</td>
                             <td className="px-6 py-4 text-charcoal">
                               {card.recipientName || card.recipientEmail || card.purchaserEmail || 'N/A'}
                             </td>
@@ -664,12 +668,12 @@ function GiftCardsContent() {
                           : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
                       }`}
                     >
-                      ${amount}
+                      {currencySymbol}{amount}
                     </button>
                   ))}
                 </div>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">{currencySymbol}</span>
                   <input
                     type="number"
                     placeholder="Custom amount"
@@ -777,7 +781,7 @@ function GiftCardsContent() {
                 ) : (
                   <Gift className="w-4 h-4" />
                 )}
-                Create ${formData.customAmount || formData.amount} Gift Card
+                Create {currencySymbol}{formData.customAmount || formData.amount} Gift Card
               </button>
             </div>
           </div>
@@ -816,7 +820,7 @@ function GiftCardsContent() {
               {balanceResult && (
                 <div className="p-4 bg-sage/10 border border-sage/20 rounded-xl">
                   <p className="text-sm text-charcoal/60 mb-1">Current Balance</p>
-                  <p className="text-3xl font-bold text-sage">${balanceResult.balance}</p>
+                  <p className="text-3xl font-bold text-sage">{formatPrice(balanceResult.balance)}</p>
                   {balanceResult.expiresAt && (
                     <p className="text-sm text-charcoal/60 mt-2">
                       Expires: {new Date(balanceResult.expiresAt).toLocaleDateString()}
@@ -876,7 +880,7 @@ function GiftCardsContent() {
               <div>
                 <label className="block text-sm font-medium text-charcoal mb-2">Amount to Redeem</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">{currencySymbol}</span>
                   <input
                     type="number"
                     placeholder="0.00"
@@ -935,7 +939,7 @@ function GiftCardsContent() {
                 <div className="w-16 h-16 rounded-full bg-white/50 flex items-center justify-center mx-auto mb-4">
                   <Gift className="w-8 h-8 text-sage" />
                 </div>
-                <p className="text-4xl font-bold text-charcoal mb-1">${selectedCard.balance}</p>
+                <p className="text-4xl font-bold text-charcoal mb-1">{formatPrice(selectedCard.balance)}</p>
                 <p className="text-sm text-charcoal/60">Current Balance</p>
                 <p className="font-mono text-lg font-semibold text-charcoal mt-4">{selectedCard.code}</p>
               </div>
@@ -944,7 +948,7 @@ function GiftCardsContent() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-charcoal/5 rounded-xl p-4">
                   <p className="text-xs text-charcoal/60 uppercase tracking-wide mb-1">Original Amount</p>
-                  <p className="text-lg font-semibold text-charcoal">${selectedCard.initialAmount}</p>
+                  <p className="text-lg font-semibold text-charcoal">{formatPrice(selectedCard.initialAmount)}</p>
                 </div>
                 <div className="bg-charcoal/5 rounded-xl p-4">
                   <p className="text-xs text-charcoal/60 uppercase tracking-wide mb-1">Status</p>

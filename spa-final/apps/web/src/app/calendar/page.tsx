@@ -41,6 +41,7 @@ import {
   type Client,
   type Service,
 } from '@/hooks';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
 
@@ -379,6 +380,7 @@ function CalendarContent() {
   const { clients, fetchClients } = useClients();
   const { services, isLoading: servicesLoading } = useServices();
   const { selectedLocationId, locations } = useLocationContext();
+  const { formatPrice } = useSalonSettings();
 
   // Get date range for current view
   const dateRange = useMemo(() => {
@@ -1104,7 +1106,7 @@ function CalendarContent() {
                   <option value="">Select a service...</option>
                   {(services || []).map((service) => (
                     <option key={service.id} value={service.id}>
-                      {service.name} - {service.durationMinutes} min - ${service.price}
+                      {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
                     </option>
                   ))}
                 </select>
@@ -1270,7 +1272,7 @@ function CalendarContent() {
                   <option value="">Select a service...</option>
                   {(services || []).map((service) => (
                     <option key={service.id} value={service.id}>
-                      {service.name} - {service.durationMinutes} min - ${service.price}
+                      {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
                     </option>
                   ))}
                 </select>

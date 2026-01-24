@@ -15,6 +15,19 @@ export interface Salon {
   zip: string | null;
   country: string;
   timezone: string;
+  // Internationalization settings
+  currency: string;
+  locale: string;
+  timeFormat: string;
+  dateFormat: string;
+  weekStartsOn: number;
+  // VAT/Tax settings
+  vatNumber: string | null;
+  taxEnabled: boolean;
+  taxRate: number | null;
+  taxName: string;
+  taxIncluded: boolean;
+  // Other settings
   logoUrl: string | null;
   website: string | null;
   description: string | null;

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSubscription, AddOnId } from '@/contexts/SubscriptionContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { api, ApiError } from '@/lib/api';
+import { COUNTRIES, SUPPORTED_CURRENCIES, CurrencyCode, getCountryDefaults } from '@/lib/i18n';
 import {
   Building2,
   Clock,
@@ -266,6 +267,7 @@ function OnboardingContent() {
     city: '',
     state: '',
     zip: '',
+    country: 'US',
     website: '',
   });
 
@@ -336,14 +338,11 @@ function OnboardingContent() {
     if (!businessLocation.city.trim()) {
       errors.city = 'Please enter your city';
     }
-    if (!businessLocation.state.trim()) {
-      errors.state = 'Please enter your state';
+    if (!businessLocation.country.trim()) {
+      errors.country = 'Please select your country';
     }
-    if (!businessLocation.zip.trim()) {
-      errors.zip = 'Please enter your ZIP code';
-    } else if (!/^\d{5}(-\d{4})?$/.test(businessLocation.zip.trim())) {
-      errors.zip = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';
-    }
+    // State/Province is optional - only validate if required by country-specific rules
+    // Postal code accepts any format (US ZIP, UK postcode, EU codes, etc.)
     if (businessLocation.website && !/^https?:\/\/.+\..+/.test(businessLocation.website)) {
       errors.website = 'Please enter a valid URL starting with http:// or https://';
     }
@@ -370,8 +369,9 @@ function OnboardingContent() {
       await api.post('/onboarding/business-info', {
         address: businessLocation.address,
         city: businessLocation.city,
-        state: businessLocation.state,
-        zip: businessLocation.zip,
+        state: businessLocation.state || undefined,
+        zip: businessLocation.zip || undefined,
+        country: businessLocation.country,
         website: businessLocation.website || undefined,
       });
       return true;
@@ -595,6 +595,10 @@ function OnboardingContent() {
     other: 'Business',
   }[businessType] || 'Business';
 
+  // Get currency symbol based on selected country
+  const countryDefaults = getCountryDefaults(businessLocation.country);
+  const currencySymbol = SUPPORTED_CURRENCIES[countryDefaults.currency]?.symbol || '$';
+
   // Contextual help sidebar
   const renderHelpSidebar = () => {
     const currentStepId = steps[currentStep].id;
@@ -691,6 +695,30 @@ function OnboardingContent() {
 
             {/* Address Fields */}
             <div className="space-y-4">
+              {/* Country selector first */}
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">
+                  Country <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={businessLocation.country}
+                  onChange={(e) => {
+                    setBusinessLocation({ ...businessLocation, country: e.target.value });
+                    if (fieldErrors.country) setFieldErrors({ ...fieldErrors, country: '' });
+                  }}
+                  className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.country ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white`}
+                >
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.country && (
+                  <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.country}</p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-charcoal mb-2">
                   Street Address <span className="text-rose-500">*</span>
@@ -723,7 +751,7 @@ function OnboardingContent() {
                       if (fieldErrors.city) setFieldErrors({ ...fieldErrors, city: '' });
                     }}
                     className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.city ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
-                    placeholder="Los Angeles"
+                    placeholder="Enter your city"
                   />
                   {fieldErrors.city && (
                     <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.city}</p>
@@ -731,7 +759,7 @@ function OnboardingContent() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-2">
-                    State <span className="text-rose-500">*</span>
+                    State / Province <span className="text-charcoal/40">(optional)</span>
                   </label>
                   <input
                     type="text"
@@ -741,7 +769,7 @@ function OnboardingContent() {
                       if (fieldErrors.state) setFieldErrors({ ...fieldErrors, state: '' });
                     }}
                     className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.state ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
-                    placeholder="CA"
+                    placeholder="Region"
                   />
                   {fieldErrors.state && (
                     <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.state}</p>
@@ -749,7 +777,7 @@ function OnboardingContent() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-2">
-                    ZIP Code <span className="text-rose-500">*</span>
+                    Postal Code <span className="text-charcoal/40">(optional)</span>
                   </label>
                   <input
                     type="text"
@@ -759,7 +787,7 @@ function OnboardingContent() {
                       if (fieldErrors.zip) setFieldErrors({ ...fieldErrors, zip: '' });
                     }}
                     className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.zip ? 'border-rose-500' : 'border-charcoal/20'} focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all`}
-                    placeholder="90210"
+                    placeholder="Postal code"
                   />
                   {fieldErrors.zip && (
                     <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.zip}</p>
@@ -1159,7 +1187,7 @@ function OnboardingContent() {
                         </label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40">
-                            $
+                            {currencySymbol}
                           </span>
                           <input
                             type="number"

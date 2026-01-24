@@ -17,77 +17,13 @@ import {
   Star,
   Users,
   Calendar,
+  Globe,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useLocationContext, type Location, type CreateLocationInput, type UpdateLocationInput, type LocationHours } from '@/hooks/useLocations';
-
-// US Timezones for dropdown
-const TIMEZONES = [
-  { value: 'America/Los_Angeles', label: 'Pacific Time (US & Canada)' },
-  { value: 'America/Denver', label: 'Mountain Time (US & Canada)' },
-  { value: 'America/Chicago', label: 'Central Time (US & Canada)' },
-  { value: 'America/New_York', label: 'Eastern Time (US & Canada)' },
-  { value: 'America/Phoenix', label: 'Arizona (No DST)' },
-  { value: 'America/Anchorage', label: 'Alaska Time' },
-  { value: 'Pacific/Honolulu', label: 'Hawaii Time' },
-];
-
-// US States for dropdown
-const US_STATES = [
-  { value: 'AL', label: 'Alabama' },
-  { value: 'AK', label: 'Alaska' },
-  { value: 'AZ', label: 'Arizona' },
-  { value: 'AR', label: 'Arkansas' },
-  { value: 'CA', label: 'California' },
-  { value: 'CO', label: 'Colorado' },
-  { value: 'CT', label: 'Connecticut' },
-  { value: 'DE', label: 'Delaware' },
-  { value: 'FL', label: 'Florida' },
-  { value: 'GA', label: 'Georgia' },
-  { value: 'HI', label: 'Hawaii' },
-  { value: 'ID', label: 'Idaho' },
-  { value: 'IL', label: 'Illinois' },
-  { value: 'IN', label: 'Indiana' },
-  { value: 'IA', label: 'Iowa' },
-  { value: 'KS', label: 'Kansas' },
-  { value: 'KY', label: 'Kentucky' },
-  { value: 'LA', label: 'Louisiana' },
-  { value: 'ME', label: 'Maine' },
-  { value: 'MD', label: 'Maryland' },
-  { value: 'MA', label: 'Massachusetts' },
-  { value: 'MI', label: 'Michigan' },
-  { value: 'MN', label: 'Minnesota' },
-  { value: 'MS', label: 'Mississippi' },
-  { value: 'MO', label: 'Missouri' },
-  { value: 'MT', label: 'Montana' },
-  { value: 'NE', label: 'Nebraska' },
-  { value: 'NV', label: 'Nevada' },
-  { value: 'NH', label: 'New Hampshire' },
-  { value: 'NJ', label: 'New Jersey' },
-  { value: 'NM', label: 'New Mexico' },
-  { value: 'NY', label: 'New York' },
-  { value: 'NC', label: 'North Carolina' },
-  { value: 'ND', label: 'North Dakota' },
-  { value: 'OH', label: 'Ohio' },
-  { value: 'OK', label: 'Oklahoma' },
-  { value: 'OR', label: 'Oregon' },
-  { value: 'PA', label: 'Pennsylvania' },
-  { value: 'RI', label: 'Rhode Island' },
-  { value: 'SC', label: 'South Carolina' },
-  { value: 'SD', label: 'South Dakota' },
-  { value: 'TN', label: 'Tennessee' },
-  { value: 'TX', label: 'Texas' },
-  { value: 'UT', label: 'Utah' },
-  { value: 'VT', label: 'Vermont' },
-  { value: 'VA', label: 'Virginia' },
-  { value: 'WA', label: 'Washington' },
-  { value: 'WV', label: 'West Virginia' },
-  { value: 'WI', label: 'Wisconsin' },
-  { value: 'WY', label: 'Wyoming' },
-  { value: 'DC', label: 'District of Columbia' },
-];
+import { COUNTRIES, TIMEZONE_OPTIONS, formatAddress as formatAddressUtil } from '@/lib/i18n';
 
 interface LocationFormState {
   name: string;
@@ -95,6 +31,7 @@ interface LocationFormState {
   city: string;
   state: string;
   zip: string;
+  country: string;
   phone: string;
   timezone: string;
   hours: string;
@@ -107,8 +44,9 @@ const emptyFormState: LocationFormState = {
   city: '',
   state: '',
   zip: '',
+  country: 'US',
   phone: '',
-  timezone: 'America/Los_Angeles',
+  timezone: 'America/New_York',
   hours: '',
   isPrimary: false,
 };
@@ -226,12 +164,17 @@ function LocationsContent() {
   }, [locations, searchQuery]);
 
   const formatAddress = (location: Location) => {
-    const parts = [location.address, location.city, location.state, location.zip].filter(Boolean);
-    return parts.join(', ') || 'No address';
+    return formatAddressUtil({
+      address: location.address,
+      city: location.city,
+      state: location.state,
+      zip: location.zip,
+      country: location.country,
+    });
   };
 
   const getTimezoneLabel = (timezoneValue: string) => {
-    return TIMEZONES.find((tz) => tz.value === timezoneValue)?.label || timezoneValue;
+    return TIMEZONE_OPTIONS.find((tz) => tz.value === timezoneValue)?.label || timezoneValue;
   };
 
   const resetForm = () => {
@@ -253,8 +196,9 @@ function LocationsContent() {
       city: location.city || '',
       state: location.state || '',
       zip: location.zip || '',
+      country: location.country || 'US',
       phone: location.phone || '',
-      timezone: location.timezone || 'America/Los_Angeles',
+      timezone: location.timezone || 'America/New_York',
       hours: location.hours || '',
       isPrimary: location.isPrimary,
     });
@@ -298,6 +242,7 @@ function LocationsContent() {
         city: locationForm.city || undefined,
         state: locationForm.state || undefined,
         zip: locationForm.zip || undefined,
+        country: locationForm.country || undefined,
         phone: locationForm.phone || undefined,
         timezone: locationForm.timezone || undefined,
         hours: locationForm.hours || undefined,
@@ -645,7 +590,23 @@ function LocationsContent() {
                 />
               </div>
 
-              {/* City, State, Zip */}
+              {/* Country */}
+              <div>
+                <label className="block text-sm font-medium text-charcoal mb-2">Country</label>
+                <select
+                  value={locationForm.country}
+                  onChange={(e) => setLocationForm((prev) => ({ ...prev, country: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                >
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* City, State/Province, Postal Code */}
               <div className="grid grid-cols-6 gap-4">
                 <div className="col-span-3">
                   <label className="block text-sm font-medium text-charcoal mb-2">City</label>
@@ -658,28 +619,23 @@ function LocationsContent() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-charcoal mb-2">State</label>
-                  <select
+                  <label className="block text-sm font-medium text-charcoal mb-2">State / Province</label>
+                  <input
+                    type="text"
                     value={locationForm.state}
                     onChange={(e) => setLocationForm((prev) => ({ ...prev, state: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  >
-                    <option value="">Select</option>
-                    {US_STATES.map((state) => (
-                      <option key={state.value} value={state.value}>
-                        {state.value}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Region"
+                  />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-sm font-medium text-charcoal mb-2">ZIP</label>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Postal</label>
                   <input
                     type="text"
                     value={locationForm.zip}
                     onChange={(e) => setLocationForm((prev) => ({ ...prev, zip: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="ZIP"
+                    placeholder="Code"
                     maxLength={10}
                   />
                 </div>
@@ -703,12 +659,17 @@ function LocationsContent() {
                 <select
                   value={locationForm.timezone}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
                 >
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </option>
+                  {/* Group timezones by region */}
+                  {['Europe', 'Americas', 'Asia/Pacific', 'Other'].map((region) => (
+                    <optgroup key={region} label={region}>
+                      {TIMEZONE_OPTIONS.filter((tz) => tz.region === region).map((tz) => (
+                        <option key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
               </div>

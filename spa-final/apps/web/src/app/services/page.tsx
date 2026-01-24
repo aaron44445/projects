@@ -23,6 +23,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
 
 interface CategoryWithUI extends ServiceCategory {
   expanded: boolean;
@@ -92,6 +94,8 @@ function ServicesContent() {
   } = useServices();
 
   const { staff, setStaffServices } = useStaff();
+  const { formatPrice, currency } = useSalonSettings();
+  const currencySymbol = SUPPORTED_CURRENCIES[currency as CurrencyCode]?.symbol || '$';
 
   // Track assigned staff for the current service being edited
   const [assignedStaffIds, setAssignedStaffIds] = useState<string[]>([]);
@@ -603,9 +607,9 @@ function ServicesContent() {
                             </div>
 
                             <div className="text-right">
-                              <p className="font-semibold text-charcoal">${service.price}</p>
+                              <p className="font-semibold text-charcoal">{formatPrice(service.price)}</p>
                               {service.memberPrice && (
-                                <p className="text-xs text-sage">${service.memberPrice} member</p>
+                                <p className="text-xs text-sage">{formatPrice(service.memberPrice)} member</p>
                               )}
                             </div>
 
@@ -723,7 +727,7 @@ function ServicesContent() {
                   <label className="block text-sm font-medium text-charcoal mb-2">Price</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">
-                      $
+                      {currencySymbol}
                     </span>
                     <input
                       type="number"
@@ -741,7 +745,7 @@ function ServicesContent() {
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">
-                      $
+                      {currencySymbol}
                     </span>
                     <input
                       type="number"

@@ -56,6 +56,9 @@ interface StaffAuthContextType {
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
   updateProfile: (data: Partial<StaffUser>) => Promise<void>;
+  // For external setup (invite flow)
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  setStaff: (staff: StaffUser | Partial<StaffUser>) => void;
   // Location access helpers
   hasLocationAccess: (locationId: string) => boolean;
   getAllowedLocationIds: () => string[];
@@ -308,6 +311,16 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     return staff.assignedLocations.map(loc => loc.id);
   }, [staff, isOwnerOrAdmin]);
 
+  // External setters for setup flow
+  const setTokensExternal = useCallback((accessToken: string, refreshToken: string) => {
+    storeTokens({ accessToken, refreshToken });
+    startTokenRefreshTimer();
+  }, [storeTokens, startTokenRefreshTimer]);
+
+  const setStaffExternal = useCallback((staffData: StaffUser | Partial<StaffUser>) => {
+    setStaff(staffData as StaffUser);
+  }, []);
+
   const value: StaffAuthContextType = {
     staff,
     isAuthenticated: !!staff,
@@ -316,6 +329,8 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
     logout,
     refreshAuth,
     updateProfile,
+    setTokens: setTokensExternal,
+    setStaff: setStaffExternal,
     hasLocationAccess,
     getAllowedLocationIds,
     isOwnerOrAdmin,

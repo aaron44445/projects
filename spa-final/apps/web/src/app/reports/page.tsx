@@ -24,6 +24,7 @@ import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { useReports } from '@/hooks/useReports';
 import { useLocationContext } from '@/hooks/useLocations';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
+import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 
 // Date range presets
 const dateRangePresets = [
@@ -91,6 +92,7 @@ function ReportsContent() {
   } = useReports();
 
   const { locations, selectedLocationId, selectedLocation } = useLocationContext();
+  const { formatPrice, formatDate } = useSalonSettings();
 
   // Get current date range based on selected preset
   const dateRange = useMemo(() => {
@@ -113,7 +115,7 @@ function ReportsContent() {
     return [
       {
         label: 'Total Revenue',
-        value: `$${overview.revenue.value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        value: formatPrice(overview.revenue.value),
         change: `${overview.revenue.change >= 0 ? '+' : ''}${overview.revenue.change}%`,
         trend: overview.revenue.change >= 0 ? 'up' : 'down',
         period: 'vs previous period',
@@ -250,7 +252,7 @@ function ReportsContent() {
     if (overview) {
       rows.push(['OVERVIEW']);
       rows.push(['Metric', 'Value', 'Change']);
-      rows.push(['Total Revenue', `$${overview.revenue.value}`, `${overview.revenue.change}%`]);
+      rows.push(['Total Revenue', formatPrice(overview.revenue.value), `${overview.revenue.change}%`]);
       rows.push(['Total Appointments', String(overview.appointments.value), `${overview.appointments.change}%`]);
       rows.push(['New Clients', String(overview.newClients.value), `${overview.newClients.change}%`]);
       rows.push(['Avg Service Duration', `${overview.avgServiceDuration.value} ${overview.avgServiceDuration.unit}`, '-']);
@@ -262,7 +264,7 @@ function ReportsContent() {
       rows.push(['REVENUE TIMELINE']);
       rows.push(['Date', 'Revenue', 'Transactions']);
       revenueReport.timeline.forEach(item => {
-        rows.push([item.date, `$${item.revenue}`, String(item.count)]);
+        rows.push([item.date, formatPrice(item.revenue), String(item.count)]);
       });
       rows.push([]);
     }
@@ -272,7 +274,7 @@ function ReportsContent() {
       rows.push(['REVENUE BY SERVICE CATEGORY']);
       rows.push(['Category', 'Revenue', 'Percentage', 'Bookings']);
       servicesReport.categories.forEach(cat => {
-        rows.push([cat.name, `$${cat.revenue}`, `${cat.percentage}%`, String(cat.bookings || cat.count)]);
+        rows.push([cat.name, formatPrice(cat.revenue), `${cat.percentage}%`, String(cat.bookings || cat.count)]);
       });
       rows.push([]);
     }
@@ -282,7 +284,7 @@ function ReportsContent() {
       rows.push(['STAFF PERFORMANCE']);
       rows.push(['Name', 'Role', 'Revenue', 'Appointments', 'Rating']);
       staffReport.staff.forEach(s => {
-        rows.push([s.name, s.role, `$${s.revenue}`, String(s.appointments), String(s.rating)]);
+        rows.push([s.name, s.role, formatPrice(s.revenue), String(s.appointments), String(s.rating)]);
       });
       rows.push([]);
     }
@@ -292,7 +294,7 @@ function ReportsContent() {
       rows.push(['RECENT TRANSACTIONS']);
       rows.push(['ID', 'Client', 'Service', 'Amount', 'Date', 'Status']);
       revenueReport.recentTransactions.forEach(tx => {
-        rows.push([tx.id, tx.client, tx.service, `$${tx.amount}`, tx.date, tx.status]);
+        rows.push([tx.id, tx.client, tx.service, formatPrice(tx.amount), tx.date, tx.status]);
       });
       rows.push([]);
     }
@@ -550,7 +552,7 @@ function ReportsContent() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-charcoal">
-                      ${totalWeeklyRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      {formatPrice(totalWeeklyRevenue)}
                     </p>
                     <p className={`text-sm flex items-center justify-end gap-1 ${revenueChange >= 0 ? 'text-sage-dark' : 'text-rose-dark'}`}>
                       <TrendingUp className="w-4 h-4" />
@@ -566,7 +568,7 @@ function ReportsContent() {
                       <div key={idx} className="flex-1 flex flex-col items-center">
                         <div className="w-full flex flex-col items-center">
                           <span className="text-xs text-charcoal/60 mb-2">
-                            ${data.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            {formatPrice(data.revenue)}
                           </span>
                           <div
                             className="w-full bg-sage rounded-t-lg transition-all hover:bg-sage-dark"
@@ -594,7 +596,7 @@ function ReportsContent() {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-charcoal">{service.name}</span>
                           <span className="text-sm font-medium text-charcoal">
-                            ${service.revenue.toLocaleString()}
+                            {formatPrice(service.revenue)}
                           </span>
                         </div>
                         <div className="h-2 bg-charcoal/10 rounded-full overflow-hidden">
@@ -634,7 +636,7 @@ function ReportsContent() {
                           <p className="text-sm text-charcoal/60">{staff.role}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-charcoal">${staff.revenue.toLocaleString()}</p>
+                          <p className="font-semibold text-charcoal">{formatPrice(staff.revenue)}</p>
                           <p className="text-xs text-charcoal/50">{staff.appointments} appointments</p>
                         </div>
                       </div>
@@ -671,7 +673,7 @@ function ReportsContent() {
                           <p className="text-sm text-charcoal/60">{tx.service}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-charcoal">${tx.amount}</p>
+                          <p className="font-semibold text-charcoal">{formatPrice(tx.amount)}</p>
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-xs text-charcoal/50">{tx.date}</span>
                             <span
@@ -723,7 +725,7 @@ function ReportsContent() {
               <div className="bg-gradient-to-br from-peach to-peach-dark rounded-2xl p-6 text-white">
                 <h3 className="text-lg font-semibold mb-2">Avg. Ticket Size</h3>
                 <p className="text-4xl font-bold mb-2">
-                  ${servicesReport?.summary.avgRevenuePerBooking?.toFixed(0) ?? '--'}
+                  {servicesReport?.summary.avgRevenuePerBooking ? formatPrice(servicesReport.summary.avgRevenuePerBooking) : '--'}
                 </p>
                 <p className="text-white/80 text-sm">per appointment average</p>
               </div>
