@@ -222,6 +222,7 @@ router.post(
 
     // Send invitation email
     const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
+    console.log(`[STAFF CREATE] Sending invite email to ${email}, inviteUrl: ${inviteUrl}`);
 
     try {
       const emailSent = await sendEmail({
@@ -520,6 +521,57 @@ router.put('/:id/services', authenticate, asyncHandler(async (req: Request, res:
     success: true,
     data: { message: 'Staff services updated' },
   });
+}));
+
+// ============================================
+// POST /api/v1/staff/test-email
+// Test email sending (owner only, for debugging)
+// ============================================
+router.post('/test-email', authenticate, authorize('owner'), asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'EMAIL_REQUIRED', message: 'Email address is required' },
+    });
+  }
+
+  console.log(`[TEST EMAIL] Attempting to send test email to: ${email}`);
+
+  const salon = await prisma.salon.findUnique({
+    where: { id: req.user!.salonId },
+  });
+
+  try {
+    const emailSent = await sendEmail({
+      to: email,
+      subject: `Test Email from ${salon?.name || 'Peacase'}`,
+      html: `
+        <h2>Test Email</h2>
+        <p>This is a test email to verify the email service is working.</p>
+        <p>Sent at: ${new Date().toISOString()}</p>
+        <p>Salon: ${salon?.name || 'Unknown'}</p>
+      `,
+    });
+
+    console.log(`[TEST EMAIL] Result: ${emailSent ? 'SUCCESS' : 'FAILED'}`);
+
+    res.json({
+      success: true,
+      data: {
+        emailSent,
+        sentTo: email,
+        message: emailSent ? 'Test email sent successfully' : 'Email sending failed - check server logs',
+      },
+    });
+  } catch (error: any) {
+    console.error('[TEST EMAIL] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'EMAIL_ERROR', message: error.message || 'Failed to send test email' },
+    });
+  }
 }));
 
 export { router as staffRouter };
