@@ -189,13 +189,13 @@ function MarketingContent() {
       const newCampaignData: Partial<Campaign> = {
         name: campaignData.name || (activeModal === 'automation' ? automationTriggers.find(t => t.id === campaignData.trigger)?.label : 'New Campaign'),
         type: activeModal === 'automation' ? 'automation' : activeModal === 'sms' ? 'sms' : 'email',
-        subjectLine: campaignData.subject || null,
-        message: campaignData.message,
-        audienceFilter: campaignData.audience,
+        subject: campaignData.subject || undefined,
+        content: campaignData.message,
+        audience: campaignData.audience as Campaign['audience'],
         status: campaignData.sendTime === 'scheduled' ? 'scheduled' : 'draft',
-        scheduledFor: campaignData.sendTime === 'scheduled' && campaignData.scheduledDate && campaignData.scheduledTime
+        scheduledAt: campaignData.sendTime === 'scheduled' && campaignData.scheduledDate && campaignData.scheduledTime
           ? new Date(`${campaignData.scheduledDate}T${campaignData.scheduledTime}`).toISOString()
-          : null,
+          : undefined,
       };
 
       // Create the campaign via API
