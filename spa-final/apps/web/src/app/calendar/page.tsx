@@ -871,6 +871,7 @@ function CalendarContent() {
 
                 {/* Time Grid */}
                 <div className="relative">
+                  {/* Background grid lines */}
                   {hours.map((hour) => (
                     <div key={hour} className="flex border-b border-charcoal/10" style={{ height: '80px' }}>
                       <div className="w-20 flex-shrink-0 p-2 text-sm text-charcoal/60 text-right border-r border-charcoal/10">
@@ -879,118 +880,126 @@ function CalendarContent() {
                       {(filteredStaff || []).map((staffMember) => (
                         <div
                           key={staffMember.id}
-                          className="flex-1 min-w-[200px] border-r border-charcoal/10 relative"
+                          className="flex-1 min-w-[200px] border-r border-charcoal/10"
                         />
                       ))}
                     </div>
                   ))}
 
-                  {/* Appointments */}
-                  {(filteredAppointments || []).map((apt) => {
-                    const staffIndex = (filteredStaff || []).findIndex((s) => s.id === apt.staffId);
-                    if (staffIndex === -1) return null;
+                  {/* Appointments overlay - positioned within staff columns */}
+                  <div className="absolute inset-0 flex pointer-events-none">
+                    {/* Time column spacer */}
+                    <div className="w-20 flex-shrink-0" />
 
-                    const { top, height } = getAppointmentPosition(apt.startTime, apt.endTime);
-                    const left = 80 + staffIndex * 200 + 4;
+                    {/* Staff columns with their appointments */}
+                    {(filteredStaff || []).map((staffMember, staffIndex) => (
+                      <div key={staffMember.id} className="flex-1 min-w-[200px] relative">
+                        {(filteredAppointments || [])
+                          .filter((apt) => apt.staffId === staffMember.id)
+                          .map((apt) => {
+                            const { top, height } = getAppointmentPosition(apt.startTime, apt.endTime);
 
-                    return (
-                      <div
-                        key={apt.id}
-                        className="absolute rounded-lg p-3 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group"
-                        style={{
-                          top: `${top}px`,
-                          left: `${left}px`,
-                          width: '192px',
-                          height: `${Math.max(height, 40)}px`,
-                          backgroundColor: getStaffColor(staffIndex),
-                        }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-charcoal text-sm truncate">
-                              {apt.client
-                                ? `${apt.client.firstName} ${apt.client.lastName}`
-                                : 'Unknown Client'}
-                            </p>
-                            <p className="text-xs text-charcoal/70 truncate">
-                              {apt.service?.name || 'Unknown Service'}
-                            </p>
-                            <p className="text-xs text-charcoal/60 mt-1">
-                              {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
-                            </p>
-                          </div>
-                          {/* Appointment Menu */}
-                          <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setAppointmentMenuOpen(
-                                  appointmentMenuOpen === apt.id ? null : apt.id
-                                );
-                              }}
-                              className="p-1 hover:bg-white/50 rounded"
-                            >
-                              <MoreVertical className="w-4 h-4 text-charcoal/70" />
-                            </button>
-                            {appointmentMenuOpen === apt.id && (
-                              <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-charcoal/10 py-1 z-20 min-w-[140px]">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openEditModal(apt);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCompleteAppointment(apt.id);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:bg-green-50"
-                                >
-                                  <CheckCircle className="w-4 h-4" />
-                                  Complete
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleMarkNoShow(apt.id);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                  No Show
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCancelAppointment(apt.id);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                  Cancel
-                                </button>
+                            return (
+                              <div
+                                key={apt.id}
+                                className="absolute rounded-lg p-3 cursor-pointer hover:shadow-lg transition-shadow overflow-hidden group pointer-events-auto"
+                                style={{
+                                  top: `${top}px`,
+                                  left: '4px',
+                                  right: '4px',
+                                  height: `${Math.max(height, 40)}px`,
+                                  backgroundColor: getStaffColor(staffIndex),
+                                }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-charcoal text-sm truncate">
+                                      {apt.client
+                                        ? `${apt.client.firstName} ${apt.client.lastName}`
+                                        : 'Unknown Client'}
+                                    </p>
+                                    <p className="text-xs text-charcoal/70 truncate">
+                                      {apt.service?.name || 'Unknown Service'}
+                                    </p>
+                                    <p className="text-xs text-charcoal/60 mt-1">
+                                      {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
+                                    </p>
+                                  </div>
+                                  {/* Appointment Menu */}
+                                  <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setAppointmentMenuOpen(
+                                          appointmentMenuOpen === apt.id ? null : apt.id
+                                        );
+                                      }}
+                                      className="p-1 hover:bg-white/50 rounded"
+                                    >
+                                      <MoreVertical className="w-4 h-4 text-charcoal/70" />
+                                    </button>
+                                    {appointmentMenuOpen === apt.id && (
+                                      <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-charcoal/10 py-1 z-20 min-w-[140px]">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openEditModal(apt);
+                                          }}
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5"
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCompleteAppointment(apt.id);
+                                          }}
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:bg-green-50"
+                                        >
+                                          <CheckCircle className="w-4 h-4" />
+                                          Complete
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleMarkNoShow(apt.id);
+                                          }}
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50"
+                                        >
+                                          <XCircle className="w-4 h-4" />
+                                          No Show
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCancelAppointment(apt.id);
+                                          }}
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                {/* Status Badge */}
+                                {apt.status !== 'confirmed' && (
+                                  <span
+                                    className={`absolute bottom-2 right-2 px-1.5 py-0.5 text-xs font-medium rounded ${getStatusColor(
+                                      apt.status
+                                    )}`}
+                                  >
+                                    {apt.status.replace('_', ' ')}
+                                  </span>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                        {/* Status Badge */}
-                        {apt.status !== 'confirmed' && (
-                          <span
-                            className={`absolute bottom-2 right-2 px-1.5 py-0.5 text-xs font-medium rounded ${getStatusColor(
-                              apt.status
-                            )}`}
-                          >
-                            {apt.status.replace('_', ' ')}
-                          </span>
-                        )}
+                            );
+                          })}
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
