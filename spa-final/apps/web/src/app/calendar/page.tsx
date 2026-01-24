@@ -163,25 +163,25 @@ function WeekView({
   return (
     <div className="min-h-full">
       {/* Day Headers */}
-      <div className="sticky top-0 bg-white border-b border-charcoal/10 z-10 flex">
-        <div className="w-16 flex-shrink-0 p-2 border-r border-charcoal/10">
-          <Clock className="w-4 h-4 text-charcoal/40 mx-auto" />
+      <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 z-10 flex">
+        <div className="w-16 flex-shrink-0 p-2 border-r border-charcoal/10 dark:border-white/10">
+          <Clock className="w-4 h-4 text-charcoal/40 dark:text-white/40 mx-auto" />
         </div>
         {weekDates.map((date, index) => {
           const { dayName, dayNumber, isToday } = formatDayHeader(date);
           return (
             <div
               key={index}
-              className={`flex-1 min-w-[120px] p-3 border-r border-charcoal/10 text-center ${
+              className={`flex-1 min-w-[120px] p-3 border-r border-charcoal/10 dark:border-white/10 text-center ${
                 isToday ? 'bg-sage/5' : ''
               }`}
             >
-              <p className="text-xs text-charcoal/60 uppercase tracking-wide">{dayName}</p>
+              <p className="text-xs text-charcoal/60 dark:text-white/60 uppercase tracking-wide">{dayName}</p>
               <p
                 className={`text-lg font-semibold ${
                   isToday
                     ? 'w-8 h-8 bg-sage text-white rounded-full flex items-center justify-center mx-auto'
-                    : 'text-charcoal'
+                    : 'text-charcoal dark:text-white'
                 }`}
               >
                 {dayNumber}
@@ -194,8 +194,8 @@ function WeekView({
       {/* Time Grid */}
       <div className="relative">
         {hours.map((hour) => (
-          <div key={hour} className="flex border-b border-charcoal/10" style={{ height: '80px' }}>
-            <div className="w-16 flex-shrink-0 p-1 text-xs text-charcoal/60 text-right border-r border-charcoal/10">
+          <div key={hour} className="flex border-b border-charcoal/10 dark:border-white/10" style={{ height: '80px' }}>
+            <div className="w-16 flex-shrink-0 p-1 text-xs text-charcoal/60 dark:text-white/60 text-right border-r border-charcoal/10 dark:border-white/10">
               {hour.toString().padStart(2, '0')}:00
             </div>
             {weekDates.map((date, dayIndex) => {
@@ -203,7 +203,7 @@ function WeekView({
               return (
                 <div
                   key={dayIndex}
-                  className={`flex-1 min-w-[120px] border-r border-charcoal/10 relative ${
+                  className={`flex-1 min-w-[120px] border-r border-charcoal/10 dark:border-white/10 relative ${
                     isToday ? 'bg-sage/5' : ''
                   }`}
                 />
@@ -264,14 +264,14 @@ function WeekView({
                       <MoreVertical className="w-3 h-3 text-charcoal/70" />
                     </button>
                     {appointmentMenuOpen === apt.id && (
-                      <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-charcoal/10 py-1 z-20 min-w-[120px]">
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-sidebar rounded-lg shadow-lg border border-charcoal/10 dark:border-white/10 py-1 z-20 min-w-[120px]">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setAppointmentMenuOpen(null);
                             onAppointmentClick(apt);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-charcoal hover:bg-charcoal/5"
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-charcoal dark:text-white hover:bg-charcoal/5 dark:hover:bg-white/5"
                         >
                           <Edit className="w-3 h-3" />
                           Edit
@@ -678,7 +678,7 @@ function CalendarContent() {
   const error = appointmentsError || staffError;
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="calendar"
         sidebarOpen={sidebarOpen}
@@ -688,16 +688,16 @@ function CalendarContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Calendar</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Calendar</h1>
             </div>
 
             <div className="flex items-center gap-4">
@@ -721,53 +721,53 @@ function CalendarContent() {
         </header>
 
         {/* Calendar Controls */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Date Navigation */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigateDate('prev')}
-                  className="p-2 rounded-lg border border-charcoal/10 hover:bg-charcoal/5 transition-colors"
+                  className="p-2 rounded-lg border border-charcoal/10 dark:border-white/10 hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5 text-charcoal" />
+                  <ChevronLeft className="w-5 h-5 text-charcoal dark:text-white" />
                 </button>
                 <button
                   onClick={() => navigateDate('next')}
-                  className="p-2 rounded-lg border border-charcoal/10 hover:bg-charcoal/5 transition-colors"
+                  className="p-2 rounded-lg border border-charcoal/10 dark:border-white/10 hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
                 >
-                  <ChevronRight className="w-5 h-5 text-charcoal" />
+                  <ChevronRight className="w-5 h-5 text-charcoal dark:text-white" />
                 </button>
               </div>
               <button
                 onClick={goToToday}
-                className="px-4 py-2 text-sm font-medium text-charcoal border border-charcoal/10 rounded-lg hover:bg-charcoal/5 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-charcoal dark:text-white border border-charcoal/10 dark:border-white/10 rounded-lg hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
               >
                 Today
               </button>
-              <h2 className="text-lg font-semibold text-charcoal">{formatDate(currentDate)}</h2>
+              <h2 className="text-lg font-semibold text-charcoal dark:text-white">{formatDate(currentDate)}</h2>
             </div>
 
             {/* View Toggle & Filters */}
             <div className="flex items-center gap-4">
               {/* Search */}
               <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40" />
                 <input
                   type="text"
                   placeholder="Search appointments..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-64 rounded-lg border border-charcoal/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="pl-10 pr-4 py-2 w-64 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 />
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-charcoal/5 rounded-lg p-1">
+              <div className="flex items-center bg-charcoal/5 dark:bg-white/5 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('day')}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    viewMode === 'day' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal/60'
+                    viewMode === 'day' ? 'bg-white dark:bg-sidebar text-charcoal dark:text-white shadow-sm' : 'text-charcoal/60 dark:text-white/60'
                   }`}
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -776,7 +776,7 @@ function CalendarContent() {
                 <button
                   onClick={() => setViewMode('week')}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                    viewMode === 'week' ? 'bg-white text-charcoal shadow-sm' : 'text-charcoal/60'
+                    viewMode === 'week' ? 'bg-white dark:bg-sidebar text-charcoal dark:text-white shadow-sm' : 'text-charcoal/60 dark:text-white/60'
                   }`}
                 >
                   <List className="w-4 h-4" />
@@ -806,8 +806,8 @@ function CalendarContent() {
         {/* Calendar Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Staff Filter Sidebar */}
-          <div className="w-64 bg-white border-r border-charcoal/10 p-4 hidden xl:block">
-            <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+          <div className="w-64 bg-white dark:bg-sidebar border-r border-charcoal/10 dark:border-white/10 p-4 hidden xl:block">
+            <h3 className="font-semibold text-charcoal dark:text-white mb-4 flex items-center gap-2">
               <Filter className="w-4 h-4" />
               Staff Filter
             </h3>
@@ -820,23 +820,23 @@ function CalendarContent() {
                 {(staff || []).map((staffMember, index) => (
                   <label
                     key={staffMember.id}
-                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-charcoal/5 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={selectedStaff.includes(staffMember.id)}
                       onChange={() => toggleStaffFilter(staffMember.id)}
-                      className="w-4 h-4 rounded border-charcoal/20 text-sage focus:ring-sage"
+                      className="w-4 h-4 rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage"
                     />
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: getStaffColor(index) }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-charcoal text-sm truncate">
+                      <p className="font-medium text-charcoal dark:text-white text-sm truncate">
                         {staffMember.firstName} {staffMember.lastName}
                       </p>
-                      <p className="text-xs text-charcoal/60 capitalize">{staffMember.role}</p>
+                      <p className="text-xs text-charcoal/60 dark:text-white/60 capitalize">{staffMember.role}</p>
                     </div>
                   </label>
                 ))}
@@ -845,26 +845,26 @@ function CalendarContent() {
           </div>
 
           {/* Calendar Grid */}
-          <div className="flex-1 overflow-auto bg-white">
+          <div className="flex-1 overflow-auto bg-white dark:bg-sidebar">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-4" />
-                  <p className="text-charcoal/60">Loading calendar...</p>
+                  <p className="text-charcoal/60 dark:text-white/60">Loading calendar...</p>
                 </div>
               </div>
             ) : viewMode === 'day' ? (
               /* Day View */
               <div className="min-h-full">
                 {/* Staff Headers */}
-                <div className="sticky top-0 bg-white border-b border-charcoal/10 z-10 flex">
-                  <div className="w-20 flex-shrink-0 p-4 border-r border-charcoal/10">
-                    <Clock className="w-5 h-5 text-charcoal/40 mx-auto" />
+                <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 z-10 flex">
+                  <div className="w-20 flex-shrink-0 p-4 border-r border-charcoal/10 dark:border-white/10">
+                    <Clock className="w-5 h-5 text-charcoal/40 dark:text-white/40 mx-auto" />
                   </div>
                   {(filteredStaff || []).map((staffMember, index) => (
                     <div
                       key={staffMember.id}
-                      className="flex-1 min-w-[200px] p-4 border-r border-charcoal/10 text-center"
+                      className="flex-1 min-w-[200px] p-4 border-r border-charcoal/10 dark:border-white/10 text-center"
                     >
                       <div
                         className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-semibold"
@@ -873,10 +873,10 @@ function CalendarContent() {
                         {staffMember.firstName?.[0] || '?'}
                         {staffMember.lastName?.[0] || ''}
                       </div>
-                      <p className="font-medium text-charcoal text-sm">
+                      <p className="font-medium text-charcoal dark:text-white text-sm">
                         {staffMember.firstName} {staffMember.lastName}
                       </p>
-                      <p className="text-xs text-charcoal/60 capitalize">{staffMember.role}</p>
+                      <p className="text-xs text-charcoal/60 dark:text-white/60 capitalize">{staffMember.role}</p>
                     </div>
                   ))}
                 </div>
@@ -885,14 +885,14 @@ function CalendarContent() {
                 <div className="relative">
                   {/* Background grid lines */}
                   {hours.map((hour) => (
-                    <div key={hour} className="flex border-b border-charcoal/10" style={{ height: '80px' }}>
-                      <div className="w-20 flex-shrink-0 p-2 text-sm text-charcoal/60 text-right border-r border-charcoal/10">
+                    <div key={hour} className="flex border-b border-charcoal/10 dark:border-white/10" style={{ height: '80px' }}>
+                      <div className="w-20 flex-shrink-0 p-2 text-sm text-charcoal/60 dark:text-white/60 text-right border-r border-charcoal/10 dark:border-white/10">
                         {hour.toString().padStart(2, '0')}:00
                       </div>
                       {(filteredStaff || []).map((staffMember) => (
                         <div
                           key={staffMember.id}
-                          className="flex-1 min-w-[200px] border-r border-charcoal/10"
+                          className="flex-1 min-w-[200px] border-r border-charcoal/10 dark:border-white/10"
                         />
                       ))}
                     </div>
@@ -951,13 +951,13 @@ function CalendarContent() {
                                       <MoreVertical className="w-4 h-4 text-charcoal/70" />
                                     </button>
                                     {appointmentMenuOpen === apt.id && (
-                                      <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-charcoal/10 py-1 z-20 min-w-[140px]">
+                                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-sidebar rounded-lg shadow-lg border border-charcoal/10 dark:border-white/10 py-1 z-20 min-w-[140px]">
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             openEditModal(apt);
                                           }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5"
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal dark:text-white hover:bg-charcoal/5 dark:hover:bg-white/5"
                                         >
                                           <Edit className="w-4 h-4" />
                                           Edit
@@ -1039,15 +1039,15 @@ function CalendarContent() {
       {/* New Appointment Modal */}
       {showNewAppointment && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">New Appointment</h2>
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">New Appointment</h2>
               <button
                 onClick={() => {
                   setShowNewAppointment(false);
                   resetForm();
                 }}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1061,19 +1061,19 @@ function CalendarContent() {
 
               {/* Client Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Client</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40" />
                   <input
                     type="text"
                     placeholder="Search clients..."
                     value={clientSearch}
                     onChange={(e) => setClientSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 {clientSearch && (clients || []).length > 0 && (
-                  <div className="mt-2 border border-charcoal/10 rounded-xl max-h-40 overflow-auto">
+                  <div className="mt-2 border border-charcoal/10 dark:border-white/10 rounded-xl max-h-40 overflow-auto bg-white dark:bg-charcoal">
                     {(clients || []).map((client) => (
                       <button
                         key={client.id}
@@ -1081,14 +1081,14 @@ function CalendarContent() {
                           setAppointmentForm((prev) => ({ ...prev, clientId: client.id }));
                           setClientSearch(`${client.firstName} ${client.lastName}`);
                         }}
-                        className={`w-full text-left px-4 py-2 hover:bg-charcoal/5 ${
+                        className={`w-full text-left px-4 py-2 hover:bg-charcoal/5 dark:hover:bg-white/5 ${
                           appointmentForm.clientId === client.id ? 'bg-sage/10' : ''
                         }`}
                       >
-                        <p className="font-medium text-charcoal">
+                        <p className="font-medium text-charcoal dark:text-white">
                           {client.firstName} {client.lastName}
                         </p>
-                        <p className="text-xs text-charcoal/60">{client.email || client.phone}</p>
+                        <p className="text-xs text-charcoal/60 dark:text-white/60">{client.email || client.phone}</p>
                       </button>
                     ))}
                   </div>
@@ -1097,13 +1097,13 @@ function CalendarContent() {
 
               {/* Service Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Service</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
                 <select
                   value={appointmentForm.serviceId}
                   onChange={(e) =>
                     setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select a service...</option>
                   {(services || []).map((service) => (
@@ -1116,13 +1116,13 @@ function CalendarContent() {
 
               {/* Staff Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Staff Member</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
                 <select
                   value={appointmentForm.staffId}
                   onChange={(e) =>
                     setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select staff...</option>
                   {(staff || []).map((staffMember) => (
@@ -1136,24 +1136,24 @@ function CalendarContent() {
               {/* Date & Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Date</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
                   <input
                     type="date"
                     value={appointmentForm.date}
                     onChange={(e) =>
                       setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Time</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
                   <select
                     value={appointmentForm.time}
                     onChange={(e) =>
                       setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   >
                     <option value="">Select time...</option>
                     {hours.map((hour) => (
@@ -1172,7 +1172,7 @@ function CalendarContent() {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Notes (optional)
                 </label>
                 <textarea
@@ -1182,17 +1182,17 @@ function CalendarContent() {
                     setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
                   }
                   placeholder="Add any special notes..."
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
                 />
               </div>
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={() => {
                   setShowNewAppointment(false);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
               >
                 Cancel
               </button>
@@ -1225,16 +1225,16 @@ function CalendarContent() {
       {/* Edit Appointment Modal */}
       {showEditAppointment && selectedAppointment && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">Edit Appointment</h2>
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">Edit Appointment</h2>
               <button
                 onClick={() => {
                   setShowEditAppointment(false);
                   setSelectedAppointment(null);
                   resetForm();
                 }}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1248,7 +1248,7 @@ function CalendarContent() {
 
               {/* Client (read-only for edit) */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Client</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
                 <input
                   type="text"
                   value={
@@ -1257,19 +1257,19 @@ function CalendarContent() {
                       : 'Unknown Client'
                   }
                   readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 bg-charcoal/5 text-charcoal/70"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-charcoal/5 dark:bg-white/5 text-charcoal/70 dark:text-white/70"
                 />
               </div>
 
               {/* Service Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Service</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
                 <select
                   value={appointmentForm.serviceId}
                   onChange={(e) =>
                     setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select a service...</option>
                   {(services || []).map((service) => (
@@ -1282,13 +1282,13 @@ function CalendarContent() {
 
               {/* Staff Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Staff Member</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
                 <select
                   value={appointmentForm.staffId}
                   onChange={(e) =>
                     setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">Select staff...</option>
                   {(staff || []).map((staffMember) => (
@@ -1302,24 +1302,24 @@ function CalendarContent() {
               {/* Date & Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Date</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
                   <input
                     type="date"
                     value={appointmentForm.date}
                     onChange={(e) =>
                       setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Time</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
                   <select
                     value={appointmentForm.time}
                     onChange={(e) =>
                       setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   >
                     <option value="">Select time...</option>
                     {hours.map((hour) => (
@@ -1338,7 +1338,7 @@ function CalendarContent() {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Notes (optional)
                 </label>
                 <textarea
@@ -1348,18 +1348,18 @@ function CalendarContent() {
                     setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
                   }
                   placeholder="Add any special notes..."
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
                 />
               </div>
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={() => {
                   setShowEditAppointment(false);
                   setSelectedAppointment(null);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
               >
                 Cancel
               </button>

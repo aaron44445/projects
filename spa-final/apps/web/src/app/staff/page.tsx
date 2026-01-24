@@ -34,8 +34,8 @@ import { useStaff, useServices, useLocationContext, type StaffMember, type Creat
 
 const statusColors: Record<string, string> = {
   active: 'bg-sage/20 text-sage-dark border border-sage/30',
-  inactive: 'bg-charcoal/10 text-charcoal/60 border border-charcoal/20',
-  'on-leave': 'bg-amber-100 text-amber-700 border border-amber-200',
+  inactive: 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60 border border-charcoal/20 dark:border-white/20',
+  'on-leave': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700',
 };
 
 const roleLabels: Record<string, string> = {
@@ -499,7 +499,7 @@ function StaffContent() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="staff"
         sidebarOpen={sidebarOpen}
@@ -509,18 +509,18 @@ function StaffContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">Staff</h1>
-                <p className="text-sm text-charcoal/60">
+                <h1 className="text-2xl font-bold text-charcoal dark:text-white">Staff</h1>
+                <p className="text-sm text-charcoal/60 dark:text-white/60">
                   {staff.length} team member{staff.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -542,23 +542,23 @@ function StaffContent() {
         </header>
 
         {/* Search & Filter Bar */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-white/40" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search staff by name, email, or role..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 dark:border-white/10 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
               />
             </div>
             <div className="relative">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-3 border rounded-xl text-charcoal/70 hover:bg-charcoal/5 transition-colors ${
-                  activeFilterCount > 0 ? 'border-sage bg-sage/5' : 'border-charcoal/10'
+                className={`flex items-center gap-2 px-4 py-3 border rounded-xl text-charcoal/70 dark:text-white/70 hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors ${
+                  activeFilterCount > 0 ? 'border-sage bg-sage/5' : 'border-charcoal/10 dark:border-white/10'
                 }`}
               >
                 <Filter className="w-4 h-4" />
@@ -577,9 +577,9 @@ function StaffContent() {
                     className="fixed inset-0 z-30"
                     onClick={() => setShowFilters(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-charcoal/10 z-40 overflow-hidden">
-                    <div className="p-4 border-b border-charcoal/10 flex items-center justify-between">
-                      <span className="font-medium text-charcoal">Filters</span>
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 z-40 overflow-hidden">
+                    <div className="p-4 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+                      <span className="font-medium text-charcoal dark:text-white">Filters</span>
                       {activeFilterCount > 0 && (
                         <button
                           onClick={clearFilters}
@@ -593,7 +593,7 @@ function StaffContent() {
                     <div className="p-4 space-y-4">
                       {/* Role Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-charcoal mb-2">
+                        <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                           Role
                         </label>
                         <select
@@ -601,7 +601,7 @@ function StaffContent() {
                           onChange={(e) =>
                             setFilters((prev) => ({ ...prev, role: e.target.value }))
                           }
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm"
                         >
                           <option value="">All roles</option>
                           <option value="owner">Owner</option>
@@ -614,7 +614,7 @@ function StaffContent() {
 
                       {/* Status Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-charcoal mb-2">
+                        <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                           Status
                         </label>
                         <select
@@ -622,7 +622,7 @@ function StaffContent() {
                           onChange={(e) =>
                             setFilters((prev) => ({ ...prev, status: e.target.value }))
                           }
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm"
                         >
                           <option value="">All statuses</option>
                           <option value="active">Active</option>
@@ -632,7 +632,7 @@ function StaffContent() {
 
                       {/* Department Filter */}
                       <div>
-                        <label className="block text-sm font-medium text-charcoal mb-2">
+                        <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                           Department
                         </label>
                         <select
@@ -640,7 +640,7 @@ function StaffContent() {
                           onChange={(e) =>
                             setFilters((prev) => ({ ...prev, department: e.target.value }))
                           }
-                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm"
                         >
                           <option value="">All departments</option>
                           {availableDepartments.map((dept) => (
@@ -657,7 +657,7 @@ function StaffContent() {
                       </div>
                     </div>
 
-                    <div className="p-4 border-t border-charcoal/10 bg-charcoal/5">
+                    <div className="p-4 border-t border-charcoal/10 dark:border-white/10 bg-charcoal/5 dark:bg-white/5">
                       <button
                         onClick={() => setShowFilters(false)}
                         className="w-full px-4 py-2 bg-sage text-white rounded-lg font-medium hover:bg-sage-dark transition-colors text-sm"
@@ -677,7 +677,7 @@ function StaffContent() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="w-8 h-8 text-sage animate-spin mx-auto mb-4" />
-              <p className="text-charcoal/60">Loading staff...</p>
+              <p className="text-charcoal/60 dark:text-white/60">Loading staff...</p>
             </div>
           </div>
         )}
@@ -685,13 +685,13 @@ function StaffContent() {
         {/* Error State */}
         {error && !isLoading && (
           <div className="flex-1 p-6">
-            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center">
+            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-6 text-center">
               <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-4" />
-              <p className="text-rose-700 font-medium mb-2">Failed to load staff</p>
-              <p className="text-rose-600 text-sm mb-4">{error}</p>
+              <p className="text-rose-700 dark:text-rose-300 font-medium mb-2">Failed to load staff</p>
+              <p className="text-rose-600 dark:text-rose-400 text-sm mb-4">{error}</p>
               <button
                 onClick={() => refetch()}
-                className="px-4 py-2 bg-rose-100 text-rose-700 rounded-xl font-medium hover:bg-rose-200 transition-colors"
+                className="px-4 py-2 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 rounded-xl font-medium hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
               >
                 Try Again
               </button>
@@ -703,12 +703,12 @@ function StaffContent() {
         {!isLoading && !error && (
           <div className="flex-1 p-6 overflow-auto">
             {filteredStaff.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-12 text-center">
-                <Users className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                <p className="text-charcoal/60">
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-12 text-center">
+                <Users className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                <p className="text-charcoal/60 dark:text-white/60">
                   {searchQuery ? 'No staff members found' : 'No staff members yet'}
                 </p>
-                <p className="text-sm text-charcoal/40 mt-1 mb-4">
+                <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1 mb-4">
                   {searchQuery ? 'Try adjusting your search' : 'Add your first team member to get started'}
                 </p>
                 {!searchQuery && (
@@ -729,7 +729,7 @@ function StaffContent() {
                     <div
                       key={member.id}
                       onClick={() => setSelectedStaff(member)}
-                      className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-6 hover:shadow-card transition-all cursor-pointer"
+                      className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-6 hover:shadow-card transition-all cursor-pointer"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-4">
@@ -748,10 +748,10 @@ function StaffContent() {
                             )}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-charcoal">
+                            <h3 className="font-semibold text-charcoal dark:text-white">
                               {member.firstName} {member.lastName}
                             </h3>
-                            <p className="text-sm text-charcoal/60">{roleLabels[member.role] || member.role}</p>
+                            <p className="text-sm text-charcoal/60 dark:text-white/60">{roleLabels[member.role] || member.role}</p>
                           </div>
                         </div>
                         <span
@@ -770,19 +770,19 @@ function StaffContent() {
                             {(displayInfo.specialties ?? []).slice(0, 3).map((specialty) => (
                               <span
                                 key={specialty}
-                                className="px-2 py-1 bg-charcoal/5 rounded-lg text-xs text-charcoal/70"
+                                className="px-2 py-1 bg-charcoal/5 dark:bg-white/5 rounded-lg text-xs text-charcoal/70 dark:text-white/70"
                               >
                                 {specialty}
                               </span>
                             ))}
                             {(displayInfo.specialties?.length ?? 0) > 3 && (
-                              <span className="px-2 py-1 text-xs text-charcoal/50">
+                              <span className="px-2 py-1 text-xs text-charcoal/50 dark:text-white/50">
                                 +{(displayInfo.specialties?.length ?? 0) - 3} more
                               </span>
                             )}
                           </>
                         ) : (
-                          <span className="px-2 py-1 bg-charcoal/5 rounded-lg text-xs text-charcoal/50">
+                          <span className="px-2 py-1 bg-charcoal/5 dark:bg-white/5 rounded-lg text-xs text-charcoal/50 dark:text-white/50">
                             No services assigned
                           </span>
                         )}
@@ -796,7 +796,7 @@ function StaffContent() {
                               key={loc.locationId}
                               className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${
                                 loc.isPrimary
-                                  ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700'
                                   : 'bg-lavender/20 text-lavender-dark border border-lavender/30'
                               }`}
                             >
@@ -806,7 +806,7 @@ function StaffContent() {
                             </span>
                           ))}
                           {staffLocations.length > 2 && (
-                            <span className="px-2 py-1 text-xs text-charcoal/50">
+                            <span className="px-2 py-1 text-xs text-charcoal/50 dark:text-white/50">
                               +{staffLocations.length - 2} more
                             </span>
                           )}
@@ -815,7 +815,7 @@ function StaffContent() {
 
                       {staffLocations.length === 0 && locations.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-4">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal/5 rounded-lg text-xs text-charcoal/50">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-charcoal/5 dark:bg-white/5 rounded-lg text-xs text-charcoal/50 dark:text-white/50">
                             <MapPin className="w-3 h-3" />
                             No locations assigned
                           </span>
@@ -823,16 +823,16 @@ function StaffContent() {
                       )}
 
                       {/* Stats */}
-                      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-charcoal/10">
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-charcoal/10 dark:border-white/10">
                         <div className="text-center">
-                          <p className="font-semibold text-charcoal capitalize">{member.role}</p>
-                          <p className="text-xs text-charcoal/50">Role</p>
+                          <p className="font-semibold text-charcoal dark:text-white capitalize">{member.role}</p>
+                          <p className="text-xs text-charcoal/50 dark:text-white/50">Role</p>
                         </div>
                         <div className="text-center">
-                          <p className="font-semibold text-charcoal">
+                          <p className="font-semibold text-charcoal dark:text-white">
                             {member.commissionRate ? `${member.commissionRate}%` : 'N/A'}
                           </p>
-                          <p className="text-xs text-charcoal/50">Commission</p>
+                          <p className="text-xs text-charcoal/50 dark:text-white/50">Commission</p>
                         </div>
                       </div>
                     </div>
@@ -851,12 +851,12 @@ function StaffContent() {
             className="fixed inset-0 bg-charcoal/50 z-40"
             onClick={() => setSelectedStaff(null)}
           />
-          <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 overflow-auto">
-            <div className="sticky top-0 bg-white border-b border-charcoal/10 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">Staff Details</h2>
+          <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-sidebar shadow-2xl z-50 overflow-auto">
+            <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">Staff Details</h2>
               <button
                 onClick={() => setSelectedStaff(null)}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -880,10 +880,10 @@ function StaffContent() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-charcoal">
+                  <h3 className="text-xl font-bold text-charcoal dark:text-white">
                     {selectedStaff.firstName} {selectedStaff.lastName}
                   </h3>
-                  <p className="text-charcoal/60">{roleLabels[selectedStaff.role] || selectedStaff.role}</p>
+                  <p className="text-charcoal/60 dark:text-white/60">{roleLabels[selectedStaff.role] || selectedStaff.role}</p>
                   <span
                     className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium capitalize ${
                       statusColors[selectedStaff.isActive ? 'active' : 'inactive']
@@ -895,7 +895,7 @@ function StaffContent() {
                 <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
                   <button
                     onClick={() => openEditStaffModal(selectedStaff)}
-                    className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                    className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                   >
                     <Edit2 className="w-5 h-5" />
                   </button>
@@ -904,14 +904,14 @@ function StaffContent() {
 
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
-                  <Mail className="w-5 h-5 text-charcoal/40" />
-                  <span className="text-charcoal">{selectedStaff.email}</span>
+                <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                  <Mail className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
+                  <span className="text-charcoal dark:text-white">{selectedStaff.email}</span>
                 </div>
                 {selectedStaff.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
-                    <Phone className="w-5 h-5 text-charcoal/40" />
-                    <span className="text-charcoal">{selectedStaff.phone}</span>
+                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <Phone className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
+                    <span className="text-charcoal dark:text-white">{selectedStaff.phone}</span>
                   </div>
                 )}
               </div>
@@ -930,7 +930,7 @@ function StaffContent() {
                   disabled={isSubmitting}
                   className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl font-medium transition-colors ${
                     selectedStaff.isActive
-                      ? 'border-charcoal/20 text-charcoal hover:bg-charcoal/5'
+                      ? 'border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white hover:bg-charcoal/5 dark:hover:bg-white/5'
                       : 'border-sage text-sage hover:bg-sage/5'
                   }`}
                 >
@@ -949,27 +949,27 @@ function StaffContent() {
                 <div className="p-4 bg-sage/10 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <Briefcase className="w-5 h-5 text-sage" />
-                    <span className="text-lg font-bold text-charcoal capitalize">{selectedStaff.role}</span>
+                    <span className="text-lg font-bold text-charcoal dark:text-white capitalize">{selectedStaff.role}</span>
                   </div>
-                  <p className="text-xs text-charcoal/60">Role</p>
+                  <p className="text-xs text-charcoal/60 dark:text-white/60">Role</p>
                 </div>
                 <div className="p-4 bg-peach/20 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <DollarSign className="w-5 h-5 text-peach-dark" />
-                    <span className="text-lg font-bold text-charcoal">
+                    <span className="text-lg font-bold text-charcoal dark:text-white">
                       {selectedStaff.commissionRate ? `${selectedStaff.commissionRate}%` : 'N/A'}
                     </span>
                   </div>
-                  <p className="text-xs text-charcoal/60">Commission Rate</p>
+                  <p className="text-xs text-charcoal/60 dark:text-white/60">Commission Rate</p>
                 </div>
                 <div className="p-4 bg-lavender/20 rounded-xl col-span-2">
                   <div className="flex items-center gap-2 mb-2">
                     <CalendarCheck className="w-5 h-5 text-lavender-dark" />
-                    <span className="text-lg font-bold text-charcoal">
+                    <span className="text-lg font-bold text-charcoal dark:text-white">
                       {formatDate(selectedStaff.createdAt)}
                     </span>
                   </div>
-                  <p className="text-xs text-charcoal/60">Member since</p>
+                  <p className="text-xs text-charcoal/60 dark:text-white/60">Member since</p>
                 </div>
               </div>
 
@@ -977,8 +977,8 @@ function StaffContent() {
               {locations.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-charcoal flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-charcoal/60" />
+                    <h4 className="font-medium text-charcoal dark:text-white flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-charcoal/60 dark:text-white/60" />
                       Assigned Locations
                     </h4>
                     <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
@@ -994,9 +994,9 @@ function StaffContent() {
                     const staffLocations = getStaffLocations(selectedStaff.id);
                     if (staffLocations.length === 0) {
                       return (
-                        <div className="p-4 bg-charcoal/5 rounded-xl text-center">
-                          <MapPin className="w-8 h-8 text-charcoal/20 mx-auto mb-2" />
-                          <p className="text-sm text-charcoal/50">No locations assigned</p>
+                        <div className="p-4 bg-charcoal/5 dark:bg-white/5 rounded-xl text-center">
+                          <MapPin className="w-8 h-8 text-charcoal/20 dark:text-white/20 mx-auto mb-2" />
+                          <p className="text-sm text-charcoal/50 dark:text-white/50">No locations assigned</p>
                           <RequirePermission permission={PERMISSIONS.EDIT_STAFF}>
                             <button
                               onClick={() => openLocationModal(selectedStaff)}
@@ -1015,18 +1015,18 @@ function StaffContent() {
                             key={loc.locationId}
                             className={`flex items-center justify-between p-3 rounded-xl ${
                               loc.isPrimary
-                                ? 'bg-amber-50 border border-amber-200'
-                                : 'bg-charcoal/5'
+                                ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700'
+                                : 'bg-charcoal/5 dark:bg-white/5'
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              <MapPin className={`w-5 h-5 ${loc.isPrimary ? 'text-amber-600' : 'text-charcoal/40'}`} />
-                              <span className={`font-medium ${loc.isPrimary ? 'text-amber-800' : 'text-charcoal'}`}>
+                              <MapPin className={`w-5 h-5 ${loc.isPrimary ? 'text-amber-600 dark:text-amber-400' : 'text-charcoal/40 dark:text-white/40'}`} />
+                              <span className={`font-medium ${loc.isPrimary ? 'text-amber-800 dark:text-amber-300' : 'text-charcoal dark:text-white'}`}>
                                 {loc.locationName}
                               </span>
                             </div>
                             {loc.isPrimary && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-lg text-xs font-medium">
                                 <Star className="w-3 h-3 fill-amber-500" />
                                 Primary
                               </span>
@@ -1045,30 +1045,30 @@ function StaffContent() {
                 return (
                   <>
                     <div>
-                      <h4 className="font-medium text-charcoal mb-3">Assigned Services</h4>
+                      <h4 className="font-medium text-charcoal dark:text-white mb-3">Assigned Services</h4>
                       <div className="flex flex-wrap gap-2">
                         {displayInfo.specialties.length > 0 ? (
                           displayInfo.specialties.map((specialty) => (
                             <span
                               key={specialty}
-                              className="px-3 py-1.5 bg-charcoal/5 rounded-lg text-sm text-charcoal"
+                              className="px-3 py-1.5 bg-charcoal/5 dark:bg-white/5 rounded-lg text-sm text-charcoal dark:text-white"
                             >
                               {specialty}
                             </span>
                           ))
                         ) : (
-                          <span className="text-sm text-charcoal/50">No services assigned</span>
+                          <span className="text-sm text-charcoal/50 dark:text-white/50">No services assigned</span>
                         )}
                       </div>
                     </div>
 
                     {/* Working Schedule */}
                     <div>
-                      <h4 className="font-medium text-charcoal mb-3">Working Schedule</h4>
+                      <h4 className="font-medium text-charcoal dark:text-white mb-3">Working Schedule</h4>
                       <div className="space-y-3">
-                        <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
-                          <Clock className="w-5 h-5 text-charcoal/40" />
-                          <span className="text-charcoal">{displayInfo.workingHours}</span>
+                        <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                          <Clock className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
+                          <span className="text-charcoal dark:text-white">{displayInfo.workingHours}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {dayNames.map((day, index) => (
@@ -1077,7 +1077,7 @@ function StaffContent() {
                               className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                                 displayInfo.workingDays.includes(day)
                                   ? 'bg-sage/20 text-sage-dark'
-                                  : 'bg-charcoal/5 text-charcoal/40'
+                                  : 'bg-charcoal/5 dark:bg-white/5 text-charcoal/40 dark:text-white/40'
                               }`}
                             >
                               {day}
@@ -1093,8 +1093,8 @@ function StaffContent() {
               {/* Certifications */}
               {selectedStaff.certifications && (
                 <div>
-                  <h4 className="font-medium text-charcoal mb-3">Certifications</h4>
-                  <p className="text-sm text-charcoal/70 p-3 bg-charcoal/5 rounded-xl">
+                  <h4 className="font-medium text-charcoal dark:text-white mb-3">Certifications</h4>
+                  <p className="text-sm text-charcoal/70 dark:text-white/70 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
                     {selectedStaff.certifications}
                   </p>
                 </div>
@@ -1102,10 +1102,10 @@ function StaffContent() {
 
               {/* Delete Button */}
               <RequirePermission permission={PERMISSIONS.DELETE_STAFF}>
-                <div className="pt-4 border-t border-charcoal/10">
+                <div className="pt-4 border-t border-charcoal/10 dark:border-white/10">
                   <button
                     onClick={() => setDeleteConfirm({ id: selectedStaff.id, name: `${selectedStaff.firstName} ${selectedStaff.lastName}` })}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-rose-200 text-rose-600 rounded-xl font-medium hover:bg-rose-50 transition-colors"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl font-medium hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                     Delete Staff Member
@@ -1120,17 +1120,17 @@ function StaffContent() {
       {/* Location Assignment Modal */}
       {showLocationModal && locationModalStaff && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-charcoal">Assign Locations</h2>
-                <p className="text-sm text-charcoal/60 mt-1">
+                <h2 className="text-xl font-bold text-charcoal dark:text-white">Assign Locations</h2>
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mt-1">
                   {locationModalStaff.firstName} {locationModalStaff.lastName}
                 </p>
               </div>
               <button
                 onClick={closeLocationModal}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1139,15 +1139,15 @@ function StaffContent() {
             <div className="p-6 space-y-4">
               {locations.length === 0 ? (
                 <div className="text-center py-8">
-                  <MapPin className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                  <p className="text-charcoal/60 mb-2">No locations available</p>
-                  <p className="text-sm text-charcoal/40">
+                  <MapPin className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                  <p className="text-charcoal/60 dark:text-white/60 mb-2">No locations available</p>
+                  <p className="text-sm text-charcoal/40 dark:text-white/40">
                     Create locations first to assign staff.
                   </p>
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-charcoal/60">
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">
                     Select the locations where this staff member works. Mark one as their primary location.
                   </p>
 
@@ -1164,9 +1164,9 @@ function StaffContent() {
                           className={`p-4 rounded-xl border transition-all ${
                             isAssigned
                               ? isPrimary
-                                ? 'border-amber-300 bg-amber-50'
+                                ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20'
                                 : 'border-sage bg-sage/5'
-                              : 'border-charcoal/10 hover:border-charcoal/20'
+                              : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                           }`}
                         >
                           <div className="flex items-start gap-3">
@@ -1176,7 +1176,7 @@ function StaffContent() {
                               className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                                 isAssigned
                                   ? 'bg-sage border-sage text-white'
-                                  : 'border-charcoal/30 hover:border-charcoal/50'
+                                  : 'border-charcoal/30 dark:border-white/30 hover:border-charcoal/50 dark:hover:border-white/50'
                               }`}
                             >
                               {isAssigned && <Check className="w-3 h-3" />}
@@ -1184,18 +1184,18 @@ function StaffContent() {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <MapPin className={`w-4 h-4 ${isAssigned ? 'text-sage' : 'text-charcoal/40'}`} />
-                                <span className={`font-medium ${isAssigned ? 'text-charcoal' : 'text-charcoal/70'}`}>
+                                <MapPin className={`w-4 h-4 ${isAssigned ? 'text-sage' : 'text-charcoal/40 dark:text-white/40'}`} />
+                                <span className={`font-medium ${isAssigned ? 'text-charcoal dark:text-white' : 'text-charcoal/70 dark:text-white/70'}`}>
                                   {location.name}
                                 </span>
                                 {location.isPrimary && (
-                                  <span className="px-1.5 py-0.5 bg-charcoal/10 text-charcoal/60 text-xs rounded">
+                                  <span className="px-1.5 py-0.5 bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60 text-xs rounded">
                                     Main
                                   </span>
                                 )}
                               </div>
                               {location.address && (
-                                <p className="text-xs text-charcoal/50 mt-1 ml-6">
+                                <p className="text-xs text-charcoal/50 dark:text-white/50 mt-1 ml-6">
                                   {location.address}
                                   {location.city && `, ${location.city}`}
                                 </p>
@@ -1207,8 +1207,8 @@ function StaffContent() {
                                   onClick={() => setPrimaryLocation(location.id)}
                                   className={`mt-2 ml-6 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                                     isPrimary
-                                      ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                                      : 'bg-charcoal/5 text-charcoal/60 hover:bg-charcoal/10'
+                                      ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700'
+                                      : 'bg-charcoal/5 dark:bg-white/5 text-charcoal/60 dark:text-white/60 hover:bg-charcoal/10 dark:hover:bg-white/10'
                                   }`}
                                 >
                                   <Star className={`w-3 h-3 ${isPrimary ? 'fill-amber-500 text-amber-500' : ''}`} />
@@ -1225,11 +1225,11 @@ function StaffContent() {
               )}
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={closeLocationModal}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1249,14 +1249,14 @@ function StaffContent() {
       {/* New/Edit Staff Modal */}
       {showNewStaff && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">
                 {editingStaff ? 'Edit Staff Member' : 'Add New Staff Member'}
               </h2>
               <button
                 onClick={closeStaffModal}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1264,55 +1264,55 @@ function StaffContent() {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">First Name</label>
                   <input
                     type="text"
                     value={staffForm.firstName}
                     onChange={(e) => setStaffForm((prev) => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="First name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Last Name</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Last Name</label>
                   <input
                     type="text"
                     value={staffForm.lastName}
                     onChange={(e) => setStaffForm((prev) => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Last name"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Email</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
                 <input
                   type="email"
                   value={staffForm.email}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="staff@peacase.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Phone</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
                 <input
                   type="tel"
                   value={staffForm.phone}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, phone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="(555) 123-4567"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Role</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Role</label>
                 <select
                   value={staffForm.role}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist' }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white"
                 >
                   <option value="receptionist">Receptionist</option>
                   <option value="staff">Staff</option>
@@ -1321,13 +1321,13 @@ function StaffContent() {
                   {isAtLeast('admin') && <option value="admin">Admin</option>}
                   {currentUserRole === 'owner' && <option value="owner">Owner</option>}
                 </select>
-                <p className="mt-1 text-xs text-charcoal/50">
+                <p className="mt-1 text-xs text-charcoal/50 dark:text-white/50">
                   You can only assign roles up to your own level
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Commission Rate (%)
                 </label>
                 <input
@@ -1337,26 +1337,26 @@ function StaffContent() {
                   step="0.1"
                   value={staffForm.commissionRate}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, commissionRate: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., 50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Certifications
                 </label>
                 <textarea
                   rows={2}
                   value={staffForm.certifications}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, certifications: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="List certifications, licenses, etc."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Working Days
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1366,7 +1366,7 @@ function StaffContent() {
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                         selectedWorkingDays.includes(index)
                           ? 'bg-sage/20 text-sage-dark'
-                          : 'bg-charcoal/5 hover:bg-charcoal/10'
+                          : 'bg-charcoal/5 dark:bg-white/5 hover:bg-charcoal/10 dark:hover:bg-white/10 text-charcoal dark:text-white'
                       }`}
                     >
                       <input
@@ -1381,11 +1381,11 @@ function StaffContent() {
                 </div>
               </div>
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={closeStaffModal}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1405,20 +1405,20 @@ function StaffContent() {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
             <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-6 h-6 text-rose-500" />
               </div>
-              <h2 className="text-lg font-bold text-charcoal mb-2">Delete Staff Member?</h2>
-              <p className="text-charcoal/60 mb-6">
+              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Staff Member?</h2>
+              <p className="text-charcoal/60 dark:text-white/60 mb-6">
                 Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

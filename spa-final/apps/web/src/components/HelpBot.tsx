@@ -342,7 +342,7 @@ export function HelpBot() {
 
       {/* Chat Window */}
       <div
-        className={`fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-charcoal/10 overflow-hidden transition-all duration-300 ${
+        className={`fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-white dark:bg-sidebar rounded-2xl shadow-2xl border border-charcoal/10 dark:border-white/10 overflow-hidden transition-all duration-300 ${
           isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none'
         }`}
       >
@@ -376,7 +376,7 @@ export function HelpBot() {
                 className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                   message.role === 'user'
                     ? 'bg-sage text-white rounded-br-md'
-                    : 'bg-charcoal/5 text-charcoal rounded-bl-md'
+                    : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white rounded-bl-md'
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -385,11 +385,11 @@ export function HelpBot() {
           ))}
           {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-charcoal/5 rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="bg-charcoal/5 dark:bg-white/5 rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-charcoal/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-charcoal/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-charcoal/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-2 h-2 bg-charcoal/40 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-charcoal/40 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-charcoal/40 dark:bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -400,13 +400,13 @@ export function HelpBot() {
         {/* Quick Questions */}
         {messages.length <= 2 && (
           <div className="px-4 pb-2">
-            <p className="text-xs text-charcoal/50 mb-2">Quick questions:</p>
+            <p className="text-xs text-charcoal/50 dark:text-white/50 mb-2">Quick questions:</p>
             <div className="flex flex-wrap gap-2">
               {quickQuestions.slice(0, 3).map((q) => (
                 <button
                   key={q}
                   onClick={() => handleQuickQuestion(q)}
-                  className="px-3 py-1.5 bg-charcoal/5 hover:bg-charcoal/10 rounded-full text-xs text-charcoal transition-colors"
+                  className="px-3 py-1.5 bg-charcoal/5 dark:bg-white/5 hover:bg-charcoal/10 dark:hover:bg-white/10 rounded-full text-xs text-charcoal dark:text-white transition-colors"
                 >
                   {q}
                 </button>
@@ -416,7 +416,7 @@ export function HelpBot() {
         )}
 
         {/* Input */}
-        <div className="p-4 border-t border-charcoal/10">
+        <div className="p-4 border-t border-charcoal/10 dark:border-white/10">
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -424,7 +424,7 @@ export function HelpBot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask a question..."
-              className="flex-1 px-4 py-3 bg-charcoal/5 rounded-xl border-0 outline-none focus:ring-2 focus:ring-sage/20 text-sm"
+              className="flex-1 px-4 py-3 bg-charcoal/5 dark:bg-white/5 rounded-xl border-0 outline-none focus:ring-2 focus:ring-sage/20 text-sm text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
             />
             <button
               onClick={handleSend}

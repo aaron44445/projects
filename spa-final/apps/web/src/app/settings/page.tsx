@@ -93,10 +93,10 @@ function AddOnUpsellBanner({
           <Sparkles className="w-5 h-5 text-lavender" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-charcoal mb-1">
+          <h3 className="font-semibold text-charcoal dark:text-white mb-1">
             Enable {info.name} to use this feature
           </h3>
-          <p className="text-sm text-charcoal/60 mb-3">
+          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
             {info.description}
           </p>
           <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ function AddOnUpsellBanner({
             </button>
             <Link
               href="/settings?section=subscription"
-              className="text-sm text-charcoal/60 hover:text-charcoal"
+              className="text-sm text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white"
             >
               Learn more
             </Link>
@@ -481,7 +481,7 @@ function SettingsContent() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-4" />
-            <p className="text-charcoal/60">Loading settings...</p>
+            <p className="text-charcoal/60 dark:text-white/60">Loading settings...</p>
           </div>
         </div>
       );
@@ -494,8 +494,8 @@ function SettingsContent() {
           <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h3 className="text-xl font-bold text-charcoal mb-2">Failed to Load Settings</h3>
-          <p className="text-charcoal/60 mb-6">{salonError}</p>
+          <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">Failed to Load Settings</h3>
+          <p className="text-charcoal/60 dark:text-white/60 mb-6">{salonError}</p>
           <button
             onClick={fetchSalon}
             className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
@@ -511,8 +511,8 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Business Information</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Business Information</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Update your business details. This information appears on invoices and your booking page.
               </p>
             </div>
@@ -520,89 +520,89 @@ function SettingsContent() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Business Name</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Business Name</label>
                   <input
                     type="text"
                     value={businessForm.name}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Phone Number</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone Number</label>
                   <input
                     type="tel"
                     value={businessForm.phone}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Email Address</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email Address</label>
                   <input
                     type="email"
                     value={businessForm.email}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Website</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Website</label>
                   <input
                     type="url"
                     value={businessForm.website}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, website: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Street Address</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Street Address</label>
                 <input
                   type="text"
                   value={businessForm.address}
                   onChange={(e) => setBusinessForm((prev) => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-charcoal mb-2">City</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">City</label>
                   <input
                     type="text"
                     value={businessForm.city}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, city: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">State</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">State</label>
                   <input
                     type="text"
                     value={businessForm.state}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, state: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">ZIP Code</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">ZIP Code</label>
                   <input
                     type="text"
                     value={businessForm.zip}
                     onChange={(e) => setBusinessForm((prev) => ({ ...prev, zip: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Timezone</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Timezone</label>
                 <select
                   value={businessForm.timezone}
                   onChange={(e) => setBusinessForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
                   <option value="America/Denver">Mountain Time (US & Canada)</option>
@@ -612,12 +612,12 @@ function SettingsContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Business Description</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Business Description</label>
                 <textarea
                   rows={3}
                   value={businessForm.description}
                   onChange={(e) => setBusinessForm((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
                 />
               </div>
             </div>
@@ -628,31 +628,31 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Location Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Location Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Manage multiple locations for your business. Add locations, assign staff, and set location-specific pricing.
               </p>
             </div>
 
             {/* Multi-Location Feature Toggle */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10 shadow-soft">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10 shadow-soft">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <MapPin className="w-5 h-5 text-sage" />
-                    <h3 className="font-semibold text-charcoal">Multi-Location Mode</h3>
+                    <h3 className="font-semibold text-charcoal dark:text-white">Multi-Location Mode</h3>
                     {salon?.multiLocationEnabled && (
                       <span className="px-2 py-0.5 bg-sage/20 text-sage-dark text-xs font-medium rounded-full">
                         Active
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-charcoal/60 mb-4">
+                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                     Enable multi-location mode to manage multiple business locations. Each location can have its own staff, services, pricing, and operating hours.
                   </p>
 
                   {/* Features list */}
-                  <ul className="text-sm space-y-2 text-charcoal/70">
+                  <ul className="text-sm space-y-2 text-charcoal/70 dark:text-white/70">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-sage" />
                       Assign staff to specific locations
@@ -710,9 +710,9 @@ function SettingsContent() {
 
             {/* Locations Summary */}
             {salon?.multiLocationEnabled && (
-              <div className="p-6 bg-white rounded-2xl border border-charcoal/10 shadow-soft">
+              <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10 shadow-soft">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-charcoal">Your Locations</h3>
+                  <h3 className="font-semibold text-charcoal dark:text-white">Your Locations</h3>
                   <Link
                     href="/locations"
                     className="text-sm text-sage hover:text-sage-dark font-medium flex items-center gap-1"
@@ -732,8 +732,8 @@ function SettingsContent() {
                   </div>
                 ) : locations.length === 0 ? (
                   <div className="text-center py-8">
-                    <MapPin className="w-10 h-10 text-charcoal/20 mx-auto mb-3" />
-                    <p className="text-charcoal/60 mb-4">No locations added yet</p>
+                    <MapPin className="w-10 h-10 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
+                    <p className="text-charcoal/60 dark:text-white/60 mb-4">No locations added yet</p>
                     <Link
                       href="/locations"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
@@ -746,12 +746,12 @@ function SettingsContent() {
                     {locations.slice(0, 5).map((location) => (
                       <div
                         key={location.id}
-                        className="flex items-center justify-between p-4 bg-charcoal/5 rounded-xl"
+                        className="flex items-center justify-between p-4 bg-charcoal/5 dark:bg-white/5 rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <MapPin className={`w-5 h-5 ${location.isPrimary ? 'text-amber-500' : 'text-charcoal/40'}`} />
+                          <MapPin className={`w-5 h-5 ${location.isPrimary ? 'text-amber-500' : 'text-charcoal/40 dark:text-white/40'}`} />
                           <div>
-                            <p className="font-medium text-charcoal flex items-center gap-2">
+                            <p className="font-medium text-charcoal dark:text-white flex items-center gap-2">
                               {location.name}
                               {location.isPrimary && (
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-medium rounded">
@@ -760,7 +760,7 @@ function SettingsContent() {
                               )}
                             </p>
                             {location.city && (
-                              <p className="text-sm text-charcoal/60">{location.city}, {location.state}</p>
+                              <p className="text-sm text-charcoal/60 dark:text-white/60">{location.city}, {location.state}</p>
                             )}
                           </div>
                         </div>
@@ -772,7 +772,7 @@ function SettingsContent() {
                       </div>
                     ))}
                     {locations.length > 5 && (
-                      <p className="text-sm text-charcoal/60 text-center pt-2">
+                      <p className="text-sm text-charcoal/60 dark:text-white/60 text-center pt-2">
                         + {locations.length - 5} more locations
                       </p>
                     )}
@@ -785,15 +785,15 @@ function SettingsContent() {
             <div className="p-4 bg-lavender/10 rounded-xl border border-lavender/30">
               <div className="flex items-start gap-3">
                 <DollarSign className="w-5 h-5 text-lavender flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-charcoal/70">
-                  <p className="font-medium text-charcoal mb-1">Multi-Location Pricing</p>
+                <div className="text-sm text-charcoal/70 dark:text-white/70">
+                  <p className="font-medium text-charcoal dark:text-white mb-1">Multi-Location Pricing</p>
                   <ul className="space-y-1">
                     <li>• First location: <span className="font-medium">Included in your plan</span></li>
-                    <li>• Each additional location: <span className="font-medium text-charcoal">$100/month</span></li>
+                    <li>• Each additional location: <span className="font-medium text-charcoal dark:text-white">$100/month</span></li>
                   </ul>
                   {salon?.multiLocationEnabled && locations.length > 1 && (
                     <p className="mt-2 pt-2 border-t border-lavender/30">
-                      You have <span className="font-medium text-charcoal">{locations.length} locations</span> ({locations.length - 1} additional = <span className="font-medium text-charcoal">${(locations.length - 1) * 100}/month</span>)
+                      You have <span className="font-medium text-charcoal dark:text-white">{locations.length} locations</span> ({locations.length - 1} additional = <span className="font-medium text-charcoal dark:text-white">${(locations.length - 1) * 100}/month</span>)
                     </p>
                   )}
                 </div>
@@ -806,8 +806,8 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Business Hours</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Business Hours</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Set your default operating hours. Staff schedules can override these settings.
               </p>
             </div>
@@ -817,11 +817,11 @@ function SettingsContent() {
                 <div
                   key={day.day}
                   className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                    day.isOpen ? 'border-sage/30 bg-sage/5' : 'border-charcoal/10 bg-charcoal/5'
+                    day.isOpen ? 'border-sage/30 bg-sage/5' : 'border-charcoal/10 dark:border-white/10 bg-charcoal/5 dark:bg-white/5'
                   }`}
                 >
                   <div className="w-28 flex-shrink-0">
-                    <span className="font-medium text-charcoal">{day.day}</span>
+                    <span className="font-medium text-charcoal dark:text-white">{day.day}</span>
                   </div>
 
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -833,9 +833,9 @@ function SettingsContent() {
                         updated[index].isOpen = e.target.checked;
                         setHours(updated);
                       }}
-                      className="w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage"
+                      className="w-5 h-5 rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage"
                     />
-                    <span className="text-sm text-charcoal/60">Open</span>
+                    <span className="text-sm text-charcoal/60 dark:text-white/60">Open</span>
                   </label>
 
                   {day.isOpen && (
@@ -848,9 +848,9 @@ function SettingsContent() {
                           updated[index].open = e.target.value;
                           setHours(updated);
                         }}
-                        className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
+                        className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm"
                       />
-                      <span className="text-charcoal/40">to</span>
+                      <span className="text-charcoal/40 dark:text-white/40">to</span>
                       <input
                         type="time"
                         value={day.close}
@@ -859,20 +859,20 @@ function SettingsContent() {
                           updated[index].close = e.target.value;
                           setHours(updated);
                         }}
-                        className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm"
+                        className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm"
                       />
                     </div>
                   )}
 
                   {!day.isOpen && (
-                    <span className="ml-auto text-sm text-charcoal/40">Closed</span>
+                    <span className="ml-auto text-sm text-charcoal/40 dark:text-white/40">Closed</span>
                   )}
                 </div>
               ))}
             </div>
 
             <div className="p-4 bg-lavender/20 rounded-xl border border-lavender/30">
-              <p className="text-sm text-charcoal/70">
+              <p className="text-sm text-charcoal/70 dark:text-white/70">
                 <strong>Note:</strong> To set up holiday closures or special hours, go to Calendar
                 and use the Block Time feature.
               </p>
@@ -891,27 +891,27 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Regional Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Regional Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Configure currency, date format, time format, and timezone for your business.
               </p>
             </div>
 
             {/* Currency */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-sage" />
                 Currency
               </h3>
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Display Currency</label>
-                <p className="text-xs text-charcoal/50 mb-3">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Display Currency</label>
+                <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                   This currency will be used throughout the app for prices, invoices, and reports.
                 </p>
                 <select
                   value={regionalForm.currency}
                   onChange={(e) => setRegionalForm((prev) => ({ ...prev, currency: e.target.value as CurrencyCode }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                 >
                   {Object.entries(SUPPORTED_CURRENCIES).map(([code, info]) => (
                     <option key={code} value={code}>
@@ -923,21 +923,21 @@ function SettingsContent() {
             </div>
 
             {/* Date & Time Format */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-sage" />
                 Date & Time Format
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Date Format</label>
-                  <p className="text-xs text-charcoal/50 mb-3">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date Format</label>
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                     How dates are displayed (e.g., January 15, 2026)
                   </p>
                   <select
                     value={regionalForm.dateFormat}
                     onChange={(e) => setRegionalForm((prev) => ({ ...prev, dateFormat: e.target.value as DateFormatStyle }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                   >
                     <option value="MDY">MM/DD/YYYY (US)</option>
                     <option value="DMY">DD/MM/YYYY (UK/Europe)</option>
@@ -946,14 +946,14 @@ function SettingsContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Time Format</label>
-                  <p className="text-xs text-charcoal/50 mb-3">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time Format</label>
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                     How times are displayed (e.g., 2:30 PM vs 14:30)
                   </p>
                   <select
                     value={regionalForm.timeFormat}
                     onChange={(e) => setRegionalForm((prev) => ({ ...prev, timeFormat: e.target.value as TimeFormatStyle }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                   >
                     <option value="12h">12-hour (2:30 PM)</option>
                     <option value="24h">24-hour (14:30)</option>
@@ -961,14 +961,14 @@ function SettingsContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Week Starts On</label>
-                  <p className="text-xs text-charcoal/50 mb-3">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Week Starts On</label>
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                     First day of the week in calendar views
                   </p>
                   <select
                     value={regionalForm.weekStartsOn}
                     onChange={(e) => setRegionalForm((prev) => ({ ...prev, weekStartsOn: parseInt(e.target.value) }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                   >
                     <option value={0}>Sunday</option>
                     <option value={1}>Monday</option>
@@ -976,14 +976,14 @@ function SettingsContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Timezone</label>
-                  <p className="text-xs text-charcoal/50 mb-3">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Timezone</label>
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                     Your business timezone for appointments
                   </p>
                   <select
                     value={regionalForm.timezone}
                     onChange={(e) => setRegionalForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                   >
                     {Object.entries(groupedTimezones).map(([region, timezones]) => (
                       <optgroup key={region} label={region}>
@@ -1001,30 +1001,30 @@ function SettingsContent() {
 
             {/* Preview */}
             <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
-              <h4 className="font-medium text-charcoal mb-3">Preview</h4>
+              <h4 className="font-medium text-charcoal dark:text-white mb-3">Preview</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-charcoal/60 mb-1">Currency</p>
-                  <p className="font-medium text-charcoal">
+                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Currency</p>
+                  <p className="font-medium text-charcoal dark:text-white">
                     {SUPPORTED_CURRENCIES[regionalForm.currency]?.symbol}125.00
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 mb-1">Date</p>
-                  <p className="font-medium text-charcoal">
+                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Date</p>
+                  <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.dateFormat === 'MDY' ? '01/15/2026' :
                      regionalForm.dateFormat === 'DMY' ? '15/01/2026' : '2026-01-15'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 mb-1">Time</p>
-                  <p className="font-medium text-charcoal">
+                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Time</p>
+                  <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.timeFormat === '12h' ? '2:30 PM' : '14:30'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 mb-1">Week Starts</p>
-                  <p className="font-medium text-charcoal">
+                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Week Starts</p>
+                  <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.weekStartsOn === 0 ? 'Sunday' : 'Monday'}
                   </p>
                 </div>
@@ -1032,7 +1032,7 @@ function SettingsContent() {
             </div>
 
             {/* Save Button for Regional */}
-            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10">
+            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10 dark:border-white/10">
               <div>
                 {regionalSaved && (
                   <span className="flex items-center gap-2 text-green-600">
@@ -1069,26 +1069,26 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Tax / VAT Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Tax / VAT Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Configure tax rates and VAT settings for your invoices and receipts.
               </p>
             </div>
 
             {/* Tax Enable Toggle */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <Receipt className="w-5 h-5 text-sage" />
-                    <h3 className="font-semibold text-charcoal">Enable Tax</h3>
+                    <h3 className="font-semibold text-charcoal dark:text-white">Enable Tax</h3>
                     {taxForm.taxEnabled && (
                       <span className="px-2 py-0.5 bg-sage/20 text-sage-dark text-xs font-medium rounded-full">
                         Active
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-charcoal/60">
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">
                     When enabled, tax will be calculated and shown on invoices and receipts.
                   </p>
                 </div>
@@ -1110,12 +1110,12 @@ function SettingsContent() {
             {/* Tax Configuration - Only shown when enabled */}
             {taxForm.taxEnabled && (
               <>
-                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-                  <h3 className="font-semibold text-charcoal mb-4">Tax Configuration</h3>
+                <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+                  <h3 className="font-semibold text-charcoal dark:text-white mb-4">Tax Configuration</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Tax Name</label>
-                      <p className="text-xs text-charcoal/50 mb-3">
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Tax Name</label>
+                      <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                         The label shown on invoices (e.g., VAT, GST, Sales Tax)
                       </p>
                       <input
@@ -1123,13 +1123,13 @@ function SettingsContent() {
                         value={taxForm.taxName}
                         onChange={(e) => setTaxForm((prev) => ({ ...prev, taxName: e.target.value }))}
                         placeholder="Sales Tax"
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Tax Rate (%)</label>
-                      <p className="text-xs text-charcoal/50 mb-3">
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Tax Rate (%)</label>
+                      <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                         The percentage rate applied to services
                       </p>
                       <div className="relative">
@@ -1141,32 +1141,32 @@ function SettingsContent() {
                           min="0"
                           max="100"
                           step="0.01"
-                          className="w-full px-4 py-3 pr-10 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                          className="w-full px-4 py-3 pr-10 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40">%</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">%</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-                  <h3 className="font-semibold text-charcoal mb-4">Pricing Display</h3>
+                <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+                  <h3 className="font-semibold text-charcoal dark:text-white mb-4">Pricing Display</h3>
 
                   <div className="space-y-4">
                     <label className="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-sage/30"
                       onClick={() => setTaxForm((prev) => ({ ...prev, taxIncluded: false }))}
                     >
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        !taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30'
+                        !taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30 dark:border-white/30'
                       }`}>
                         {!taxForm.taxIncluded && <div className="w-2.5 h-2.5 rounded-full bg-sage" />}
                       </div>
                       <div>
-                        <p className="font-medium text-charcoal">Tax added at checkout (exclusive)</p>
-                        <p className="text-sm text-charcoal/60">
+                        <p className="font-medium text-charcoal dark:text-white">Tax added at checkout (exclusive)</p>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60">
                           Service prices shown without tax. Tax is calculated and added separately.
                         </p>
-                        <p className="text-xs text-charcoal/40 mt-1">
+                        <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">
                           Example: $100 service + {taxForm.taxRate}% tax = ${(100 + (100 * taxForm.taxRate / 100)).toFixed(2)} total
                         </p>
                       </div>
@@ -1176,16 +1176,16 @@ function SettingsContent() {
                       onClick={() => setTaxForm((prev) => ({ ...prev, taxIncluded: true }))}
                     >
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30'
+                        taxForm.taxIncluded ? 'border-sage' : 'border-charcoal/30 dark:border-white/30'
                       }`}>
                         {taxForm.taxIncluded && <div className="w-2.5 h-2.5 rounded-full bg-sage" />}
                       </div>
                       <div>
-                        <p className="font-medium text-charcoal">Tax included in price (inclusive)</p>
-                        <p className="text-sm text-charcoal/60">
+                        <p className="font-medium text-charcoal dark:text-white">Tax included in price (inclusive)</p>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60">
                           Service prices already include tax. Tax amount shown as breakdown.
                         </p>
-                        <p className="text-xs text-charcoal/40 mt-1">
+                        <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">
                           Example: $100 service includes ${(100 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)} tax
                         </p>
                       </div>
@@ -1193,11 +1193,11 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-                  <h3 className="font-semibold text-charcoal mb-4">VAT / Tax ID (Optional)</h3>
+                <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+                  <h3 className="font-semibold text-charcoal dark:text-white mb-4">VAT / Tax ID (Optional)</h3>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">VAT Number / Tax ID</label>
-                    <p className="text-xs text-charcoal/50 mb-3">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">VAT Number / Tax ID</label>
+                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                       Your business VAT or tax registration number. This will appear on invoices.
                     </p>
                     <input
@@ -1205,7 +1205,7 @@ function SettingsContent() {
                       value={taxForm.vatNumber}
                       onChange={(e) => setTaxForm((prev) => ({ ...prev, vatNumber: e.target.value }))}
                       placeholder="e.g., GB123456789"
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -1215,30 +1215,30 @@ function SettingsContent() {
             {/* Tax Preview */}
             {taxForm.taxEnabled && (
               <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
-                <h4 className="font-medium text-charcoal mb-3">Invoice Preview</h4>
-                <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
+                <h4 className="font-medium text-charcoal dark:text-white mb-3">Invoice Preview</h4>
+                <div className="bg-white dark:bg-sidebar rounded-lg p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-charcoal/60">Haircut</span>
-                    <span className="text-charcoal">${taxForm.taxIncluded ? '50.00' : '50.00'}</span>
+                    <span className="text-charcoal/60 dark:text-white/60">Haircut</span>
+                    <span className="text-charcoal dark:text-white">${taxForm.taxIncluded ? '50.00' : '50.00'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-charcoal/60">Color Treatment</span>
-                    <span className="text-charcoal">${taxForm.taxIncluded ? '100.00' : '100.00'}</span>
+                    <span className="text-charcoal/60 dark:text-white/60">Color Treatment</span>
+                    <span className="text-charcoal dark:text-white">${taxForm.taxIncluded ? '100.00' : '100.00'}</span>
                   </div>
-                  <div className="border-t border-charcoal/10 pt-2 mt-2">
+                  <div className="border-t border-charcoal/10 dark:border-white/10 pt-2 mt-2">
                     <div className="flex justify-between">
-                      <span className="text-charcoal/60">Subtotal</span>
-                      <span className="text-charcoal">$150.00</span>
+                      <span className="text-charcoal/60 dark:text-white/60">Subtotal</span>
+                      <span className="text-charcoal dark:text-white">$150.00</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-charcoal/60">{taxForm.taxName} ({taxForm.taxRate}%)</span>
-                      <span className="text-charcoal">
+                      <span className="text-charcoal/60 dark:text-white/60">{taxForm.taxName} ({taxForm.taxRate}%)</span>
+                      <span className="text-charcoal dark:text-white">
                         ${taxForm.taxIncluded
                           ? (150 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)
                           : (150 * taxForm.taxRate / 100).toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex justify-between font-semibold text-charcoal pt-2 border-t border-charcoal/10 mt-2">
+                    <div className="flex justify-between font-semibold text-charcoal dark:text-white pt-2 border-t border-charcoal/10 dark:border-white/10 mt-2">
                       <span>Total</span>
                       <span>
                         ${taxForm.taxIncluded
@@ -1248,7 +1248,7 @@ function SettingsContent() {
                     </div>
                   </div>
                   {taxForm.vatNumber && (
-                    <div className="text-xs text-charcoal/40 pt-2 border-t border-charcoal/10 mt-2">
+                    <div className="text-xs text-charcoal/40 dark:text-white/40 pt-2 border-t border-charcoal/10 dark:border-white/10 mt-2">
                       VAT/Tax ID: {taxForm.vatNumber}
                     </div>
                   )}
@@ -1257,7 +1257,7 @@ function SettingsContent() {
             )}
 
             {/* Save Button for Tax */}
-            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10">
+            <div className="flex items-center justify-between pt-4 border-t border-charcoal/10 dark:border-white/10">
               <div>
                 {taxSaved && (
                   <span className="flex items-center gap-2 text-green-600">
@@ -1294,8 +1294,8 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Subscription & Add-ons</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Subscription & Add-ons</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Manage your plan and add or remove features as your business needs change.
               </p>
             </div>
@@ -1304,12 +1304,12 @@ function SettingsContent() {
             <div className="bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl p-6 border border-sage/20">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-charcoal">Current Plan</h3>
-                  <p className="text-charcoal/60">Essentials + {activeAddOns.length} add-ons</p>
+                  <h3 className="text-lg font-bold text-charcoal dark:text-white">Current Plan</h3>
+                  <p className="text-charcoal/60 dark:text-white/60">Essentials + {activeAddOns.length} add-ons</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-charcoal">${monthlyTotal}</p>
-                  <p className="text-sm text-charcoal/60">/month</p>
+                  <p className="text-3xl font-bold text-charcoal dark:text-white">${monthlyTotal}</p>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">/month</p>
                 </div>
               </div>
 
@@ -1328,7 +1328,7 @@ function SettingsContent() {
             {/* Active Add-ons */}
             {activeAddOns.length > 0 && (
               <div>
-                <h3 className="font-semibold text-charcoal mb-4">Your Active Add-ons</h3>
+                <h3 className="font-semibold text-charcoal dark:text-white mb-4">Your Active Add-ons</h3>
                 <div className="space-y-3">
                   {activeAddOns.map((addOnId) => {
                     const addOn = allAddOns.find((a) => a.id === addOnId);
@@ -1337,16 +1337,16 @@ function SettingsContent() {
                     return (
                       <div
                         key={addOnId}
-                        className="flex items-center gap-4 p-4 bg-white rounded-xl border border-sage/30"
+                        className="flex items-center gap-4 p-4 bg-white dark:bg-sidebar rounded-xl border border-sage/30"
                       >
                         <div className="w-10 h-10 rounded-lg bg-sage/20 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-sage" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-charcoal">{addOn.name}</p>
-                          <p className="text-sm text-charcoal/60">{addOn.description}</p>
+                          <p className="font-medium text-charcoal dark:text-white">{addOn.name}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{addOn.description}</p>
                         </div>
-                        <span className="text-sm font-semibold text-charcoal">$25/mo</span>
+                        <span className="text-sm font-semibold text-charcoal dark:text-white">$25/mo</span>
                         <button
                           onClick={() => toggleAddOn(addOnId)}
                           className="px-3 py-1.5 text-sm text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
@@ -1362,7 +1362,7 @@ function SettingsContent() {
 
             {/* Available Add-ons */}
             <div>
-              <h3 className="font-semibold text-charcoal mb-4">Available Add-ons</h3>
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4">Available Add-ons</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {allAddOns
                   .filter((addOn) => !hasAddOn(addOn.id))
@@ -1371,18 +1371,18 @@ function SettingsContent() {
                     return (
                       <div
                         key={addOn.id}
-                        className="p-4 bg-white rounded-xl border border-charcoal/10 hover:border-sage/30 transition-all"
+                        className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10 hover:border-sage/30 transition-all"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-charcoal/5 flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-charcoal/60" />
+                          <div className="w-10 h-10 rounded-lg bg-charcoal/5 dark:bg-white/5 flex items-center justify-center">
+                            <Icon className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
-                              <p className="font-medium text-charcoal">{addOn.name}</p>
-                              <span className="text-sm font-semibold text-charcoal">+$25/mo</span>
+                              <p className="font-medium text-charcoal dark:text-white">{addOn.name}</p>
+                              <span className="text-sm font-semibold text-charcoal dark:text-white">+$25/mo</span>
                             </div>
-                            <p className="text-sm text-charcoal/60 mb-3">{addOn.description}</p>
+                            <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">{addOn.description}</p>
                             <button
                               onClick={() => toggleAddOn(addOn.id)}
                               className="px-4 py-2 text-sm bg-sage text-white rounded-lg font-medium hover:bg-sage-dark transition-colors"
@@ -1396,7 +1396,7 @@ function SettingsContent() {
                   })}
               </div>
               {allAddOns.filter((addOn) => !hasAddOn(addOn.id)).length === 0 && (
-                <p className="text-center text-charcoal/60 py-8">
+                <p className="text-center text-charcoal/60 dark:text-white/60 py-8">
                   You have all available add-ons!
                 </p>
               )}
@@ -1419,8 +1419,8 @@ function SettingsContent() {
             )}
 
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Payment Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Payment Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Manage your payment methods and billing preferences.
               </p>
             </div>
@@ -1429,19 +1429,19 @@ function SettingsContent() {
             <div className={paymentsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
               <div className="space-y-4">
                 {/* Stripe */}
-                <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-[#635BFF]/10 flex items-center justify-center">
                       <span className="text-[#635BFF] font-bold text-lg">S</span>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-charcoal">Stripe</h3>
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                        <h3 className="font-semibold text-charcoal dark:text-white">Stripe</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
                           Not connected
                         </span>
                       </div>
-                      <p className="text-sm text-charcoal/60 mb-4">
+                      <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                         Accept credit cards, Apple Pay, and Google Pay
                       </p>
                       <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
@@ -1452,19 +1452,19 @@ function SettingsContent() {
                 </div>
 
                 {/* Square */}
-                <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-black/5 flex items-center justify-center">
-                      <span className="font-bold text-lg">Sq</span>
+                    <div className="w-12 h-12 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                      <span className="font-bold text-lg dark:text-white">Sq</span>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-charcoal">Square</h3>
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                        <h3 className="font-semibold text-charcoal dark:text-white">Square</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
                           Not connected
                         </span>
                       </div>
-                      <p className="text-sm text-charcoal/60 mb-4">
+                      <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                         In-person and online payments with Square
                       </p>
                       <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
@@ -1476,28 +1476,28 @@ function SettingsContent() {
               </div>
 
               {/* Deposit Settings */}
-              <div className="p-6 bg-charcoal/5 rounded-xl mt-4">
-                <h3 className="font-semibold text-charcoal mb-4">Booking Deposits</h3>
+              <div className="p-6 bg-charcoal/5 dark:bg-white/5 rounded-xl mt-4">
+                <h3 className="font-semibold text-charcoal dark:text-white mb-4">Booking Deposits</h3>
                 <div className="space-y-4">
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       defaultChecked
                       disabled={paymentsLocked}
-                      className="mt-1 w-5 h-5 rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50"
+                      className="mt-1 w-5 h-5 rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50"
                     />
                     <div>
-                      <p className="font-medium text-charcoal">Require deposit for online bookings</p>
-                      <p className="text-sm text-charcoal/60">
+                      <p className="font-medium text-charcoal dark:text-white">Require deposit for online bookings</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">
                         Reduce no-shows by collecting a deposit when clients book online
                       </p>
                     </div>
                   </label>
                   <div className="flex items-center gap-3 ml-8">
-                    <label className="text-sm text-charcoal/60">Deposit amount:</label>
+                    <label className="text-sm text-charcoal/60 dark:text-white/60">Deposit amount:</label>
                     <select
                       disabled={paymentsLocked}
-                      className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm disabled:opacity-50"
+                      className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm disabled:opacity-50"
                     >
                       <option value="20">20% of service</option>
                       <option value="50">50% of service</option>
@@ -1525,8 +1525,8 @@ function SettingsContent() {
             )}
 
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Notification Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Notification Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Configure how you and your clients receive notifications.
               </p>
             </div>
@@ -1535,13 +1535,13 @@ function SettingsContent() {
             <div className={notificationsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
               {/* Client Notifications */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-charcoal">Client Notifications</h3>
+                <h3 className="font-semibold text-charcoal dark:text-white">Client Notifications</h3>
 
-                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-medium text-charcoal">Appointment Confirmation</p>
-                      <p className="text-sm text-charcoal/60">Send when booking is confirmed</p>
+                      <p className="font-medium text-charcoal dark:text-white">Appointment Confirmation</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Send when booking is confirmed</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -1549,22 +1549,22 @@ function SettingsContent() {
                     </label>
                   </div>
                   <div className="flex gap-2">
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
-                      <span className="text-sm text-charcoal">Email</span>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal dark:text-white">Email</span>
                     </label>
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
-                      <span className="text-sm text-charcoal">SMS</span>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal dark:text-white">SMS</span>
                     </label>
                   </div>
                 </div>
 
-                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-medium text-charcoal">Appointment Reminder</p>
-                      <p className="text-sm text-charcoal/60">Remind clients before their appointment</p>
+                      <p className="font-medium text-charcoal dark:text-white">Appointment Reminder</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Remind clients before their appointment</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -1572,21 +1572,21 @@ function SettingsContent() {
                     </label>
                   </div>
                   <div className="flex items-center gap-3 mb-3">
-                    <label className="text-sm text-charcoal/60">Send reminder:</label>
-                    <select disabled={notificationsLocked} className="px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm disabled:opacity-50">
+                    <label className="text-sm text-charcoal/60 dark:text-white/60">Send reminder:</label>
+                    <select disabled={notificationsLocked} className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm disabled:opacity-50">
                       <option value="24">24 hours before</option>
                       <option value="48">48 hours before</option>
                       <option value="2">2 hours before</option>
                     </select>
                   </div>
                   <div className="flex gap-2">
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
-                      <span className="text-sm text-charcoal">Email</span>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal dark:text-white">Email</span>
                     </label>
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 text-sage focus:ring-sage disabled:opacity-50" />
-                      <span className="text-sm text-charcoal">SMS</span>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
+                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <span className="text-sm text-charcoal dark:text-white">SMS</span>
                     </label>
                   </div>
                 </div>
@@ -1594,13 +1594,13 @@ function SettingsContent() {
 
               {/* Staff Notifications */}
               <div className="space-y-4 mt-8">
-                <h3 className="font-semibold text-charcoal">Staff Notifications</h3>
+                <h3 className="font-semibold text-charcoal dark:text-white">Staff Notifications</h3>
 
-                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-charcoal">New Booking Alert</p>
-                      <p className="text-sm text-charcoal/60">Notify staff when a new booking is made</p>
+                      <p className="font-medium text-charcoal dark:text-white">New Booking Alert</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Notify staff when a new booking is made</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -1609,11 +1609,11 @@ function SettingsContent() {
                   </div>
                 </div>
 
-                <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+                <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-charcoal">Cancellation Alert</p>
-                      <p className="text-sm text-charcoal/60">Notify staff when a booking is cancelled</p>
+                      <p className="font-medium text-charcoal dark:text-white">Cancellation Alert</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Notify staff when a booking is cancelled</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -1724,8 +1724,8 @@ function SettingsContent() {
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-charcoal mb-1">Online Booking Widget</h2>
-                <p className="text-charcoal/60">
+                <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Online Booking Widget</h2>
+                <p className="text-charcoal/60 dark:text-white/60">
                   Customize and embed your booking widget on your website.
                 </p>
               </div>
@@ -1733,7 +1733,7 @@ function SettingsContent() {
               {!bookingLocked && (
                 <div className="flex items-center gap-2 text-sm">
                   {widgetSaveStatus === 'saving' && (
-                    <span className="flex items-center gap-2 text-charcoal/50">
+                    <span className="flex items-center gap-2 text-charcoal/50 dark:text-white/50">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Saving...
                     </span>
@@ -1757,18 +1757,18 @@ function SettingsContent() {
             {/* Content - disabled when locked */}
             <div className={bookingLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
             {/* Customization Section */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-6">Customize Appearance</h3>
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-6">Customize Appearance</h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column: Controls */}
                 <div className="space-y-6">
                   {/* Primary Color */}
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Primary Color
                     </label>
-                    <p className="text-xs text-charcoal/50 mb-3">
+                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                       Used for buttons, selected states, and progress indicators
                     </p>
                     <div className="flex items-center gap-3">
@@ -1777,7 +1777,7 @@ function SettingsContent() {
                           type="color"
                           value={widgetSettings.primaryColor}
                           onChange={(e) => setWidgetSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 cursor-pointer appearance-none bg-transparent"
+                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 dark:border-white/10 cursor-pointer appearance-none bg-transparent"
                           style={{ backgroundColor: widgetSettings.primaryColor }}
                         />
                       </div>
@@ -1791,17 +1791,17 @@ function SettingsContent() {
                           }
                         }}
                         placeholder="#7C9A82"
-                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
+                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
                       />
                     </div>
                   </div>
 
                   {/* Accent Color */}
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Accent Color
                     </label>
-                    <p className="text-xs text-charcoal/50 mb-3">
+                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                       Used for links and category headers
                     </p>
                     <div className="flex items-center gap-3">
@@ -1810,7 +1810,7 @@ function SettingsContent() {
                           type="color"
                           value={widgetSettings.accentColor}
                           onChange={(e) => setWidgetSettings(prev => ({ ...prev, accentColor: e.target.value }))}
-                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 cursor-pointer appearance-none bg-transparent"
+                          className="w-12 h-12 rounded-xl border-2 border-charcoal/10 dark:border-white/10 cursor-pointer appearance-none bg-transparent"
                           style={{ backgroundColor: widgetSettings.accentColor }}
                         />
                       </div>
@@ -1824,23 +1824,23 @@ function SettingsContent() {
                           }
                         }}
                         placeholder="#B5A8D5"
-                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
+                        className="flex-1 px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-sm font-mono uppercase"
                       />
                     </div>
                   </div>
 
                   {/* Button Style */}
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Button Style
                     </label>
-                    <p className="text-xs text-charcoal/50 mb-3">
+                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                       Corner style for buttons and inputs
                     </p>
                     <select
                       value={widgetSettings.buttonStyle}
                       onChange={(e) => setWidgetSettings(prev => ({ ...prev, buttonStyle: e.target.value as 'rounded' | 'square' }))}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                     >
                       <option value="rounded">Rounded (12px corners)</option>
                       <option value="square">Square (4px corners)</option>
@@ -1849,10 +1849,10 @@ function SettingsContent() {
 
                   {/* Font Style */}
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Font Style
                     </label>
-                    <p className="text-xs text-charcoal/50 mb-3">
+                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
                       Typography for all text in the widget
                     </p>
                     <div className="space-y-2">
@@ -1878,15 +1878,15 @@ function SettingsContent() {
                             className="sr-only"
                           />
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            widgetSettings.fontFamily === font.value ? 'border-sage' : 'border-charcoal/30'
+                            widgetSettings.fontFamily === font.value ? 'border-sage' : 'border-charcoal/30 dark:border-white/30'
                           }`}>
                             {widgetSettings.fontFamily === font.value && (
                               <div className="w-2.5 h-2.5 rounded-full bg-sage" />
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-charcoal text-sm">{font.label}</p>
-                            <p className="text-xs text-charcoal/50">{font.desc}</p>
+                            <p className="font-medium text-charcoal dark:text-white text-sm">{font.label}</p>
+                            <p className="text-xs text-charcoal/50 dark:text-white/50">{font.desc}</p>
                           </div>
                         </label>
                       ))}
@@ -1897,7 +1897,7 @@ function SettingsContent() {
                 {/* Right Column: Live Preview */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <label className="block text-sm font-medium text-charcoal">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white">
                       Live Preview
                     </label>
                     <a
@@ -1909,13 +1909,13 @@ function SettingsContent() {
                       Open full preview <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
-                  <div className="bg-cream/50 rounded-2xl border border-charcoal/10 overflow-hidden" style={{ height: '500px' }}>
+                  <div className="bg-cream/50 dark:bg-charcoal/50 rounded-2xl border border-charcoal/10 dark:border-white/10 overflow-hidden" style={{ height: '500px' }}>
                     {/* Live preview using real business data */}
                     {salonLoading || !salon?.slug ? (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-3" />
-                          <p className="text-sm text-charcoal/60">Loading preview...</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">Loading preview...</p>
                         </div>
                       </div>
                     ) : (
@@ -1927,7 +1927,7 @@ function SettingsContent() {
                       />
                     )}
                   </div>
-                  <p className="text-xs text-charcoal/50 mt-2 text-center">
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mt-2 text-center">
                     {salon?.slug ? 'This is exactly what customers will see on your website.' : 'Loading your business data...'}
                   </p>
                 </div>
@@ -1942,15 +1942,15 @@ function SettingsContent() {
                     <Code className="w-5 h-5 text-sage" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-charcoal">Embed Code</h3>
-                    <p className="text-sm text-charcoal/60">Copy and paste this iframe into your website</p>
+                    <h3 className="font-semibold text-charcoal dark:text-white">Embed Code</h3>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">Copy and paste this iframe into your website</p>
                   </div>
                 </div>
               </div>
 
               {/* Iframe height control */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Widget Height (pixels)
                 </label>
                 <input
@@ -1960,9 +1960,9 @@ function SettingsContent() {
                   placeholder="700"
                   min="400"
                   max="1200"
-                  className="w-32 px-4 py-2 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
+                  className="w-32 px-4 py-2 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
                 />
-                <span className="text-xs text-charcoal/50 ml-2">Recommended: 600px</span>
+                <span className="text-xs text-charcoal/50 dark:text-white/50 ml-2">Recommended: 600px</span>
               </div>
 
               <div className="relative">
@@ -1989,8 +1989,8 @@ function SettingsContent() {
             </div>
 
             {/* Installation Instructions */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Installation Instructions</h3>
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4">Installation Instructions</h3>
 
               {/* Platform Tabs */}
               <div className="flex flex-wrap gap-2 mb-6">
@@ -2001,7 +2001,7 @@ function SettingsContent() {
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       activeInstallTab === key
                         ? 'bg-sage text-white'
-                        : 'bg-charcoal/5 text-charcoal/70 hover:bg-charcoal/10'
+                        : 'bg-charcoal/5 dark:bg-white/5 text-charcoal/70 dark:text-white/70 hover:bg-charcoal/10 dark:hover:bg-white/10'
                     }`}
                   >
                     {title}
@@ -2016,22 +2016,22 @@ function SettingsContent() {
                     <div className="w-6 h-6 rounded-full bg-sage/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold text-sage">{index + 1}</span>
                     </div>
-                    <p className="text-charcoal/70">{step}</p>
+                    <p className="text-charcoal/70 dark:text-white/70">{step}</p>
                   </div>
                 ))}
               </div>
 
               <div className="mt-6 p-4 bg-lavender/10 rounded-xl border border-lavender/20">
-                <p className="text-sm text-charcoal/70">
+                <p className="text-sm text-charcoal/70 dark:text-white/70">
                   <strong>Need help?</strong> Contact our support team and we will help you install the booking widget on your website.
                 </p>
               </div>
             </div>
 
             {/* Service Online Booking Toggles */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-2">Services Available for Online Booking</h3>
-              <p className="text-sm text-charcoal/60 mb-4">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-2">Services Available for Online Booking</h3>
+              <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                 Choose which services clients can book online. Disabled services will only be bookable by staff.
               </p>
 
@@ -2041,7 +2041,7 @@ function SettingsContent() {
                 </div>
               ) : services.filter(s => s.isActive).length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-charcoal/60">No active services found. Add services in the Services page.</p>
+                  <p className="text-charcoal/60 dark:text-white/60">No active services found. Add services in the Services page.</p>
                   <Link href="/services" className="text-sage hover:underline text-sm mt-2 inline-block">
                     Go to Services →
                   </Link>
@@ -2051,7 +2051,7 @@ function SettingsContent() {
                   {services.filter(s => s.isActive).map((service) => (
                     <div
                       key={service.id}
-                      className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
                         <div
@@ -2059,8 +2059,8 @@ function SettingsContent() {
                           style={{ backgroundColor: service.color || '#7C9A82' }}
                         />
                         <div>
-                          <p className="font-medium text-charcoal text-sm">{service.name}</p>
-                          <p className="text-xs text-charcoal/60">
+                          <p className="font-medium text-charcoal dark:text-white text-sm">{service.name}</p>
+                          <p className="text-xs text-charcoal/60 dark:text-white/60">
                             {service.durationMinutes}min • ${service.price}
                           </p>
                         </div>
@@ -2088,9 +2088,9 @@ function SettingsContent() {
             </div>
 
             {/* Staff Online Booking Toggles */}
-            <div className="p-6 bg-white rounded-2xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-2">Staff Available for Online Booking</h3>
-              <p className="text-sm text-charcoal/60 mb-4">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-2">Staff Available for Online Booking</h3>
+              <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                 Choose which staff members can be booked online. Disabled staff will only be assignable by staff.
               </p>
 
@@ -2100,7 +2100,7 @@ function SettingsContent() {
                 </div>
               ) : staff.filter(s => s.isActive).length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-charcoal/60">No active staff found. Add staff in the Staff page.</p>
+                  <p className="text-charcoal/60 dark:text-white/60">No active staff found. Add staff in the Staff page.</p>
                   <Link href="/staff" className="text-sage hover:underline text-sm mt-2 inline-block">
                     Go to Staff →
                   </Link>
@@ -2110,7 +2110,7 @@ function SettingsContent() {
                   {staff.filter(s => s.isActive).map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl"
                     >
                       <div className="flex items-center gap-3">
                         {member.avatarUrl ? (
@@ -2127,10 +2127,10 @@ function SettingsContent() {
                           </div>
                         )}
                         <div>
-                          <p className="font-medium text-charcoal text-sm">
+                          <p className="font-medium text-charcoal dark:text-white text-sm">
                             {member.firstName} {member.lastName}
                           </p>
-                          <p className="text-xs text-charcoal/60 capitalize">{member.role}</p>
+                          <p className="text-xs text-charcoal/60 dark:text-white/60 capitalize">{member.role}</p>
                         </div>
                       </div>
                       <button
@@ -2157,13 +2157,13 @@ function SettingsContent() {
 
             {/* Booking Settings */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-charcoal">Booking Settings</h3>
+              <h3 className="font-semibold text-charcoal dark:text-white">Booking Settings</h3>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
+              <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-charcoal">Accept Online Bookings</p>
-                    <p className="text-sm text-charcoal/60">Allow clients to book through your booking widget</p>
+                    <p className="font-medium text-charcoal dark:text-white">Accept Online Bookings</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">Allow clients to book through your booking widget</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -2172,14 +2172,14 @@ function SettingsContent() {
                 </div>
               </div>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <label className="block text-sm font-medium text-charcoal mb-2">
+              <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Booking Lead Time
                 </label>
-                <p className="text-sm text-charcoal/60 mb-3">
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
                   Minimum time before an appointment can be booked
                 </p>
-                <select className="px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none">
+                <select className="px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none">
                   <option value="1">1 hour</option>
                   <option value="2">2 hours</option>
                   <option value="4">4 hours</option>
@@ -2187,14 +2187,14 @@ function SettingsContent() {
                 </select>
               </div>
 
-              <div className="p-4 bg-white rounded-xl border border-charcoal/10">
-                <label className="block text-sm font-medium text-charcoal mb-2">
+              <div className="p-4 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Cancellation Policy
                 </label>
-                <p className="text-sm text-charcoal/60 mb-3">
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
                   Time before appointment that clients can cancel
                 </p>
-                <select disabled={bookingLocked} className="px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none disabled:opacity-50">
+                <select disabled={bookingLocked} className="px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none disabled:opacity-50">
                   <option value="24">24 hours</option>
                   <option value="48">48 hours</option>
                   <option value="72">72 hours</option>
@@ -2209,15 +2209,15 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Branding</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Branding</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Customize the look of your booking page and client communications.
               </p>
             </div>
 
             {/* Logo */}
             <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Business Logo</label>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Business Logo</label>
               <div className="flex items-center gap-6">
                 <div className="w-24 h-24 rounded-2xl bg-sage/20 border-2 border-dashed border-sage/40 flex items-center justify-center">
                   {salon?.logoUrl ? (
@@ -2233,22 +2233,22 @@ function SettingsContent() {
                   )}
                 </div>
                 <div>
-                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-charcoal/20 rounded-lg cursor-pointer hover:border-sage transition-colors">
-                    <Upload className="w-4 h-4" />
-                    <span className="text-sm font-medium">Upload Logo</span>
+                  <label className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-sidebar border border-charcoal/20 dark:border-white/10 rounded-lg cursor-pointer hover:border-sage transition-colors">
+                    <Upload className="w-4 h-4 dark:text-white" />
+                    <span className="text-sm font-medium dark:text-white">Upload Logo</span>
                     <input type="file" accept="image/*" className="hidden" />
                   </label>
-                  <p className="text-xs text-charcoal/40 mt-2">PNG, JPG up to 5MB. Square works best.</p>
+                  <p className="text-xs text-charcoal/40 dark:text-white/40 mt-2">PNG, JPG up to 5MB. Square works best.</p>
                 </div>
               </div>
             </div>
 
             {/* Colors */}
             <div>
-              <label className="block text-sm font-medium text-charcoal mb-3">Brand Colors</label>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Brand Colors</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-medium text-charcoal/60 mb-2">
+                  <label className="block text-xs font-medium text-charcoal/60 dark:text-white/60 mb-2">
                     Primary Color
                   </label>
                   <div className="flex items-center gap-3">
@@ -2256,18 +2256,18 @@ function SettingsContent() {
                       type="color"
                       value={brandingForm.primaryColor}
                       onChange={(e) => setBrandingForm((prev) => ({ ...prev, primaryColor: e.target.value }))}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
+                      className="w-12 h-12 rounded-lg border border-charcoal/20 dark:border-white/10 cursor-pointer"
                     />
                     <input
                       type="text"
                       value={brandingForm.primaryColor}
                       onChange={(e) => setBrandingForm((prev) => ({ ...prev, primaryColor: e.target.value }))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
+                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm font-mono"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-charcoal/60 mb-2">
+                  <label className="block text-xs font-medium text-charcoal/60 dark:text-white/60 mb-2">
                     Background Color
                   </label>
                   <div className="flex items-center gap-3">
@@ -2275,13 +2275,13 @@ function SettingsContent() {
                       type="color"
                       value={brandingForm.backgroundColor}
                       onChange={(e) => setBrandingForm((prev) => ({ ...prev, backgroundColor: e.target.value }))}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
+                      className="w-12 h-12 rounded-lg border border-charcoal/20 dark:border-white/10 cursor-pointer"
                     />
                     <input
                       type="text"
                       value={brandingForm.backgroundColor}
                       onChange={(e) => setBrandingForm((prev) => ({ ...prev, backgroundColor: e.target.value }))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 focus:border-sage outline-none text-sm font-mono"
+                      className="flex-1 px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm font-mono"
                     />
                   </div>
                 </div>
@@ -2294,35 +2294,35 @@ function SettingsContent() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-bold text-charcoal mb-1">Security Settings</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Security Settings</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Manage your account security and access settings.
               </p>
             </div>
 
             {/* Change Password */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Change Password</h3>
+            <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4">Change Password</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Current Password</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Current Password</label>
                   <input
                     type="password"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">New Password</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">New Password</label>
                   <input
                     type="password"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Confirm New Password</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Confirm New Password</label>
                   <input
                     type="password"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   />
                 </div>
                 <button className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors">
@@ -2332,14 +2332,14 @@ function SettingsContent() {
             </div>
 
             {/* Two-Factor Authentication */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
+            <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-sage/10 flex items-center justify-center flex-shrink-0">
                   <Shield className="w-6 h-6 text-sage" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-charcoal mb-1">Two-Factor Authentication</h3>
-                  <p className="text-sm text-charcoal/60 mb-4">
+                  <h3 className="font-semibold text-charcoal dark:text-white mb-1">Two-Factor Authentication</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
                     Add an extra layer of security to your account by requiring a verification code.
                   </p>
                   <button className="px-4 py-2 border border-sage text-sage rounded-lg font-medium hover:bg-sage/10 transition-colors">
@@ -2350,13 +2350,13 @@ function SettingsContent() {
             </div>
 
             {/* Active Sessions */}
-            <div className="p-6 bg-white rounded-xl border border-charcoal/10">
-              <h3 className="font-semibold text-charcoal mb-4">Active Sessions</h3>
+            <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-4">Active Sessions</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-lg">
                   <div>
-                    <p className="font-medium text-charcoal text-sm">Chrome on Windows</p>
-                    <p className="text-xs text-charcoal/60">
+                    <p className="font-medium text-charcoal dark:text-white text-sm">Chrome on Windows</p>
+                    <p className="text-xs text-charcoal/60 dark:text-white/60">
                       {salon?.city || 'Unknown'}, {salon?.state || 'Unknown'} - Current session
                     </p>
                   </div>
@@ -2375,22 +2375,22 @@ function SettingsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar currentPage="settings" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Settings</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Settings</h1>
             </div>
 
             <div className="flex items-center gap-4">
@@ -2403,7 +2403,7 @@ function SettingsContent() {
 
         <div className="flex-1 flex overflow-hidden">
           {/* Settings Navigation */}
-          <div className="w-64 bg-white border-r border-charcoal/10 p-4 hidden lg:block overflow-auto">
+          <div className="w-64 bg-white dark:bg-sidebar border-r border-charcoal/10 dark:border-white/10 p-4 hidden lg:block overflow-auto">
             <div className="space-y-1">
               {settingsSections.map((section) => {
                 const Icon = section.icon;
@@ -2418,7 +2418,7 @@ function SettingsContent() {
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                       activeSection === section.id
                         ? 'bg-sage/10 text-sage'
-                        : 'text-charcoal/70 hover:bg-charcoal/5'
+                        : 'text-charcoal/70 dark:text-white/70 hover:bg-charcoal/5 dark:hover:bg-white/5'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -2447,7 +2447,7 @@ function SettingsContent() {
                 <select
                   value={activeSection}
                   onChange={(e) => setActiveSection(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none"
                 >
                   {settingsSections.map((section) => {
                     const isAddOnRequired = section.requiredAddOn && !hasAddOn(section.requiredAddOn);
@@ -2461,11 +2461,11 @@ function SettingsContent() {
               </div>
 
               {/* Section Content */}
-              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-6 lg:p-8">
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-6 lg:p-8">
                 {renderSection()}
 
                 {/* Save Button */}
-                <div className="mt-8 pt-6 border-t border-charcoal/10 flex items-center justify-between">
+                <div className="mt-8 pt-6 border-t border-charcoal/10 dark:border-white/10 flex items-center justify-between">
                   <div>
                     {saved && (
                       <span className="flex items-center gap-2 text-green-600">
@@ -2480,7 +2480,7 @@ function SettingsContent() {
                       </span>
                     )}
                     {!saved && !saveError && (
-                      <p className="text-sm text-charcoal/60">Make sure to save your changes</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Make sure to save your changes</p>
                     )}
                   </div>
                   <button

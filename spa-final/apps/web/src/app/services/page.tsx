@@ -428,7 +428,7 @@ function ServicesContent() {
   }, [dragState]);
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="services"
         sidebarOpen={sidebarOpen}
@@ -438,18 +438,18 @@ function ServicesContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">Services</h1>
-                <p className="text-sm text-charcoal/60">
+                <h1 className="text-2xl font-bold text-charcoal dark:text-white">Services</h1>
+                <p className="text-sm text-charcoal/60 dark:text-white/60">
                   {categories.length} categories, {totalServices} services
                 </p>
               </div>
@@ -460,7 +460,7 @@ function ServicesContent() {
               <NotificationDropdown />
               <button
                 onClick={openNewCategoryModal}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-all"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-all"
               >
                 <Plus className="w-5 h-5" />
                 Category
@@ -477,15 +477,15 @@ function ServicesContent() {
         </header>
 
         {/* Search Bar */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-white/40" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search services..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
             />
           </div>
         </div>
@@ -495,7 +495,7 @@ function ServicesContent() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="w-8 h-8 text-sage animate-spin mx-auto mb-4" />
-              <p className="text-charcoal/60">Loading services...</p>
+              <p className="text-charcoal/60 dark:text-white/60">Loading services...</p>
             </div>
           </div>
         )}
@@ -521,10 +521,10 @@ function ServicesContent() {
         {!isLoading && !error && (
           <div className="flex-1 p-6 overflow-auto">
             {categoriesWithServices.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-12 text-center">
-                <Clock className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                <p className="text-charcoal/60 mb-2">No services found</p>
-                <p className="text-sm text-charcoal/40 mb-4">
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-12 text-center">
+                <Clock className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                <p className="text-charcoal/60 dark:text-white/60 mb-2">No services found</p>
+                <p className="text-sm text-charcoal/40 dark:text-white/40 mb-4">
                   {searchQuery ? 'Try adjusting your search' : 'Add your first service to get started'}
                 </p>
                 {!searchQuery && (
@@ -541,21 +541,21 @@ function ServicesContent() {
                 {categoriesWithServices.map((category) => (
                   <div
                     key={category.id}
-                    className="bg-white rounded-2xl shadow-soft border border-charcoal/5 overflow-hidden"
+                    className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 overflow-hidden"
                   >
                     {/* Category Header */}
                     <button
                       onClick={() => toggleCategory(category.id)}
-                      className="w-full px-6 py-4 flex items-center gap-4 hover:bg-charcoal/5 transition-colors"
+                      className="w-full px-6 py-4 flex items-center gap-4 hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
                     >
                       <div
                         className={`transform transition-transform ${category.expanded ? 'rotate-90' : ''}`}
                       >
-                        <ChevronRight className="w-5 h-5 text-charcoal/40" />
+                        <ChevronRight className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
                       </div>
                       <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-charcoal">{category.name}</h3>
-                        <p className="text-sm text-charcoal/60">
+                        <h3 className="font-semibold text-charcoal dark:text-white">{category.name}</h3>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60">
                           {category.services.length} services
                         </p>
                       </div>
@@ -565,7 +565,7 @@ function ServicesContent() {
                             e.stopPropagation();
                             setDeleteConfirm({ type: 'category', id: category.id, name: category.name });
                           }}
-                          className="p-2 text-charcoal/40 hover:text-rose-500 transition-colors"
+                          className="p-2 text-charcoal/40 dark:text-white/40 hover:text-rose-500 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -574,15 +574,15 @@ function ServicesContent() {
 
                     {/* Services */}
                     {category.expanded && (
-                      <div className="border-t border-charcoal/10">
+                      <div className="border-t border-charcoal/10 dark:border-white/10">
                         {category.services.map((service, index) => (
                           <div
                             key={service.id}
-                            className={`px-6 py-4 flex items-center gap-4 hover:bg-sage/5 transition-colors ${
-                              index !== category.services.length - 1 ? 'border-b border-charcoal/10' : ''
+                            className={`px-6 py-4 flex items-center gap-4 hover:bg-sage/5 dark:hover:bg-sage/10 transition-colors ${
+                              index !== category.services.length - 1 ? 'border-b border-charcoal/10 dark:border-white/10' : ''
                             }`}
                           >
-                            <div className="cursor-grab text-charcoal/20 hover:text-charcoal/40">
+                            <div className="cursor-grab text-charcoal/20 dark:text-white/20 hover:text-charcoal/40 dark:hover:text-white/40">
                               <GripVertical className="w-5 h-5" />
                             </div>
 
@@ -593,23 +593,23 @@ function ServicesContent() {
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-charcoal">{service.name}</h4>
+                                <h4 className="font-medium text-charcoal dark:text-white">{service.name}</h4>
                                 {!service.isActive && (
-                                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
                                     Inactive
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-charcoal/60 truncate">{service.description}</p>
+                              <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{service.description}</p>
                             </div>
 
-                            <div className="flex items-center gap-2 text-sm text-charcoal/60">
+                            <div className="flex items-center gap-2 text-sm text-charcoal/60 dark:text-white/60">
                               <Clock className="w-4 h-4" />
                               {formatDuration(service.durationMinutes)}
                             </div>
 
                             <div className="text-right">
-                              <p className="font-semibold text-charcoal">{formatPrice(service.price)}</p>
+                              <p className="font-semibold text-charcoal dark:text-white">{formatPrice(service.price)}</p>
                               {service.memberPrice && (
                                 <p className="text-xs text-sage">{formatPrice(service.memberPrice)} member</p>
                               )}
@@ -618,13 +618,13 @@ function ServicesContent() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => openEditServiceModal(service)}
-                                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => setDeleteConfirm({ type: 'service', id: service.id, name: service.name })}
-                                className="p-2 text-charcoal/40 hover:text-rose-500 transition-colors"
+                                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-rose-500 transition-colors"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -643,48 +643,48 @@ function ServicesContent() {
 
       {/* New/Edit Service Modal */}
       {showNewService && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">
                 {editingService ? 'Edit Service' : 'Add New Service'}
               </h2>
               <button
                 onClick={closeServiceModal}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Service Name</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service Name</label>
                 <input
                   type="text"
                   value={serviceForm.name}
                   onChange={(e) => setServiceForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., Haircut & Style"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Description</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Description</label>
                 <textarea
                   rows={2}
                   value={serviceForm.description}
                   onChange={(e) => setServiceForm((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="Brief description of the service..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Category</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Category</label>
                 <select
                   value={serviceForm.categoryId}
                   onChange={(e) => setServiceForm((prev) => ({ ...prev, categoryId: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                 >
                   <option value="">No Category</option>
                   {categories.map((cat) => (
@@ -697,11 +697,11 @@ function ServicesContent() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Duration</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Duration</label>
                   <select
                     value={serviceForm.durationMinutes}
                     onChange={(e) => setServiceForm((prev) => ({ ...prev, durationMinutes: parseInt(e.target.value) }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                   >
                     {[15, 30, 45, 60, 75, 90, 120, 150, 180].map((min) => (
                       <option key={min} value={min}>
@@ -711,24 +711,24 @@ function ServicesContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Color</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={serviceForm.color}
                       onChange={(e) => setServiceForm((prev) => ({ ...prev, color: e.target.value }))}
-                      className="w-12 h-12 rounded-lg border border-charcoal/20 cursor-pointer"
+                      className="w-12 h-12 rounded-lg border border-charcoal/20 dark:border-white/20 cursor-pointer"
                     />
-                    <span className="text-sm text-charcoal/60">Calendar color</span>
+                    <span className="text-sm text-charcoal/60 dark:text-white/60">Calendar color</span>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Price</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Price</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">
                       {currencySymbol}
                     </span>
                     <input
@@ -736,17 +736,17 @@ function ServicesContent() {
                       step="0.01"
                       value={serviceForm.price}
                       onChange={(e) => setServiceForm((prev) => ({ ...prev, price: e.target.value }))}
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="0"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                     Member Price (optional)
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">
                       {currencySymbol}
                     </span>
                     <input
@@ -754,7 +754,7 @@ function ServicesContent() {
                       step="0.01"
                       value={serviceForm.memberPrice}
                       onChange={(e) => setServiceForm((prev) => ({ ...prev, memberPrice: e.target.value }))}
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="0"
                     />
                   </div>
@@ -763,10 +763,10 @@ function ServicesContent() {
 
               {/* Staff Assignment Section */}
               {staff.length > 0 && (
-                <div className="border-t border-charcoal/10 pt-6">
+                <div className="border-t border-charcoal/10 dark:border-white/10 pt-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <Users className="w-5 h-5 text-charcoal/60" />
-                    <label className="block text-sm font-medium text-charcoal">
+                    <Users className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                    <label className="block text-sm font-medium text-charcoal dark:text-white">
                       Assigned Staff ({assignedStaffIds.length} selected)
                     </label>
                   </div>
@@ -780,8 +780,8 @@ function ServicesContent() {
                           onClick={() => toggleStaffAssignment(staffMember.id)}
                           className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                             isAssigned
-                              ? 'border-sage bg-sage/5'
-                              : 'border-charcoal/10 hover:border-sage/50'
+                              ? 'border-sage bg-sage/5 dark:bg-sage/10'
+                              : 'border-charcoal/10 dark:border-white/10 hover:border-sage/50'
                           }`}
                         >
                           <div
@@ -792,26 +792,26 @@ function ServicesContent() {
                             {isAssigned && <Check className="w-3 h-3 text-white" />}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-charcoal text-sm truncate">
+                            <p className="font-medium text-charcoal dark:text-white text-sm truncate">
                               {staffMember.firstName} {staffMember.lastName}
                             </p>
-                            <p className="text-xs text-charcoal/50 capitalize">{staffMember.role}</p>
+                            <p className="text-xs text-charcoal/50 dark:text-white/50 capitalize">{staffMember.role}</p>
                           </div>
                         </button>
                       );
                     })}
                   </div>
-                  <p className="text-xs text-charcoal/50 mt-2">
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mt-2">
                     Select which staff members can perform this service
                   </p>
                 </div>
               )}
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={closeServiceModal}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -830,46 +830,46 @@ function ServicesContent() {
 
       {/* New Category Modal */}
       {showNewCategory && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">Add Category</h2>
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">Add Category</h2>
               <button
                 onClick={() => setShowNewCategory(false)}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Category Name</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Category Name</label>
                 <input
                   type="text"
                   value={categoryForm.name}
                   onChange={(e) => setCategoryForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., Waxing Services"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Description (optional)
                 </label>
                 <input
                   type="text"
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm((prev) => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="Brief description..."
                 />
               </div>
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={() => setShowNewCategory(false)}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -888,23 +888,23 @@ function ServicesContent() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
             <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-6 h-6 text-rose-500" />
               </div>
-              <h2 className="text-lg font-bold text-charcoal mb-2">
+              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">
                 Delete {deleteConfirm.type === 'service' ? 'Service' : 'Category'}?
               </h2>
-              <p className="text-charcoal/60 mb-6">
+              <p className="text-charcoal/60 dark:text-white/60 mb-6">
                 Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

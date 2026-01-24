@@ -92,15 +92,15 @@ function HoursEditor({
 
         return (
           <div key={day} className="flex items-center gap-4">
-            <span className="w-24 text-sm font-medium text-charcoal">{day}</span>
+            <span className="w-24 text-sm font-medium text-charcoal dark:text-white">{day}</span>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={dayHours.isClosed}
                 onChange={(e) => updateDay(index, { isClosed: e.target.checked })}
-                className="rounded border-charcoal/20"
+                className="rounded border-charcoal/20 dark:border-white/20"
               />
-              <span className="text-sm text-charcoal/60">Closed</span>
+              <span className="text-sm text-charcoal/60 dark:text-white/60">Closed</span>
             </label>
             {!dayHours.isClosed && (
               <>
@@ -108,14 +108,14 @@ function HoursEditor({
                   type="time"
                   value={dayHours.openTime || '09:00'}
                   onChange={(e) => updateDay(index, { openTime: e.target.value })}
-                  className="px-3 py-2 rounded-lg border border-charcoal/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                 />
-                <span className="text-charcoal/40">to</span>
+                <span className="text-charcoal/40 dark:text-white/40">to</span>
                 <input
                   type="time"
                   value={dayHours.closeTime || '17:00'}
                   onChange={(e) => updateDay(index, { closeTime: e.target.value })}
-                  className="px-3 py-2 rounded-lg border border-charcoal/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-sidebar text-charcoal dark:text-white"
                 />
               </>
             )}
@@ -316,7 +316,7 @@ function LocationsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="locations"
         sidebarOpen={sidebarOpen}
@@ -326,18 +326,18 @@ function LocationsContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">Locations</h1>
-                <p className="text-sm text-charcoal/60">
+                <h1 className="text-2xl font-bold text-charcoal dark:text-white">Locations</h1>
+                <p className="text-sm text-charcoal/60 dark:text-white/60">
                   {locations.length} {locations.length === 1 ? 'location' : 'locations'}
                 </p>
               </div>
@@ -358,15 +358,15 @@ function LocationsContent() {
         </header>
 
         {/* Search Bar */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-white/40" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search locations..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 dark:border-white/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
             />
           </div>
         </div>
@@ -376,7 +376,7 @@ function LocationsContent() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <Loader2 className="w-8 h-8 text-sage animate-spin mx-auto mb-4" />
-              <p className="text-charcoal/60">Loading locations...</p>
+              <p className="text-charcoal/60 dark:text-white/60">Loading locations...</p>
             </div>
           </div>
         )}
@@ -384,13 +384,13 @@ function LocationsContent() {
         {/* Error State */}
         {error && !isLoading && (
           <div className="flex-1 p-6">
-            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-center">
+            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-6 text-center">
               <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-4" />
-              <p className="text-rose-700 font-medium mb-2">Failed to load locations</p>
-              <p className="text-rose-600 text-sm mb-4">{error}</p>
+              <p className="text-rose-700 dark:text-rose-300 font-medium mb-2">Failed to load locations</p>
+              <p className="text-rose-600 dark:text-rose-400 text-sm mb-4">{error}</p>
               <button
                 onClick={() => refetch()}
-                className="px-4 py-2 bg-rose-100 text-rose-700 rounded-xl font-medium hover:bg-rose-200 transition-colors"
+                className="px-4 py-2 bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 rounded-xl font-medium hover:bg-rose-200 dark:hover:bg-rose-900/60 transition-colors"
               >
                 Try Again
               </button>
@@ -402,10 +402,10 @@ function LocationsContent() {
         {!isLoading && !error && (
           <div className="flex-1 p-6 overflow-auto">
             {filteredLocations.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-12 text-center">
-                <Building2 className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                <p className="text-charcoal/60 mb-2">No locations found</p>
-                <p className="text-sm text-charcoal/40 mb-4">
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-12 text-center">
+                <Building2 className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                <p className="text-charcoal/60 dark:text-white/60 mb-2">No locations found</p>
+                <p className="text-sm text-charcoal/40 dark:text-white/40 mb-4">
                   {searchQuery ? 'Try adjusting your search' : 'Add your first location to get started'}
                 </p>
                 {!searchQuery && (
@@ -422,12 +422,12 @@ function LocationsContent() {
                 {filteredLocations.map((location) => (
                   <div
                     key={location.id}
-                    className={`bg-white rounded-2xl shadow-soft border border-charcoal/5 overflow-hidden transition-all hover:shadow-md ${
+                    className={`bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 overflow-hidden transition-all hover:shadow-md ${
                       !location.isActive ? 'opacity-60' : ''
                     }`}
                   >
                     {/* Card Header */}
-                    <div className="p-5 border-b border-charcoal/5">
+                    <div className="p-5 border-b border-charcoal/5 dark:border-white/5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3 min-w-0">
                           <div className="w-10 h-10 rounded-xl bg-sage/10 flex items-center justify-center flex-shrink-0">
@@ -435,20 +435,20 @@ function LocationsContent() {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-semibold text-charcoal truncate">{location.name}</h3>
+                              <h3 className="font-semibold text-charcoal dark:text-white truncate">{location.name}</h3>
                               {location.isPrimary && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
                                   <Star className="w-3 h-3" />
                                   Primary
                                 </span>
                               )}
                               {!location.isActive && (
-                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-charcoal/10 text-charcoal/60">
+                                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
                                   Inactive
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-charcoal/60 truncate">{formatAddress(location)}</p>
+                            <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{formatAddress(location)}</p>
                           </div>
                         </div>
                       </div>
@@ -458,29 +458,29 @@ function LocationsContent() {
                     <div className="p-5 space-y-3">
                       {location.phone && (
                         <div className="flex items-center gap-3 text-sm">
-                          <Phone className="w-4 h-4 text-charcoal/40 flex-shrink-0" />
-                          <span className="text-charcoal/70">{location.phone}</span>
+                          <Phone className="w-4 h-4 text-charcoal/40 dark:text-white/40 flex-shrink-0" />
+                          <span className="text-charcoal/70 dark:text-white/70">{location.phone}</span>
                         </div>
                       )}
 
                       {location.timezone && (
                         <div className="flex items-center gap-3 text-sm">
-                          <Clock className="w-4 h-4 text-charcoal/40 flex-shrink-0" />
-                          <span className="text-charcoal/70">{getTimezoneLabel(location.timezone)}</span>
+                          <Clock className="w-4 h-4 text-charcoal/40 dark:text-white/40 flex-shrink-0" />
+                          <span className="text-charcoal/70 dark:text-white/70">{getTimezoneLabel(location.timezone)}</span>
                         </div>
                       )}
 
                       {/* Stats */}
-                      <div className="flex items-center gap-4 pt-2 border-t border-charcoal/5">
+                      <div className="flex items-center gap-4 pt-2 border-t border-charcoal/5 dark:border-white/5">
                         <div className="flex items-center gap-2 text-sm">
-                          <Users className="w-4 h-4 text-charcoal/40" />
-                          <span className="text-charcoal/60">
+                          <Users className="w-4 h-4 text-charcoal/40 dark:text-white/40" />
+                          <span className="text-charcoal/60 dark:text-white/60">
                             {location._count?.staffLocations ?? 0} staff
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="w-4 h-4 text-charcoal/40" />
-                          <span className="text-charcoal/60">
+                          <Calendar className="w-4 h-4 text-charcoal/40 dark:text-white/40" />
+                          <span className="text-charcoal/60 dark:text-white/60">
                             {location._count?.appointments ?? 0} appointments
                           </span>
                         </div>
@@ -488,13 +488,13 @@ function LocationsContent() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="px-5 py-3 bg-charcoal/[0.02] border-t border-charcoal/5 flex items-center justify-between">
+                    <div className="px-5 py-3 bg-charcoal/[0.02] dark:bg-white/[0.02] border-t border-charcoal/5 dark:border-white/5 flex items-center justify-between">
                       <div className="flex items-center gap-1">
                         {!location.isPrimary && (
                           <button
                             onClick={() => handleSetPrimary(location)}
                             disabled={isSubmitting}
-                            className="p-2 text-charcoal/40 hover:text-amber-500 transition-colors disabled:opacity-50"
+                            className="p-2 text-charcoal/40 dark:text-white/40 hover:text-amber-500 transition-colors disabled:opacity-50"
                             title="Set as primary"
                           >
                             <Star className="w-4 h-4" />
@@ -502,7 +502,7 @@ function LocationsContent() {
                         )}
                         <button
                           onClick={() => openEditLocationModal(location)}
-                          className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                          className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                           title="Edit location"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -510,7 +510,7 @@ function LocationsContent() {
                         {!location.isPrimary && (
                           <button
                             onClick={() => setDeleteConfirm({ id: location.id, name: location.name })}
-                            className="p-2 text-charcoal/40 hover:text-rose-500 transition-colors"
+                            className="p-2 text-charcoal/40 dark:text-white/40 hover:text-rose-500 transition-colors"
                             title="Delete location"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -524,7 +524,7 @@ function LocationsContent() {
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                           location.isActive
                             ? 'bg-sage/10 text-sage hover:bg-sage/20'
-                            : 'bg-charcoal/10 text-charcoal/60 hover:bg-charcoal/20'
+                            : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60 hover:bg-charcoal/20 dark:hover:bg-white/20'
                         }`}
                       >
                         {location.isActive ? 'Active' : 'Inactive'}
@@ -540,15 +540,15 @@ function LocationsContent() {
 
       {/* New/Edit Location Modal */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">
                 {editingLocation ? 'Edit Location' : 'Add New Location'}
               </h2>
               <button
                 onClick={closeModal}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -557,48 +557,48 @@ function LocationsContent() {
             <div className="p-6 space-y-6">
               {/* Error Message */}
               {formError && (
-                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3 text-rose-700">
+                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl flex items-start gap-3 text-rose-700 dark:text-rose-300">
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-medium">Unable to save location</p>
-                    <p className="text-sm text-rose-600 mt-1">{formError}</p>
+                    <p className="text-sm text-rose-600 dark:text-rose-400 mt-1">{formError}</p>
                   </div>
                 </div>
               )}
 
               {/* Location Name */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Location Name <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={locationForm.name}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., Downtown Spa"
                 />
               </div>
 
               {/* Address */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Street Address</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Street Address</label>
                 <input
                   type="text"
                   value={locationForm.address}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., 123 Main Street"
                 />
               </div>
 
               {/* Country */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Country</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Country</label>
                 <select
                   value={locationForm.country}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, country: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white"
                 >
                   {COUNTRIES.map((country) => (
                     <option key={country.code} value={country.code}>
@@ -611,32 +611,32 @@ function LocationsContent() {
               {/* City, State/Province, Postal Code */}
               <div className="grid grid-cols-6 gap-4">
                 <div className="col-span-3">
-                  <label className="block text-sm font-medium text-charcoal mb-2">City</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">City</label>
                   <input
                     type="text"
                     value={locationForm.city}
                     onChange={(e) => setLocationForm((prev) => ({ ...prev, city: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="City"
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-charcoal mb-2">State / Province</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">State / Province</label>
                   <input
                     type="text"
                     value={locationForm.state}
                     onChange={(e) => setLocationForm((prev) => ({ ...prev, state: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Region"
                   />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-sm font-medium text-charcoal mb-2">Postal</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Postal</label>
                   <input
                     type="text"
                     value={locationForm.zip}
                     onChange={(e) => setLocationForm((prev) => ({ ...prev, zip: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Code"
                     maxLength={10}
                   />
@@ -645,23 +645,23 @@ function LocationsContent() {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Phone</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
                 <input
                   type="tel"
                   value={locationForm.phone}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, phone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., (555) 123-4567"
                 />
               </div>
 
               {/* Timezone */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Timezone</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Timezone</label>
                 <select
                   value={locationForm.timezone}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, timezone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white"
                 >
                   {/* Group timezones by region */}
                   {['Europe', 'Americas', 'Asia/Pacific', 'Other'].map((region) => (
@@ -678,8 +678,8 @@ function LocationsContent() {
 
               {/* Business Hours - Structured Editor */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-3">Business Hours</label>
-                <div className="p-4 bg-cream/50 rounded-xl border border-charcoal/10">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Business Hours</label>
+                <div className="p-4 bg-cream/50 dark:bg-charcoal/50 rounded-xl border border-charcoal/10 dark:border-white/10">
                   <HoursEditor
                     hours={locationHours}
                     onChange={setLocationHours}
@@ -689,36 +689,36 @@ function LocationsContent() {
 
               {/* Legacy Business Hours (optional text override) */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
-                  Hours Description <span className="text-charcoal/40 font-normal">(optional)</span>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                  Hours Description <span className="text-charcoal/40 dark:text-white/40 font-normal">(optional)</span>
                 </label>
                 <textarea
                   rows={2}
                   value={locationForm.hours}
                   onChange={(e) => setLocationForm((prev) => ({ ...prev, hours: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   placeholder="e.g., Extended hours during holidays"
                 />
-                <p className="mt-1 text-xs text-charcoal/50">
+                <p className="mt-1 text-xs text-charcoal/50 dark:text-white/50">
                   Additional notes about your hours (displayed alongside structured hours)
                 </p>
               </div>
 
               {/* Primary Location Toggle */}
               {!editingLocation?.isPrimary && (
-                <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
                   <div className="flex items-center gap-3">
-                    <Star className="w-5 h-5 text-amber-600" />
+                    <Star className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                     <div>
-                      <p className="font-medium text-charcoal">Set as Primary Location</p>
-                      <p className="text-sm text-charcoal/60">This will be the default location for your business</p>
+                      <p className="font-medium text-charcoal dark:text-white">Set as Primary Location</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">This will be the default location for your business</p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setLocationForm((prev) => ({ ...prev, isPrimary: !prev.isPrimary }))}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      locationForm.isPrimary ? 'bg-amber-500' : 'bg-charcoal/20'
+                      locationForm.isPrimary ? 'bg-amber-500' : 'bg-charcoal/20 dark:bg-white/20'
                     }`}
                   >
                     <span
@@ -731,11 +731,11 @@ function LocationsContent() {
               )}
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={closeModal}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -754,21 +754,21 @@ function LocationsContent() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
             <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-6 h-6 text-rose-500" />
               </div>
-              <h2 className="text-lg font-bold text-charcoal mb-2">Delete Location?</h2>
-              <p className="text-charcoal/60 mb-6">
+              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Location?</h2>
+              <p className="text-charcoal/60 dark:text-white/60 mb-6">
                 Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

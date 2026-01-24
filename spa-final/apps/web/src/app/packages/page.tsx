@@ -239,12 +239,12 @@ function PackagesContent() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex">
+      <div className="min-h-screen bg-cream dark:bg-charcoal flex">
         <AppSidebar currentPage="packages" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="w-12 h-12 text-sage animate-spin mx-auto mb-4" />
-            <p className="text-charcoal/60">Loading packages...</p>
+            <p className="text-charcoal/60 dark:text-white/60">Loading packages...</p>
           </div>
         </main>
       </div>
@@ -254,13 +254,13 @@ function PackagesContent() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-cream flex">
+      <div className="min-h-screen bg-cream dark:bg-charcoal flex">
         <AppSidebar currentPage="packages" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-center bg-white p-8 rounded-2xl shadow-soft max-w-md">
+          <div className="text-center bg-white dark:bg-sidebar p-8 rounded-2xl shadow-soft max-w-md">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-charcoal mb-2">Failed to load packages</h2>
-            <p className="text-charcoal/60 mb-4">{error}</p>
+            <h2 className="text-xl font-semibold text-charcoal dark:text-white mb-2">Failed to load packages</h2>
+            <p className="text-charcoal/60 dark:text-white/60 mb-4">{error}</p>
             <button
               onClick={() => { fetchPackages(); fetchMembers(); }}
               className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark mx-auto"
@@ -275,17 +275,17 @@ function PackagesContent() {
   }
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar currentPage="packages" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => setSidebarOpen(true)} className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden">
+              <button onClick={() => setSidebarOpen(true)} className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden">
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Packages & Memberships</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Packages & Memberships</h1>
             </div>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -318,23 +318,23 @@ function PackagesContent() {
               {stats.map((stat) => {
                 const Icon = stat.icon;
                 return (
-                  <div key={stat.label} className="bg-white rounded-2xl p-6 border border-charcoal/5 shadow-soft">
+                  <div key={stat.label} className="bg-white dark:bg-sidebar rounded-2xl p-6 border border-charcoal/5 dark:border-white/10 shadow-soft">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-charcoal mb-1">{stat.value}</p>
-                    <p className="text-sm text-charcoal/60">{stat.label}</p>
+                    <p className="text-3xl font-bold text-charcoal dark:text-white mb-1">{stat.value}</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">{stat.label}</p>
                   </div>
                 );
               })}
             </div>
 
             {/* Quick Tips */}
-            <div className="bg-gradient-to-br from-sage/10 to-lavender/10 rounded-2xl p-6 border border-sage/20 mb-6">
-              <h3 className="font-semibold text-charcoal mb-2">Package & Membership Tips</h3>
-              <ul className="text-sm text-charcoal/70 space-y-2">
+            <div className="bg-gradient-to-br from-sage/10 to-lavender/10 dark:from-sage/20 dark:to-lavender/20 rounded-2xl p-6 border border-sage/20 dark:border-sage/30 mb-6">
+              <h3 className="font-semibold text-charcoal dark:text-white mb-2">Package & Membership Tips</h3>
+              <ul className="text-sm text-charcoal/70 dark:text-white/70 space-y-2">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-sage mt-0.5 flex-shrink-0" />
                   <span><strong>Packages</strong> are one-time purchases with a set number of services</span>
@@ -351,12 +351,12 @@ function PackagesContent() {
             </div>
 
             {/* Tabs */}
-            <div className="bg-white rounded-2xl border border-charcoal/5 shadow-soft mb-6">
-              <div className="border-b border-charcoal/10 px-6">
+            <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft mb-6">
+              <div className="border-b border-charcoal/10 dark:border-white/10 px-6">
                 <div className="flex gap-6">
                   <button
                     onClick={() => setActiveTab('packages')}
-                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'packages' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 hover:text-charcoal'}`}
+                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'packages' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'}`}
                   >
                     <span className="flex items-center gap-2">
                       <Package className="w-5 h-5" />
@@ -365,7 +365,7 @@ function PackagesContent() {
                   </button>
                   <button
                     onClick={() => setActiveTab('memberships')}
-                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'memberships' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 hover:text-charcoal'}`}
+                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'memberships' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'}`}
                   >
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-5 h-5" />
@@ -374,7 +374,7 @@ function PackagesContent() {
                   </button>
                   <button
                     onClick={() => setActiveTab('members')}
-                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'members' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 hover:text-charcoal'}`}
+                    className={`py-4 border-b-2 font-medium transition-colors ${activeTab === 'members' ? 'border-sage text-sage' : 'border-transparent text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'}`}
                   >
                     <span className="flex items-center gap-2">
                       <Users className="w-5 h-5" />
@@ -388,8 +388,8 @@ function PackagesContent() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {packageItems.length === 0 ? (
                     <div className="col-span-full p-12 text-center">
-                      <Package className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60 mb-4">No packages yet</p>
+                      <Package className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                      <p className="text-charcoal/60 dark:text-white/60 mb-4">No packages yet</p>
                       <button
                         onClick={() => setShowModal('package')}
                         className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
@@ -399,20 +399,20 @@ function PackagesContent() {
                     </div>
                   ) : (
                     packageItems.map((pkg) => (
-                      <div key={pkg.id} className="border border-charcoal/10 rounded-xl p-5 hover:border-sage/30 transition-all relative">
+                      <div key={pkg.id} className="border border-charcoal/10 dark:border-white/10 rounded-xl p-5 hover:border-sage/30 transition-all relative">
                         <div className="flex items-start justify-between mb-3">
                           <div className="w-10 h-10 rounded-lg bg-sage/20 flex items-center justify-center">
                             <Package className="w-5 h-5 text-sage" />
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              pkg.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                              pkg.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                             }`}>
                               {pkg.isActive ? 'active' : 'inactive'}
                             </span>
                             <button
                               onClick={() => setActionMenu(actionMenu === pkg.id ? null : pkg.id)}
-                              className="p-1 text-charcoal/40 hover:text-charcoal"
+                              className="p-1 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white"
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
@@ -420,31 +420,31 @@ function PackagesContent() {
                         </div>
 
                         {actionMenu === pkg.id && (
-                          <div className="absolute right-4 top-14 w-40 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                          <div className="absolute right-4 top-14 w-40 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 py-2 z-10">
                             <button
                               onClick={() => handleViewDetails(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               <Eye className="w-4 h-4" />
                               View details
                             </button>
                             <button
                               onClick={() => handleEdit(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               <Edit className="w-4 h-4" />
                               Edit
                             </button>
                             <button
                               onClick={() => handleToggleStatus(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               {pkg.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                               {pkg.isActive ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
                               onClick={() => handleDeletePackage(pkg.id)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
                             >
                               <Trash2 className="w-4 h-4" />
                               Delete
@@ -452,28 +452,28 @@ function PackagesContent() {
                           </div>
                         )}
 
-                        <h3 className="font-semibold text-charcoal mb-1">{pkg.name}</h3>
-                        <p className="text-2xl font-bold text-charcoal mb-2">{formatPrice(pkg.price)}</p>
+                        <h3 className="font-semibold text-charcoal dark:text-white mb-1">{pkg.name}</h3>
+                        <p className="text-2xl font-bold text-charcoal dark:text-white mb-2">{formatPrice(pkg.price)}</p>
                         {pkg.description && (
-                          <p className="text-sm text-charcoal/60 mb-2">{pkg.description}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-2">{pkg.description}</p>
                         )}
                         {pkg.packageServices && pkg.packageServices.length > 0 && (
-                          <p className="text-sm text-charcoal/60 mb-3">
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
                             {pkg.packageServices.reduce((sum, s) => sum + s.quantity, 0)} services included
                           </p>
                         )}
                         {pkg.durationDays && (
-                          <p className="text-xs text-charcoal/50 mb-3">Valid for {pkg.durationDays} days</p>
+                          <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">Valid for {pkg.durationDays} days</p>
                         )}
                       </div>
                     ))
                   )}
                   <button
                     onClick={() => setShowModal('package')}
-                    className="border-2 border-dashed border-charcoal/20 rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-sage/40 transition-colors min-h-[200px]"
+                    className="border-2 border-dashed border-charcoal/20 dark:border-white/20 rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-sage/40 transition-colors min-h-[200px]"
                   >
-                    <Plus className="w-8 h-8 text-charcoal/40" />
-                    <span className="text-charcoal/60 font-medium">Create Package</span>
+                    <Plus className="w-8 h-8 text-charcoal/40 dark:text-white/40" />
+                    <span className="text-charcoal/60 dark:text-white/60 font-medium">Create Package</span>
                   </button>
                 </div>
               )}
@@ -482,8 +482,8 @@ function PackagesContent() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {membershipItems.length === 0 ? (
                     <div className="col-span-full p-12 text-center">
-                      <RefreshCw className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60 mb-4">No memberships yet</p>
+                      <RefreshCw className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                      <p className="text-charcoal/60 dark:text-white/60 mb-4">No memberships yet</p>
                       <button
                         onClick={() => setShowModal('membership')}
                         className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
@@ -493,20 +493,20 @@ function PackagesContent() {
                     </div>
                   ) : (
                     membershipItems.map((pkg) => (
-                      <div key={pkg.id} className="border border-charcoal/10 rounded-xl p-5 hover:border-sage/30 transition-all relative">
+                      <div key={pkg.id} className="border border-charcoal/10 dark:border-white/10 rounded-xl p-5 hover:border-sage/30 transition-all relative">
                         <div className="flex items-start justify-between mb-3">
                           <div className="w-10 h-10 rounded-lg bg-lavender/20 flex items-center justify-center">
                             <RefreshCw className="w-5 h-5 text-lavender-dark" />
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              pkg.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                              pkg.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                             }`}>
                               {pkg.isActive ? 'active' : 'inactive'}
                             </span>
                             <button
                               onClick={() => setActionMenu(actionMenu === pkg.id ? null : pkg.id)}
-                              className="p-1 text-charcoal/40 hover:text-charcoal"
+                              className="p-1 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white"
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
@@ -514,31 +514,31 @@ function PackagesContent() {
                         </div>
 
                         {actionMenu === pkg.id && (
-                          <div className="absolute right-4 top-14 w-40 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                          <div className="absolute right-4 top-14 w-40 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 py-2 z-10">
                             <button
                               onClick={() => handleViewDetails(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               <Eye className="w-4 h-4" />
                               View details
                             </button>
                             <button
                               onClick={() => handleEdit(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               <Edit className="w-4 h-4" />
                               Edit
                             </button>
                             <button
                               onClick={() => handleToggleStatus(pkg)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               {pkg.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                               {pkg.isActive ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
                               onClick={() => handleDeletePackage(pkg.id)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
                             >
                               <Trash2 className="w-4 h-4" />
                               Delete
@@ -546,15 +546,15 @@ function PackagesContent() {
                           </div>
                         )}
 
-                        <h3 className="font-semibold text-charcoal mb-1">{pkg.name}</h3>
-                        <p className="text-2xl font-bold text-charcoal mb-2">
-                          {formatPrice(pkg.renewalPrice || pkg.price)}<span className="text-sm font-normal text-charcoal/60">/mo</span>
+                        <h3 className="font-semibold text-charcoal dark:text-white mb-1">{pkg.name}</h3>
+                        <p className="text-2xl font-bold text-charcoal dark:text-white mb-2">
+                          {formatPrice(pkg.renewalPrice || pkg.price)}<span className="text-sm font-normal text-charcoal/60 dark:text-white/60">/mo</span>
                         </p>
                         {pkg.description && (
-                          <p className="text-sm text-charcoal/60 mb-2">{pkg.description}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-2">{pkg.description}</p>
                         )}
                         {pkg.packageServices && pkg.packageServices.length > 0 && (
-                          <p className="text-sm text-charcoal/60 mb-3">
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
                             {pkg.packageServices.reduce((sum, s) => sum + s.quantity, 0)} services per month
                           </p>
                         )}
@@ -563,42 +563,42 @@ function PackagesContent() {
                   )}
                   <button
                     onClick={() => setShowModal('membership')}
-                    className="border-2 border-dashed border-charcoal/20 rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-sage/40 transition-colors min-h-[200px]"
+                    className="border-2 border-dashed border-charcoal/20 dark:border-white/20 rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-sage/40 transition-colors min-h-[200px]"
                   >
-                    <Plus className="w-8 h-8 text-charcoal/40" />
-                    <span className="text-charcoal/60 font-medium">Create Membership</span>
+                    <Plus className="w-8 h-8 text-charcoal/40 dark:text-white/40" />
+                    <span className="text-charcoal/60 dark:text-white/60 font-medium">Create Membership</span>
                   </button>
                 </div>
               )}
 
               {activeTab === 'members' && (
-                <div className="divide-y divide-charcoal/10">
+                <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                   {members.length === 0 ? (
                     <div className="p-12 text-center">
-                      <Users className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60">No members yet</p>
-                      <p className="text-sm text-charcoal/40 mt-2">Members will appear here when clients purchase packages or memberships</p>
+                      <Users className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                      <p className="text-charcoal/60 dark:text-white/60">No members yet</p>
+                      <p className="text-sm text-charcoal/40 dark:text-white/40 mt-2">Members will appear here when clients purchase packages or memberships</p>
                     </div>
                   ) : (
                     members.map((member) => (
-                      <div key={member.id} className="p-4 flex items-center gap-4 hover:bg-cream/50 transition-colors relative">
+                      <div key={member.id} className="p-4 flex items-center gap-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors relative">
                         <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
                           <span className="text-sage font-semibold">
                             {member.client.firstName[0]}{member.client.lastName[0]}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-charcoal">
+                          <p className="font-medium text-charcoal dark:text-white">
                             {member.client.firstName} {member.client.lastName}
                           </p>
-                          <p className="text-sm text-charcoal/60">{member.package.name}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{member.package.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-charcoal">
+                          <p className="text-sm text-charcoal dark:text-white">
                             {member.servicesRemaining}/{member.totalServices} services remaining
                           </p>
                           {member.expirationDate && (
-                            <p className="text-xs text-charcoal/50">
+                            <p className="text-xs text-charcoal/50 dark:text-white/50">
                               Expires: {formatDate(member.expirationDate)}
                             </p>
                           )}
@@ -611,30 +611,30 @@ function PackagesContent() {
                         </div>
                         <button
                           onClick={() => setActionMenu(actionMenu === member.id ? null : member.id)}
-                          className="p-2 text-charcoal/40 hover:text-charcoal"
+                          className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white"
                         >
                           <MoreHorizontal className="w-5 h-5" />
                         </button>
 
                         {actionMenu === member.id && (
-                          <div className="absolute right-12 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                          <div className="absolute right-12 top-full mt-1 w-48 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 py-2 z-10">
                             <button
                               onClick={() => handleViewMemberProfile(member)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               <Eye className="w-4 h-4" />
                               View profile
                             </button>
                             <button
                               onClick={() => handlePauseMember(member)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                             >
                               {member.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                               {member.isActive ? 'Pause' : 'Resume'} membership
                             </button>
                             <button
                               onClick={() => handleCancelMember(member)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
                             >
                               <X className="w-4 h-4" />
                               Cancel membership
@@ -653,21 +653,21 @@ function PackagesContent() {
 
       {/* Create/Edit Package/Membership Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-xl font-semibold text-charcoal">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
+              <h2 className="text-xl font-semibold text-charcoal dark:text-white">
                 {editingItem ? 'Edit' : 'Create'} {showModal === 'package' ? 'Package' : 'Membership'}
               </h2>
-              <button onClick={() => { setShowModal(null); resetForm(); }} className="p-2 hover:bg-charcoal/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60" />
+              <button onClick={() => { setShowModal(null); resetForm(); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
+                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
               </button>
             </div>
 
             <div className="p-6 space-y-6">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   {showModal === 'package' ? 'Package' : 'Membership'} Name
                 </label>
                 <input
@@ -675,38 +675,38 @@ function PackagesContent() {
                   placeholder={showModal === 'package' ? 'e.g., Haircut Bundle' : 'e.g., VIP Monthly'}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-charcoal/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage"
+                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Description</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Description</label>
                 <textarea
                   placeholder="Brief description of what's included..."
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={2}
-                  className="w-full px-4 py-3 border border-charcoal/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage resize-none"
+                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage resize-none bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                 />
               </div>
 
               {/* Number of Services */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Number of Services {showModal === 'membership' && 'per Month'}
                 </label>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setFormData({ ...formData, services: Math.max(1, formData.services - 1) })}
-                    className="w-10 h-10 rounded-lg border border-charcoal/20 flex items-center justify-center hover:border-sage transition-colors"
+                    className="w-10 h-10 rounded-lg border border-charcoal/20 dark:border-white/20 flex items-center justify-center hover:border-sage transition-colors text-charcoal dark:text-white"
                   >
                     -
                   </button>
-                  <span className="text-2xl font-bold text-charcoal w-16 text-center">{formData.services}</span>
+                  <span className="text-2xl font-bold text-charcoal dark:text-white w-16 text-center">{formData.services}</span>
                   <button
                     onClick={() => setFormData({ ...formData, services: formData.services + 1 })}
-                    className="w-10 h-10 rounded-lg border border-charcoal/20 flex items-center justify-center hover:border-sage transition-colors"
+                    className="w-10 h-10 rounded-lg border border-charcoal/20 dark:border-white/20 flex items-center justify-center hover:border-sage transition-colors text-charcoal dark:text-white"
                   >
                     +
                   </button>
@@ -715,24 +715,24 @@ function PackagesContent() {
 
               {/* Price */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Price {showModal === 'membership' && '(per month)'}
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40">{currencySymbol}</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">{currencySymbol}</span>
                   <input
                     type="number"
                     placeholder="0"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full pl-8 pr-4 py-3 border border-charcoal/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage"
+                    className="w-full pl-8 pr-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                   />
                 </div>
               </div>
 
               {/* Discount */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Savings Percentage</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Savings Percentage</label>
                 <div className="grid grid-cols-4 gap-2">
                   {['10', '15', '20', '25', '30'].map((discount) => (
                     <button
@@ -741,7 +741,7 @@ function PackagesContent() {
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                         formData.discount === discount
                           ? 'bg-sage text-white'
-                          : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
+                          : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white hover:bg-charcoal/10 dark:hover:bg-white/10'
                       }`}
                     >
                       {discount}%
@@ -753,7 +753,7 @@ function PackagesContent() {
               {/* Validity (for packages only) */}
               {showModal === 'package' && (
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Validity Period</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Validity Period</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[{ days: 90, label: '3 months' }, { days: 180, label: '6 months' }, { days: 365, label: '1 year' }].map((option) => (
                       <button
@@ -762,7 +762,7 @@ function PackagesContent() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                           formData.validityDays === option.days
                             ? 'bg-sage text-white'
-                            : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
+                            : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white hover:bg-charcoal/10 dark:hover:bg-white/10'
                         }`}
                       >
                         {option.label}
@@ -774,8 +774,8 @@ function PackagesContent() {
 
               {/* Services Selection */}
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Applicable Services (optional)</label>
-                <p className="text-xs text-charcoal/50 mb-3">Leave empty to allow any service</p>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Applicable Services (optional)</label>
+                <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">Leave empty to allow any service</p>
                 <div className="flex flex-wrap gap-2">
                   {services.map((service) => (
                     <button
@@ -789,7 +789,7 @@ function PackagesContent() {
                       className={`px-3 py-1.5 rounded-full text-sm transition-all ${
                         formData.selectedServices.includes(service)
                           ? 'bg-sage text-white'
-                          : 'bg-charcoal/5 text-charcoal hover:bg-charcoal/10'
+                          : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white hover:bg-charcoal/10 dark:hover:bg-white/10'
                       }`}
                     >
                       {service}
@@ -799,10 +799,10 @@ function PackagesContent() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 flex gap-3 justify-end sticky bottom-0 bg-white">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
               <button
                 onClick={() => { setShowModal(null); resetForm(); }}
-                className="px-6 py-2 text-charcoal/60 hover:text-charcoal font-medium"
+                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
               >
                 Cancel
               </button>
@@ -827,14 +827,14 @@ function PackagesContent() {
 
       {/* View Details Modal */}
       {viewingItem && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-xl font-semibold text-charcoal">
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
+              <h2 className="text-xl font-semibold text-charcoal dark:text-white">
                 {viewingItem.type === 'PACKAGE' || viewingItem.type === 'package' ? 'Package' : 'Membership'} Details
               </h2>
-              <button onClick={() => setViewingItem(null)} className="p-2 hover:bg-charcoal/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60" />
+              <button onClick={() => setViewingItem(null)} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
+                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
               </button>
             </div>
 
@@ -851,9 +851,9 @@ function PackagesContent() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-charcoal">{viewingItem.name}</h3>
+                  <h3 className="text-2xl font-bold text-charcoal dark:text-white">{viewingItem.name}</h3>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
-                    viewingItem.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                    viewingItem.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                   }`}>
                     {viewingItem.isActive ? 'Active' : 'Inactive'}
                   </span>
@@ -861,12 +861,12 @@ function PackagesContent() {
               </div>
 
               {/* Price */}
-              <div className="bg-cream rounded-xl p-4">
-                <p className="text-sm text-charcoal/60 mb-1">Price</p>
-                <p className="text-3xl font-bold text-charcoal">
+              <div className="bg-cream dark:bg-charcoal rounded-xl p-4">
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-1">Price</p>
+                <p className="text-3xl font-bold text-charcoal dark:text-white">
                   {formatPrice(viewingItem.renewalPrice || viewingItem.price)}
                   {(viewingItem.type === 'MEMBERSHIP' || viewingItem.type === 'membership') && (
-                    <span className="text-base font-normal text-charcoal/60">/month</span>
+                    <span className="text-base font-normal text-charcoal/60 dark:text-white/60">/month</span>
                   )}
                 </p>
               </div>
@@ -874,20 +874,20 @@ function PackagesContent() {
               {/* Description */}
               {viewingItem.description && (
                 <div>
-                  <p className="text-sm font-medium text-charcoal mb-2">Description</p>
-                  <p className="text-charcoal/70">{viewingItem.description}</p>
+                  <p className="text-sm font-medium text-charcoal dark:text-white mb-2">Description</p>
+                  <p className="text-charcoal/70 dark:text-white/70">{viewingItem.description}</p>
                 </div>
               )}
 
               {/* Duration (for packages) */}
               {viewingItem.durationDays && (
-                <div className="flex items-center gap-3 p-4 bg-peach/10 rounded-xl">
+                <div className="flex items-center gap-3 p-4 bg-peach/10 dark:bg-peach/20 rounded-xl">
                   <div className="w-10 h-10 bg-peach/20 rounded-lg flex items-center justify-center">
                     <CreditCard className="w-5 h-5 text-peach-dark" />
                   </div>
                   <div>
-                    <p className="text-sm text-charcoal/60">Validity Period</p>
-                    <p className="font-semibold text-charcoal">{viewingItem.durationDays} days</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">Validity Period</p>
+                    <p className="font-semibold text-charcoal dark:text-white">{viewingItem.durationDays} days</p>
                   </div>
                 </div>
               )}
@@ -895,13 +895,13 @@ function PackagesContent() {
               {/* Included Services */}
               {viewingItem.packageServices && viewingItem.packageServices.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-charcoal mb-3">Included Services</p>
+                  <p className="text-sm font-medium text-charcoal dark:text-white mb-3">Included Services</p>
                   <div className="space-y-2">
                     {viewingItem.packageServices.map((ps) => (
-                      <div key={ps.id} className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
-                        <span className="font-medium text-charcoal">{ps.service.name}</span>
+                      <div key={ps.id} className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                        <span className="font-medium text-charcoal dark:text-white">{ps.service.name}</span>
                         <div className="flex items-center gap-3">
-                          <span className="text-sm text-charcoal/60">{formatPrice(ps.service.price)} each</span>
+                          <span className="text-sm text-charcoal/60 dark:text-white/60">{formatPrice(ps.service.price)} each</span>
                           <span className="px-2 py-1 bg-sage/20 text-sage-dark text-xs font-medium rounded">
                             x{ps.quantity}
                           </span>
@@ -909,7 +909,7 @@ function PackagesContent() {
                       </div>
                     ))}
                   </div>
-                  <p className="mt-3 text-sm text-charcoal/60">
+                  <p className="mt-3 text-sm text-charcoal/60 dark:text-white/60">
                     Total services: {viewingItem.packageServices.reduce((sum, s) => sum + s.quantity, 0)}
                   </p>
                 </div>
@@ -921,34 +921,34 @@ function PackagesContent() {
                 if (packageMembers.length === 0) return null;
                 return (
                   <div>
-                    <p className="text-sm font-medium text-charcoal mb-3">
+                    <p className="text-sm font-medium text-charcoal dark:text-white mb-3">
                       Active Members ({packageMembers.filter(m => m.isActive).length})
                     </p>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {packageMembers.slice(0, 5).map((member) => (
-                        <div key={member.id} className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
+                        <div key={member.id} className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
                           <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center">
                             <span className="text-sage text-sm font-semibold">
                               {member.client.firstName[0]}{member.client.lastName[0]}
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-charcoal text-sm">
+                            <p className="font-medium text-charcoal dark:text-white text-sm">
                               {member.client.firstName} {member.client.lastName}
                             </p>
-                            <p className="text-xs text-charcoal/60">
+                            <p className="text-xs text-charcoal/60 dark:text-white/60">
                               {member.servicesRemaining}/{member.totalServices} services remaining
                             </p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${
-                            member.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                            member.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                           }`}>
                             {member.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
                       ))}
                       {packageMembers.length > 5 && (
-                        <p className="text-sm text-charcoal/60 text-center py-2">
+                        <p className="text-sm text-charcoal/60 dark:text-white/60 text-center py-2">
                           +{packageMembers.length - 5} more members
                         </p>
                       )}
@@ -958,10 +958,10 @@ function PackagesContent() {
               })()}
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 flex gap-3 justify-end sticky bottom-0 bg-white">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
               <button
                 onClick={() => setViewingItem(null)}
-                className="px-6 py-2 text-charcoal/60 hover:text-charcoal font-medium"
+                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
               >
                 Close
               </button>
@@ -982,12 +982,12 @@ function PackagesContent() {
 
       {/* View Member Profile Modal */}
       {viewingMember && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between sticky top-0 bg-white">
-              <h2 className="text-xl font-semibold text-charcoal">Member Profile</h2>
-              <button onClick={() => setViewingMember(null)} className="p-2 hover:bg-charcoal/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60" />
+        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
+              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Member Profile</h2>
+              <button onClick={() => setViewingMember(null)} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
+                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
               </button>
             </div>
 
@@ -1000,11 +1000,11 @@ function PackagesContent() {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-charcoal">
+                  <h3 className="text-xl font-bold text-charcoal dark:text-white">
                     {viewingMember.client.firstName} {viewingMember.client.lastName}
                   </h3>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
-                    viewingMember.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                    viewingMember.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                   }`}>
                     {viewingMember.isActive ? 'Active' : 'Inactive'}
                   </span>
@@ -1014,47 +1014,47 @@ function PackagesContent() {
               {/* Contact Info */}
               <div className="space-y-3">
                 {viewingMember.client.email && (
-                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
                     <div className="w-8 h-8 bg-sage/20 rounded-lg flex items-center justify-center">
                       <span className="text-sage text-sm">@</span>
                     </div>
                     <div>
-                      <p className="text-xs text-charcoal/60">Email</p>
-                      <p className="font-medium text-charcoal">{viewingMember.client.email}</p>
+                      <p className="text-xs text-charcoal/60 dark:text-white/60">Email</p>
+                      <p className="font-medium text-charcoal dark:text-white">{viewingMember.client.email}</p>
                     </div>
                   </div>
                 )}
                 {viewingMember.client.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
+                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
                     <div className="w-8 h-8 bg-lavender/20 rounded-lg flex items-center justify-center">
                       <span className="text-lavender-dark text-sm">P</span>
                     </div>
                     <div>
-                      <p className="text-xs text-charcoal/60">Phone</p>
-                      <p className="font-medium text-charcoal">{viewingMember.client.phone}</p>
+                      <p className="text-xs text-charcoal/60 dark:text-white/60">Phone</p>
+                      <p className="font-medium text-charcoal dark:text-white">{viewingMember.client.phone}</p>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Package/Membership Info */}
-              <div className="bg-cream rounded-xl p-4">
-                <p className="text-sm text-charcoal/60 mb-2">Current Package/Membership</p>
-                <p className="font-bold text-charcoal text-lg">{viewingMember.package.name}</p>
-                <p className="text-charcoal/70">{formatPrice(viewingMember.package.price)}</p>
+              <div className="bg-cream dark:bg-charcoal rounded-xl p-4">
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-2">Current Package/Membership</p>
+                <p className="font-bold text-charcoal dark:text-white text-lg">{viewingMember.package.name}</p>
+                <p className="text-charcoal/70 dark:text-white/70">{formatPrice(viewingMember.package.price)}</p>
               </div>
 
               {/* Services */}
-              <div className="bg-sage/10 rounded-xl p-4">
+              <div className="bg-sage/10 dark:bg-sage/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-charcoal/60">Services Remaining</p>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Services Remaining</p>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
                     viewingMember.servicesRemaining > 2 ? 'bg-sage/20 text-sage-dark' : 'bg-peach/20 text-peach-dark'
                   }`}>
                     {viewingMember.servicesRemaining}/{viewingMember.totalServices}
                   </span>
                 </div>
-                <div className="w-full bg-charcoal/10 rounded-full h-2">
+                <div className="w-full bg-charcoal/10 dark:bg-white/10 rounded-full h-2">
                   <div
                     className="bg-sage h-2 rounded-full transition-all"
                     style={{ width: `${(viewingMember.servicesRemaining / viewingMember.totalServices) * 100}%` }}
@@ -1064,26 +1064,26 @@ function PackagesContent() {
 
               {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-charcoal/5 rounded-xl">
-                  <p className="text-xs text-charcoal/60">Purchase Date</p>
-                  <p className="font-medium text-charcoal">{formatDate(viewingMember.purchaseDate)}</p>
+                <div className="p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                  <p className="text-xs text-charcoal/60 dark:text-white/60">Purchase Date</p>
+                  <p className="font-medium text-charcoal dark:text-white">{formatDate(viewingMember.purchaseDate)}</p>
                 </div>
                 {viewingMember.expirationDate && (
-                  <div className="p-3 bg-charcoal/5 rounded-xl">
-                    <p className="text-xs text-charcoal/60">Expires</p>
-                    <p className="font-medium text-charcoal">{formatDate(viewingMember.expirationDate)}</p>
+                  <div className="p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <p className="text-xs text-charcoal/60 dark:text-white/60">Expires</p>
+                    <p className="font-medium text-charcoal dark:text-white">{formatDate(viewingMember.expirationDate)}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 flex gap-3 justify-between sticky bottom-0 bg-white">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-between sticky bottom-0 bg-white dark:bg-sidebar">
               <button
                 onClick={() => {
                   handlePauseMember(viewingMember);
                   setViewingMember(null);
                 }}
-                className="px-4 py-2 text-charcoal/60 hover:text-charcoal font-medium flex items-center gap-2"
+                className="px-4 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium flex items-center gap-2"
               >
                 {viewingMember.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 {viewingMember.isActive ? 'Pause' : 'Resume'}
@@ -1091,7 +1091,7 @@ function PackagesContent() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setViewingMember(null)}
-                  className="px-6 py-2 text-charcoal/60 hover:text-charcoal font-medium"
+                  className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
                 >
                   Close
                 </button>

@@ -229,9 +229,9 @@ function MarketingContent() {
       case 'scheduled':
         return 'bg-lavender/20 text-lavender-dark';
       case 'draft':
-        return 'bg-charcoal/10 text-charcoal/60';
+        return 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60';
       default:
-        return 'bg-charcoal/10 text-charcoal/60';
+        return 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60';
     }
   };
 
@@ -242,8 +242,8 @@ function MarketingContent() {
           <div className="w-16 h-16 bg-sage/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Check className="w-8 h-8 text-sage" />
           </div>
-          <h3 className="text-xl font-bold text-charcoal mb-2">Campaign Created!</h3>
-          <p className="text-charcoal/60 mb-6">
+          <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">Campaign Created!</h3>
+          <p className="text-charcoal/60 dark:text-white/60 mb-6">
             {activeModal === 'automation'
               ? 'Your automation is now active and will send messages automatically.'
               : campaignData.sendTime === 'now'
@@ -267,42 +267,42 @@ function MarketingContent() {
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">Campaign Details</h3>
-                  <p className="text-sm text-charcoal/60">Give your campaign a name and write your message</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">Campaign Details</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Give your campaign a name and write your message</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Campaign Name</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Campaign Name</label>
                   <input
                     type="text"
                     value={campaignData.name}
                     onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })}
                     placeholder="e.g., Summer Sale Announcement"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Subject Line</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Subject Line</label>
                   <input
                     type="text"
                     value={campaignData.subject}
                     onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })}
                     placeholder="e.g., Your exclusive summer discount awaits!"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Email Content</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email Content</label>
                   <textarea
                     value={campaignData.message}
                     onChange={(e) => setCampaignData({ ...campaignData, message: e.target.value })}
                     rows={6}
                     placeholder="Write your email message here. Use {{first_name}} to personalize..."
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none text-charcoal dark:text-white"
                   />
-                  <p className="text-xs text-charcoal/50 mt-2">Tip: Use {"{{first_name}}"} to personalize with the client's name</p>
+                  <p className="text-xs text-charcoal/50 dark:text-white/50 mt-2">Tip: Use {"{{first_name}}"} to personalize with the client's name</p>
                 </div>
               </div>
             )}
@@ -310,8 +310,8 @@ function MarketingContent() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">Select Audience</h3>
-                  <p className="text-sm text-charcoal/60">Choose who should receive this email</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">Select Audience</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Choose who should receive this email</p>
                 </div>
 
                 <div className="space-y-3">
@@ -321,7 +321,7 @@ function MarketingContent() {
                       className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                         campaignData.audience === option.id
                           ? 'border-sage bg-sage/5'
-                          : 'border-charcoal/10 hover:border-charcoal/20'
+                          : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                       }`}
                     >
                       <input
@@ -333,8 +333,8 @@ function MarketingContent() {
                         className="sr-only"
                       />
                       <div className="flex-1">
-                        <p className="font-medium text-charcoal">{option.label}</p>
-                        <p className="text-sm text-charcoal/60">{option.description}</p>
+                        <p className="font-medium text-charcoal dark:text-white">{option.label}</p>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60">{option.description}</p>
                       </div>
                       <span className="text-sm font-semibold text-sage">
                         {clientsLoading ? (
@@ -357,14 +357,14 @@ function MarketingContent() {
             {step === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">When to Send</h3>
-                  <p className="text-sm text-charcoal/60">Send now or schedule for later</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">When to Send</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Send now or schedule for later</p>
                 </div>
 
                 <div className="space-y-3">
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      campaignData.sendTime === 'now' ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-charcoal/20'
+                      campaignData.sendTime === 'now' ? 'border-sage bg-sage/5' : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                     }`}
                   >
                     <input
@@ -377,14 +377,14 @@ function MarketingContent() {
                     />
                     <Send className="w-6 h-6 text-sage" />
                     <div className="flex-1">
-                      <p className="font-medium text-charcoal">Send Now</p>
-                      <p className="text-sm text-charcoal/60">Send immediately to selected audience</p>
+                      <p className="font-medium text-charcoal dark:text-white">Send Now</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Send immediately to selected audience</p>
                     </div>
                   </label>
 
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      campaignData.sendTime === 'scheduled' ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-charcoal/20'
+                      campaignData.sendTime === 'scheduled' ? 'border-sage bg-sage/5' : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                     }`}
                   >
                     <input
@@ -397,8 +397,8 @@ function MarketingContent() {
                     />
                     <Clock className="w-6 h-6 text-lavender" />
                     <div className="flex-1">
-                      <p className="font-medium text-charcoal">Schedule for Later</p>
-                      <p className="text-sm text-charcoal/60">Choose a specific date and time</p>
+                      <p className="font-medium text-charcoal dark:text-white">Schedule for Later</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Choose a specific date and time</p>
                     </div>
                   </label>
                 </div>
@@ -406,35 +406,35 @@ function MarketingContent() {
                 {campaignData.sendTime === 'scheduled' && (
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Date</label>
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
                       <input
                         type="date"
                         value={campaignData.scheduledDate}
                         onChange={(e) => setCampaignData({ ...campaignData, scheduledDate: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Time</label>
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
                       <input
                         type="time"
                         value={campaignData.scheduledTime}
                         onChange={(e) => setCampaignData({ ...campaignData, scheduledTime: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                       />
                     </div>
                   </div>
                 )}
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 rounded-xl border border-red-200 flex items-center gap-3">
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700">{submitError}</p>
+                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
                   </div>
                 )}
 
                 <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
-                  <p className="text-sm text-charcoal">
+                  <p className="text-sm text-charcoal dark:text-white">
                     <strong>Summary:</strong> Your email will be sent to{' '}
                     <span className="font-semibold">
                       {clientsLoading ? 'loading...' : clientsError ? 'unknown' : `${audienceOptions.find(o => o.id === campaignData.audience)?.count || 0} clients`}
@@ -453,33 +453,33 @@ function MarketingContent() {
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">SMS Campaign</h3>
-                  <p className="text-sm text-charcoal/60">Write a short, compelling text message</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">SMS Campaign</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Write a short, compelling text message</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Campaign Name</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Campaign Name</label>
                   <input
                     type="text"
                     value={campaignData.name}
                     onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })}
                     placeholder="e.g., Flash Sale Alert"
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Message</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Message</label>
                   <textarea
                     value={campaignData.message}
                     onChange={(e) => setCampaignData({ ...campaignData, message: e.target.value.slice(0, 160) })}
                     rows={4}
                     placeholder="Hi {{first_name}}! Quick reminder about our special offer..."
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none text-charcoal dark:text-white"
                   />
                   <div className="flex justify-between mt-2">
-                    <p className="text-xs text-charcoal/50">Tip: Keep it under 160 characters for best delivery</p>
-                    <p className={`text-xs ${campaignData.message.length > 140 ? 'text-amber-600' : 'text-charcoal/50'}`}>
+                    <p className="text-xs text-charcoal/50 dark:text-white/50">Tip: Keep it under 160 characters for best delivery</p>
+                    <p className={`text-xs ${campaignData.message.length > 140 ? 'text-amber-600' : 'text-charcoal/50 dark:text-white/50'}`}>
                       {campaignData.message.length}/160
                     </p>
                   </div>
@@ -490,8 +490,8 @@ function MarketingContent() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">Select Audience</h3>
-                  <p className="text-sm text-charcoal/60">Choose who should receive this SMS</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">Select Audience</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Choose who should receive this SMS</p>
                 </div>
 
                 <div className="space-y-3">
@@ -501,7 +501,7 @@ function MarketingContent() {
                       className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                         campaignData.audience === option.id
                           ? 'border-sage bg-sage/5'
-                          : 'border-charcoal/10 hover:border-charcoal/20'
+                          : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                       }`}
                     >
                       <input
@@ -513,8 +513,8 @@ function MarketingContent() {
                         className="sr-only"
                       />
                       <div className="flex-1">
-                        <p className="font-medium text-charcoal">{option.label}</p>
-                        <p className="text-sm text-charcoal/60">{option.description}</p>
+                        <p className="font-medium text-charcoal dark:text-white">{option.label}</p>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60">{option.description}</p>
                       </div>
                       <span className="text-sm font-semibold text-sage">
                         {clientsLoading ? (
@@ -532,8 +532,8 @@ function MarketingContent() {
                   <p className="text-xs text-amber-600">Unable to load client counts</p>
                 )}
 
-                <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <p className="text-sm text-amber-800">
+                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm text-amber-800 dark:text-amber-300">
                     <strong>Cost estimate:</strong>{' '}
                     {clientsLoading ? 'calculating...' : clientsError ? 'unavailable' : `~$${((audienceOptions.find(o => o.id === campaignData.audience)?.count || 0) * 0.015).toFixed(2)} for ${audienceOptions.find(o => o.id === campaignData.audience)?.count || 0} messages`}
                   </p>
@@ -544,14 +544,14 @@ function MarketingContent() {
             {step === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">When to Send</h3>
-                  <p className="text-sm text-charcoal/60">Send now or schedule for later</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">When to Send</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Send now or schedule for later</p>
                 </div>
 
                 <div className="space-y-3">
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      campaignData.sendTime === 'now' ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-charcoal/20'
+                      campaignData.sendTime === 'now' ? 'border-sage bg-sage/5' : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                     }`}
                   >
                     <input
@@ -564,14 +564,14 @@ function MarketingContent() {
                     />
                     <Send className="w-6 h-6 text-sage" />
                     <div className="flex-1">
-                      <p className="font-medium text-charcoal">Send Now</p>
-                      <p className="text-sm text-charcoal/60">Send immediately</p>
+                      <p className="font-medium text-charcoal dark:text-white">Send Now</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Send immediately</p>
                     </div>
                   </label>
 
                   <label
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      campaignData.sendTime === 'scheduled' ? 'border-sage bg-sage/5' : 'border-charcoal/10 hover:border-charcoal/20'
+                      campaignData.sendTime === 'scheduled' ? 'border-sage bg-sage/5' : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                     }`}
                   >
                     <input
@@ -584,8 +584,8 @@ function MarketingContent() {
                     />
                     <Clock className="w-6 h-6 text-lavender" />
                     <div className="flex-1">
-                      <p className="font-medium text-charcoal">Schedule for Later</p>
-                      <p className="text-sm text-charcoal/60">Choose a specific date and time</p>
+                      <p className="font-medium text-charcoal dark:text-white">Schedule for Later</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">Choose a specific date and time</p>
                     </div>
                   </label>
                 </div>
@@ -593,30 +593,30 @@ function MarketingContent() {
                 {campaignData.sendTime === 'scheduled' && (
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Date</label>
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
                       <input
                         type="date"
                         value={campaignData.scheduledDate}
                         onChange={(e) => setCampaignData({ ...campaignData, scheduledDate: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-charcoal mb-2">Time</label>
+                      <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
                       <input
                         type="time"
                         value={campaignData.scheduledTime}
                         onChange={(e) => setCampaignData({ ...campaignData, scheduledTime: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                       />
                     </div>
                   </div>
                 )}
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 rounded-xl border border-red-200 flex items-center gap-3">
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700">{submitError}</p>
+                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
                   </div>
                 )}
               </div>
@@ -630,8 +630,8 @@ function MarketingContent() {
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">Choose a Trigger</h3>
-                  <p className="text-sm text-charcoal/60">When should this automation run?</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">Choose a Trigger</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">When should this automation run?</p>
                 </div>
 
                 <div className="space-y-3">
@@ -643,7 +643,7 @@ function MarketingContent() {
                         className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           campaignData.trigger === trigger.id
                             ? 'border-sage bg-sage/5'
-                            : 'border-charcoal/10 hover:border-charcoal/20'
+                            : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
                         }`}
                       >
                         <input
@@ -658,8 +658,8 @@ function MarketingContent() {
                           <Icon className="w-5 h-5 text-sage" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-charcoal">{trigger.label}</p>
-                          <p className="text-sm text-charcoal/60">{trigger.description}</p>
+                          <p className="font-medium text-charcoal dark:text-white">{trigger.label}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{trigger.description}</p>
                         </div>
                       </label>
                     );
@@ -671,16 +671,16 @@ function MarketingContent() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-charcoal mb-1">Set Timing & Message</h3>
-                  <p className="text-sm text-charcoal/60">When and what to send</p>
+                  <h3 className="text-lg font-semibold text-charcoal dark:text-white mb-1">Set Timing & Message</h3>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">When and what to send</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Send After</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Send After</label>
                   <select
                     value={campaignData.delay}
                     onChange={(e) => setCampaignData({ ...campaignData, delay: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                   >
                     <option value="0">Immediately</option>
                     <option value="1">1 hour after trigger</option>
@@ -691,36 +691,36 @@ function MarketingContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Subject Line</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Subject Line</label>
                   <input
                     type="text"
                     value={campaignData.subject}
                     onChange={(e) => setCampaignData({ ...campaignData, subject: e.target.value })}
                     placeholder={campaignData.trigger === 'welcome' ? 'Welcome to our salon!' : 'We miss you!'}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none text-charcoal dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Message</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Message</label>
                   <textarea
                     value={campaignData.message}
                     onChange={(e) => setCampaignData({ ...campaignData, message: e.target.value })}
                     rows={5}
                     placeholder="Hi {{first_name}}, ..."
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none resize-none text-charcoal dark:text-white"
                   />
                 </div>
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 rounded-xl border border-red-200 flex items-center gap-3">
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700">{submitError}</p>
+                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
                   </div>
                 )}
 
                 <div className="p-4 bg-sage/10 rounded-xl border border-sage/20">
-                  <p className="text-sm text-charcoal">
+                  <p className="text-sm text-charcoal dark:text-white">
                     <strong>How it works:</strong> This automation will run continuously. Every time a{' '}
                     {automationTriggers.find(t => t.id === campaignData.trigger)?.description.toLowerCase()},
                     an email will be sent {campaignData.delay === '0' ? 'immediately' : `${campaignData.delay} hour(s) later`}.
@@ -755,7 +755,7 @@ function MarketingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="marketing"
         sidebarOpen={sidebarOpen}
@@ -763,16 +763,16 @@ function MarketingContent() {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Marketing</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Marketing</h1>
             </div>
 
             <div className="flex items-center gap-4">
@@ -793,12 +793,12 @@ function MarketingContent() {
           <FeatureGate feature="marketing">
             {/* Error State */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200 flex items-center gap-3">
+              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500" />
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
                 <button
                   onClick={() => fetchCampaigns()}
-                  className="ml-auto px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200"
+                  className="ml-auto px-4 py-2 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 rounded-lg text-sm font-medium hover:bg-red-200 dark:hover:bg-red-700"
                 >
                   Retry
                 </button>
@@ -810,35 +810,35 @@ function MarketingContent() {
               {stats.map((stat) => {
                 const Icon = stat.icon;
                 return (
-                  <div key={stat.label} className="bg-white rounded-2xl p-6 border border-charcoal/5 shadow-soft">
+                  <div key={stat.label} className="bg-white dark:bg-sidebar rounded-2xl p-6 border border-charcoal/5 dark:border-white/10 shadow-soft">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-charcoal mb-1">{stat.value}</p>
-                    <p className="text-sm text-charcoal/60">{stat.label}</p>
+                    <p className="text-3xl font-bold text-charcoal dark:text-white mb-1">{stat.value}</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">{stat.label}</p>
                   </div>
                 );
               })}
             </div>
 
             {/* Campaigns */}
-            <div className="bg-white rounded-2xl border border-charcoal/5 shadow-soft">
-              <div className="p-6 border-b border-charcoal/10">
-                <h2 className="text-lg font-semibold text-charcoal">Your Campaigns</h2>
-                <p className="text-sm text-charcoal/60">Manage your email and SMS campaigns</p>
+            <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft">
+              <div className="p-6 border-b border-charcoal/10 dark:border-white/10">
+                <h2 className="text-lg font-semibold text-charcoal dark:text-white">Your Campaigns</h2>
+                <p className="text-sm text-charcoal/60 dark:text-white/60">Manage your email and SMS campaigns</p>
               </div>
 
               {loading ? (
                 <div className="p-12 flex flex-col items-center justify-center">
                   <Loader2 className="w-8 h-8 text-sage animate-spin mb-4" />
-                  <p className="text-charcoal/60">Loading campaigns...</p>
+                  <p className="text-charcoal/60 dark:text-white/60">Loading campaigns...</p>
                 </div>
               ) : campaigns.length === 0 ? (
                 <div className="p-12 text-center">
-                  <Send className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                  <p className="text-charcoal/60 mb-4">No campaigns yet</p>
+                  <Send className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                  <p className="text-charcoal/60 dark:text-white/60 mb-4">No campaigns yet</p>
                   <button
                     onClick={() => openModal('email')}
                     className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
@@ -847,29 +847,29 @@ function MarketingContent() {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-charcoal/10">
+                <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                   {campaigns.map((campaign) => (
-                    <div key={campaign.id} className="p-4 hover:bg-cream/50 transition-colors">
+                    <div key={campaign.id} className="p-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-sage/20 flex items-center justify-center">
                           <Send className="w-5 h-5 text-sage" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-charcoal">{campaign.name}</p>
-                          <p className="text-sm text-charcoal/60 capitalize">{campaign.type}</p>
+                          <p className="font-medium text-charcoal dark:text-white">{campaign.name}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 capitalize">{campaign.type}</p>
                         </div>
                         <div className="hidden md:flex items-center gap-6 text-sm">
                           <div className="text-center">
-                            <p className="font-semibold text-charcoal">{campaign.recipientsCount || 0}</p>
-                            <p className="text-charcoal/50">Sent</p>
+                            <p className="font-semibold text-charcoal dark:text-white">{campaign.recipientsCount || 0}</p>
+                            <p className="text-charcoal/50 dark:text-white/50">Sent</p>
                           </div>
                           <div className="text-center">
-                            <p className="font-semibold text-charcoal">{campaign.openedCount}</p>
-                            <p className="text-charcoal/50">Opened</p>
+                            <p className="font-semibold text-charcoal dark:text-white">{campaign.openedCount}</p>
+                            <p className="text-charcoal/50 dark:text-white/50">Opened</p>
                           </div>
                           <div className="text-center">
-                            <p className="font-semibold text-charcoal">{campaign.clickedCount}</p>
-                            <p className="text-charcoal/50">Clicked</p>
+                            <p className="font-semibold text-charcoal dark:text-white">{campaign.clickedCount}</p>
+                            <p className="text-charcoal/50 dark:text-white/50">Clicked</p>
                           </div>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(campaign.status)}`}>
@@ -886,18 +886,18 @@ function MarketingContent() {
                         <div className="relative">
                           <button
                             onClick={() => setCampaignMenuId(campaignMenuId === campaign.id ? null : campaign.id)}
-                            className="p-2 text-charcoal/40 hover:text-charcoal"
+                            className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white"
                           >
                             <MoreHorizontal className="w-5 h-5" />
                           </button>
                           {campaignMenuId === campaign.id && (
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-10">
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 py-2 z-10">
                               <button
                                 onClick={() => {
                                   // View details or edit - for now just close menu
                                   setCampaignMenuId(null);
                                 }}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                               >
                                 <ChevronRight className="w-4 h-4" />
                                 View Details
@@ -908,7 +908,7 @@ function MarketingContent() {
                                     handleSendCampaign(campaign.id);
                                     setCampaignMenuId(null);
                                   }}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                                 >
                                   <Send className="w-4 h-4" />
                                   Send Campaign
@@ -919,7 +919,7 @@ function MarketingContent() {
                                   // Duplicate functionality - for now just close menu
                                   setCampaignMenuId(null);
                                 }}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2"
                               >
                                 <Plus className="w-4 h-4" />
                                 Duplicate
@@ -996,22 +996,22 @@ function MarketingContent() {
       {/* Modal */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-charcoal/50" onClick={closeModal} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+          <div className="absolute inset-0 bg-charcoal/50 dark:bg-black/70" onClick={closeModal} />
+          <div className="relative bg-white dark:bg-sidebar rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-charcoal/10">
+            <div className="flex items-center justify-between p-6 border-b border-charcoal/10 dark:border-white/10">
               <div className="flex items-center gap-3">
                 {activeModal === 'email' && <Mail className="w-6 h-6 text-sage" />}
                 {activeModal === 'sms' && <MessageSquare className="w-6 h-6 text-lavender" />}
                 {activeModal === 'automation' && <Clock className="w-6 h-6 text-peach" />}
-                <h2 className="text-xl font-bold text-charcoal">
+                <h2 className="text-xl font-bold text-charcoal dark:text-white">
                   {activeModal === 'email' && 'Create Email Campaign'}
                   {activeModal === 'sms' && 'Create SMS Campaign'}
                   {activeModal === 'automation' && 'Create Automation'}
                 </h2>
               </div>
-              <button onClick={closeModal} className="p-2 hover:bg-charcoal/5 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-charcoal/60" />
+              <button onClick={closeModal} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg transition-colors">
+                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
               </button>
             </div>
 
@@ -1027,13 +1027,13 @@ function MarketingContent() {
                             ? 'bg-sage text-white'
                             : i + 1 === step
                               ? 'bg-sage/20 text-sage border-2 border-sage'
-                              : 'bg-charcoal/10 text-charcoal/40'
+                              : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/40 dark:text-white/40'
                         }`}
                       >
                         {i + 1 < step ? <Check className="w-4 h-4" /> : i + 1}
                       </div>
                       {i < getMaxSteps() - 1 && (
-                        <div className={`flex-1 h-1 rounded ${i + 1 < step ? 'bg-sage' : 'bg-charcoal/10'}`} />
+                        <div className={`flex-1 h-1 rounded ${i + 1 < step ? 'bg-sage' : 'bg-charcoal/10 dark:bg-white/10'}`} />
                       )}
                     </div>
                   ))}
@@ -1048,10 +1048,10 @@ function MarketingContent() {
 
             {/* Modal Footer */}
             {!isSuccess && (
-              <div className="flex items-center justify-between p-6 border-t border-charcoal/10 bg-charcoal/5">
+              <div className="flex items-center justify-between p-6 border-t border-charcoal/10 dark:border-white/10 bg-charcoal/5 dark:bg-white/5">
                 <button
                   onClick={() => step > 1 ? setStep(step - 1) : closeModal()}
-                  className="flex items-center gap-2 px-4 py-2 text-charcoal/70 hover:text-charcoal transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-charcoal/70 dark:text-white/70 hover:text-charcoal dark:hover:text-white transition-colors"
                   disabled={isSubmitting}
                 >
                   <ArrowLeft className="w-4 h-4" />

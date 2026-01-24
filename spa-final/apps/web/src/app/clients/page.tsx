@@ -332,7 +332,7 @@ function ClientsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="clients"
         sidebarOpen={sidebarOpen}
@@ -342,22 +342,22 @@ function ClientsContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Clients</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Clients</h1>
             </div>
 
             <div className="flex items-center gap-4">
               <button
                 onClick={() => refetch()}
-                className="p-2 text-charcoal/60 hover:text-charcoal"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white"
                 title="Refresh clients"
               >
                 <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -376,19 +376,19 @@ function ClientsContent() {
         </header>
 
         {/* Search & Filter Bar */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-white/40" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search clients by name, email, or phone..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/10 dark:border-white/10 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
               />
               {isLoading && searchQuery && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 animate-spin" />
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40 animate-spin" />
               )}
             </div>
             <div className="relative">
@@ -397,7 +397,7 @@ function ClientsContent() {
                 className={`flex items-center gap-2 px-4 py-3 border rounded-xl transition-colors ${
                   activeFilterCount > 0
                     ? 'border-sage bg-sage/10 text-sage-dark'
-                    : 'border-charcoal/10 text-charcoal/70 hover:bg-charcoal/5'
+                    : 'border-charcoal/10 dark:border-white/10 text-charcoal/70 dark:text-white/70 hover:bg-charcoal/5 dark:hover:bg-white/5'
                 }`}
               >
                 <Filter className="w-4 h-4" />
@@ -419,9 +419,9 @@ function ClientsContent() {
                     className="fixed inset-0 z-10"
                     onClick={() => setShowFilters(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-charcoal/10 z-20 p-4 space-y-4">
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 z-20 p-4 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-charcoal">Filter Clients</h3>
+                      <h3 className="font-semibold text-charcoal dark:text-white">Filter Clients</h3>
                       {activeFilterCount > 0 && (
                         <button
                           onClick={handleResetFilters}
@@ -434,8 +434,8 @@ function ClientsContent() {
 
                     {/* Status Filter */}
                     <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal mb-2">
-                        <UserCheck className="w-4 h-4 text-charcoal/40" />
+                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal dark:text-white mb-2">
+                        <UserCheck className="w-4 h-4 text-charcoal/40 dark:text-white/40" />
                         Status
                       </label>
                       <select
@@ -446,7 +446,7 @@ function ClientsContent() {
                             status: e.target.value as ClientFilters['status'],
                           }))
                         }
-                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                       >
                         <option value="all">All clients</option>
                         <option value="active">Active (visited in 90 days)</option>
@@ -456,8 +456,8 @@ function ClientsContent() {
 
                     {/* Last Visit Filter */}
                     <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal mb-2">
-                        <Clock className="w-4 h-4 text-charcoal/40" />
+                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal dark:text-white mb-2">
+                        <Clock className="w-4 h-4 text-charcoal/40 dark:text-white/40" />
                         Last Visit
                       </label>
                       <select
@@ -468,7 +468,7 @@ function ClientsContent() {
                             lastVisit: e.target.value as ClientFilters['lastVisit'],
                           }))
                         }
-                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                       >
                         <option value="all">Any time</option>
                         <option value="7days">Last 7 days</option>
@@ -480,8 +480,8 @@ function ClientsContent() {
 
                     {/* Total Spent Filter */}
                     <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal mb-2">
-                        <DollarSign className="w-4 h-4 text-charcoal/40" />
+                      <label className="flex items-center gap-2 text-sm font-medium text-charcoal dark:text-white mb-2">
+                        <DollarSign className="w-4 h-4 text-charcoal/40 dark:text-white/40" />
                         Total Spent
                       </label>
                       <select
@@ -492,7 +492,7 @@ function ClientsContent() {
                             totalSpent: e.target.value as ClientFilters['totalSpent'],
                           }))
                         }
-                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                        className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white text-sm focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                       >
                         <option value="all">Any amount</option>
                         <option value="under100">Under $100</option>
@@ -521,12 +521,12 @@ function ClientsContent() {
           <div className="mx-6 mt-4 p-4 bg-rose/10 border border-rose/20 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-rose flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-charcoal font-medium">Failed to load clients</p>
-              <p className="text-sm text-charcoal/60">{error}</p>
+              <p className="text-charcoal dark:text-white font-medium">Failed to load clients</p>
+              <p className="text-sm text-charcoal/60 dark:text-white/60">{error}</p>
             </div>
             <button
               onClick={() => refetch()}
-              className="px-4 py-2 bg-white border border-charcoal/20 rounded-lg text-sm font-medium hover:bg-charcoal/5"
+              className="px-4 py-2 bg-white dark:bg-sidebar border border-charcoal/20 dark:border-white/20 rounded-lg text-sm font-medium text-charcoal dark:text-white hover:bg-charcoal/5 dark:hover:bg-white/5"
             >
               Retry
             </button>
@@ -535,9 +535,9 @@ function ClientsContent() {
 
         {/* Client List */}
         <div className="flex-1 p-6 overflow-auto">
-          <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 overflow-hidden">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 overflow-hidden">
             {/* Table Header */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-charcoal/5 text-sm font-medium text-charcoal/60">
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-charcoal/5 dark:bg-white/5 text-sm font-medium text-charcoal/60 dark:text-white/60">
               <div className="col-span-3">Client</div>
               <div className="col-span-3">Contact</div>
               <div className="col-span-2">Created</div>
@@ -547,25 +547,25 @@ function ClientsContent() {
 
             {/* Loading State */}
             {isLoading && (clients || []).length === 0 ? (
-              <div className="divide-y divide-charcoal/10">
+              <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="grid grid-cols-12 gap-4 px-6 py-4 animate-pulse">
                     <div className="col-span-3 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-charcoal/10" />
+                      <div className="w-10 h-10 rounded-full bg-charcoal/10 dark:bg-white/10" />
                       <div className="flex-1">
-                        <div className="w-24 h-4 bg-charcoal/10 rounded mb-1" />
-                        <div className="w-16 h-3 bg-charcoal/10 rounded" />
+                        <div className="w-24 h-4 bg-charcoal/10 dark:bg-white/10 rounded mb-1" />
+                        <div className="w-16 h-3 bg-charcoal/10 dark:bg-white/10 rounded" />
                       </div>
                     </div>
                     <div className="col-span-3">
-                      <div className="w-32 h-4 bg-charcoal/10 rounded mb-1" />
-                      <div className="w-24 h-3 bg-charcoal/10 rounded" />
+                      <div className="w-32 h-4 bg-charcoal/10 dark:bg-white/10 rounded mb-1" />
+                      <div className="w-24 h-3 bg-charcoal/10 dark:bg-white/10 rounded" />
                     </div>
                     <div className="col-span-2">
-                      <div className="w-20 h-4 bg-charcoal/10 rounded" />
+                      <div className="w-20 h-4 bg-charcoal/10 dark:bg-white/10 rounded" />
                     </div>
                     <div className="col-span-3">
-                      <div className="w-full h-4 bg-charcoal/10 rounded" />
+                      <div className="w-full h-4 bg-charcoal/10 dark:bg-white/10 rounded" />
                     </div>
                     <div className="col-span-1" />
                   </div>
@@ -573,13 +573,13 @@ function ClientsContent() {
               </div>
             ) : (
               /* Table Body */
-              <div className="divide-y divide-charcoal/10">
+              <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                 {(filteredClients || []).map((client) => {
                   const tags = getClientTags(client);
                   return (
                     <div
                       key={client.id}
-                      className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-sage/5 transition-colors cursor-pointer"
+                      className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-sage/5 dark:hover:bg-sage/10 transition-colors cursor-pointer"
                       onClick={() => setSelectedClient(client)}
                     >
                       {/* Client Info */}
@@ -591,14 +591,14 @@ function ClientsContent() {
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-charcoal truncate">
+                          <p className="font-medium text-charcoal dark:text-white truncate">
                             {client.firstName} {client.lastName}
                           </p>
                           <div className="flex gap-1 mt-1">
                             {tags.map((tag) => (
                               <span
                                 key={tag}
-                                className={`px-2 py-0.5 rounded text-xs font-medium ${tagColors[tag] || 'bg-charcoal/10 text-charcoal/60'}`}
+                                className={`px-2 py-0.5 rounded text-xs font-medium ${tagColors[tag] || 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'}`}
                               >
                                 {tag}
                               </span>
@@ -610,25 +610,25 @@ function ClientsContent() {
                       {/* Contact */}
                       <div className="col-span-3 flex flex-col justify-center">
                         {client.email && (
-                          <p className="text-sm text-charcoal truncate flex items-center gap-1">
-                            <Mail className="w-3 h-3 text-charcoal/40" />
+                          <p className="text-sm text-charcoal dark:text-white truncate flex items-center gap-1">
+                            <Mail className="w-3 h-3 text-charcoal/40 dark:text-white/40" />
                             {client.email}
                           </p>
                         )}
                         {client.phone && (
-                          <p className="text-sm text-charcoal/60 flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-charcoal/40" />
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 flex items-center gap-1">
+                            <Phone className="w-3 h-3 text-charcoal/40 dark:text-white/40" />
                             {client.phone}
                           </p>
                         )}
                         {!client.email && !client.phone && (
-                          <p className="text-sm text-charcoal/40">No contact info</p>
+                          <p className="text-sm text-charcoal/40 dark:text-white/40">No contact info</p>
                         )}
                       </div>
 
                       {/* Created */}
                       <div className="col-span-2 flex items-center">
-                        <span className="text-sm text-charcoal">
+                        <span className="text-sm text-charcoal dark:text-white">
                           {formatDate(client.createdAt)}
                         </span>
                       </div>
@@ -636,9 +636,9 @@ function ClientsContent() {
                       {/* Notes */}
                       <div className="col-span-3 flex items-center">
                         {client.notes ? (
-                          <span className="text-sm text-charcoal/60 truncate">{client.notes}</span>
+                          <span className="text-sm text-charcoal/60 dark:text-white/60 truncate">{client.notes}</span>
                         ) : (
-                          <span className="text-sm text-charcoal/40">No notes</span>
+                          <span className="text-sm text-charcoal/40 dark:text-white/40">No notes</span>
                         )}
                       </div>
 
@@ -649,19 +649,19 @@ function ClientsContent() {
                             e.stopPropagation();
                             setClientMenuId(clientMenuId === client.id ? null : client.id);
                           }}
-                          className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                          className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                         >
                           <MoreHorizontal className="w-5 h-5" />
                         </button>
                         {clientMenuId === client.id && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-charcoal/10 py-2 z-20">
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 py-2 z-20">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedClient(client);
                                 setClientMenuId(null);
                               }}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-sage/10 flex items-center gap-2"
                             >
                               <ChevronRight className="w-4 h-4" />
                               View Details
@@ -680,7 +680,7 @@ function ClientsContent() {
                                 setShowEditClient(true);
                                 setClientMenuId(null);
                               }}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-sm text-charcoal dark:text-white hover:bg-sage/5 dark:hover:bg-sage/10 flex items-center gap-2"
                             >
                               <Edit2 className="w-4 h-4" />
                               Edit Client
@@ -708,9 +708,9 @@ function ClientsContent() {
 
             {!isLoading && (filteredClients || []).length === 0 && (
               <div className="p-12 text-center">
-                <Users className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                <p className="text-charcoal/60">No clients found</p>
-                <p className="text-sm text-charcoal/40 mt-1">
+                <Users className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                <p className="text-charcoal/60 dark:text-white/60">No clients found</p>
+                <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1">
                   {searchQuery
                     ? 'Try adjusting your search'
                     : 'Add your first client to get started'}
@@ -736,12 +736,12 @@ function ClientsContent() {
             className="fixed inset-0 bg-charcoal/50 z-40"
             onClick={() => setSelectedClient(null)}
           />
-          <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 overflow-auto">
-            <div className="sticky top-0 bg-white border-b border-charcoal/10 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">Client Details</h2>
+          <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-sidebar shadow-2xl z-50 overflow-auto">
+            <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white">Client Details</h2>
               <button
                 onClick={() => setSelectedClient(null)}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -757,14 +757,14 @@ function ClientsContent() {
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-charcoal">
+                  <h3 className="text-xl font-bold text-charcoal dark:text-white">
                     {selectedClient.firstName} {selectedClient.lastName}
                   </h3>
                   <div className="flex gap-2 mt-2">
                     {getClientTags(selectedClient).map((tag) => (
                       <span
                         key={tag}
-                        className={`px-2 py-1 rounded text-xs font-medium ${tagColors[tag] || 'bg-charcoal/10 text-charcoal/60'}`}
+                        className={`px-2 py-1 rounded text-xs font-medium ${tagColors[tag] || 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'}`}
                       >
                         {tag}
                       </span>
@@ -773,7 +773,7 @@ function ClientsContent() {
                 </div>
                 <button
                   onClick={() => handleOpenEditClient(selectedClient)}
-                  className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                 >
                   <Edit2 className="w-5 h-5" />
                 </button>
@@ -782,15 +782,15 @@ function ClientsContent() {
               {/* Contact Info */}
               <div className="space-y-3">
                 {selectedClient.email && (
-                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
-                    <Mail className="w-5 h-5 text-charcoal/40" />
-                    <span className="text-charcoal">{selectedClient.email}</span>
+                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <Mail className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
+                    <span className="text-charcoal dark:text-white">{selectedClient.email}</span>
                   </div>
                 )}
                 {selectedClient.phone && (
-                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 rounded-xl">
-                    <Phone className="w-5 h-5 text-charcoal/40" />
-                    <span className="text-charcoal">{selectedClient.phone}</span>
+                  <div className="flex items-center gap-3 p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <Phone className="w-5 h-5 text-charcoal/40 dark:text-white/40" />
+                    <span className="text-charcoal dark:text-white">{selectedClient.phone}</span>
                   </div>
                 )}
               </div>
@@ -798,13 +798,13 @@ function ClientsContent() {
               {/* Address */}
               {(selectedClient.address || selectedClient.city) && (
                 <div>
-                  <h4 className="font-medium text-charcoal mb-3">Address</h4>
-                  <div className="p-3 bg-charcoal/5 rounded-xl">
+                  <h4 className="font-medium text-charcoal dark:text-white mb-3">Address</h4>
+                  <div className="p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
                     {selectedClient.address && (
-                      <p className="text-charcoal">{selectedClient.address}</p>
+                      <p className="text-charcoal dark:text-white">{selectedClient.address}</p>
                     )}
                     {(selectedClient.city || selectedClient.state || selectedClient.zip) && (
-                      <p className="text-charcoal/60">
+                      <p className="text-charcoal/60 dark:text-white/60">
                         {[selectedClient.city, selectedClient.state, selectedClient.zip]
                           .filter(Boolean)
                           .join(', ')}
@@ -817,9 +817,9 @@ function ClientsContent() {
               {/* Notes */}
               {selectedClient.notes && (
                 <div>
-                  <h4 className="font-medium text-charcoal mb-3">Notes</h4>
-                  <div className="p-3 bg-charcoal/5 rounded-xl">
-                    <p className="text-charcoal">{selectedClient.notes}</p>
+                  <h4 className="font-medium text-charcoal dark:text-white mb-3">Notes</h4>
+                  <div className="p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <p className="text-charcoal dark:text-white">{selectedClient.notes}</p>
                   </div>
                 </div>
               )}
@@ -835,7 +835,7 @@ function ClientsContent() {
                 </button>
                 <button
                   onClick={() => handleMessageClient(selectedClient)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
                 >
                   <MessageSquare className="w-5 h-5" />
                   Message
@@ -844,33 +844,33 @@ function ClientsContent() {
 
               {/* Communication Preferences */}
               <div>
-                <h4 className="font-medium text-charcoal mb-3">Preferences</h4>
+                <h4 className="font-medium text-charcoal dark:text-white mb-3">Preferences</h4>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
-                    <span className="text-charcoal">Communication</span>
-                    <span className="text-charcoal/60 capitalize">
+                  <div className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <span className="text-charcoal dark:text-white">Communication</span>
+                    <span className="text-charcoal/60 dark:text-white/60 capitalize">
                       {selectedClient.communicationPreference}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
-                    <span className="text-charcoal">Appointment Reminders</span>
+                  <div className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <span className="text-charcoal dark:text-white">Appointment Reminders</span>
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${
                         selectedClient.optedInReminders
                           ? 'bg-sage/20 text-sage-dark'
-                          : 'bg-charcoal/10 text-charcoal/60'
+                          : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                       }`}
                     >
                       {selectedClient.optedInReminders ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
-                    <span className="text-charcoal">Marketing</span>
+                  <div className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                    <span className="text-charcoal dark:text-white">Marketing</span>
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${
                         selectedClient.optedInMarketing
                           ? 'bg-sage/20 text-sage-dark'
-                          : 'bg-charcoal/10 text-charcoal/60'
+                          : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                       }`}
                     >
                       {selectedClient.optedInMarketing ? 'Opted In' : 'Opted Out'}
@@ -880,9 +880,9 @@ function ClientsContent() {
               </div>
 
               {/* Member Since */}
-              <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-xl">
-                <span className="text-charcoal">Member Since</span>
-                <span className="text-charcoal/60">{formatDate(selectedClient.createdAt)}</span>
+              <div className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                <span className="text-charcoal dark:text-white">Member Since</span>
+                <span className="text-charcoal/60 dark:text-white/60">{formatDate(selectedClient.createdAt)}</span>
               </div>
 
               {/* Delete Button */}
@@ -901,12 +901,12 @@ function ClientsContent() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && selectedClient && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-charcoal mb-2">Delete Client</h2>
-              <p className="text-charcoal/60">
+              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-2">Delete Client</h2>
+              <p className="text-charcoal/60 dark:text-white/60">
                 Are you sure you want to delete{' '}
-                <span className="font-medium text-charcoal">
+                <span className="font-medium text-charcoal dark:text-white">
                   {selectedClient.firstName} {selectedClient.lastName}
                 </span>
                 ? This action cannot be undone.
@@ -917,14 +917,14 @@ function ClientsContent() {
                 </div>
               )}
             </div>
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
+            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
               <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setSubmitError(null);
                 }}
                 disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -950,14 +950,14 @@ function ClientsContent() {
       {/* New Client Modal */}
       {showNewClient && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
             <form onSubmit={handleCreateClient}>
-              <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-charcoal">Add New Client</h2>
+              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-charcoal dark:text-white">Add New Client</h2>
                 <button
                   type="button"
                   onClick={handleCloseNewClient}
-                  className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -972,7 +972,7 @@ function ClientsContent() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       First Name <span className="text-rose">*</span>
                     </label>
                     <input
@@ -981,12 +981,12 @@ function ClientsContent() {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="First name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Last Name <span className="text-rose">*</span>
                     </label>
                     <input
@@ -995,38 +995,38 @@ function ClientsContent() {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="Last name"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Email</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="client@email.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Phone</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="(555) 123-4567"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                     Notes (optional)
                   </label>
                   <textarea
@@ -1034,17 +1034,17 @@ function ClientsContent() {
                     value={formData.notes}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Any special notes about this client..."
                   />
                 </div>
               </div>
-              <div className="p-6 border-t border-charcoal/10 flex gap-3">
+              <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
                 <button
                   type="button"
                   onClick={handleCloseNewClient}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1071,14 +1071,14 @@ function ClientsContent() {
       {/* Edit Client Modal */}
       {showEditClient && selectedClient && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
+          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
             <form onSubmit={handleUpdateClient}>
-              <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-charcoal">Edit Client</h2>
+              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-charcoal dark:text-white">Edit Client</h2>
                 <button
                   type="button"
                   onClick={handleCloseEditClient}
-                  className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1093,7 +1093,7 @@ function ClientsContent() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       First Name <span className="text-rose">*</span>
                     </label>
                     <input
@@ -1102,12 +1102,12 @@ function ClientsContent() {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="First name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Last Name <span className="text-rose">*</span>
                     </label>
                     <input
@@ -1116,102 +1116,102 @@ function ClientsContent() {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="Last name"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Email</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="client@email.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Phone</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="(555) 123-4567"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Address</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Address</label>
                   <input
                     type="text"
                     name="address"
                     value={formData.address || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Street address"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">City</label>
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">City</label>
                     <input
                       type="text"
                       name="city"
                       value={formData.city || ''}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="City"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">State</label>
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">State</label>
                     <input
                       type="text"
                       name="state"
                       value={formData.state || ''}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="State"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-2">ZIP</label>
+                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">ZIP</label>
                     <input
                       type="text"
                       name="zip"
                       value={formData.zip || ''}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                       placeholder="ZIP"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Notes</label>
+                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Notes</label>
                   <textarea
                     name="notes"
                     value={formData.notes || ''}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                     placeholder="Any special notes about this client..."
                   />
                 </div>
               </div>
-              <div className="p-6 border-t border-charcoal/10 flex gap-3">
+              <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
                 <button
                   type="button"
                   onClick={handleCloseEditClient}
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

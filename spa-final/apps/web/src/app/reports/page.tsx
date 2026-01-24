@@ -356,22 +356,22 @@ function ReportsContent() {
   }, [revenueReport, showAllTransactions]);
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar currentPage="reports" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-2xl font-bold text-charcoal">Reports</h1>
+              <h1 className="text-2xl font-bold text-charcoal dark:text-white">Reports</h1>
               {/* Location Switcher - only shows if multiple locations exist */}
               {locations.length > 1 && (
                 <LocationSwitcher showAllOption={true} />
@@ -393,13 +393,13 @@ function ReportsContent() {
         </header>
 
         {/* Filter Bar */}
-        <div className="bg-white border-b border-charcoal/10 px-6 py-4">
+        <div className="bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 relative">
-              <span className="text-sm text-charcoal/60">Showing data for:</span>
+              <span className="text-sm text-charcoal/60 dark:text-white/60">Showing data for:</span>
               <button
                 onClick={() => setShowDatePicker(!showDatePicker)}
-                className="flex items-center gap-2 px-4 py-2 bg-charcoal/5 rounded-xl text-charcoal font-medium hover:bg-charcoal/10 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-charcoal/5 dark:bg-white/5 rounded-xl text-charcoal dark:text-white font-medium hover:bg-charcoal/10 dark:hover:bg-white/10 transition-colors"
               >
                 <Calendar className="w-4 h-4" />
                 {selectedPreset}
@@ -408,7 +408,7 @@ function ReportsContent() {
 
               {/* Date Range Dropdown */}
               {showDatePicker && (
-                <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-charcoal/10 p-4 z-50 min-w-[280px]">
+                <div className="absolute top-full left-0 mt-2 bg-white dark:bg-sidebar rounded-xl shadow-lg border border-charcoal/10 dark:border-white/10 p-4 z-50 min-w-[280px]">
                   <div className="space-y-2 mb-4">
                     {dateRangePresets.map((preset) => (
                       <button
@@ -417,7 +417,7 @@ function ReportsContent() {
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                           selectedPreset === preset.label
                             ? 'bg-sage/10 text-sage font-medium'
-                            : 'hover:bg-charcoal/5 text-charcoal'
+                            : 'hover:bg-charcoal/5 dark:hover:bg-white/5 text-charcoal dark:text-white'
                         }`}
                       >
                         {preset.label}
@@ -425,20 +425,20 @@ function ReportsContent() {
                     ))}
                   </div>
 
-                  <div className="border-t border-charcoal/10 pt-4">
-                    <p className="text-sm font-medium text-charcoal mb-2">Custom Range</p>
+                  <div className="border-t border-charcoal/10 dark:border-white/10 pt-4">
+                    <p className="text-sm font-medium text-charcoal dark:text-white mb-2">Custom Range</p>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="date"
                         value={customStartDate}
                         onChange={(e) => setCustomStartDate(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-charcoal/20 rounded-lg text-sm"
+                        className="flex-1 px-3 py-2 border border-charcoal/20 dark:border-white/20 rounded-lg text-sm bg-white dark:bg-charcoal text-charcoal dark:text-white"
                       />
                       <input
                         type="date"
                         value={customEndDate}
                         onChange={(e) => setCustomEndDate(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-charcoal/20 rounded-lg text-sm"
+                        className="flex-1 px-3 py-2 border border-charcoal/20 dark:border-white/20 rounded-lg text-sm bg-white dark:bg-charcoal text-charcoal dark:text-white"
                       />
                     </div>
                     <button
@@ -456,7 +456,7 @@ function ReportsContent() {
               <button
                 onClick={() => setGroupBy('daily')}
                 className={`px-4 py-2 text-sm transition-colors rounded-lg ${
-                  groupBy === 'daily' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 hover:text-charcoal'
+                  groupBy === 'daily' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'
                 }`}
               >
                 Daily
@@ -464,7 +464,7 @@ function ReportsContent() {
               <button
                 onClick={() => setGroupBy('weekly')}
                 className={`px-4 py-2 text-sm transition-colors rounded-lg ${
-                  groupBy === 'weekly' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 hover:text-charcoal'
+                  groupBy === 'weekly' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'
                 }`}
               >
                 Weekly
@@ -472,7 +472,7 @@ function ReportsContent() {
               <button
                 onClick={() => setGroupBy('monthly')}
                 className={`px-4 py-2 text-sm transition-colors rounded-lg ${
-                  groupBy === 'monthly' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 hover:text-charcoal'
+                  groupBy === 'monthly' ? 'bg-sage/10 text-sage font-medium' : 'text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white'
                 }`}
               >
                 Monthly
@@ -489,7 +489,7 @@ function ReportsContent() {
               <div className="flex items-center justify-center h-64">
                 <div className="flex flex-col items-center gap-4">
                   <Loader2 className="w-8 h-8 text-sage animate-spin" />
-                  <p className="text-charcoal/60">Loading reports...</p>
+                  <p className="text-charcoal/60 dark:text-white/60">Loading reports...</p>
                 </div>
               </div>
             )}
@@ -512,7 +512,7 @@ function ReportsContent() {
                   return (
                     <div
                       key={stat.label}
-                      className="bg-white rounded-2xl p-6 border border-charcoal/5 shadow-soft"
+                      className="bg-white dark:bg-sidebar rounded-2xl p-6 border border-charcoal/5 dark:border-white/10 shadow-soft"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
@@ -533,9 +533,9 @@ function ReportsContent() {
                           </div>
                         )}
                       </div>
-                      <p className="text-3xl font-bold text-charcoal mb-1">{stat.value}</p>
-                      <p className="text-sm text-charcoal/60">{stat.label}</p>
-                      <p className="text-xs text-charcoal/40 mt-1">{stat.period}</p>
+                      <p className="text-3xl font-bold text-charcoal dark:text-white mb-1">{stat.value}</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">{stat.label}</p>
+                      <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">{stat.period}</p>
                     </div>
                   );
                 })}
@@ -544,16 +544,16 @@ function ReportsContent() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               {/* Revenue Chart */}
-              <div className="lg:col-span-2 bg-white rounded-2xl border border-charcoal/5 shadow-soft p-6">
+              <div className="lg:col-span-2 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-lg font-semibold text-charcoal">
+                    <h2 className="text-lg font-semibold text-charcoal dark:text-white">
                       {groupBy === 'daily' ? 'Daily' : groupBy === 'weekly' ? 'Weekly' : 'Monthly'} Revenue
                     </h2>
-                    <p className="text-sm text-charcoal/60">Revenue breakdown by {groupBy === 'daily' ? 'day' : groupBy === 'weekly' ? 'week' : 'month'}</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">Revenue breakdown by {groupBy === 'daily' ? 'day' : groupBy === 'weekly' ? 'week' : 'month'}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-charcoal">
+                    <p className="text-2xl font-bold text-charcoal dark:text-white">
                       {formatPrice(totalWeeklyRevenue)}
                     </p>
                     <p className={`text-sm flex items-center justify-end gap-1 ${revenueChange >= 0 ? 'text-sage-dark' : 'text-rose-dark'}`}>
@@ -569,7 +569,7 @@ function ReportsContent() {
                     {timelineData.slice(-7).map((data, idx) => (
                       <div key={idx} className="flex-1 flex flex-col items-center">
                         <div className="w-full flex flex-col items-center">
-                          <span className="text-xs text-charcoal/60 mb-2">
+                          <span className="text-xs text-charcoal/60 dark:text-white/60 mb-2">
                             {formatPrice(data.revenue)}
                           </span>
                           <div
@@ -577,42 +577,42 @@ function ReportsContent() {
                             style={{ height: `${(data.revenue / maxRevenue) * 160}px`, minHeight: '4px' }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-charcoal/60 mt-2">{data.label}</span>
+                        <span className="text-xs font-medium text-charcoal/60 dark:text-white/60 mt-2">{data.label}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-charcoal/40">
+                  <div className="flex items-center justify-center h-48 text-charcoal/40 dark:text-white/40">
                     No data available for this period
                   </div>
                 )}
               </div>
 
               {/* Revenue by Service */}
-              <div className="bg-white rounded-2xl border border-charcoal/5 shadow-soft p-6">
-                <h2 className="text-lg font-semibold text-charcoal mb-6">Revenue by Category</h2>
+              <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft p-6">
+                <h2 className="text-lg font-semibold text-charcoal dark:text-white mb-6">Revenue by Category</h2>
                 {revenueByService.length > 0 ? (
                   <div className="space-y-4">
                     {revenueByService.map((service) => (
                       <div key={service.name}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-charcoal">{service.name}</span>
-                          <span className="text-sm font-medium text-charcoal">
+                          <span className="text-sm text-charcoal dark:text-white">{service.name}</span>
+                          <span className="text-sm font-medium text-charcoal dark:text-white">
                             {formatPrice(service.revenue)}
                           </span>
                         </div>
-                        <div className="h-2 bg-charcoal/10 rounded-full overflow-hidden">
+                        <div className="h-2 bg-charcoal/10 dark:bg-white/10 rounded-full overflow-hidden">
                           <div
                             className={`h-full ${service.color} rounded-full transition-all`}
                             style={{ width: `${service.percentage}%` }}
                           />
                         </div>
-                        <p className="text-xs text-charcoal/50 mt-1">{service.percentage}% of total</p>
+                        <p className="text-xs text-charcoal/50 dark:text-white/50 mt-1">{service.percentage}% of total</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-charcoal/40 text-sm">
+                  <div className="flex items-center justify-center h-48 text-charcoal/40 dark:text-white/40 text-sm">
                     No service data available
                   </div>
                 )}
@@ -621,63 +621,63 @@ function ReportsContent() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Top Staff */}
-              <div className="bg-white rounded-2xl border border-charcoal/5 shadow-soft">
-                <div className="p-6 border-b border-charcoal/10">
-                  <h2 className="text-lg font-semibold text-charcoal">Top Performing Staff</h2>
-                  <p className="text-sm text-charcoal/60">Based on revenue this period</p>
+              <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft">
+                <div className="p-6 border-b border-charcoal/10 dark:border-white/10">
+                  <h2 className="text-lg font-semibold text-charcoal dark:text-white">Top Performing Staff</h2>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">Based on revenue this period</p>
                 </div>
                 {topStaff.length > 0 ? (
-                  <div className="divide-y divide-charcoal/10">
+                  <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                     {topStaff.map((staff, index) => (
-                      <div key={staff.name} className="flex items-center gap-4 p-4 hover:bg-cream/50 transition-colors">
+                      <div key={staff.name} className="flex items-center gap-4 p-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors">
                         <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center text-sage font-bold text-sm">
                           {index + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-charcoal">{staff.name}</p>
-                          <p className="text-sm text-charcoal/60">{staff.role}</p>
+                          <p className="font-medium text-charcoal dark:text-white">{staff.name}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{staff.role}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-charcoal">{formatPrice(staff.revenue)}</p>
-                          <p className="text-xs text-charcoal/50">{staff.appointments} appointments</p>
+                          <p className="font-semibold text-charcoal dark:text-white">{formatPrice(staff.revenue)}</p>
+                          <p className="text-xs text-charcoal/50 dark:text-white/50">{staff.appointments} appointments</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-charcoal/40 text-sm">
+                  <div className="flex items-center justify-center h-48 text-charcoal/40 dark:text-white/40 text-sm">
                     No staff data available
                   </div>
                 )}
               </div>
 
               {/* Recent Transactions */}
-              <div className="bg-white rounded-2xl border border-charcoal/5 shadow-soft">
-                <div className="p-6 border-b border-charcoal/10">
-                  <h2 className="text-lg font-semibold text-charcoal">
+              <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-soft">
+                <div className="p-6 border-b border-charcoal/10 dark:border-white/10">
+                  <h2 className="text-lg font-semibold text-charcoal dark:text-white">
                     {showAllTransactions ? 'All Transactions' : 'Recent Transactions'}
                   </h2>
-                  <p className="text-sm text-charcoal/60">
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">
                     {showAllTransactions
                       ? `Showing all ${revenueReport?.recentTransactions?.length || 0} transactions`
                       : 'Latest payment activity'}
                   </p>
                 </div>
                 {displayedTransactions.length > 0 ? (
-                  <div className={`divide-y divide-charcoal/10 ${showAllTransactions ? 'max-h-96 overflow-y-auto' : ''}`}>
+                  <div className={`divide-y divide-charcoal/10 dark:divide-white/10 ${showAllTransactions ? 'max-h-96 overflow-y-auto' : ''}`}>
                     {displayedTransactions.map((tx) => (
-                      <div key={tx.id} className="flex items-center gap-4 p-4 hover:bg-cream/50 transition-colors">
+                      <div key={tx.id} className="flex items-center gap-4 p-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors">
                         <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
                           <DollarSign className="w-5 h-5 text-sage" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-charcoal">{tx.client}</p>
-                          <p className="text-sm text-charcoal/60">{tx.service}</p>
+                          <p className="font-medium text-charcoal dark:text-white">{tx.client}</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{tx.service}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-charcoal">{formatPrice(tx.amount)}</p>
+                          <p className="font-semibold text-charcoal dark:text-white">{formatPrice(tx.amount)}</p>
                           <div className="flex items-center justify-end gap-2">
-                            <span className="text-xs text-charcoal/50">{tx.date}</span>
+                            <span className="text-xs text-charcoal/50 dark:text-white/50">{tx.date}</span>
                             <span
                               className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${
                                 statusColors[tx.status] || 'bg-gray-100 text-gray-600'
@@ -691,12 +691,12 @@ function ReportsContent() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-48 text-charcoal/40 text-sm">
+                  <div className="flex items-center justify-center h-48 text-charcoal/40 dark:text-white/40 text-sm">
                     No transactions available
                   </div>
                 )}
                 {revenueReport?.recentTransactions && revenueReport.recentTransactions.length > 5 && (
-                  <div className="p-4 border-t border-charcoal/10">
+                  <div className="p-4 border-t border-charcoal/10 dark:border-white/10">
                     <button
                       onClick={() => setShowAllTransactions(!showAllTransactions)}
                       className="w-full text-sm text-sage hover:text-sage-dark font-medium transition-colors"
