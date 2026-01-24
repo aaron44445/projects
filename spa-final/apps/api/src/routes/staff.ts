@@ -1,7 +1,10 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { sendEmail } from '../services/email.js';
+import { env } from '../lib/env.js';
 
 const router = Router();
 
@@ -144,6 +147,10 @@ router.post(
       });
     }
 
+    // Generate invite token for password setup
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
     const user = await prisma.user.create({
       data: {
         salonId: req.user!.salonId,
@@ -154,12 +161,83 @@ router.post(
         role: role || 'staff',
         certifications,
         commissionRate: commissionRate ? parseFloat(commissionRate) : null,
+        magicLinkToken: inviteToken,
+        magicLinkExpires: tokenExpiry,
+        isActive: true,
       },
       include: {
         staffServices: true,
         staffAvailability: true,
       },
     });
+
+    // Get salon info for email
+    const salon = await prisma.salon.findUnique({
+      where: { id: req.user!.salonId },
+    });
+
+    // Send invitation email
+    const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
+
+    try {
+      const emailSent = await sendEmail({
+        to: email,
+        subject: `You're invited to join ${salon?.name || 'the team'} on Peacase`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; margin: 0; padding: 0; }
+              .container { max-width: 600px; margin: 0 auto; }
+              .header { background: linear-gradient(135deg, #7C9A82 0%, #9BB5A0 100%); padding: 40px 30px; text-align: center; }
+              .header h1 { margin: 0; color: white; font-size: 28px; }
+              .header p { margin: 10px 0 0 0; color: rgba(255,255,255,0.9); }
+              .content { background: #FFFFFF; padding: 40px 30px; }
+              .button { display: inline-block; background: #7C9A82; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+              .footer { background: #FAF8F3; padding: 30px; text-align: center; font-size: 13px; color: #666; }
+              .info-box { background: #F5F9F6; border-left: 4px solid #7C9A82; padding: 15px 20px; margin: 25px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Welcome to the Team!</h1>
+                <p>You've been invited to join ${salon?.name || 'the team'}</p>
+              </div>
+              <div class="content">
+                <p>Hi ${firstName},</p>
+                <p>Great news! You've been added as a <strong>${role || 'staff'}</strong> member at <strong>${salon?.name || 'our salon'}</strong>.</p>
+                <p>To get started, click the button below to set up your password and access your staff portal:</p>
+                <p style="text-align: center; margin: 30px 0;">
+                  <a href="${inviteUrl}" class="button">Set Up Your Account</a>
+                </p>
+                <div class="info-box">
+                  <p style="margin: 0;"><strong>What you can do in your staff portal:</strong></p>
+                  <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                    <li>View your schedule and upcoming appointments</li>
+                    <li>Track your earnings and commissions</li>
+                    <li>Request time off</li>
+                    <li>Update your profile and availability</li>
+                  </ul>
+                </div>
+                <p style="color: #666; font-size: 14px;">This link will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.</p>
+              </div>
+              <div class="footer">
+                <p><strong>${salon?.name || 'Our Salon'}</strong></p>
+                <p>Powered by Peacase</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+
+      console.log(`Staff invite email ${emailSent ? 'sent' : 'failed'} for ${email}`);
+    } catch (emailError) {
+      console.error('Failed to send staff invite email:', emailError);
+      // Don't fail the request if email fails - staff is still created
+    }
 
     res.status(201).json({
       success: true,
