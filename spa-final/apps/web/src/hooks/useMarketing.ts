@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 export interface Campaign {
   id: string;
   name: string;
-  type: 'email' | 'sms';
+  type: 'email' | 'sms' | 'automation';
   status: 'draft' | 'scheduled' | 'sent' | 'active';
   audience: 'all' | 'new' | 'inactive' | 'vip';
   subject?: string;
@@ -24,7 +24,7 @@ export interface Campaign {
 
 export interface CreateCampaignInput {
   name: string;
-  type: 'email' | 'sms';
+  type: 'email' | 'sms' | 'automation';
   audience: 'all' | 'new' | 'inactive' | 'vip';
   subject?: string;
   content: string;

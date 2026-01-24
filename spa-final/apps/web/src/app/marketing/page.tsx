@@ -26,7 +26,7 @@ import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
-import { useMarketing, useClients, useReports, Campaign, Client } from '@/hooks';
+import { useMarketing, useClients, useReports, Campaign, CreateCampaignInput, Client } from '@/hooks';
 
 // Audience segment calculation helpers
 function isNewClient(client: Client): boolean {
@@ -186,13 +186,12 @@ function MarketingContent() {
 
     try {
       // Prepare campaign data for API
-      const newCampaignData: Partial<Campaign> = {
-        name: campaignData.name || (activeModal === 'automation' ? automationTriggers.find(t => t.id === campaignData.trigger)?.label : 'New Campaign'),
+      const newCampaignData: CreateCampaignInput = {
+        name: campaignData.name || (activeModal === 'automation' ? automationTriggers.find(t => t.id === campaignData.trigger)?.label : 'New Campaign') || 'New Campaign',
         type: activeModal === 'automation' ? 'automation' : activeModal === 'sms' ? 'sms' : 'email',
         subject: campaignData.subject || undefined,
         content: campaignData.message,
-        audience: campaignData.audience as Campaign['audience'],
-        status: campaignData.sendTime === 'scheduled' ? 'scheduled' : 'draft',
+        audience: (campaignData.audience || 'all') as CreateCampaignInput['audience'],
         scheduledAt: campaignData.sendTime === 'scheduled' && campaignData.scheduledDate && campaignData.scheduledTime
           ? new Date(`${campaignData.scheduledDate}T${campaignData.scheduledTime}`).toISOString()
           : undefined,
