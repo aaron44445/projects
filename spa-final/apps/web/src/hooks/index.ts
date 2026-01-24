@@ -33,9 +33,6 @@ export type {
   SetStaffServicesInput,
 } from './useStaff';
 
-export { useMarketing } from './useMarketing';
-export type { Campaign } from './useMarketing';
-
 export { usePackages } from './usePackages';
 export type { Package, PackageMember } from './usePackages';
 
@@ -75,3 +72,14 @@ export type {
   UseUploadOptions,
   UseUploadReturn,
 } from './useUpload';
+
+export { useLocations, LocationProvider, useLocationContext } from './useLocations';
+export type {
+  Location,
+  StaffAtLocation,
+  ServiceAtLocation,
+  CreateLocationInput,
+  UpdateLocationInput,
+  ServiceLocationSettings,
+  LocationHours,
+} from './useLocations';

@@ -27,11 +27,13 @@ import {
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
+import { LocationSwitcher } from '@/components/LocationSwitcher';
 import {
   useAppointments,
   useStaff,
   useClients,
   useServices,
+  useLocations,
   type Appointment,
   type CreateAppointmentInput,
   type UpdateAppointmentInput,
@@ -373,9 +375,10 @@ function CalendarContent() {
     markNoShow,
   } = useAppointments();
 
-  const { staff, isLoading: staffLoading, error: staffError } = useStaff();
+  const { staff, isLoading: staffLoading, error: staffError, fetchStaff } = useStaff();
   const { clients, fetchClients } = useClients();
   const { services, isLoading: servicesLoading } = useServices();
+  const { selectedLocationId, locations } = useLocations();
 
   // Get date range for current view
   const dateRange = useMemo(() => {
@@ -394,10 +397,15 @@ function CalendarContent() {
     };
   }, [currentDate, viewMode]);
 
-  // Fetch appointments when date range changes
+  // Fetch appointments when date range or location changes
   useEffect(() => {
-    fetchAppointments(dateRange);
-  }, [dateRange, fetchAppointments]);
+    fetchAppointments(dateRange, undefined, selectedLocationId || undefined);
+  }, [dateRange, fetchAppointments, selectedLocationId]);
+
+  // Fetch staff when location changes
+  useEffect(() => {
+    fetchStaff(selectedLocationId || undefined);
+  }, [fetchStaff, selectedLocationId]);
 
   // Initialize selected staff when staff data loads
   useEffect(() => {
@@ -682,6 +690,9 @@ function CalendarContent() {
             </div>
 
             <div className="flex items-center gap-4">
+              {locations.length > 1 && (
+                <LocationSwitcher className="hidden sm:block" />
+              )}
               <NotificationDropdown />
               <button
                 onClick={() => {
