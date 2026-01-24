@@ -35,7 +35,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 // Update salon details
 // ============================================
 router.patch('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
-  const { name, phone, address, city, state, zip, timezone, website, description } = req.body;
+  const { name, phone, address, city, state, zip, timezone, website, description, multiLocationEnabled } = req.body;
 
   const salon = await prisma.salon.update({
     where: { id: req.user!.salonId },
@@ -49,6 +49,7 @@ router.patch('/', authenticate, asyncHandler(async (req: Request, res: Response)
       ...(timezone && { timezone }),
       ...(website && { website }),
       ...(description && { description }),
+      ...(typeof multiLocationEnabled === 'boolean' && { multiLocationEnabled }),
     },
   });
 
