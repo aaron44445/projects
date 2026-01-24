@@ -407,13 +407,21 @@ function CalendarContent() {
     fetchStaff(selectedLocationId || undefined);
   }, [fetchStaff, selectedLocationId]);
 
-  // Initialize selected staff when staff data loads
+  // Reset selected staff when staff list changes (e.g., location change)
+  // This ensures all staff are visible by default after a location switch
   useEffect(() => {
     const staffArray = staff || [];
-    if (staffArray.length > 0 && selectedStaff.length === 0) {
-      setSelectedStaff(staffArray.map((s) => s.id));
+    if (staffArray.length > 0) {
+      const currentStaffIds = staffArray.map((s) => s.id);
+      // Check if selectedStaff has stale IDs not in current staff list
+      // This happens when location changes and brings new staff
+      const hasStaleIds = selectedStaff.some((id) => !currentStaffIds.includes(id));
+
+      if (hasStaleIds || selectedStaff.length === 0) {
+        setSelectedStaff(currentStaffIds);
+      }
     }
-  }, [staff, selectedStaff.length]);
+  }, [staff, selectedStaff]);
 
   // Set default date in form
   useEffect(() => {
