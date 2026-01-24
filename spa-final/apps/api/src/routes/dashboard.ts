@@ -20,10 +20,11 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
 
-  // Get current month payments (completed only)
+  // Get current month payments (filtered by location if specified)
   const currentMonthPayments = await prisma.payment.aggregate({
     where: {
       salonId,
+      ...locationFilter,
       status: 'completed',
       createdAt: { gte: startOfThisMonth },
     },
@@ -36,6 +37,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
   const lastMonthPayments = await prisma.payment.aggregate({
     where: {
       salonId,
+      ...locationFilter,
       status: 'completed',
       createdAt: {
         gte: startOfLastMonth,
@@ -46,6 +48,9 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
       totalAmount: true,
     },
   });
+
+  const currentRevenue = currentMonthPayments._sum.totalAmount || 0;
+  const lastRevenue = lastMonthPayments._sum.totalAmount || 0;
 
   // Get appointments this month
   const [thisMonthAppointments, lastMonthAppointments] = await Promise.all([
@@ -90,8 +95,6 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
   ]);
 
   // Calculate percentage changes
-  const currentRevenue = currentMonthPayments._sum.totalAmount || 0;
-  const lastRevenue = lastMonthPayments._sum.totalAmount || 0;
   const revenueChange = lastRevenue > 0
     ? Math.round(((currentRevenue - lastRevenue) / lastRevenue) * 100)
     : currentRevenue > 0 ? 100 : 0;
