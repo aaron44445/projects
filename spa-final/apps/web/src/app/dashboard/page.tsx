@@ -301,7 +301,7 @@ function DashboardContent() {
     : fallbackStats;
 
   return (
-    <div className="min-h-screen bg-cream flex">
+    <div className="min-h-screen bg-cream dark:bg-charcoal flex">
       <AppSidebar
         currentPage="dashboard"
         sidebarOpen={sidebarOpen}
@@ -311,20 +311,20 @@ function DashboardContent() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-border px-6 py-4">
+        <header className="bg-white dark:bg-sidebar border-b border-border dark:border-white/10 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal lg:hidden"
+                className="p-2 text-charcoal/60 hover:text-charcoal dark:text-white/60 dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-charcoal">
+                <h1 className="text-2xl font-bold text-charcoal dark:text-white">
                   {salon?.name ? `Welcome to ${salon.name}` : 'Dashboard'}
                 </h1>
-                <p className="text-sm text-charcoal/60">
+                <p className="text-sm text-charcoal/60 dark:text-white/60">
                   {user?.firstName ? `Hi, ${user.firstName}!` : 'Manage your business'}
                 </p>
               </div>
@@ -481,14 +481,14 @@ function DashboardContent() {
               [...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-2xl p-6 border border-border shadow-soft animate-pulse"
+                  className="bg-white dark:bg-sidebar rounded-2xl p-6 border border-border dark:border-white/10 shadow-soft animate-pulse"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-charcoal/10 rounded-xl" />
-                    <div className="w-12 h-4 bg-charcoal/10 rounded" />
+                    <div className="w-12 h-12 bg-charcoal/10 dark:bg-white/10 rounded-xl" />
+                    <div className="w-12 h-4 bg-charcoal/10 dark:bg-white/10 rounded" />
                   </div>
-                  <div className="w-20 h-8 bg-charcoal/10 rounded mb-2" />
-                  <div className="w-24 h-4 bg-charcoal/10 rounded" />
+                  <div className="w-20 h-8 bg-charcoal/10 dark:bg-white/10 rounded mb-2" />
+                  <div className="w-24 h-4 bg-charcoal/10 dark:bg-white/10 rounded" />
                 </div>
               ))
             ) : (
@@ -497,7 +497,7 @@ function DashboardContent() {
                 return (
                   <div
                     key={stat.label}
-                    className="bg-white rounded-2xl p-6 border border-border shadow-soft hover:shadow-card transition-shadow"
+                    className="bg-white dark:bg-sidebar rounded-2xl p-6 border border-border dark:border-white/10 shadow-soft hover:shadow-card transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center`}>
@@ -516,8 +516,8 @@ function DashboardContent() {
                         {stat.change}
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-charcoal mb-1">{stat.value}</p>
-                    <p className="text-sm text-charcoal/60 font-medium">{stat.label}</p>
+                    <p className="text-3xl font-bold text-charcoal dark:text-white mb-1">{stat.value}</p>
+                    <p className="text-sm text-charcoal/60 dark:text-white/60 font-medium">{stat.label}</p>
                   </div>
                 );
               })
@@ -647,9 +647,9 @@ function DashboardContent() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Today's Appointments */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-soft">
-              <div className="p-6 border-b border-border flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-charcoal">Today&apos;s Schedule</h2>
+            <div className="lg:col-span-2 bg-white dark:bg-sidebar rounded-2xl border border-border dark:border-white/10 shadow-soft">
+              <div className="p-6 border-b border-border dark:border-white/10 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-charcoal dark:text-white">Today&apos;s Schedule</h2>
                 <Link
                   href="/calendar"
                   className="text-sm text-sage hover:text-sage-dark font-medium flex items-center gap-1"
@@ -657,37 +657,37 @@ function DashboardContent() {
                   View Calendar <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border dark:divide-white/10">
                 {loading && todayAppointments.length === 0 ? (
                   // Loading skeleton for appointments
                   [...Array(3)].map((_, i) => (
                     <div key={i} className="p-4 animate-pulse">
                       <div className="flex items-center gap-4">
                         <div className="w-[70px]">
-                          <div className="w-16 h-4 bg-charcoal/10 rounded mb-1" />
-                          <div className="w-12 h-3 bg-charcoal/10 rounded" />
+                          <div className="w-16 h-4 bg-charcoal/10 dark:bg-white/10 rounded mb-1" />
+                          <div className="w-12 h-3 bg-charcoal/10 dark:bg-white/10 rounded" />
                         </div>
                         <div className="flex-1">
-                          <div className="w-32 h-4 bg-charcoal/10 rounded mb-1" />
-                          <div className="w-48 h-3 bg-charcoal/10 rounded" />
+                          <div className="w-32 h-4 bg-charcoal/10 dark:bg-white/10 rounded mb-1" />
+                          <div className="w-48 h-3 bg-charcoal/10 dark:bg-white/10 rounded" />
                         </div>
-                        <div className="w-20 h-6 bg-charcoal/10 rounded-full" />
+                        <div className="w-20 h-6 bg-charcoal/10 dark:bg-white/10 rounded-full" />
                       </div>
                     </div>
                   ))
                 ) : todayAppointments.length > 0 ? (
                   todayAppointments.map((apt) => (
-                    <div key={apt.id} className="p-4 hover:bg-cream/50 transition-colors">
+                    <div key={apt.id} className="p-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="text-center min-w-[70px]">
-                          <p className="text-sm font-bold text-charcoal">{formatTime(apt.startTime)}</p>
-                          <p className="text-xs text-charcoal/50">{calculateDuration(apt.startTime, apt.endTime)}</p>
+                          <p className="text-sm font-bold text-charcoal dark:text-white">{formatTime(apt.startTime)}</p>
+                          <p className="text-xs text-charcoal/50 dark:text-white/50">{calculateDuration(apt.startTime, apt.endTime)}</p>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-charcoal truncate">
+                          <p className="font-semibold text-charcoal dark:text-white truncate">
                             {apt.client?.firstName} {apt.client?.lastName}
                           </p>
-                          <p className="text-sm text-charcoal/60 truncate">
+                          <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">
                             {apt.service?.name} with {apt.staff?.firstName} {apt.staff?.lastName}
                           </p>
                         </div>
@@ -740,8 +740,8 @@ function DashboardContent() {
                   ))
                 ) : (
                   <div className="p-8 text-center">
-                    <Calendar className="w-12 h-12 text-charcoal/20 mx-auto mb-4" />
-                    <p className="text-charcoal/60">No appointments scheduled for today</p>
+                    <Calendar className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
+                    <p className="text-charcoal/60 dark:text-white/60">No appointments scheduled for today</p>
                     <Link
                       href="/calendar"
                       className="inline-block mt-4 text-sage hover:text-sage-dark font-medium"
@@ -754,9 +754,9 @@ function DashboardContent() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-2xl border border-border shadow-soft">
-              <div className="p-6 border-b border-border">
-                <h2 className="text-lg font-semibold text-charcoal">Recent Activity</h2>
+            <div className="bg-white dark:bg-sidebar rounded-2xl border border-border dark:border-white/10 shadow-soft">
+              <div className="p-6 border-b border-border dark:border-white/10">
+                <h2 className="text-lg font-semibold text-charcoal dark:text-white">Recent Activity</h2>
               </div>
               <div className="p-4 space-y-4">
                 {recentActivity && recentActivity.length > 0 ? (
@@ -764,24 +764,24 @@ function DashboardContent() {
                     <div key={activity.id} className="flex gap-3">
                       <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-charcoal">{activity.action}</p>
-                        <p className="text-sm text-charcoal/60 truncate">{activity.detail}</p>
-                        <p className="text-xs text-charcoal/40 mt-1">{activity.time}</p>
+                        <p className="text-sm font-semibold text-charcoal dark:text-white">{activity.action}</p>
+                        <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{activity.detail}</p>
+                        <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">{activity.time}</p>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-charcoal/20 mx-auto mb-3" />
-                    <p className="text-charcoal/60">No recent activity yet</p>
-                    <p className="text-sm text-charcoal/40 mt-1">
+                    <Clock className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
+                    <p className="text-charcoal/60 dark:text-white/60">No recent activity yet</p>
+                    <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1">
                       Activity will appear here as you book appointments and add clients
                     </p>
                   </div>
                 )}
               </div>
               {recentActivity && recentActivity.length > 0 && (
-                <div className="p-4 border-t border-border">
+                <div className="p-4 border-t border-border dark:border-white/10">
                   <button
                     onClick={() => setShowAllActivity(true)}
                     className="w-full text-sm text-sage hover:text-sage-dark font-medium"
@@ -828,35 +828,35 @@ function DashboardContent() {
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link
               href="/calendar"
-              className="bg-white rounded-xl p-5 border border-border shadow-soft hover:shadow-card hover:border-sage/30 transition-all group"
+              className="bg-white dark:bg-sidebar rounded-xl p-5 border border-border dark:border-white/10 shadow-soft hover:shadow-card hover:border-sage/30 transition-all group"
             >
               <Calendar className="w-10 h-10 text-sage mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-charcoal">New Appointment</p>
-              <p className="text-sm text-charcoal/60">Book a service</p>
+              <p className="font-semibold text-charcoal dark:text-white">New Appointment</p>
+              <p className="text-sm text-charcoal/60 dark:text-white/60">Book a service</p>
             </Link>
             <Link
               href="/clients"
-              className="bg-white rounded-xl p-5 border border-border shadow-soft hover:shadow-card hover:border-lavender/30 transition-all group"
+              className="bg-white dark:bg-sidebar rounded-xl p-5 border border-border dark:border-white/10 shadow-soft hover:shadow-card hover:border-lavender/30 transition-all group"
             >
               <Users className="w-10 h-10 text-lavender mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-charcoal">Add Client</p>
-              <p className="text-sm text-charcoal/60">Register new client</p>
+              <p className="font-semibold text-charcoal dark:text-white">Add Client</p>
+              <p className="text-sm text-charcoal/60 dark:text-white/60">Register new client</p>
             </Link>
             <Link
               href="/services"
-              className="bg-white rounded-xl p-5 border border-border shadow-soft hover:shadow-card hover:border-peach/30 transition-all group"
+              className="bg-white dark:bg-sidebar rounded-xl p-5 border border-border dark:border-white/10 shadow-soft hover:shadow-card hover:border-peach/30 transition-all group"
             >
               <Scissors className="w-10 h-10 text-peach mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-charcoal">Manage Services</p>
-              <p className="text-sm text-charcoal/60">Edit service menu</p>
+              <p className="font-semibold text-charcoal dark:text-white">Manage Services</p>
+              <p className="text-sm text-charcoal/60 dark:text-white/60">Edit service menu</p>
             </Link>
             <Link
               href="/reports"
-              className="bg-white rounded-xl p-5 border border-border shadow-soft hover:shadow-card hover:border-mint/30 transition-all group"
+              className="bg-white dark:bg-sidebar rounded-xl p-5 border border-border dark:border-white/10 shadow-soft hover:shadow-card hover:border-mint/30 transition-all group"
             >
               <BarChart3 className="w-10 h-10 text-mint mb-3 group-hover:scale-110 transition-transform" />
-              <p className="font-semibold text-charcoal">View Reports</p>
-              <p className="text-sm text-charcoal/60">Analytics & insights</p>
+              <p className="font-semibold text-charcoal dark:text-white">View Reports</p>
+              <p className="text-sm text-charcoal/60 dark:text-white/60">Analytics & insights</p>
             </Link>
           </div>
         </div>

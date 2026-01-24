@@ -97,18 +97,18 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-charcoal/10 transform transition-transform duration-300 lg:transform-none ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-sidebar border-r border-charcoal/10 dark:border-white/10 transform transition-transform duration-300 lg:transform-none ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b border-charcoal/10">
+          <div className="p-6 border-b border-charcoal/10 dark:border-white/10">
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center">
                 <span className="text-white font-bold text-xl">P</span>
               </div>
-              <span className="font-display font-bold text-xl text-charcoal">peacase</span>
+              <span className="font-display font-bold text-xl text-charcoal dark:text-white">peacase</span>
             </Link>
           </div>
 
@@ -124,7 +124,7 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isCurrent
                       ? 'bg-sage text-white'
-                      : 'text-charcoal/70 hover:bg-sage/10 hover:text-sage'
+                      : 'text-charcoal/70 dark:text-white/70 hover:bg-sage/10 hover:text-sage'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -135,18 +135,18 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
           </nav>
 
           {/* User */}
-          <div className="p-4 border-t border-charcoal/10">
+          <div className="p-4 border-t border-charcoal/10 dark:border-white/10">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center">
                 <span className="text-sage font-semibold">{getInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-charcoal truncate">{getDisplayName()}</p>
-                <p className="text-sm text-charcoal/60 truncate">{getRoleDisplay()}</p>
+                <p className="font-medium text-charcoal dark:text-white truncate">{getDisplayName()}</p>
+                <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{getRoleDisplay()}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
+                className="p-2 text-charcoal/40 hover:text-charcoal dark:text-white/40 dark:hover:text-white transition-colors"
                 title="Log out"
               >
                 <LogOut className="w-5 h-5" />

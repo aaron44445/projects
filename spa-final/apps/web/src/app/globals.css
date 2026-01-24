@@ -11,8 +11,12 @@
     --border: 220 13% 91%;
   }
 
+  .dark {
+    --border: 220 13% 20%;
+  }
+
   * {
-    @apply border-gray-200;
+    @apply border-gray-200 dark:border-gray-700;
   }
 
   html {
@@ -21,6 +25,7 @@
 
   body {
     @apply bg-cream text-charcoal antialiased;
+    @apply dark:bg-charcoal dark:text-white;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
@@ -38,13 +43,25 @@
     @apply bg-charcoal/20 rounded-full;
   }
 
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full;
+  }
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-charcoal/30;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/30;
   }
 
   /* Selection */
   ::selection {
     @apply bg-sage/30 text-charcoal;
+  }
+
+  .dark ::selection {
+    @apply bg-sage/30 text-white;
   }
 }
 
@@ -52,16 +69,19 @@
   /* Focus ring */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2;
+    @apply dark:focus-visible:ring-offset-charcoal;
   }
 
   /* Glass effect */
   .glass {
     @apply bg-white/80 backdrop-blur-sm border border-white/60;
+    @apply dark:bg-charcoal/80 dark:border-white/10;
   }
 
   /* Skeleton loader */
   .skeleton {
     @apply bg-gradient-to-r from-surface-muted via-white to-surface-muted bg-[length:200%_100%] animate-shimmer;
+    @apply dark:from-charcoal dark:via-charcoal/80 dark:to-charcoal;
   }
 }
 
