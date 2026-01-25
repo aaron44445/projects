@@ -58,6 +58,19 @@ const staffColors = [
   '#C8D4E0',
 ];
 
+// Determine if a color is dark (needs white text) or light (needs dark text)
+function isColorDark(hexColor: string): boolean {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  // Parse RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // Calculate luminance (perceived brightness)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
+}
+
 // Week View Component
 interface WeekViewProps {
   currentDate: Date;
@@ -224,6 +237,10 @@ function WeekView({
             const { top, height } = getAppointmentPosition(apt.startTime, apt.endTime);
             const left = 64 + dayIndex * (100 / 7) + '%';
             const width = `calc(${100 / 7}% - 8px)`;
+            const bgColor = getAppointmentColor(apt);
+            const isDark = isColorDark(bgColor);
+            const textColor = isDark ? 'text-white' : 'text-charcoal';
+            const textColorMuted = isDark ? 'text-white/70' : 'text-charcoal/70';
 
             return (
               <div
@@ -234,24 +251,24 @@ function WeekView({
                   left: `calc(64px + ${dayIndex} * ((100% - 64px) / 7) + 4px)`,
                   width: `calc((100% - 64px) / 7 - 8px)`,
                   height: `${Math.max(height, 36)}px`,
-                  backgroundColor: getAppointmentColor(apt),
+                  backgroundColor: bgColor,
                 }}
                 onClick={() => onAppointmentClick(apt)}
               >
                 <div className="flex items-start justify-between h-full">
                   <div className="flex-1 min-w-0 overflow-hidden">
-                    <p className="font-semibold text-charcoal text-xs truncate">
+                    <p className={`font-semibold ${textColor} text-xs truncate`}>
                       {apt.client
                         ? `${apt.client.firstName} ${apt.client.lastName}`
                         : 'Unknown Client'}
                     </p>
                     {height >= 50 && (
-                      <p className="text-xs text-charcoal/70 truncate">
+                      <p className={`text-xs ${textColorMuted} truncate`}>
                         {apt.service?.name || 'Unknown Service'}
                       </p>
                     )}
                     {height >= 65 && (
-                      <p className="text-xs text-charcoal/60 mt-0.5">
+                      <p className={`text-xs ${textColorMuted} mt-0.5`}>
                         {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
                       </p>
                     )}
@@ -266,7 +283,7 @@ function WeekView({
                       }}
                       className="p-0.5 hover:bg-white/50 rounded"
                     >
-                      <MoreVertical className="w-3 h-3 text-charcoal/70" />
+                      <MoreVertical className={`w-3 h-3 ${textColorMuted}`} />
                     </button>
                     {appointmentMenuOpen === apt.id && (
                       <div className="absolute right-0 top-full mt-1 bg-white dark:bg-sidebar rounded-lg shadow-lg border border-charcoal/10 dark:border-white/10 py-1 z-20 min-w-[120px]">
@@ -917,6 +934,10 @@ function CalendarContent() {
                           .filter((apt) => apt.staffId === staffMember.id)
                           .map((apt) => {
                             const { top, height } = getAppointmentPosition(apt.startTime, apt.endTime);
+                            const bgColor = apt.service?.color || getStaffColor(staffIndex);
+                            const isDark = isColorDark(bgColor);
+                            const textColor = isDark ? 'text-white' : 'text-charcoal';
+                            const textColorMuted = isDark ? 'text-white/70' : 'text-charcoal/70';
 
                             return (
                               <div
@@ -927,20 +948,20 @@ function CalendarContent() {
                                   left: '4px',
                                   right: '4px',
                                   height: `${Math.max(height, 40)}px`,
-                                  backgroundColor: apt.service?.color || getStaffColor(staffIndex),
+                                  backgroundColor: bgColor,
                                 }}
                               >
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-charcoal text-sm truncate">
+                                    <p className={`font-semibold ${textColor} text-sm truncate`}>
                                       {apt.client
                                         ? `${apt.client.firstName} ${apt.client.lastName}`
                                         : 'Unknown Client'}
                                     </p>
-                                    <p className="text-xs text-charcoal/70 truncate">
+                                    <p className={`text-xs ${textColorMuted} truncate`}>
                                       {apt.service?.name || 'Unknown Service'}
                                     </p>
-                                    <p className="text-xs text-charcoal/60 mt-1">
+                                    <p className={`text-xs ${textColorMuted} mt-1`}>
                                       {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
                                     </p>
                                   </div>
@@ -955,7 +976,7 @@ function CalendarContent() {
                                       }}
                                       className="p-1 hover:bg-white/50 rounded"
                                     >
-                                      <MoreVertical className="w-4 h-4 text-charcoal/70" />
+                                      <MoreVertical className={`w-4 h-4 ${textColorMuted}`} />
                                     </button>
                                     {appointmentMenuOpen === apt.id && (
                                       <div className="absolute right-0 top-full mt-1 bg-white dark:bg-sidebar rounded-lg shadow-lg border border-charcoal/10 dark:border-white/10 py-1 z-20 min-w-[140px]">
