@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Authentication & Tenant Isolation** - Verify multi-tenant security foundation
 - [x] **Phase 2: Core Data Flows** - Stabilize staff and multi-location management
-- [ ] **Phase 3: Online Booking Widget** - Make client booking reliable and conflict-free
+- [x] **Phase 3: Online Booking Widget** - Make client booking reliable and conflict-free
 - [ ] **Phase 4: Payment Processing** - Verify Stripe integration works every time
 - [ ] **Phase 5: Notification System** - Fix SMS and connect email reminders
 - [ ] **Phase 6: Settings Persistence** - Ensure configuration changes apply immediately
@@ -87,9 +87,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Implement transactional booking with pessimistic locking
-- [ ] 03-02-PLAN.md — Audit availability calculation and add alternative slot suggestions
-- [ ] 03-03-PLAN.md — Load testing and concurrent booking verification
+- [x] 03-01-PLAN.md — Implement transactional booking with pessimistic locking
+- [x] 03-02-PLAN.md — Audit availability calculation and add alternative slot suggestions
+- [x] 03-03-PLAN.md — Load testing and concurrent booking verification
 
 ### Phase 4: Payment Processing
 
@@ -184,7 +184,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
-| 3. Online Booking Widget | 0/3 | Planned | - |
+| 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 0/0 | Not started | - |
 | 5. Notification System | 0/0 | Not started | - |
 | 6. Settings Persistence | 0/0 | Not started | - |

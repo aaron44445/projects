@@ -15,9 +15,9 @@ Requirements for stabilization milestone. Each maps to roadmap phases.
 
 ### Online Booking
 
-- [ ] **BOOK-01**: Booking flow succeeds every time (no random failures)
-- [ ] **BOOK-02**: Double-booking prevention (same slot cannot be booked twice)
-- [ ] **BOOK-03**: Availability calculation correct (shows accurate available times)
+- [x] **BOOK-01**: Booking flow succeeds every time (no random failures)
+- [x] **BOOK-02**: Double-booking prevention (same slot cannot be booked twice)
+- [x] **BOOK-03**: Availability calculation correct (shows accurate available times)
 
 ### Notifications
 
@@ -39,15 +39,15 @@ Requirements for stabilization milestone. Each maps to roadmap phases.
 
 ### Multi-Location
 
-- [ ] **LOC-01**: Location switching works for owners
-- [ ] **LOC-02**: Location-specific data correct (appointments/staff per location)
-- [ ] **LOC-03**: Location-specific settings work (hours/services per location)
+- [x] **LOC-01**: Location switching works for owners
+- [x] **LOC-02**: Location-specific data correct (appointments/staff per location)
+- [x] **LOC-03**: Location-specific settings work (hours/services per location)
 
 ### Staff Management
 
-- [ ] **STAFF-01**: Add/edit staff works correctly
-- [ ] **STAFF-02**: Staff scheduling works (assign to appointments/shifts)
-- [ ] **STAFF-03**: Staff permissions work correctly (role-based access)
+- [x] **STAFF-01**: Add/edit staff works correctly
+- [x] **STAFF-02**: Staff scheduling works (assign to appointments/shifts)
+- [x] **STAFF-03**: Staff permissions work correctly (role-based access)
 
 ### Dashboard
 
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-01 | Phase 1 | Pending |
 | AUTH-02 | Phase 1 | Pending |
 | AUTH-03 | Phase 1 | Pending |
-| BOOK-01 | Phase 3 | Pending |
-| BOOK-02 | Phase 3 | Pending |
-| BOOK-03 | Phase 3 | Pending |
+| BOOK-01 | Phase 3 | Complete |
+| BOOK-02 | Phase 3 | Complete |
+| BOOK-03 | Phase 3 | Complete |
 | NOTF-01 | Phase 5 | Pending |
 | NOTF-02 | Phase 5 | Pending |
 | NOTF-03 | Phase 5 | Pending |
@@ -107,12 +107,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SET-01 | Phase 6 | Pending |
 | SET-02 | Phase 6 | Pending |
 | SET-03 | Phase 6 | Pending |
-| LOC-01 | Phase 2 | Pending |
-| LOC-02 | Phase 2 | Pending |
-| LOC-03 | Phase 2 | Pending |
-| STAFF-01 | Phase 2 | Pending |
-| STAFF-02 | Phase 2 | Pending |
-| STAFF-03 | Phase 2 | Pending |
+| LOC-01 | Phase 2 | Complete |
+| LOC-02 | Phase 2 | Complete |
+| LOC-03 | Phase 2 | Complete |
+| STAFF-01 | Phase 2 | Complete |
+| STAFF-02 | Phase 2 | Complete |
+| STAFF-03 | Phase 2 | Complete |
 | DASH-01 | Phase 7 | Pending |
 | DASH-02 | Phase 7 | Pending |
 | DASH-03 | Phase 7 | Pending |
@@ -124,4 +124,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-25 after initial definition*
+*Last updated: 2026-01-25 after Phase 3 completion*
