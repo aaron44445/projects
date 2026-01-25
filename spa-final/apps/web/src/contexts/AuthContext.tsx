@@ -96,6 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [salon, setSalon] = useState<Salon | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const initializingRef = useRef(false);
+  const initializedRef = useRef(false);
 
   // Store tokens in localStorage
   const storeTokens = useCallback((tokens: AuthTokens) => {
@@ -236,38 +238,115 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshAuth]);
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount - only runs once
   useEffect(() => {
+    // Prevent multiple initialization attempts (React Strict Mode, fast refresh, etc.)
+    if (initializedRef.current || initializingRef.current) {
+      return;
+    }
+
     const initAuth = async () => {
-      const tokens = getStoredTokens();
+      initializingRef.current = true;
 
-      if (tokens?.accessToken) {
-        api.setAccessToken(tokens.accessToken);
+      try {
+        // Read tokens directly from localStorage (not via callback to avoid dependency issues)
+        const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
-        // If token is expiring soon, refresh first
-        if (isTokenExpiringSoon(tokens.accessToken, REFRESH_THRESHOLD_MINUTES)) {
-          const refreshed = await refreshAuth();
-          if (!refreshed) {
-            // Token refresh failed, user needs to log in again
-            setIsLoading(false);
-            return;
+        if (accessToken && refreshToken) {
+          api.setAccessToken(accessToken);
+
+          // If token is expiring soon, refresh first
+          if (isTokenExpiringSoon(accessToken, REFRESH_THRESHOLD_MINUTES)) {
+            try {
+              // Attempt refresh with the stored refresh token
+              api.setAccessToken(null); // Clear for refresh request
+              const response = await api.post<{ accessToken: string; refreshToken?: string }>('/auth/refresh', {
+                refreshToken,
+              });
+
+              if (response.success && response.data) {
+                const newAccessToken = response.data.accessToken;
+                const newRefreshToken = response.data.refreshToken || refreshToken;
+                localStorage.setItem(ACCESS_TOKEN_KEY, newAccessToken);
+                localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+                api.setAccessToken(newAccessToken);
+              } else {
+                // Refresh failed, clear tokens and let user log in again
+                localStorage.removeItem(ACCESS_TOKEN_KEY);
+                localStorage.removeItem(REFRESH_TOKEN_KEY);
+                api.setAccessToken(null);
+                setIsLoading(false);
+                initializedRef.current = true;
+                initializingRef.current = false;
+                return;
+              }
+            } catch {
+              // Refresh failed, clear tokens
+              localStorage.removeItem(ACCESS_TOKEN_KEY);
+              localStorage.removeItem(REFRESH_TOKEN_KEY);
+              api.setAccessToken(null);
+              setIsLoading(false);
+              initializedRef.current = true;
+              initializingRef.current = false;
+              return;
+            }
+          }
+
+          // Fetch user data with the valid token
+          try {
+            const [userResponse, salonResponse] = await Promise.all([
+              api.get<User>('/users/me'),
+              api.get<Salon>('/salon'),
+            ]);
+
+            if (userResponse.success && userResponse.data) {
+              setUser(userResponse.data);
+            }
+
+            if (salonResponse.success && salonResponse.data) {
+              setSalon(salonResponse.data);
+            }
+
+            // Start background refresh timer
+            if (refreshTimerRef.current) {
+              clearInterval(refreshTimerRef.current);
+            }
+            refreshTimerRef.current = setInterval(async () => {
+              const currentToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+              if (currentToken && isTokenExpiringSoon(currentToken, REFRESH_THRESHOLD_MINUTES)) {
+                await refreshAuth();
+              }
+            }, TOKEN_CHECK_INTERVAL);
+          } catch (error) {
+            // Only clear tokens for specific auth errors
+            if (error instanceof ApiError &&
+                (error.code === 'TOKEN_EXPIRED' || error.code === 'SESSION_EXPIRED' || error.code === 'INVALID_TOKEN')) {
+              localStorage.removeItem(ACCESS_TOKEN_KEY);
+              localStorage.removeItem(REFRESH_TOKEN_KEY);
+              api.setAccessToken(null);
+            }
+            // For other errors (network, etc.), keep tokens - user might still be logged in
           }
         }
-
-        await fetchCurrentUser();
-        startTokenRefreshTimer();
+      } finally {
+        setIsLoading(false);
+        initializedRef.current = true;
+        initializingRef.current = false;
       }
-
-      setIsLoading(false);
     };
 
     initAuth();
 
     // Cleanup timer on unmount
     return () => {
-      stopTokenRefreshTimer();
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
     };
-  }, [getStoredTokens, fetchCurrentUser, refreshAuth, startTokenRefreshTimer, stopTokenRefreshTimer]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount
 
   // Handle storage events (for multi-tab sync)
   useEffect(() => {
