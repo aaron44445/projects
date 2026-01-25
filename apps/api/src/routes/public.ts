@@ -5,6 +5,7 @@ import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { createBookingWithLock, BookingConflictError } from '../services/booking.js';
 import { calculateAvailableSlots, findAlternativeSlots } from '../services/availability.js';
+import { createDepositPaymentIntent } from '../services/payments.js';
 
 const router = Router();
 
@@ -38,6 +39,9 @@ router.get('/:slug/salon', asyncHandler(async (req: Request, res: Response) => {
       bookingSlotInterval: true,
       bookingRequirePhone: true,
       bookingRequireEmail: true,
+      // Deposit settings
+      requireDeposit: true,
+      depositPercentage: true,
     },
   });
 
@@ -65,6 +69,8 @@ router.get('/:slug/salon', asyncHandler(async (req: Request, res: Response) => {
       zip: salon.zip,
       timezone: salon.timezone,
       bookingEnabled: salon.bookingEnabled,
+      requireDeposit: salon.requireDeposit || false,
+      depositPercentage: salon.depositPercentage || 20,
       widget: {
         primaryColor: salon.widgetPrimaryColor,
         accentColor: salon.widgetAccentColor,
@@ -572,6 +578,7 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     phone,
     notes,
     optInReminders = true,
+    stripePaymentIntentId,  // Optional - only passed when deposit was paid
   } = req.body;
 
   // Validate required fields
@@ -781,6 +788,8 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
       price: effectivePrice,
       notes,
       source: 'online_booking',
+      stripePaymentIntentId: stripePaymentIntentId || null,  // Link to payment
+      depositStatus: stripePaymentIntentId ? 'authorized' : null,  // Set initial status
     });
   } catch (error) {
     if (error instanceof BookingConflictError) {
@@ -883,6 +892,106 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
       },
     },
   });
+}));
+
+// ============================================
+// POST /api/v1/public/:slug/create-payment-intent
+// Create a payment intent for booking deposit (public, unauthenticated)
+// ============================================
+router.post('/:slug/create-payment-intent', asyncHandler(async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const { serviceId, servicePrice, clientEmail, staffId, locationId, appointmentDate } = req.body;
+
+  // Find salon by slug
+  const salon = await prisma.salon.findUnique({
+    where: { slug },
+  });
+
+  if (!salon) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Salon not found' },
+    });
+  }
+
+  // Check if salon requires deposits
+  if (!salon.requireDeposit) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'DEPOSITS_NOT_REQUIRED', message: 'This salon does not require deposits for booking' },
+    });
+  }
+
+  // Validate required fields
+  if (!serviceId || !servicePrice || !clientEmail || !appointmentDate) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'MISSING_FIELDS', message: 'Missing required fields: serviceId, servicePrice, clientEmail, appointmentDate' },
+    });
+  }
+
+  // Verify service exists and price matches (security: don't trust client-provided price)
+  const service = await prisma.service.findFirst({
+    where: { id: serviceId, salonId: salon.id, isActive: true },
+  });
+
+  if (!service) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'SERVICE_NOT_FOUND', message: 'Service not found' },
+    });
+  }
+
+  // Use server-side price, not client-provided
+  const actualServicePrice = service.price;
+
+  // Get or create client for this email
+  let client = await prisma.client.findFirst({
+    where: { email: clientEmail, salonId: salon.id },
+  });
+
+  if (!client) {
+    // Will be created during booking, but we need an ID for metadata
+    // For now, use a placeholder that will be updated when booking completes
+    client = await prisma.client.create({
+      data: {
+        salonId: salon.id,
+        email: clientEmail,
+        firstName: 'Pending',
+        lastName: 'Booking',
+      },
+    });
+  }
+
+  try {
+    const { clientSecret, depositAmountCents } = await createDepositPaymentIntent({
+      salonId: salon.id,
+      serviceId,
+      clientId: client.id,
+      clientEmail,
+      servicePrice: actualServicePrice,
+      depositPercentage: salon.depositPercentage || 20,
+      appointmentDate,
+      staffId,
+      locationId,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        clientSecret,
+        depositAmountCents,
+        servicePrice: actualServicePrice,
+        depositPercentage: salon.depositPercentage || 20,
+      },
+    });
+  } catch (error: any) {
+    console.error('[Payment] Error creating payment intent:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'PAYMENT_ERROR', message: 'Failed to initialize payment' },
+    });
+  }
 }));
 
 export { router as publicRouter };

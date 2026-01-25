@@ -29,6 +29,8 @@ export interface BookingData {
   price: number;
   notes?: string;
   source: string;
+  stripePaymentIntentId?: string | null;  // Link to Stripe payment intent for deposits
+  depositStatus?: string | null;  // Initial deposit status ('authorized' when deposit paid)
 }
 
 /**
@@ -109,6 +111,8 @@ export async function createBookingWithLock(data: BookingData) {
               status: 'confirmed',
               notes: data.notes,
               source: data.source,
+              stripePaymentIntentId: data.stripePaymentIntentId || null,
+              depositStatus: data.depositStatus || null,
             },
             include: {
               client: {
