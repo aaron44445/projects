@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 2 of 7 (Core Data Flows)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-25 — Completed 02-01-PLAN.md
+Last activity: 2026-01-25 — Completed 02-02-PLAN.md (Location Switching and Management)
 
-Progress: [██░░░░░░░░] 14% (1/7 plans across all phases)
+Progress: [██░░░░░░░░] 29% (2/7 plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 13 min
-- Total execution time: 0.2 hours
+- Total plans completed: 2
+- Average duration: 13.5 min
+- Total execution time: 0.45 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 02-core-data-flows | 1 | 13min | 13min |
+| 02-core-data-flows | 2 | 27min | 13.5min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (13min)
-- Trend: Establishing baseline
+- Last 5 plans: 02-01 (13min), 02-02 (14min)
+- Trend: Consistent pace (~14min per plan)
 
 *Updated after each plan completion*
 
@@ -48,6 +48,9 @@ Recent decisions affecting current work:
 - **02-01:** Soft delete pattern for staff (isActive: false + email anonymization)
 - **02-01:** Replace-on-update pattern for many-to-many relations (services, availability)
 - **02-01:** Tenant isolation enforced on all staff operations via salonId filtering
+- **02-02:** Use LocationProvider wrapper at app level for universal location context access
+- **02-02:** Store selectedLocationId in localStorage for cross-page persistence
+- **02-02:** Booking widget uses /public/:slug/availability endpoint separate from authenticated endpoint
 
 ### Pending Todos
 
@@ -56,11 +59,15 @@ None yet.
 ### Blockers/Concerns
 
 **Known Issues (from PROJECT.md):**
-- Online booking unreliable (works sometimes, fails sometimes)
+- Online booking unreliable (works sometimes, fails sometimes) - **Note:** booking widget availability endpoint verified working in 02-02
 - SMS notifications not working
 - Email reminders may not be connected
 - Settings changes may not persist or apply
-- Multi-location support untested
+- Multi-location support untested - **RESOLVED:** Tested and verified in 02-02
+
+**From 02-02 Summary:**
+- Authenticated availability endpoint (`/api/v1/appointments/availability`) uses hardcoded 9-5 hours instead of location hours - not blocking but should be fixed for consistency
+- Missing validation: closeTime should be > openTime when saving location hours
 
 **Research Gaps:**
 - Phase 3: Need transaction isolation levels and locking strategies for concurrent bookings
@@ -71,9 +78,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 02-01-PLAN.md (Staff CRUD verification)
+Stopped at: Completed 02-02-PLAN.md (Location Switching and Management verification)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25 09:35*
+*Last updated: 2026-01-25 09:34*
