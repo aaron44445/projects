@@ -106,11 +106,14 @@ Plans:
   4. Refund flow completes successfully for canceled appointments
   5. Clear error messages display when cards are declined (no generic failures)
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — Schema and idempotency infrastructure (WebhookEvent model, deposit fields)
+- [ ] 04-02-PLAN.md — Backend payment endpoints (deposit Payment Intent, webhook handlers)
+- [ ] 04-03-PLAN.md — Frontend payment components (Payment Element, decline handling)
+- [ ] 04-04-PLAN.md — Refund flow (time-based policy, cancel/refund integration)
+- [ ] 04-05-PLAN.md — End-to-end integration (public API, booking widget with payment)
 
 ### Phase 5: Notification System
 
@@ -185,7 +188,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
-| 4. Payment Processing | 0/0 | Not started | - |
+| 4. Payment Processing | 0/5 | Planned | - |
 | 5. Notification System | 0/0 | Not started | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
