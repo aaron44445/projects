@@ -84,11 +84,12 @@ Plans:
   4. Double-booking prevention verified under load (100 concurrent requests, 0% double-books)
   5. Booking confirmation appears immediately in owner's calendar after client books
 
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Implement transactional booking with pessimistic locking
+- [ ] 03-02-PLAN.md — Audit availability calculation and add alternative slot suggestions
+- [ ] 03-03-PLAN.md — Load testing and concurrent booking verification
 
 ### Phase 4: Payment Processing
 
@@ -183,7 +184,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
-| 3. Online Booking Widget | 0/0 | Not started | - |
+| 3. Online Booking Widget | 0/3 | Planned | - |
 | 4. Payment Processing | 0/0 | Not started | - |
 | 5. Notification System | 0/0 | Not started | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
