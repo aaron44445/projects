@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 3 of 7 (Online Booking Widget)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-25 - Completed 03-01-PLAN.md (Transactional Booking)
+Last activity: 2026-01-25 - Completed 03-02-PLAN.md (Availability & Alternatives)
 
-Progress: [███████░░░] 70% (7/10 plans estimated across all phases)
+Progress: [████████░░] 80% (8/10 plans estimated across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 11.1 min
-- Total execution time: 1.3 hours
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 02-core-data-flows | 6 | 69min | 11.5min |
-| 03-online-booking-widget | 1 | 9min | 9min |
+| 03-online-booking-widget | 2 | 20min | 10min |
 
 **Recent Trend:**
-- Last 7 plans: 02-01 (13min), 02-02 (14min), 02-03 (8min), 02-04 (16min), 02-05 (10min), 02-06 (8min), 03-01 (9min)
-- Trend: Consistent pace, Phase 3 off to fast start
+- Last 7 plans: 02-02 (14min), 02-03 (8min), 02-04 (16min), 02-05 (10min), 02-06 (8min), 03-01 (9min), 03-02 (11min)
+- Trend: Consistent pace, Phase 3 progressing well
 
 *Updated after each plan completion*
 
@@ -68,6 +68,10 @@ Recent decisions affecting current work:
 - **03-01:** FOR UPDATE SKIP LOCKED for pessimistic locking - fail fast rather than wait
 - **03-01:** 5 retries with exponential backoff for P2034 transaction write conflicts
 - **03-01:** BookingConflictError is not retryable - fail immediately to client
+- **03-02:** Buffer time always added to slot duration (durationMinutes + bufferMinutes)
+- **03-02:** Alternative slots search same day first, then expand to 7 days
+- **03-02:** Alternatives respect staffId constraint if client selected specific staff
+- **03-02:** Return up to 3 alternative slots on booking conflict
 
 ### Pending Todos
 
@@ -107,13 +111,13 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-25T19:01:04Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-01-25T19:16:11Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
 
 **Phase 3 Status:** IN PROGRESS
 - 03-01: Transactional booking service - COMPLETE
-- 03-02: Availability endpoint improvements - PENDING
+- 03-02: Availability endpoint improvements - COMPLETE
 - 03-03: Widget UX improvements - PENDING
 
 **Phase 2 Status:** COMPLETE
@@ -126,4 +130,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25T19:01:04Z*
+*Last updated: 2026-01-25T19:16:11Z*
