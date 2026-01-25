@@ -84,14 +84,17 @@ describe('Booking Service', () => {
   });
 
   describe('createBookingWithLock', () => {
+    // Helper to create mock transaction object with both $executeRaw and $queryRaw
+    const createMockTx = (conflictingAppointments: any[] = []) => ({
+      $executeRaw: vi.fn().mockResolvedValue(1), // Mock advisory lock acquisition
+      $queryRaw: vi.fn().mockResolvedValue(conflictingAppointments),
+      appointment: {
+        create: vi.fn().mockResolvedValue(mockCreatedAppointment),
+      },
+    });
+
     it('should successfully create a booking when no conflicts exist', async () => {
-      // Mock transaction to return appointment
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([]), // No conflicts
-        appointment: {
-          create: vi.fn().mockResolvedValue(mockCreatedAppointment),
-        },
-      };
+      const mockTx = createMockTx([]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         return callback(mockTx);
@@ -100,7 +103,8 @@ describe('Booking Service', () => {
       const result = await createBookingWithLock(mockBookingData);
 
       expect(result).toEqual(mockCreatedAppointment);
-      expect(mockTx.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(mockTx.$executeRaw).toHaveBeenCalledTimes(1); // Advisory lock acquired
+      expect(mockTx.$queryRaw).toHaveBeenCalledTimes(1); // Conflict check
       expect(mockTx.appointment.create).toHaveBeenCalledTimes(1);
       expect(mockTx.appointment.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -115,12 +119,7 @@ describe('Booking Service', () => {
     });
 
     it('should throw BookingConflictError when conflicting appointment exists', async () => {
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([{ id: 'existing-appointment' }]), // Conflict found
-        appointment: {
-          create: vi.fn(),
-        },
-      };
+      const mockTx = createMockTx([{ id: 'existing-appointment' }]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         return callback(mockTx);
@@ -130,18 +129,14 @@ describe('Booking Service', () => {
         BookingConflictError
       );
 
-      expect(mockTx.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(mockTx.$executeRaw).toHaveBeenCalledTimes(1); // Advisory lock still acquired
+      expect(mockTx.$queryRaw).toHaveBeenCalledTimes(1); // Conflict check found conflict
       expect(mockTx.appointment.create).not.toHaveBeenCalled();
     });
 
     it('should retry on P2034 errors and succeed', async () => {
       let attemptCount = 0;
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([]),
-        appointment: {
-          create: vi.fn().mockResolvedValue(mockCreatedAppointment),
-        },
-      };
+      const mockTx = createMockTx([]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         attemptCount++;
@@ -193,12 +188,7 @@ describe('Booking Service', () => {
     });
 
     it('should throw BookingConflictError immediately without retry', async () => {
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([{ id: 'conflict' }]),
-        appointment: {
-          create: vi.fn(),
-        },
-      };
+      const mockTx = createMockTx([{ id: 'conflict' }]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         return callback(mockTx);
@@ -213,12 +203,7 @@ describe('Booking Service', () => {
     });
 
     it('should use correct transaction options', async () => {
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([]),
-        appointment: {
-          create: vi.fn().mockResolvedValue(mockCreatedAppointment),
-        },
-      };
+      const mockTx = createMockTx([]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         return callback(mockTx);
@@ -229,20 +214,15 @@ describe('Booking Service', () => {
       expect(prisma.$transaction).toHaveBeenCalledWith(
         expect.any(Function),
         expect.objectContaining({
-          isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead,
-          maxWait: 5000,
-          timeout: 10000,
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+          maxWait: 10000,
+          timeout: 30000,
         })
       );
     });
 
     it('should include appointment with related data', async () => {
-      const mockTx = {
-        $queryRaw: vi.fn().mockResolvedValue([]),
-        appointment: {
-          create: vi.fn().mockResolvedValue(mockCreatedAppointment),
-        },
-      };
+      const mockTx = createMockTx([]);
 
       vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
         return callback(mockTx);
