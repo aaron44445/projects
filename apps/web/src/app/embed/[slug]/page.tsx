@@ -688,7 +688,7 @@ function DetailsStep({
               type="text"
               value={booking.firstName}
               onChange={(e) => onChange('firstName', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors text-gray-900 bg-white"
               placeholder="Jane"
               required
             />
@@ -699,7 +699,7 @@ function DetailsStep({
               type="text"
               value={booking.lastName}
               onChange={(e) => onChange('lastName', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors text-gray-900 bg-white"
               placeholder="Smith"
               required
             />
@@ -714,7 +714,7 @@ function DetailsStep({
             type="email"
             value={booking.email}
             onChange={(e) => onChange('email', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors text-gray-900 bg-white"
             placeholder="jane@example.com"
             required={requireEmail}
           />
@@ -728,7 +728,7 @@ function DetailsStep({
             type="tel"
             value={booking.phone}
             onChange={(e) => onChange('phone', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors text-gray-900 bg-white"
             placeholder="(555) 123-4567"
             required={requirePhone}
           />
@@ -740,7 +740,7 @@ function DetailsStep({
             value={booking.notes}
             onChange={(e) => onChange('notes', e.target.value)}
             rows={2}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-gray-400 focus:ring-0 outline-none transition-colors text-gray-900 bg-white resize-none"
             placeholder="Any special requests..."
           />
         </div>
