@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Authentication & Tenant Isolation** - Verify multi-tenant security foundation
 - [x] **Phase 2: Core Data Flows** - Stabilize staff and multi-location management
 - [x] **Phase 3: Online Booking Widget** - Make client booking reliable and conflict-free
-- [ ] **Phase 4: Payment Processing** - Verify Stripe integration works every time
+- [x] **Phase 4: Payment Processing** - Verify Stripe integration works every time
 - [ ] **Phase 5: Notification System** - Fix SMS and connect email reminders
 - [ ] **Phase 6: Settings Persistence** - Ensure configuration changes apply immediately
 - [ ] **Phase 7: Dashboard & Validation** - Accurate stats and edge case handling
@@ -109,11 +109,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Schema and idempotency infrastructure (WebhookEvent model, deposit fields)
-- [ ] 04-02-PLAN.md — Backend payment endpoints (deposit Payment Intent, webhook handlers)
-- [ ] 04-03-PLAN.md — Frontend payment components (Payment Element, decline handling)
-- [ ] 04-04-PLAN.md — Refund flow (time-based policy, cancel/refund integration)
-- [ ] 04-05-PLAN.md — End-to-end integration (public API, booking widget with payment)
+- [x] 04-01-PLAN.md — Schema and idempotency infrastructure (WebhookEvent model, deposit fields)
+- [x] 04-02-PLAN.md — Backend payment endpoints (deposit Payment Intent, webhook handlers)
+- [x] 04-03-PLAN.md — Frontend payment components (Payment Element, decline handling)
+- [x] 04-04-PLAN.md — Refund flow (time-based policy, cancel/refund integration)
+- [x] 04-05-PLAN.md — End-to-end integration (public API, booking widget with payment)
 
 ### Phase 5: Notification System
 
@@ -188,11 +188,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
-| 4. Payment Processing | 0/5 | Planned | - |
+| 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
 | 5. Notification System | 0/0 | Not started | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25*
+*Last updated: 2026-01-25 (Phase 4 complete)*

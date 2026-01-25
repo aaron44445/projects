@@ -106,7 +106,7 @@ None yet.
 **Minor issues (non-blocking):**
 - Authenticated availability endpoint uses hardcoded 9-5 hours instead of location hours
 - Missing validation: closeTime > openTime when saving location hours
-- Booking widget input fields have white text on white background - text invisible (styling bug discovered in 03-03)
+- Booking widget input fields have white text on white background - **FIXED in 04-05**
 
 **Research Gaps:**
 - Phase 3: Transaction isolation levels and locking strategies - **RESOLVED in 03-01**
@@ -144,11 +144,12 @@ Last session: 2026-01-25T22:15:25Z
 Stopped at: Completed 04-04-PLAN.md - Refund Flow
 Resume file: None
 
-**Phase 4 Status:** COMPLETE
+**Phase 4 Status:** COMPLETE (verified by human testing)
 - 04-01: Payment Schema Foundation - COMPLETE
 - 04-02: Deposit Collection Flow - COMPLETE
 - 04-03: Stripe Webhook Handler - COMPLETE
 - 04-04: Refund Flow - COMPLETE
+- 04-05: End-to-End Payment Integration - COMPLETE
 
 **Phase 3 Status:** COMPLETE
 - 03-01: Transactional booking service - COMPLETE
