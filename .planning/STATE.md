@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 3 - Online Booking Widget - COMPLETE
+**Current focus:** Phase 4 - Payment Processing - IN PROGRESS
 
 ## Current Position
 
-Phase: 3 of 7 (Online Booking Widget) - COMPLETE
-Plan: 3 of 3 in current phase (all complete)
-Status: Phase complete - ready for Phase 4
-Last activity: 2026-01-25 - Completed 03-03-PLAN.md (Concurrent Booking Tests)
+Phase: 4 of 7 (Payment Processing)
+Plan: 1 of 4 in current phase (04-01 complete)
+Status: In progress
+Last activity: 2026-01-25 - Completed 04-01-PLAN.md (Payment Schema Foundation)
 
-Progress: [█████████░] 90% (9/10 plans estimated across all phases)
+Progress: [██████████] 100% (10/13 plans estimated across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 11.7 min
-- Total execution time: 1.75 hours
+- Total plans completed: 10
+- Average duration: 11.2 min
+- Total execution time: 1.87 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [█████████░] 90% (9/10 plans estimated across all 
 |-------|-------|-------|----------|
 | 02-core-data-flows | 6 | 69min | 11.5min |
 | 03-online-booking-widget | 3 | 35min | 11.7min |
+| 04-payment-processing | 1 | 8min | 8min |
 
 **Recent Trend:**
-- Last 7 plans: 02-03 (8min), 02-04 (16min), 02-05 (10min), 02-06 (8min), 03-01 (9min), 03-02 (11min), 03-03 (~15min)
-- Trend: Consistent pace, Phase 3 complete
+- Last 7 plans: 02-04 (16min), 02-05 (10min), 02-06 (8min), 03-01 (9min), 03-02 (11min), 03-03 (~15min), 04-01 (8min)
+- Trend: Consistent pace, Phase 4 started
 
 *Updated after each plan completion*
 
@@ -75,6 +76,10 @@ Recent decisions affecting current work:
 - **03-03:** 20 concurrent requests in integration tests (enough to catch race conditions)
 - **03-03:** Advisory locks (pg_advisory_xact_lock) instead of FOR UPDATE SKIP LOCKED for better Prisma compatibility
 - **03-03:** k6 load test with 100 VUs and threshold assertions for CI/CD integration
+- **04-01:** WebhookEvent uses stripeEventId as unique constraint for race-safe deduplication
+- **04-01:** Insert-or-conflict pattern: Try insert, catch P2002 for duplicates
+- **04-01:** Deposit fields on Salon (configuration) and Appointment (tracking) follow existing naming conventions
+- **04-01:** cancellationPolicy stored as JSON string for flexibility
 
 ### Pending Todos
 
@@ -126,9 +131,15 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-25T19:45:00Z
-Stopped at: Completed 03-03-PLAN.md - Phase 3 complete
+Last session: 2026-01-25T21:06:00Z
+Stopped at: Completed 04-01-PLAN.md - Payment Schema Foundation
 Resume file: None
+
+**Phase 4 Status:** IN PROGRESS
+- 04-01: Payment Schema Foundation - COMPLETE
+- 04-02: Deposit Collection Flow - PENDING
+- 04-03: Stripe Webhook Handler - PENDING
+- 04-04: Payment Testing - PENDING
 
 **Phase 3 Status:** COMPLETE
 - 03-01: Transactional booking service - COMPLETE
@@ -145,4 +156,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25T19:45:00Z*
+*Last updated: 2026-01-25T21:06:00Z*
