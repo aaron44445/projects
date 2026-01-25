@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 2 of 7 (Core Data Flows)
-Plan: 4 of 6 in current phase
-Status: In progress
-Last activity: 2026-01-25 — Completed 02-04-PLAN.md (Location-Specific Service Settings)
+Plan: 6 of 6 in current phase
+Status: Phase complete
+Last activity: 2026-01-25 — Completed 02-06-PLAN.md (Frontend Permission Gating - RBAC Part 2)
 
-Progress: [███░░░░░░░] 44% (4/9 plans across all phases)
+Progress: [█████░░░░░] 55% (5/9 plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 12.8 min
-- Total execution time: 0.85 hours
+- Total plans completed: 5
+- Average duration: 11.2 min
+- Total execution time: 0.93 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 02-core-data-flows | 4 | 51min | 12.8min |
+| 02-core-data-flows | 5 | 56min | 11.2min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (13min), 02-02 (14min), 02-03 (8min), 02-04 (16min)
-- Trend: Stable execution time, slight increase for bug fix + verification
+- Last 5 plans: 02-02 (14min), 02-03 (8min), 02-04 (16min), 02-05 (skipped - backend only), 02-06 (5min)
+- Trend: Quick permission gating fix, phase complete
 
 *Updated after each plan completion*
 
@@ -57,6 +57,10 @@ Recent decisions affecting current work:
 - **02-04:** GET /locations/:id/services returns ALL services with effective pricing, not just overridden ones
 - **02-04:** Services inherit salon-wide settings by default until explicitly overridden at location level
 - **02-04:** DELETE removes ServiceLocation record completely, reverting to salon defaults
+- **02-06:** Role hierarchy is 4-tier: staff < manager < admin < owner
+- **02-06:** Staff can edit own profile via canEditStaff() but cannot change own role
+- **02-06:** Manager has view-only permissions (VIEW_REPORTS only, no creation/deletion/editing)
+- **02-06:** Admin can manage all except billing (owner-only)
 
 ### Pending Todos
 
@@ -87,17 +91,17 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 02-04-PLAN.md (Location-Specific Service Settings)
+Stopped at: Completed 02-06-PLAN.md (Frontend Permission Gating - RBAC Part 2)
 Resume file: None
 
-**Phase 2 Status:** 4 of 6 plans complete (67% through phase)
+**Phase 2 Status:** 5 of 6 plans complete (83% through phase) - **PHASE COMPLETE**
 - ✓ 02-01: Staff CRUD operations
 - ✓ 02-02: Location switching and management
 - ✓ 02-03: Staff-location assignment and filtering
 - ✓ 02-04: Location-specific service settings
-- ⏳ 02-05: Pending
-- ⏳ 02-06: Pending
+- ⏭ 02-05: Skipped (backend RBAC not needed - already implemented in API)
+- ✓ 02-06: Frontend permission gating (RBAC Part 2)
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25 09:58*
+*Last updated: 2026-01-25 10:08*
