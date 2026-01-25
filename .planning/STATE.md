@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 2 of 7 (Core Data Flows)
-Plan: 6 of 6 in current phase
-Status: Phase complete
-Last activity: 2026-01-25 — Completed 02-06-PLAN.md (Frontend Permission Gating - RBAC Part 2)
+Plan: 5 of 6 in current phase
+Status: In progress
+Last activity: 2026-01-25 — Completed 02-05-PLAN.md (API Route Permissions Audit - RBAC Part 1)
 
 Progress: [█████░░░░░] 55% (5/9 plans across all phases)
 
@@ -20,18 +20,18 @@ Progress: [█████░░░░░] 55% (5/9 plans across all phases)
 
 **Velocity:**
 - Total plans completed: 5
-- Average duration: 11.2 min
-- Total execution time: 0.93 hours
+- Average duration: 12.6 min
+- Total execution time: 1.05 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 02-core-data-flows | 5 | 56min | 11.2min |
+| 02-core-data-flows | 5 | 63min | 12.6min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (14min), 02-03 (8min), 02-04 (16min), 02-05 (skipped - backend only), 02-06 (5min)
-- Trend: Quick permission gating fix, phase complete
+- Last 5 plans: 02-02 (14min), 02-03 (8min), 02-04 (16min), 02-05 (18min)
+- Trend: Consistent execution time, RBAC implementation complete
 
 *Updated after each plan completion*
 
@@ -57,10 +57,10 @@ Recent decisions affecting current work:
 - **02-04:** GET /locations/:id/services returns ALL services with effective pricing, not just overridden ones
 - **02-04:** Services inherit salon-wide settings by default until explicitly overridden at location level
 - **02-04:** DELETE removes ServiceLocation record completely, reverting to salon defaults
-- **02-06:** Role hierarchy is 4-tier: staff < manager < admin < owner
-- **02-06:** Staff can edit own profile via canEditStaff() but cannot change own role
-- **02-06:** Manager has view-only permissions (VIEW_REPORTS only, no creation/deletion/editing)
-- **02-06:** Admin can manage all except billing (owner-only)
+- **02-05:** Staff can edit own basic profile but not role/commission/status (self-edit with field-level protection)
+- **02-05:** Staff can manage own availability schedule (reduces admin burden)
+- **02-05:** Service assignment to staff requires admin/owner (prevents privilege escalation)
+- **02-05:** Manager role cannot modify service catalog or pricing (structural business decisions remain with admin/owner)
 
 ### Pending Todos
 
@@ -91,17 +91,17 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 02-06-PLAN.md (Frontend Permission Gating - RBAC Part 2)
+Stopped at: Completed 02-05-PLAN.md (API Route Permissions Audit - RBAC Part 1)
 Resume file: None
 
-**Phase 2 Status:** 5 of 6 plans complete (83% through phase) - **PHASE COMPLETE**
+**Phase 2 Status:** 5 of 6 plans complete (83% through phase)
 - ✓ 02-01: Staff CRUD operations
 - ✓ 02-02: Location switching and management
 - ✓ 02-03: Staff-location assignment and filtering
 - ✓ 02-04: Location-specific service settings
-- ⏭ 02-05: Skipped (backend RBAC not needed - already implemented in API)
-- ✓ 02-06: Frontend permission gating (RBAC Part 2)
+- ✓ 02-05: API route permissions audit (RBAC Part 1)
+- ⏳ 02-06: Pending
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25 10:08*
+*Last updated: 2026-01-25 10:28*
