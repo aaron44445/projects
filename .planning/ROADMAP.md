@@ -59,14 +59,15 @@ Plans:
   5. Appointments, staff, and services filtered correctly by selected location
   6. Location-specific settings (hours, services) apply only to that location
 
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 02-01-PLAN.md — Verify and fix staff CRUD operations end-to-end
 - [ ] 02-02-PLAN.md — Verify and fix location switching and management
 - [ ] 02-03-PLAN.md — Verify and fix staff-location assignment and filtering
 - [ ] 02-04-PLAN.md — Verify and fix location-specific service settings
-- [ ] 02-05-PLAN.md — Verify and fix role-based access control (RBAC)
+- [ ] 02-05-PLAN.md — Audit and fix API route permissions (RBAC Part 1)
+- [ ] 02-06-PLAN.md — Audit and fix frontend permission gating (RBAC Part 2)
 
 ### Phase 3: Online Booking Widget
 
@@ -181,7 +182,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
-| 2. Core Data Flows | 0/5 | Planned | - |
+| 2. Core Data Flows | 0/6 | Planned | - |
 | 3. Online Booking Widget | 0/0 | Not started | - |
 | 4. Payment Processing | 0/0 | Not started | - |
 | 5. Notification System | 0/0 | Not started | - |
