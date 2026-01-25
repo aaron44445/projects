@@ -784,12 +784,29 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof BookingConflictError) {
+      // Find alternative slots when a conflict occurs
+      const alternatives = await findAlternativeSlots({
+        salonId: salon.id,
+        locationId: locationId || undefined,
+        serviceId: serviceId,
+        staffId: staffId || undefined, // Only same staff if client selected specific staff
+        date: new Date(startTime),
+        excludeTime: new Date(startTime),
+        limit: 3,
+      });
+
       return res.status(400).json({
         success: false,
         error: {
           code: 'TIME_CONFLICT',
           message: 'This time slot is no longer available',
         },
+        alternatives: alternatives.map((slot) => ({
+          time: slot.time,
+          date: slot.startTime.toISOString().split('T')[0],
+          staffId: slot.staffId,
+          staffName: slot.staffName,
+        })),
       });
     }
     throw error;
