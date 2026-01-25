@@ -154,14 +154,19 @@ function WeekView({
     };
   };
 
-  // Get staff color for appointment based on staff index
-  const getAppointmentColor = (staffId: string) => {
-    const staffIndex = (staff || []).findIndex((s) => s.id === staffId);
-    return staffIndex >= 0 ? getStaffColor(staffIndex) : '#E5E5E5';
+  // Get appointment color based on service color (with fallback to staff color)
+  const getAppointmentColor = (apt: Appointment) => {
+    // Prefer service color if set
+    if (apt.service?.color) {
+      return apt.service.color;
+    }
+    // Fallback to staff color
+    const staffIndex = (staff || []).findIndex((s) => s.id === apt.staffId);
+    return staffIndex >= 0 ? getStaffColor(staffIndex) : '#C7DCC8';
   };
 
   return (
-    <div className="min-h-full">
+    <div className="min-h-full min-w-max">
       {/* Day Headers */}
       <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 z-10 flex">
         <div className="w-16 flex-shrink-0 p-2 border-r border-charcoal/10 dark:border-white/10">
@@ -229,7 +234,7 @@ function WeekView({
                   left: `calc(64px + ${dayIndex} * ((100% - 64px) / 7) + 4px)`,
                   width: `calc((100% - 64px) / 7 - 8px)`,
                   height: `${Math.max(height, 36)}px`,
-                  backgroundColor: getAppointmentColor(apt.staffId),
+                  backgroundColor: getAppointmentColor(apt),
                 }}
                 onClick={() => onAppointmentClick(apt)}
               >
@@ -507,7 +512,9 @@ function CalendarContent() {
         aptDate.getMonth() === currentDate.getMonth() &&
         aptDate.getDate() === currentDate.getDate();
 
-      const isStaffSelected = selectedStaff.includes(apt.staffId);
+      // Staff filter: show if staff is selected OR if appointment has no location
+      // (unassigned appointments should always be visible)
+      const isStaffSelected = selectedStaff.includes(apt.staffId) || !apt.locationId;
 
       const matchesSearch =
         !searchQuery ||
@@ -855,7 +862,7 @@ function CalendarContent() {
               </div>
             ) : viewMode === 'day' ? (
               /* Day View */
-              <div className="min-h-full">
+              <div className="min-h-full min-w-max">
                 {/* Staff Headers */}
                 <div className="sticky top-0 bg-white dark:bg-sidebar border-b border-charcoal/10 dark:border-white/10 z-10 flex">
                   <div className="w-20 flex-shrink-0 p-4 border-r border-charcoal/10 dark:border-white/10">
@@ -920,7 +927,7 @@ function CalendarContent() {
                                   left: '4px',
                                   right: '4px',
                                   height: `${Math.max(height, 40)}px`,
-                                  backgroundColor: getStaffColor(staffIndex),
+                                  backgroundColor: apt.service?.color || getStaffColor(staffIndex),
                                 }}
                               >
                                 <div className="flex items-start justify-between">
