@@ -645,4 +645,87 @@ router.post(
   })
 );
 
+// ============================================
+// POST /api/v1/appointments/:id/capture-payment
+// Capture the authorized deposit (when service is rendered)
+// ============================================
+router.post(
+  '/:id/capture-payment',
+  authenticate,
+  requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
+  asyncHandler(async (req: Request, res: Response) => {
+    const appointment = await prisma.appointment.findFirst({
+      where: { id: req.params.id, salonId: req.user!.salonId },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Appointment not found',
+        },
+      });
+    }
+
+    if (!appointment.stripePaymentIntentId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NO_PAYMENT',
+          message: 'No payment intent associated with this appointment',
+        },
+      });
+    }
+
+    if (appointment.depositStatus !== 'authorized') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_STATUS',
+          message: `Cannot capture payment with status: ${appointment.depositStatus}`,
+        },
+      });
+    }
+
+    try {
+      // Capture the authorized payment
+      const paymentIntent = await capturePaymentIntent(appointment.stripePaymentIntentId);
+
+      // Update appointment
+      await prisma.appointment.update({
+        where: { id: req.params.id },
+        data: {
+          depositStatus: 'captured',
+        },
+      });
+
+      // Update payment record
+      await prisma.payment.updateMany({
+        where: { stripePaymentId: appointment.stripePaymentIntentId },
+        data: {
+          status: 'captured',
+        },
+      });
+
+      res.json({
+        success: true,
+        data: {
+          captured: true,
+          amount: paymentIntent.amount / 100,
+        },
+      });
+    } catch (error: any) {
+      console.error('[Capture] Error capturing payment:', error);
+      res.status(500).json({
+        success: false,
+        error: {
+          code: 'CAPTURE_FAILED',
+          message: error.message || 'Failed to capture payment',
+        },
+      });
+    }
+  })
+);
+
 export { router as appointmentsRouter };
