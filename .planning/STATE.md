@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 4 of 7 (Payment Processing)
-Plan: 1 of 4 in current phase (04-01 complete)
+Plan: 4 of 4 in current phase (04-01, 04-02, 04-03, 04-04 complete)
 Status: In progress
-Last activity: 2026-01-25 - Completed 04-01-PLAN.md (Payment Schema Foundation)
+Last activity: 2026-01-25 - Completed 04-04-PLAN.md (Refund Flow)
 
-Progress: [██████████] 100% (10/13 plans estimated across all phases)
+Progress: [██████████] 100% (13/13 plans estimated across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 11.2 min
-- Total execution time: 1.87 hours
+- Total plans completed: 13
+- Average duration: 9.3 min
+- Total execution time: 2.01 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [██████████] 100% (10/13 plans estimated across al
 |-------|-------|-------|----------|
 | 02-core-data-flows | 6 | 69min | 11.5min |
 | 03-online-booking-widget | 3 | 35min | 11.7min |
-| 04-payment-processing | 1 | 8min | 8min |
+| 04-payment-processing | 4 | 17min | 4.25min |
 
 **Recent Trend:**
-- Last 7 plans: 02-04 (16min), 02-05 (10min), 02-06 (8min), 03-01 (9min), 03-02 (11min), 03-03 (~15min), 04-01 (8min)
-- Trend: Consistent pace, Phase 4 started
+- Last 7 plans: 02-06 (8min), 03-01 (9min), 03-02 (11min), 03-03 (~15min), 04-01 (8min), 04-02 (3min), 04-03 (3min), 04-04 (3min)
+- Trend: Phase 4 completed with accelerated pace
 
 *Updated after each plan completion*
 
@@ -80,6 +80,15 @@ Recent decisions affecting current work:
 - **04-01:** Insert-or-conflict pattern: Try insert, catch P2002 for duplicates
 - **04-01:** Deposit fields on Salon (configuration) and Appointment (tracking) follow existing naming conventions
 - **04-01:** cancellationPolicy stored as JSON string for flexibility
+- **04-02:** Manual capture pattern: deposits authorized at booking, captured when service rendered
+- **04-02:** Appointment lookup via stripePaymentIntentId field (not metadata)
+- **04-02:** Idempotency check before webhook processing prevents duplicate charges
+- **04-03:** Payment intent flow uses Stripe Elements for PCI compliance
+- **04-03:** Public payment endpoints (no auth) for client-side booking widget
+- **04-04:** 24-hour cancellation policy: full refund if cancelled >24h in advance
+- **04-04:** Salon cancellations always trigger full refund regardless of timing
+- **04-04:** Authorized payments cancelled (not refunded), captured payments refunded
+- **04-04:** Refund failures don't block appointment cancellation (log error, continue)
 
 ### Pending Todos
 
@@ -131,15 +140,15 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-25T21:06:00Z
-Stopped at: Completed 04-01-PLAN.md - Payment Schema Foundation
+Last session: 2026-01-25T22:15:25Z
+Stopped at: Completed 04-04-PLAN.md - Refund Flow
 Resume file: None
 
-**Phase 4 Status:** IN PROGRESS
+**Phase 4 Status:** COMPLETE
 - 04-01: Payment Schema Foundation - COMPLETE
-- 04-02: Deposit Collection Flow - PENDING
-- 04-03: Stripe Webhook Handler - PENDING
-- 04-04: Payment Testing - PENDING
+- 04-02: Deposit Collection Flow - COMPLETE
+- 04-03: Stripe Webhook Handler - COMPLETE
+- 04-04: Refund Flow - COMPLETE
 
 **Phase 3 Status:** COMPLETE
 - 03-01: Transactional booking service - COMPLETE
@@ -156,4 +165,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25T21:06:00Z*
+*Last updated: 2026-01-25T22:15:25Z*
