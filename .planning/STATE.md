@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 1 - Authentication & Tenant Isolation
+**Current focus:** Phase 2 - Core Data Flows
 
 ## Current Position
 
-Phase: 1 of 7 (Authentication & Tenant Isolation)
-Plan: 0 of 0 in current phase
-Status: Ready to plan
-Last activity: 2026-01-25 — Roadmap created
+Phase: 2 of 7 (Core Data Flows)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-25 — Completed 02-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 14% (1/7 plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: N/A
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 13 min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 02-core-data-flows | 1 | 13min | 13min |
 
 **Recent Trend:**
-- Last 5 plans: None yet
-- Trend: Not established
+- Last 5 plans: 02-01 (13min)
+- Trend: Establishing baseline
 
 *Updated after each plan completion*
 
@@ -45,6 +45,9 @@ Recent decisions affecting current work:
 - Stabilization milestone: Focus on owner experience, defer Staff Portal to separate milestone
 - Testing approach: Must test from spa owner perspective, not developer perspective
 - Data-flow-first principle: Follow data flows end-to-end (auth → booking → payments → reminders)
+- **02-01:** Soft delete pattern for staff (isActive: false + email anonymization)
+- **02-01:** Replace-on-update pattern for many-to-many relations (services, availability)
+- **02-01:** Tenant isolation enforced on all staff operations via salonId filtering
 
 ### Pending Todos
 
@@ -67,10 +70,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-25 (roadmap creation)
-Stopped at: Roadmap and STATE.md initialized
+Last session: 2026-01-25 (plan execution)
+Stopped at: Completed 02-01-PLAN.md (Staff CRUD verification)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25*
+*Last updated: 2026-01-25 09:35*
