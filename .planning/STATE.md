@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 2 of 7 (Core Data Flows)
-Plan: 3 of 3 in current phase
-Status: Phase complete
-Last activity: 2026-01-25 — Completed 02-03-PLAN.md (Staff-Location Assignment and Filtering)
+Plan: 4 of 6 in current phase
+Status: In progress
+Last activity: 2026-01-25 — Completed 02-04-PLAN.md (Location-Specific Service Settings)
 
-Progress: [███░░░░░░░] 43% (3/7 plans across all phases)
+Progress: [███░░░░░░░] 44% (4/9 plans across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 11.7 min
-- Total execution time: 0.58 hours
+- Total plans completed: 4
+- Average duration: 12.8 min
+- Total execution time: 0.85 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 02-core-data-flows | 3 | 35min | 11.7min |
+| 02-core-data-flows | 4 | 51min | 12.8min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (13min), 02-02 (14min), 02-03 (8min)
-- Trend: Improving speed as implementation was already complete
+- Last 5 plans: 02-01 (13min), 02-02 (14min), 02-03 (8min), 02-04 (16min)
+- Trend: Stable execution time, slight increase for bug fix + verification
 
 *Updated after each plan completion*
 
@@ -54,6 +54,9 @@ Recent decisions affecting current work:
 - **02-03:** Staff with no location assignments appear at ALL locations (business rule)
 - **02-03:** Staff filtering uses assignedStaff + unassignedStaff pattern
 - **02-03:** Calendar staff dropdown filters based on selectedLocationId from LocationContext
+- **02-04:** GET /locations/:id/services returns ALL services with effective pricing, not just overridden ones
+- **02-04:** Services inherit salon-wide settings by default until explicitly overridden at location level
+- **02-04:** DELETE removes ServiceLocation record completely, reverting to salon defaults
 
 ### Pending Todos
 
@@ -84,13 +87,17 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 02-03-PLAN.md (Staff-Location Assignment and Filtering)
+Stopped at: Completed 02-04-PLAN.md (Location-Specific Service Settings)
 Resume file: None
 
-**Phase 2 Status:** COMPLETE
-- All 3 plans completed (Staff CRUD, Location Management, Staff-Location Integration)
-- Ready to move to Phase 3 or next priority area
+**Phase 2 Status:** 4 of 6 plans complete (67% through phase)
+- ✓ 02-01: Staff CRUD operations
+- ✓ 02-02: Location switching and management
+- ✓ 02-03: Staff-location assignment and filtering
+- ✓ 02-04: Location-specific service settings
+- ⏳ 02-05: Pending
+- ⏳ 02-06: Pending
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-25 09:50*
+*Last updated: 2026-01-25 09:58*
