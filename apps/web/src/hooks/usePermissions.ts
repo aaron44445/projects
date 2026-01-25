@@ -46,6 +46,17 @@ export function usePermissions() {
     return false;
   };
 
+  // Check if user can edit a specific staff member
+  // Staff can edit their own profile, but higher roles can edit anyone
+  const canEditStaff = (staffId: string): boolean => {
+    if (!user) return false;
+    // Owner and Admin can edit anyone
+    if (user.role === 'owner' || user.role === 'admin') return true;
+    // Staff can only edit their own profile
+    if (user.id === staffId) return true;
+    return false;
+  };
+
   const hasAnyPermission = (permissions: Permission[]): boolean => {
     return permissions.some((p) => hasPermission(p));
   };
@@ -72,6 +83,7 @@ export function usePermissions() {
     hasAnyPermission,
     hasAllPermissions,
     isAtLeast,
+    canEditStaff,
     role: user?.role || 'staff',
     isOwner: user?.role === 'owner',
     isAdmin: user?.role === 'admin' || user?.role === 'owner',
