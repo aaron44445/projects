@@ -13,7 +13,7 @@ This roadmap transforms Peacase from "feature-complete but unreliable" into prod
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Authentication & Tenant Isolation** - Verify multi-tenant security foundation
-- [ ] **Phase 2: Core Data Flows** - Stabilize staff and multi-location management
+- [x] **Phase 2: Core Data Flows** - Stabilize staff and multi-location management
 - [ ] **Phase 3: Online Booking Widget** - Make client booking reliable and conflict-free
 - [ ] **Phase 4: Payment Processing** - Verify Stripe integration works every time
 - [ ] **Phase 5: Notification System** - Fix SMS and connect email reminders
@@ -62,12 +62,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Verify and fix staff CRUD operations end-to-end
-- [ ] 02-02-PLAN.md — Verify and fix location switching and management
-- [ ] 02-03-PLAN.md — Verify and fix staff-location assignment and filtering
-- [ ] 02-04-PLAN.md — Verify and fix location-specific service settings
-- [ ] 02-05-PLAN.md — Audit and fix API route permissions (RBAC Part 1)
-- [ ] 02-06-PLAN.md — Audit and fix frontend permission gating (RBAC Part 2)
+- [x] 02-01-PLAN.md — Verify and fix staff CRUD operations end-to-end
+- [x] 02-02-PLAN.md — Verify and fix location switching and management
+- [x] 02-03-PLAN.md — Verify and fix staff-location assignment and filtering
+- [x] 02-04-PLAN.md — Verify and fix location-specific service settings
+- [x] 02-05-PLAN.md — Audit and fix API route permissions (RBAC Part 1)
+- [x] 02-06-PLAN.md — Audit and fix frontend permission gating (RBAC Part 2)
 
 ### Phase 3: Online Booking Widget
 
@@ -182,7 +182,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
-| 2. Core Data Flows | 0/6 | Planned | - |
+| 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 0/0 | Not started | - |
 | 4. Payment Processing | 0/0 | Not started | - |
 | 5. Notification System | 0/0 | Not started | - |
