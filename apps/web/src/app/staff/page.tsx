@@ -1314,7 +1314,7 @@ function StaffContent() {
                 <select
                   value={staffForm.role}
                   onChange={(e) => setStaffForm((prev) => ({ ...prev, role: e.target.value as 'owner' | 'admin' | 'manager' | 'staff' | 'receptionist' }))}
-                  disabled={editingStaff && !isAtLeast('admin') && editingStaff.id === user?.id}
+                  disabled={!!(editingStaff && !isAtLeast('admin') && editingStaff.id === user?.id)}
                   className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all bg-white dark:bg-charcoal text-charcoal dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="receptionist">Receptionist</option>
