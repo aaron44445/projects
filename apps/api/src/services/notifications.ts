@@ -227,31 +227,32 @@ async function sendSmsNotification(
       },
     });
 
-    const sent = await sendSms({
+    const smsResult = await sendSms({
       to: clientPhone,
       message: smsMessage,
     });
 
-    if (sent) {
-      // Update log with success
+    if (smsResult.success && smsResult.messageSid) {
+      // Store MessageSid for webhook matching
       await prisma.notificationLog.update({
         where: { id: logId },
         data: {
           smsStatus: 'sent',
           smsSentAt: new Date(),
+          twilioMessageSid: smsResult.messageSid,
         },
       });
       return { success: true };
     } else {
-      // Update log with failure
+      // SMS failed at API level
       await prisma.notificationLog.update({
         where: { id: logId },
         data: {
           smsStatus: 'failed',
-          smsError: 'SMS service returned false',
+          smsError: smsResult.error || 'Unknown error',
         },
       });
-      return { success: false, error: 'SMS service returned false' };
+      return { success: false, error: smsResult.error || 'Unknown error' };
     }
   } catch (error: any) {
     // Update log with error
