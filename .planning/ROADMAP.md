@@ -135,11 +135,11 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — NotificationLog schema and unified notification service
 - [x] 05-02-PLAN.md — Twilio SMS status webhook for delivery tracking
-- [ ] 05-03-PLAN.md — Calendar integration for booking confirmations (ICS/links)
+- [x] 05-03-PLAN.md — Calendar integration for booking confirmations (ICS/links)
 - [x] 05-04-PLAN.md — Configurable reminder timing per salon
 - [x] 05-05-PLAN.md — Notification history API and frontend page
-- [ ] 05-06-PLAN.md — [GAP CLOSURE] Pass calendar fields to all email call sites
-- [ ] 05-07-PLAN.md — [GAP CLOSURE] Wire notification settings UI to API
+- [x] 05-06-PLAN.md — [GAP CLOSURE] Pass calendar fields to all email call sites
+- [x] 05-07-PLAN.md — [GAP CLOSURE] Wire notification settings UI to API
 
 ### Phase 6: Settings Persistence
 
@@ -194,10 +194,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
-| 5. Notification System | 4/7 | In Progress | - |
+| 5. Notification System | 7/7 | Human Verification | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-26 (Phase 5 gap closure plans added)*
+*Last updated: 2026-01-26 (Phase 5 gap closure plans executed, awaiting UAT)*

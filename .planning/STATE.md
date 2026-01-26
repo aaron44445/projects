@@ -164,13 +164,17 @@ Last session: 2026-01-26T16:08:53Z
 Stopped at: Completed 05-07-PLAN.md - Wire Notification Settings to API
 Resume file: None
 
-**Phase 5 Status:** COMPLETE
+**Phase 5 Status:** AWAITING UAT RE-TEST
 - 05-01: Notification Foundation - COMPLETE
 - 05-02: SMS Status Webhooks - COMPLETE
-- 05-03: Automated Reminder Jobs - PENDING (deferred)
+- 05-03: Calendar Integration - COMPLETE (via 05-06 gap closure)
 - 05-04: Configurable Reminder Timing - COMPLETE
+- 05-05: Notification History - COMPLETE
 - 05-06: Calendar Links in Confirmation Emails - COMPLETE (gap closure)
 - 05-07: Wire Notification Settings to API - COMPLETE (gap closure)
+
+**Verification Status:** 3/5 verified, 2 awaiting UAT re-test (Test 2 + Test 5)
+**Report:** .planning/phases/05-notification-system/05-VERIFICATION.md
 
 **Phase 4 Status:** COMPLETE (verified by human testing)
 - 04-01: Payment Schema Foundation - COMPLETE
