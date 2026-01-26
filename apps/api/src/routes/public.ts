@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { prisma } from '@peacase/database';
 import { sendEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
+import { sendNotification } from '../services/notifications.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { createBookingWithLock, BookingConflictError } from '../services/booking.js';
 import { calculateAvailableSlots, findAlternativeSlots } from '../services/availability.js';
@@ -836,40 +837,36 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     ? `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zip || ''}`.trim()
     : `${salon.address || ''}, ${salon.city || ''}, ${salon.state || ''} ${salon.zip || ''}`.trim();
 
-  // Send confirmation email
-  if (client.email) {
+  // Send booking confirmation notification
+  const channels: ('email' | 'sms')[] = [];
+  if (client.email) channels.push('email');
+  if (client.phone && optInReminders) channels.push('sms');
+
+  if (channels.length > 0) {
     try {
-      await sendEmail({
-        to: client.email,
-        subject: `Appointment Confirmed - ${salon.name}`,
-        html: appointmentConfirmationEmail({
+      await sendNotification({
+        salonId: salon.id,
+        clientId: client.id,
+        appointmentId: appointment.id,
+        type: 'booking_confirmation',
+        channels,
+        data: {
           clientName: client.firstName,
+          clientEmail: client.email || undefined,
+          clientPhone: client.phone || undefined,
           serviceName: service.name,
           staffName: `${appointment.staff.firstName} ${appointment.staff.lastName}`,
           dateTime: formattedDateTime,
           salonName: salon.name,
           salonAddress: appointmentAddress,
-        }),
+          startTime: appointment.startTime,
+          endTime: appointment.endTime,
+          salonTimezone: salon.timezone,
+        },
       });
     } catch (e) {
-      console.error('Failed to send confirmation email:', e);
-    }
-  }
-
-  // Send confirmation SMS
-  if (client.phone && optInReminders) {
-    try {
-      await sendSms({
-        to: client.phone,
-        message: appointmentConfirmationSms({
-          clientName: client.firstName,
-          serviceName: service.name,
-          dateTime: formattedDateTime,
-          salonName: salon.name,
-        }),
-      });
-    } catch (e) {
-      console.error('Failed to send confirmation SMS:', e);
+      console.error('Failed to send booking confirmation:', e);
+      // Don't block booking completion on notification failure
     }
   }
 
