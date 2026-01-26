@@ -90,6 +90,7 @@ model Salon {
   giftCards                    GiftCard[]
   locations                    Location[]
   marketingCampaigns           MarketingCampaign[]
+  notificationLogs             NotificationLog[]
   packages                     Package[]
   payments                     Payment[]
   reviews                      Review[]
@@ -186,6 +187,7 @@ model Client {
   emailVerificationTokens ClientEmailVerificationToken[]
   clientNotes             ClientNote[]
   clientPackages          ClientPackage[]
+  notificationLogs        NotificationLog[]
   passwordResetTokens     ClientPasswordResetToken[]
   refreshTokens           ClientRefreshToken[]
   preferredLocation       Location?                      @relation("PreferredLocation", fields: [preferredLocationId], references: [id])
@@ -436,6 +438,7 @@ model Appointment {
   staff              User               @relation(fields: [staffId], references: [id])
   commissionRecords  CommissionRecord[]
   formResponses      FormResponse[]
+  notificationLogs   NotificationLog[]
   payments           Payment[]
   reminderLogs       ReminderLog[]
   reviews            Review[]
@@ -461,7 +464,7 @@ model Payment {
   totalAmount       Float              @map("total_amount")
   method            String?
   status            String             @default("pending")
-  stripePaymentId   String?            @map("stripe_payment_id")
+  stripePaymentId   String?            @unique @map("stripe_payment_id")
   stripeRefundId    String?            @map("stripe_refund_id")
   refundAmount      Float?             @map("refund_amount")
   refundReason      String?            @map("refund_reason")
@@ -719,6 +722,42 @@ model ReminderLog {
   @@index([appointmentId])
   @@index([sentAt])
   @@map("reminder_logs")
+}
+
+model NotificationLog {
+  id                  String      @id @default(uuid())
+  salonId             String      @map("salon_id")
+  appointmentId       String?     @map("appointment_id")
+  clientId            String      @map("client_id")
+  type                String
+  channels            String      @default("[]")
+  status              String      @default("pending")
+  emailStatus         String?     @map("email_status")
+  emailSentAt         DateTime?   @map("email_sent_at")
+  emailDeliveredAt    DateTime?   @map("email_delivered_at")
+  emailError          String?     @map("email_error")
+  sendgridMessageId   String?     @unique @map("sendgrid_message_id")
+  smsStatus           String?     @map("sms_status")
+  smsSentAt           DateTime?   @map("sms_sent_at")
+  smsDeliveredAt      DateTime?   @map("sms_delivered_at")
+  smsError            String?     @map("sms_error")
+  smsErrorCode        String?     @map("sms_error_code")
+  twilioMessageSid    String?     @unique @map("twilio_message_sid")
+  retryCount          Int         @default(0) @map("retry_count")
+  retryAt             DateTime?   @map("retry_at")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  salon               Salon       @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  appointment         Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  client              Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([clientId])
+  @@index([appointmentId])
+  @@index([status])
+  @@index([retryAt])
+  @@index([createdAt])
+  @@map("notification_logs")
 }
 
 model Subscription {
