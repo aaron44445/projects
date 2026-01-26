@@ -36,7 +36,7 @@ export function usePermissions() {
 
     // Manager has limited permissions (view-only, no creation/deletion)
     if (user.role === 'manager') {
-      const managerPermissions = [
+      const managerPermissions: Permission[] = [
         PERMISSIONS.VIEW_REPORTS,
       ];
       return managerPermissions.includes(permission);
