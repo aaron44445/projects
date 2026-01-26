@@ -130,14 +130,16 @@ Plans:
   4. Delivery status logged for every notification (sent/failed/bounced)
   5. Owner can view notification history to verify reminders were sent
 
-**Plans**: 5 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — NotificationLog schema and unified notification service
-- [ ] 05-02-PLAN.md — Twilio SMS status webhook for delivery tracking
+- [x] 05-01-PLAN.md — NotificationLog schema and unified notification service
+- [x] 05-02-PLAN.md — Twilio SMS status webhook for delivery tracking
 - [ ] 05-03-PLAN.md — Calendar integration for booking confirmations (ICS/links)
-- [ ] 05-04-PLAN.md — Configurable reminder timing per salon
-- [ ] 05-05-PLAN.md — Notification history API and frontend page
+- [x] 05-04-PLAN.md — Configurable reminder timing per salon
+- [x] 05-05-PLAN.md — Notification history API and frontend page
+- [ ] 05-06-PLAN.md — [GAP CLOSURE] Pass calendar fields to all email call sites
+- [ ] 05-07-PLAN.md — [GAP CLOSURE] Wire notification settings UI to API
 
 ### Phase 6: Settings Persistence
 
@@ -184,7 +186,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -192,10 +194,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
-| 5. Notification System | 0/5 | Ready | - |
+| 5. Notification System | 4/7 | In Progress | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25 (Phase 4 complete)*
+*Last updated: 2026-01-26 (Phase 5 gap closure plans added)*
