@@ -8,7 +8,7 @@ function getStripeClient(): Stripe {
     throw new Error('STRIPE_SECRET_KEY is not configured. Stripe features are unavailable.');
   }
   return new Stripe(env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-06-20',
+    apiVersion: '2025-12-15.clover',
   });
 }
 
