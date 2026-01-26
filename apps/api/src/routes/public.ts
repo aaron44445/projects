@@ -746,11 +746,20 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
       },
     });
   } else {
-    // Update client info if they provided new phone
-    if (phone && phone !== client.phone) {
+    // Update client info if they provided new details
+    const updates: { firstName?: string; lastName?: string; phone?: string; optedInReminders?: boolean } = {};
+
+    if (firstName && firstName !== client.firstName) updates.firstName = firstName;
+    if (lastName && lastName !== client.lastName) updates.lastName = lastName;
+    if (phone && phone !== client.phone) updates.phone = phone;
+    if (optInReminders !== undefined && optInReminders !== client.optedInReminders) {
+      updates.optedInReminders = optInReminders;
+    }
+
+    if (Object.keys(updates).length > 0) {
       client = await prisma.client.update({
         where: { id: client.id },
-        data: { phone },
+        data: updates,
       });
     }
   }
@@ -841,6 +850,18 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
   const channels: ('email' | 'sms')[] = [];
   if (client.email) channels.push('email');
   if (client.phone && optInReminders) channels.push('sms');
+
+  // Debug: Log appointment times before notification
+  console.log('[BOOKING] Appointment created with times:', {
+    appointmentId: appointment.id,
+    startTime: appointment.startTime,
+    endTime: appointment.endTime,
+    startTimeType: typeof appointment.startTime,
+    endTimeType: typeof appointment.endTime,
+    startTimeIsDate: appointment.startTime instanceof Date,
+    endTimeIsDate: appointment.endTime instanceof Date,
+    salonTimezone: salon.timezone,
+  });
 
   if (channels.length > 0) {
     try {
