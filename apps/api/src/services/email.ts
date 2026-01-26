@@ -147,6 +147,18 @@ export function appointmentConfirmationEmail(data: {
   salonTimezone?: string;
   salonEmail?: string;
 }): string {
+  // Debug: Log calendar field values
+  console.log('[EMAIL] appointmentConfirmationEmail called with calendar fields:', {
+    hasStartTime: !!data.startTime,
+    hasEndTime: !!data.endTime,
+    startTimeType: typeof data.startTime,
+    endTimeType: typeof data.endTime,
+    startTime: data.startTime,
+    endTime: data.endTime,
+    salonTimezone: data.salonTimezone,
+    salonEmail: data.salonEmail,
+  });
+
   // Generate calendar links if appointment times provided
   let calendarSection = '';
   if (data.startTime && data.endTime) {

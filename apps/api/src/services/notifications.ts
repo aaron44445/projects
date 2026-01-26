@@ -109,6 +109,15 @@ async function sendEmailNotification(
   let htmlContent: string;
   let subject: string;
 
+  // Debug: Log calendar fields before email generation
+  console.log('[NOTIFICATION] sendEmailNotification payload.data calendar fields:', {
+    hasStartTime: !!payload.data.startTime,
+    hasEndTime: !!payload.data.endTime,
+    startTime: payload.data.startTime,
+    endTime: payload.data.endTime,
+    salonTimezone: payload.data.salonTimezone,
+  });
+
   switch (payload.type) {
     case 'booking_confirmation':
       subject = `Appointment Confirmed - ${payload.data.salonName}`;
