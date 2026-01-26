@@ -97,6 +97,8 @@ export async function createBookingWithLock(data: BookingData) {
           }
 
           // No conflicts found - create the appointment
+          // NOTE: Using explicit select to ensure startTime/endTime are included in return
+          // There was a bug where include-only queries sometimes omitted scalar fields
           return await tx.appointment.create({
             data: {
               salonId: data.salonId,
@@ -114,7 +116,20 @@ export async function createBookingWithLock(data: BookingData) {
               stripePaymentIntentId: data.stripePaymentIntentId || null,
               depositStatus: data.depositStatus || null,
             },
-            include: {
+            select: {
+              id: true,
+              salonId: true,
+              clientId: true,
+              staffId: true,
+              serviceId: true,
+              locationId: true,
+              startTime: true,
+              endTime: true,
+              durationMinutes: true,
+              price: true,
+              status: true,
+              notes: true,
+              source: true,
               client: {
                 select: { firstName: true, lastName: true, email: true },
               },
