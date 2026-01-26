@@ -71,13 +71,13 @@ function Navigation() {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm font-medium text-charcoal/70 hover:text-charcoal transition-colors">
+            <Link href="#features" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium text-charcoal/70 hover:text-charcoal transition-colors">
+            <Link href="#pricing" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
               Pricing
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium text-charcoal/70 hover:text-charcoal transition-colors">
+            <Link href="#testimonials" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
               Testimonials
             </Link>
           </div>

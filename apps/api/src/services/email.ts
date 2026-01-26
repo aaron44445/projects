@@ -204,7 +204,7 @@ export function appointmentConfirmationEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">${data.salonName}</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Appointment Confirmed</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C;">Appointment Confirmed</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -253,7 +253,7 @@ export function appointmentReminderEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Reminder</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Your appointment is coming up!</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C;">Your appointment is coming up!</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -299,7 +299,7 @@ export function appointmentReminder2hEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">See You Soon!</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;" class="urgent">Your appointment is in 2 hours</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C;" class="urgent">Your appointment is in 2 hours</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -386,7 +386,7 @@ export function emailVerificationEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Verify Your Email</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Peacase</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
         </div>
         <div class="content">
           <p>Welcome to Peacase!</p>
@@ -435,7 +435,7 @@ export function passwordResetEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Password Reset</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Peacase</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
         </div>
         <div class="content">
           <p>Hi ${data.recipientName},</p>
@@ -519,7 +519,7 @@ export function clientWelcomeEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Welcome!</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">${data.salonName}</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C;">${data.salonName}</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -602,7 +602,7 @@ export function dataExportEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Your Data Export is Ready</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Peacase</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -732,7 +732,7 @@ export function deletionCompleteEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Data Deletion Complete</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Peacase</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
@@ -798,7 +798,7 @@ export function consentUpdateEmail(data: {
       <div class="container">
         <div class="header">
           <h1 style="margin: 0; color: #2C2C2C;">Consent Preferences Updated</h1>
-          <p style="margin: 10px 0 0 0; color: #4A4A4A;">Peacase</p>
+          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
         </div>
         <div class="content">
           <p>Hi ${data.clientName},</p>
