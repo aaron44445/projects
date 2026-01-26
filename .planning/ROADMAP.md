@@ -130,11 +130,14 @@ Plans:
   4. Delivery status logged for every notification (sent/failed/bounced)
   5. Owner can view notification history to verify reminders were sent
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md — NotificationLog schema and unified notification service
+- [ ] 05-02-PLAN.md — Twilio SMS status webhook for delivery tracking
+- [ ] 05-03-PLAN.md — Calendar integration for booking confirmations (ICS/links)
+- [ ] 05-04-PLAN.md — Configurable reminder timing per salon
+- [ ] 05-05-PLAN.md — Notification history API and frontend page
 
 ### Phase 6: Settings Persistence
 
@@ -189,7 +192,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
-| 5. Notification System | 0/0 | Not started | - |
+| 5. Notification System | 0/5 | Ready | - |
 | 6. Settings Persistence | 0/0 | Not started | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
 
