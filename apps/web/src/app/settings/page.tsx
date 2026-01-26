@@ -51,6 +51,7 @@ import { useSalon, useLocationContext, type Salon, useAccount, useTeam, useOwner
 import { useServices, type Service } from '@/hooks/useServices';
 import { useStaff, type StaffMember } from '@/hooks/useStaff';
 import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
+import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import type { UserSession, LoginHistoryEntry, TeamMember, TeamInvite } from '@/hooks';
 import Link from 'next/link';
 
@@ -216,6 +217,15 @@ function SettingsContent() {
     updatePreferences,
     togglePreference,
   } = useOwnerNotifications();
+
+  const {
+    settings: notificationSettings,
+    loading: notificationSettingsLoading,
+    saving: notificationSettingsSaving,
+    setReminderTiming,
+    toggleChannel,
+    toggleReminders,
+  } = useNotificationSettings();
 
   // Account section state
   const [profileForm, setProfileForm] = useState({
@@ -2104,7 +2114,13 @@ function SettingsContent() {
               </p>
             </div>
 
-            {/* Content - disabled when locked */}
+            {/* Loading state */}
+            {notificationSettingsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-sage" />
+                <span className="ml-2 text-charcoal/60 dark:text-white/60">Loading settings...</span>
+              </div>
+            ) : (
             <div className={notificationsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
               {/* Client Notifications */}
               <div className="space-y-4">
@@ -2140,25 +2156,51 @@ function SettingsContent() {
                       <p className="text-sm text-charcoal/60 dark:text-white/60">Remind clients before their appointment</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings?.reminders?.enabled ?? true}
+                        onChange={() => toggleReminders()}
+                        disabled={notificationsLocked || notificationSettingsSaving}
+                        className="sr-only peer"
+                      />
                       <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
                     </label>
                   </div>
                   <div className="flex items-center gap-3 mb-3">
                     <label className="text-sm text-charcoal/60 dark:text-white/60">Send reminder:</label>
-                    <select disabled={notificationsLocked} className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm disabled:opacity-50">
+                    <select
+                      value={notificationSettings?.reminders?.timings?.[0]?.hours || 24}
+                      onChange={(e) => setReminderTiming(parseInt(e.target.value))}
+                      disabled={notificationsLocked || notificationSettingsSaving}
+                      className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm disabled:opacity-50"
+                    >
                       <option value="24">24 hours before</option>
                       <option value="48">48 hours before</option>
                       <option value="2">2 hours before</option>
                     </select>
+                    {notificationSettingsSaving && (
+                      <Loader2 className="w-4 h-4 animate-spin text-sage" />
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings?.channels?.email ?? true}
+                        onChange={() => toggleChannel('email')}
+                        disabled={notificationsLocked || notificationSettingsSaving}
+                        className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50"
+                      />
                       <span className="text-sm text-charcoal dark:text-white">Email</span>
                     </label>
                     <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                      <input
+                        type="checkbox"
+                        checked={notificationSettings?.channels?.sms ?? true}
+                        onChange={() => toggleChannel('sms')}
+                        disabled={notificationsLocked || notificationSettingsSaving}
+                        className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50"
+                      />
                       <span className="text-sm text-charcoal dark:text-white">SMS</span>
                     </label>
                   </div>
@@ -2196,6 +2238,7 @@ function SettingsContent() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         );
 
