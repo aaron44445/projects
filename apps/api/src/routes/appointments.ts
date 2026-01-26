@@ -383,7 +383,10 @@ router.post(
     });
 
     // Send confirmation notifications
-    const salon = await prisma.salon.findUnique({ where: { id: req.user!.salonId } });
+    const salon = await prisma.salon.findUnique({
+      where: { id: req.user!.salonId },
+      select: { name: true, address: true, timezone: true, email: true },
+    });
     const formattedDateTime = new Date(appointment.startTime).toLocaleString('en-US', {
       weekday: 'long',
       month: 'long',
@@ -391,6 +394,10 @@ router.post(
       hour: 'numeric',
       minute: '2-digit',
     });
+
+    // Calculate appointment end time for calendar links
+    const appointmentEndTime = new Date(appointment.startTime);
+    appointmentEndTime.setMinutes(appointmentEndTime.getMinutes() + service.durationMinutes);
 
     // Send email confirmation
     if (client?.email && client?.optedInReminders) {
@@ -404,6 +411,11 @@ router.post(
           dateTime: formattedDateTime,
           salonName: salon?.name || '',
           salonAddress: salon?.address || '',
+          // Calendar fields for "Add to Calendar" links
+          startTime: appointment.startTime,
+          endTime: appointmentEndTime,
+          salonTimezone: salon?.timezone,
+          salonEmail: salon?.email,
         }),
       });
     }
