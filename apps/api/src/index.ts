@@ -92,6 +92,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Version check - UPDATE THIS ON EACH DEPLOY TO VERIFY
+const BUILD_VERSION = '2026-01-26-v3-calendar-fix';
+app.get('/api/v1/version', (req, res) => {
+  res.json({ version: BUILD_VERSION, deployedAt: new Date().toISOString() });
+});
+
 // Debug endpoint - test if /api routes work without database
 app.get('/api/v1/debug', (req, res) => {
   res.json({
