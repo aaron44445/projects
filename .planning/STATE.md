@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 5 of 7 (Notification System)
-Plan: 3 of 4 in current phase (05-01, 05-02, 05-04 complete)
-Status: In progress
-Last activity: 2026-01-26 - Completed 05-04-PLAN.md (Configurable Reminder Timing)
+Plan: 4 of 4 in current phase (05-01, 05-02, 05-04, 05-06 complete)
+Status: Phase complete
+Last activity: 2026-01-26 - Completed 05-06-PLAN.md (Calendar Links in Confirmation Emails)
 
-Progress: [████████████░] 89% (16/18 plans estimated across all phases)
+Progress: [█████████████] 94% (17/18 plans estimated across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
-- Average duration: 8.8 min
-- Total execution time: 2.40 hours
+- Total plans completed: 17
+- Average duration: 8.2 min
+- Total execution time: 2.43 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [████████████░] 89% (16/18 plans estimated a
 | 02-core-data-flows | 6 | 69min | 11.5min |
 | 03-online-booking-widget | 3 | 35min | 11.7min |
 | 04-payment-processing | 4 | 17min | 4.25min |
-| 05-notification-system | 3 | 23min | 7.7min |
+| 05-notification-system | 4 | 26min | 6.5min |
 
 **Recent Trend:**
-- Last 8 plans: 03-03 (~15min), 04-01 (8min), 04-02 (3min), 04-03 (3min), 04-04 (3min), 05-01 (7min), 05-02 (9min), 05-04 (7min)
-- Trend: Consistent sub-10min execution for focused plans
+- Last 8 plans: 04-01 (8min), 04-02 (3min), 04-03 (3min), 04-04 (3min), 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min)
+- Trend: Consistent sub-10min execution for focused plans, gap closure plans very fast
 
 *Updated after each plan completion*
 
@@ -104,6 +104,9 @@ Recent decisions affecting current work:
 - **05-04:** Timing validation limits to 1-168 hours (1 week max)
 - **05-04:** Only owner/admin roles can modify notification settings for security
 - **05-04:** Salons without notification_settings JSON use sensible defaults
+- **05-06:** Calendar fields pattern: pass startTime, endTime, salonTimezone, salonEmail to appointmentConfirmationEmail
+- **05-06:** Calculate endTime from startTime + service durationMinutes at call site
+- **05-06:** Fetch salon timezone and email fields for calendar event generation
 
 ### Pending Todos
 
@@ -155,15 +158,16 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-26T01:00:37Z
-Stopped at: Completed 05-04-PLAN.md - Configurable Reminder Timing
+Last session: 2026-01-26T16:06:32Z
+Stopped at: Completed 05-06-PLAN.md - Calendar Links in Confirmation Emails
 Resume file: None
 
-**Phase 5 Status:** IN PROGRESS
+**Phase 5 Status:** COMPLETE
 - 05-01: Notification Foundation - COMPLETE
 - 05-02: SMS Status Webhooks - COMPLETE
-- 05-03: Automated Reminder Jobs - PENDING
+- 05-03: Automated Reminder Jobs - PENDING (deferred)
 - 05-04: Configurable Reminder Timing - COMPLETE
+- 05-06: Calendar Links in Confirmation Emails - COMPLETE (gap closure)
 
 **Phase 4 Status:** COMPLETE (verified by human testing)
 - 04-01: Payment Schema Foundation - COMPLETE
