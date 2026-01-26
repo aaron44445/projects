@@ -40,7 +40,7 @@ coverage
 .worktrees
 
 .vercel
-apps/api/src/routes/clientAuth.ts
+
 # These routes are now implemented
 # apps/api/src/routes/clientPortal.ts
 # apps/api/src/routes/locations.ts
