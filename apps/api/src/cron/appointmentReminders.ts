@@ -10,10 +10,42 @@ import {
   appointmentReminder2hSms,
 } from '../services/sms.js';
 
-// Reminder types
-export enum ReminderType {
-  REMINDER_24H = 'REMINDER_24H',
-  REMINDER_2H = 'REMINDER_2H',
+// Reminder types - now dynamic based on salon configuration
+export type ReminderType = string;  // e.g., 'REMINDER_24H', 'REMINDER_2H', 'REMINDER_48H'
+
+// Notification settings structure (matches salon.ts)
+interface NotificationSettings {
+  reminders: {
+    enabled: boolean;
+    timings: { hours: number; label: string }[];
+  };
+  channels: {
+    email: boolean;
+    sms: boolean;
+  };
+}
+
+const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  reminders: {
+    enabled: true,
+    timings: [
+      { hours: 24, label: '24 hours before' },
+      { hours: 2, label: '2 hours before' },
+    ],
+  },
+  channels: {
+    email: true,
+    sms: true,
+  },
+};
+
+function parseNotificationSettings(json: string | null): NotificationSettings {
+  if (!json) return DEFAULT_NOTIFICATION_SETTINGS;
+  try {
+    return JSON.parse(json) as NotificationSettings;
+  } catch {
+    return DEFAULT_NOTIFICATION_SETTINGS;
+  }
 }
 
 interface AppointmentWithDetails {
@@ -118,21 +150,129 @@ async function logReminder(
 }
 
 /**
- * Get appointments that need reminders
- * @param hoursAhead - How many hours ahead to look for appointments
- * @param windowMinutes - Time window in minutes (e.g., 30 minutes before/after the target time)
+ * Send a reminder for a single appointment
  */
-async function getAppointmentsForReminders(
+async function sendAppointmentReminder(
+  appointment: AppointmentWithDetails,
+  reminderType: ReminderType,
+  channelConfig: { email: boolean; sms: boolean }
+): Promise<ReminderResult> {
+  const { client, staff, service, salon } = appointment;
+  const clientName = `${client.firstName} ${client.lastName}`;
+  const staffName = `${staff.firstName} ${staff.lastName}`;
+  const dateTime = formatDateTime(appointment.startTime, salon.timezone);
+  const address = formatAddress(salon);
+
+  const result: ReminderResult = {
+    appointmentId: appointment.id,
+    clientName,
+    reminderType,
+    emailSent: false,
+    smsSent: false,
+  };
+
+  // Check if reminder already sent
+  const alreadySent = await hasReminderBeenSent(appointment.id, reminderType);
+  if (alreadySent) {
+    result.error = 'Reminder already sent';
+    return result;
+  }
+
+  const preference = client.communicationPreference;
+  let channelUsed: 'email' | 'sms' | 'both' = 'email';
+
+  try {
+    // Send email only if channel is enabled AND client prefers email
+    if (client.email && channelConfig.email && (preference === 'email' || preference === 'both')) {
+      const emailSubject =
+        reminderType === 'REMINDER_24H'
+          ? `Reminder: Your appointment at ${salon.name} tomorrow`
+          : `Reminder: Your appointment at ${salon.name} soon`;
+
+      const emailData = {
+        clientName: client.firstName,
+        serviceName: service.name,
+        staffName,
+        dateTime,
+        salonName: salon.name,
+        salonAddress: address,
+      };
+
+      // Use different templates for 24h vs 2h reminders
+      const emailHtml =
+        reminderType === 'REMINDER_24H'
+          ? appointmentReminderEmail(emailData)
+          : appointmentReminder2hEmail(emailData);
+
+      result.emailSent = await sendEmail({
+        to: client.email,
+        subject: emailSubject,
+        html: emailHtml,
+      });
+    }
+
+    // Send SMS only if channel is enabled AND client prefers sms
+    if (client.phone && channelConfig.sms && (preference === 'sms' || preference === 'both')) {
+      const smsData = {
+        clientName: client.firstName,
+        serviceName: service.name,
+        dateTime,
+        salonName: salon.name,
+      };
+
+      // Use different templates for 24h vs 2h reminders
+      const smsMessage =
+        reminderType === 'REMINDER_24H'
+          ? appointmentReminderSms(smsData)
+          : appointmentReminder2hSms(smsData);
+
+      const smsResult = await sendSms({
+        to: client.phone,
+        message: smsMessage,
+      });
+      result.smsSent = smsResult.success;
+    }
+
+    // Determine channel used for logging
+    if (result.emailSent && result.smsSent) {
+      channelUsed = 'both';
+    } else if (result.smsSent) {
+      channelUsed = 'sms';
+    } else {
+      channelUsed = 'email';
+    }
+
+    // Log the reminder
+    const success = result.emailSent || result.smsSent;
+    await logReminder(appointment.id, reminderType, channelUsed, success);
+  } catch (error) {
+    result.error = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`Error sending reminder for appointment ${appointment.id}:`, error);
+
+    // Log the failed attempt
+    await logReminder(appointment.id, reminderType, channelUsed, false, result.error);
+  }
+
+  return result;
+}
+
+/**
+ * Process reminders for a specific salon and timing configuration
+ */
+async function processRemindersForSalon(
+  salonId: string,
   hoursAhead: number,
-  windowMinutes: number = 30
-): Promise<AppointmentWithDetails[]> {
+  reminderType: ReminderType,
+  channels: { email: boolean; sms: boolean }
+): Promise<{ processed: number; emailsSent: number; smsSent: number }> {
   const now = new Date();
   const targetTime = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
-  const windowStart = new Date(targetTime.getTime() - windowMinutes * 60 * 1000);
-  const windowEnd = new Date(targetTime.getTime() + windowMinutes * 60 * 1000);
+  const windowStart = new Date(targetTime.getTime() - 30 * 60 * 1000);  // 30 min window
+  const windowEnd = new Date(targetTime.getTime() + 30 * 60 * 1000);
 
   const appointments = await prisma.appointment.findMany({
     where: {
+      salonId,
       startTime: {
         gte: windowStart,
         lte: windowEnd,
@@ -182,165 +322,22 @@ async function getAppointmentsForReminders(
     },
   });
 
-  return appointments as AppointmentWithDetails[];
-}
+  const results = { processed: 0, emailsSent: 0, smsSent: 0 };
 
-/**
- * Send a reminder for a single appointment
- */
-async function sendAppointmentReminder(
-  appointment: AppointmentWithDetails,
-  reminderType: ReminderType
-): Promise<ReminderResult> {
-  const { client, staff, service, salon } = appointment;
-  const clientName = `${client.firstName} ${client.lastName}`;
-  const staffName = `${staff.firstName} ${staff.lastName}`;
-  const dateTime = formatDateTime(appointment.startTime, salon.timezone);
-  const address = formatAddress(salon);
+  for (const appointment of appointments) {
+    // Check if this specific reminder was already sent
+    const alreadySent = await hasReminderBeenSent(appointment.id, reminderType);
+    if (alreadySent) continue;
 
-  const result: ReminderResult = {
-    appointmentId: appointment.id,
-    clientName,
-    reminderType,
-    emailSent: false,
-    smsSent: false,
-  };
-
-  // Check if reminder already sent
-  const alreadySent = await hasReminderBeenSent(appointment.id, reminderType);
-  if (alreadySent) {
-    result.error = 'Reminder already sent';
-    return result;
-  }
-
-  const preference = client.communicationPreference;
-  let channelUsed: 'email' | 'sms' | 'both' = 'email';
-
-  try {
-    // Send email if client has email and prefers email or both
-    if (client.email && (preference === 'email' || preference === 'both')) {
-      const emailSubject =
-        reminderType === ReminderType.REMINDER_24H
-          ? `Reminder: Your appointment at ${salon.name} tomorrow`
-          : `Reminder: Your appointment at ${salon.name} in 2 hours`;
-
-      const emailData = {
-        clientName: client.firstName,
-        serviceName: service.name,
-        staffName,
-        dateTime,
-        salonName: salon.name,
-        salonAddress: address,
-      };
-
-      // Use different templates for 24h vs 2h reminders
-      const emailHtml =
-        reminderType === ReminderType.REMINDER_24H
-          ? appointmentReminderEmail(emailData)
-          : appointmentReminder2hEmail(emailData);
-
-      result.emailSent = await sendEmail({
-        to: client.email,
-        subject: emailSubject,
-        html: emailHtml,
-      });
-    }
-
-    // Send SMS if client has phone and prefers sms or both
-    if (client.phone && (preference === 'sms' || preference === 'both')) {
-      const smsData = {
-        clientName: client.firstName,
-        serviceName: service.name,
-        dateTime,
-        salonName: salon.name,
-      };
-
-      // Use different templates for 24h vs 2h reminders
-      const smsMessage =
-        reminderType === ReminderType.REMINDER_24H
-          ? appointmentReminderSms(smsData)
-          : appointmentReminder2hSms(smsData);
-
-      const smsResult = await sendSms({
-        to: client.phone,
-        message: smsMessage,
-      });
-      result.smsSent = smsResult.success;
-    }
-
-    // Determine channel used for logging
-    if (result.emailSent && result.smsSent) {
-      channelUsed = 'both';
-    } else if (result.smsSent) {
-      channelUsed = 'sms';
-    } else {
-      channelUsed = 'email';
-    }
-
-    // Log the reminder
-    const success = result.emailSent || result.smsSent;
-    await logReminder(appointment.id, reminderType, channelUsed, success);
-  } catch (error) {
-    result.error = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Error sending reminder for appointment ${appointment.id}:`, error);
-
-    // Log the failed attempt
-    await logReminder(appointment.id, reminderType, channelUsed, false, result.error);
-  }
-
-  return result;
-}
-
-/**
- * Process all reminders for a specific time window (24h or 2h)
- */
-async function processReminders(
-  hoursAhead: number,
-  reminderType: ReminderType
-): Promise<ReminderResult[]> {
-  const results: ReminderResult[] = [];
-
-  try {
-    const appointments = await getAppointmentsForReminders(hoursAhead);
-
-    console.log(
-      `[${reminderType}] Found ${appointments.length} appointments to send reminders for`
+    const result = await sendAppointmentReminder(
+      appointment as any,  // Type assertion for existing interface
+      reminderType,
+      channels
     );
 
-    for (const appointment of appointments) {
-      try {
-        const result = await sendAppointmentReminder(appointment, reminderType);
-        results.push(result);
-
-        if (result.emailSent || result.smsSent) {
-          console.log(
-            `[${reminderType}] Sent reminder to ${result.clientName} (email: ${result.emailSent}, sms: ${result.smsSent})`
-          );
-        } else if (result.error === 'Reminder already sent') {
-          console.log(`[${reminderType}] Skipped ${result.clientName} - already sent`);
-        } else {
-          console.warn(
-            `[${reminderType}] Failed to send reminder to ${result.clientName}: ${result.error}`
-          );
-        }
-      } catch (error) {
-        // Don't stop processing other appointments if one fails
-        console.error(
-          `[${reminderType}] Error processing appointment ${appointment.id}:`,
-          error
-        );
-        results.push({
-          appointmentId: appointment.id,
-          clientName: `${appointment.client.firstName} ${appointment.client.lastName}`,
-          reminderType,
-          emailSent: false,
-          smsSent: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    }
-  } catch (error) {
-    console.error(`[${reminderType}] Error fetching appointments:`, error);
+    results.processed++;
+    if (result.emailSent) results.emailsSent++;
+    if (result.smsSent) results.smsSent++;
   }
 
   return results;
@@ -355,32 +352,53 @@ export async function runAppointmentReminders(): Promise<void> {
   console.log(`\n[AppointmentReminders] Starting at ${startTime.toISOString()}`);
 
   try {
-    // Process 24-hour reminders
-    const results24h = await processReminders(24, ReminderType.REMINDER_24H);
+    // Get all active salons with their notification settings
+    const salons = await prisma.salon.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        notification_settings: true,
+        timezone: true,
+        name: true,
+      },
+    });
 
-    // Process 2-hour reminders
-    const results2h = await processReminders(2, ReminderType.REMINDER_2H);
+    let totalProcessed = 0;
+    let totalEmailsSent = 0;
+    let totalSmsSent = 0;
 
-    // Summary
-    const totalProcessed = results24h.length + results2h.length;
-    const totalEmailsSent =
-      results24h.filter((r) => r.emailSent).length +
-      results2h.filter((r) => r.emailSent).length;
-    const totalSmsSent =
-      results24h.filter((r) => r.smsSent).length + results2h.filter((r) => r.smsSent).length;
-    const totalErrors =
-      results24h.filter((r) => r.error && r.error !== 'Reminder already sent').length +
-      results2h.filter((r) => r.error && r.error !== 'Reminder already sent').length;
+    for (const salon of salons) {
+      const settings = parseNotificationSettings(salon.notification_settings);
+
+      if (!settings.reminders.enabled) {
+        continue;  // Skip salons with reminders disabled
+      }
+
+      // Process each configured timing
+      for (const timing of settings.reminders.timings) {
+        const reminderType = `REMINDER_${timing.hours}H` as ReminderType;
+        const results = await processRemindersForSalon(
+          salon.id,
+          timing.hours,
+          reminderType,
+          settings.channels
+        );
+
+        totalProcessed += results.processed;
+        totalEmailsSent += results.emailsSent;
+        totalSmsSent += results.smsSent;
+      }
+    }
 
     const endTime = new Date();
     const duration = endTime.getTime() - startTime.getTime();
 
     console.log(`[AppointmentReminders] Completed in ${duration}ms`);
     console.log(`[AppointmentReminders] Summary:`);
+    console.log(`  - Salons checked: ${salons.length}`);
     console.log(`  - Total appointments processed: ${totalProcessed}`);
     console.log(`  - Emails sent: ${totalEmailsSent}`);
     console.log(`  - SMS sent: ${totalSmsSent}`);
-    console.log(`  - Errors: ${totalErrors}`);
   } catch (error) {
     console.error('[AppointmentReminders] Fatal error:', error);
   }
@@ -390,18 +408,14 @@ export async function runAppointmentReminders(): Promise<void> {
  * Manually trigger reminders (useful for testing or admin endpoints)
  */
 export async function triggerReminders(type?: '24h' | '2h'): Promise<{
-  results24h?: ReminderResult[];
-  results2h?: ReminderResult[];
+  success: boolean;
+  message: string;
 }> {
-  const response: { results24h?: ReminderResult[]; results2h?: ReminderResult[] } = {};
+  // Manually triggering now uses the same logic as cron - respects salon settings
+  await runAppointmentReminders();
 
-  if (!type || type === '24h') {
-    response.results24h = await processReminders(24, ReminderType.REMINDER_24H);
-  }
-
-  if (!type || type === '2h') {
-    response.results2h = await processReminders(2, ReminderType.REMINDER_2H);
-  }
-
-  return response;
+  return {
+    success: true,
+    message: 'Reminder processing triggered. Check logs for details.',
+  };
 }
