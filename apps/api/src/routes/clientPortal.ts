@@ -375,8 +375,12 @@ clientPortalRouter.post('/booking', asyncHandler(async (req, res, next) => {
   try {
     const salon = await prisma.salon.findUnique({
       where: { id: salonId },
-      select: { name: true },
+      select: { name: true, address: true, timezone: true, email: true },
     });
+
+    // Calculate appointment end time for calendar links
+    const appointmentEndTime = new Date(appointmentStart);
+    appointmentEndTime.setMinutes(appointmentEndTime.getMinutes() + service.durationMinutes);
 
     await sendEmail({
       to: client!.email!,
@@ -387,7 +391,12 @@ clientPortalRouter.post('/booking', asyncHandler(async (req, res, next) => {
         staffName: `${staff.firstName} ${staff.lastName}`,
         dateTime: appointmentStart.toLocaleString(),
         salonName: salon?.name || '',
-        salonAddress: '',
+        salonAddress: salon?.address || '',
+        // Calendar fields for "Add to Calendar" links
+        startTime: appointmentStart,
+        endTime: appointmentEndTime,
+        salonTimezone: salon?.timezone,
+        salonEmail: salon?.email,
       }),
     });
   } catch (emailError) {
