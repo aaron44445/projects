@@ -883,6 +883,7 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
           startTime: appointment.startTime,
           endTime: appointment.endTime,
           salonTimezone: salon.timezone,
+          salonEmail: salon.email,
         },
       });
     } catch (e) {

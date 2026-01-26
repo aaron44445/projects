@@ -21,6 +21,7 @@ export interface NotificationPayload {
     startTime?: Date;
     endTime?: Date;
     salonTimezone?: string;
+    salonEmail?: string;
   };
 }
 
