@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   PEACASE - Global Styles
+   ============================================ */
+
+@layer base {
+  :root {
+    --border: 220 13% 91%;
+  }
+
+  .dark {
+    --border: 220 13% 20%;
+  }
+
+  * {
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-charcoal antialiased;
+    @apply dark:bg-charcoal dark:text-white;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-charcoal/20 rounded-full;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-charcoal/30;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/30;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-sage/30 text-charcoal;
+  }
+
+  .dark ::selection {
+    @apply bg-sage/30 text-white;
+  }
+
+  /* Dark mode select/dropdown styling - ensures dropdown options are readable */
+  .dark select {
+    color-scheme: dark;
+  }
+
+  .dark select option {
+    @apply bg-gray-800 text-white;
+  }
+
+  .dark select optgroup {
+    @apply bg-gray-700 text-white;
+  }
+}
+
+@layer components {
+  /* Base form input styles - provides defaults that Tailwind utilities can override */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-xl border transition-all outline-none;
+    @apply bg-white text-charcoal border-charcoal/20 placeholder:text-charcoal/40;
+    @apply dark:bg-charcoal dark:text-white dark:border-white/20 dark:placeholder:text-white/40;
+    @apply focus:border-sage focus:ring-2 focus:ring-sage/20;
+  }
+
+  .form-select {
+    @apply w-full px-4 py-3 rounded-xl border transition-all outline-none cursor-pointer;
+    @apply bg-white text-charcoal border-charcoal/20;
+    @apply dark:bg-charcoal dark:text-white dark:border-white/20;
+    @apply focus:border-sage focus:ring-2 focus:ring-sage/20;
+  }
+
+  .form-textarea {
+    @apply w-full px-4 py-3 rounded-xl border transition-all outline-none resize-none;
+    @apply bg-white text-charcoal border-charcoal/20 placeholder:text-charcoal/40;
+    @apply dark:bg-charcoal dark:text-white dark:border-white/20 dark:placeholder:text-white/40;
+    @apply focus:border-sage focus:ring-2 focus:ring-sage/20;
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2;
+    @apply dark:focus-visible:ring-offset-charcoal;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/60;
+    @apply dark:bg-charcoal/80 dark:border-white/10;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-gradient-to-r from-surface-muted via-white to-surface-muted bg-[length:200%_100%] animate-shimmer;
+    @apply dark:from-charcoal dark:via-charcoal/80 dark:to-charcoal;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+}
