@@ -19,8 +19,20 @@ export interface NotificationSettings {
   };
 }
 
+// Default settings to use if fetch fails
+const DEFAULT_SETTINGS: NotificationSettings = {
+  reminders: {
+    enabled: true,
+    timings: [{ hours: 24, label: '24 hours before' }],
+  },
+  channels: {
+    email: true,
+    sms: true,
+  },
+};
+
 export function useNotificationSettings() {
-  const [settings, setSettings] = useState<NotificationSettings | null>(null);
+  const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -30,14 +42,17 @@ export function useNotificationSettings() {
     setLoading(true);
     setError(null);
     try {
+      console.log('[NotificationSettings] Fetching settings...');
       const response = await api.get<NotificationSettings>('/salon/notification-settings');
+      console.log('[NotificationSettings] Fetch response:', response);
       if (response.success && response.data) {
         setSettings(response.data);
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to fetch notification settings';
       setError(message);
-      console.error('Failed to fetch notification settings:', err);
+      console.error('[NotificationSettings] Fetch error:', err);
+      // Keep default settings on error
     } finally {
       setLoading(false);
     }
@@ -47,43 +62,56 @@ export function useNotificationSettings() {
     fetchSettings();
   }, [fetchSettings]);
 
-  // Save settings to API
+  // Save settings to API with optimistic update
   const updateSettings = useCallback(async (newSettings: Partial<NotificationSettings>): Promise<void> => {
-    if (!settings) return;
+    console.log('[NotificationSettings] updateSettings called with:', newSettings);
+    console.log('[NotificationSettings] Current settings:', settings);
 
+    // Merge new settings with existing
+    const mergedSettings: NotificationSettings = {
+      reminders: {
+        ...settings.reminders,
+        ...newSettings.reminders,
+      },
+      channels: {
+        ...settings.channels,
+        ...newSettings.channels,
+      },
+    };
+
+    console.log('[NotificationSettings] Merged settings to save:', mergedSettings);
+
+    // Optimistic update - update UI immediately
+    setSettings(mergedSettings);
     setSaving(true);
     setError(null);
-    try {
-      // Merge new settings with existing
-      const mergedSettings: NotificationSettings = {
-        reminders: {
-          ...settings.reminders,
-          ...newSettings.reminders,
-        },
-        channels: {
-          ...settings.channels,
-          ...newSettings.channels,
-        },
-      };
 
+    try {
       const response = await api.put<NotificationSettings>('/salon/notification-settings', mergedSettings);
+      console.log('[NotificationSettings] Save response:', response);
+
       if (response.success && response.data) {
         setSettings(response.data);
-        console.log('Notification settings saved');
+        console.log('[NotificationSettings] Settings saved successfully');
+      } else {
+        // Revert on failure
+        console.error('[NotificationSettings] Save failed - response not successful');
+        await fetchSettings(); // Refetch to get correct state
       }
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Failed to save notification settings';
       setError(message);
-      console.error('Failed to save notification settings:', message);
-      throw err;
+      console.error('[NotificationSettings] Save error:', err);
+      // Revert optimistic update by refetching
+      await fetchSettings();
     } finally {
       setSaving(false);
     }
-  }, [settings]);
+  }, [settings, fetchSettings]);
 
   // Helper: Update primary reminder timing
   const setReminderTiming = useCallback(async (hours: number) => {
-    if (!settings) return;
+    console.log('[NotificationSettings] setReminderTiming called with hours:', hours);
 
     // Create label based on hours
     let label = `${hours} hours before`;
@@ -108,7 +136,7 @@ export function useNotificationSettings() {
 
   // Helper: Toggle email or SMS channel
   const toggleChannel = useCallback(async (channel: 'email' | 'sms') => {
-    if (!settings) return;
+    console.log('[NotificationSettings] toggleChannel called with:', channel);
 
     await updateSettings({
       channels: {
@@ -120,7 +148,7 @@ export function useNotificationSettings() {
 
   // Helper: Toggle reminders enabled/disabled
   const toggleReminders = useCallback(async () => {
-    if (!settings) return;
+    console.log('[NotificationSettings] toggleReminders called, current enabled:', settings.reminders.enabled);
 
     await updateSettings({
       reminders: {
