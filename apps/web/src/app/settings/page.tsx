@@ -2124,13 +2124,6 @@ function SettingsContent() {
               </div>
             )}
 
-            {/* Debug info - remove after testing */}
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-4 text-xs font-mono">
-              <p>Add-on locked: {notificationsLocked ? 'YES' : 'NO'}</p>
-              <p>Current timing: {notificationSettings?.reminders?.timings?.[0]?.hours ?? 'undefined'}</p>
-              <p>Saving: {notificationSettingsSaving ? 'YES' : 'NO'}</p>
-            </div>
-
             {/* Loading state */}
             {notificationSettingsLoading ? (
               <div className="flex items-center justify-center py-8">

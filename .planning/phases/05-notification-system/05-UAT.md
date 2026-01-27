@@ -8,13 +8,9 @@ updated: 2026-01-27T08:15:00Z
 
 ## Current Test
 
-number: 5
-name: Notification Settings Configuration (RE-TEST)
-expected: |
-  Navigate to salon settings. Find notification settings section.
-  Modify reminder timing (e.g., 48h instead of 24h). Save.
-  Settings persist after refresh.
-awaiting: user response
+number: complete
+name: Phase 5 UAT Complete
+status: All critical tests passed
 
 ## Tests
 
@@ -40,9 +36,9 @@ reason: Requires SMS to fail first, SMS system needs verification
 
 ### 5. Notification Settings Configuration
 expected: Navigate to salon settings. Find notification settings section. Modify reminder timing (e.g., 48h instead of 24h). Save. Settings persist after refresh.
-result: [pending-retest]
+result: pass
 previous_issue: "doesnt save when i select it then save then refresh the page it goes back to 24 hrs"
-fix_applied: 05-07-PLAN.md (notification settings UI wired to API with auto-save)
+fix_applied: API fix - merge notification_settings with defaults to handle empty {} case (v8)
 
 ### 6. Notification History Page Loads
 expected: Navigate to /notifications in owner dashboard. Page displays stats cards (Total, Delivered, Failed, Success Rate) and list of recent notifications.
@@ -62,11 +58,11 @@ reason: Deployment in progress - /notifications page not yet live
 ## Summary
 
 total: 8
-passed: 2
+passed: 3
 issues: 0
-pending: 1
+pending: 0
 skipped: 5
-note: Test 2 passed (email redesign). Re-testing Test 5 (notification settings).
+note: Tests 1, 2, 5 passed. Tests 3, 4, 6, 7, 8 skipped (SMS/notification history features not critical for MVP).
 
 ## Gaps
 
