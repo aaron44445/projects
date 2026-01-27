@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 6 of 7 (Settings Persistence)
-Plan: Gap closure in progress (06-01 complete, 06-03 complete)
-Status: In progress - 1 gap remaining
-Last activity: 2026-01-27 - Completed 06-03-PLAN.md (Fix Location Context Race Condition)
+Plan: Gap closure complete (06-01, 06-03, 06-04 complete)
+Status: Phase complete - gap closure verified
+Last activity: 2026-01-27 - Completed 06-04-PLAN.md (Fix Booking Widget LocationId)
 
-Progress: [█████████████▓] 100% (20/20 plans completed across all phases)
+Progress: [█████████████▓] 100% (21/21 plans completed across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
-- Average duration: 7.7 min
-- Total execution time: 2.72 hours
+- Total plans completed: 21
+- Average duration: 7.6 min
+- Total execution time: 2.82 hours
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: [█████████████▓] 100% (20/20 plans complet
 | 03-online-booking-widget | 3 | 35min | 11.7min |
 | 04-payment-processing | 4 | 17min | 4.25min |
 | 05-notification-system | 5 | 31min | 6.2min |
-| 06-settings-persistence | 2 | 12min | 6.0min |
+| 06-settings-persistence | 3 | 18min | 6.0min |
 
 **Recent Trend:**
-- Last 8 plans: 04-04 (3min), 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min)
-- Trend: Gap closure plans extremely efficient (4min for race condition fix)
+- Last 8 plans: 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min), 06-04 (6min)
+- Trend: Gap closure plans extremely efficient (4-6min for focused fixes)
 
 *Updated after each plan completion*
 
@@ -116,6 +116,8 @@ Recent decisions affecting current work:
 - **06-03:** Lazy state initialization pattern for localStorage: useState(() => localStorage.getItem(...))
 - **06-03:** Initialize state from localStorage before useEffect runs to avoid race conditions
 - **06-03:** Belt-and-suspenders approach: lazy init + double-check in fetchLocations
+- **06-04:** Optional parameter pattern for fetch functions: add param, conditionally append to URL
+- **06-04:** Booking widget passes locationId to availability API for location-aware slot generation
 
 ### Pending Todos
 
@@ -167,18 +169,19 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-27T19:59:49Z
-Stopped at: Completed 06-03-PLAN.md - Fix Location Context Race Condition
+Last session: 2026-01-27T20:02:13Z
+Stopped at: Completed 06-04-PLAN.md - Fix Booking Widget LocationId
 Resume file: None
 
-**Phase 6 Status:** GAP CLOSURE IN PROGRESS
+**Phase 6 Status:** COMPLETE - GAP CLOSURE VERIFIED
 - 06-01: Wire Business Hours to API - COMPLETE
 - 06-02: Verify Settings Persistence - GAPS FOUND
 - 06-03: Fix Location Context Race Condition - COMPLETE
+- 06-04: Fix Booking Widget LocationId - COMPLETE
 
 **Phase 6 Gaps (from 06-02 verification):**
 1. Location context race condition - **FIXED in 06-03** - Lazy state initialization eliminates race
-2. Booking widget missing locationId - **PENDING in 06-04** - fetchAvailability doesn't pass locationId to API, hours ignored
+2. Booking widget missing locationId - **FIXED in 06-04** - fetchAvailability now passes locationId to API, respects location hours
 
 **Phase 5 Status:** AWAITING UAT RE-TEST
 - 05-01: Notification Foundation - COMPLETE
@@ -214,4 +217,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-27T13:39:32Z*
+*Last updated: 2026-01-27T20:02:13Z*
