@@ -265,11 +265,13 @@ async function fetchAvailability(
   slug: string,
   date: string,
   serviceId: string,
-  staffId?: string
+  staffId?: string,
+  locationId?: string
 ): Promise<TimeSlot[]> {
   try {
     let url = `${API_BASE}/api/v1/public/${slug}/availability?date=${date}&serviceId=${serviceId}`;
     if (staffId) url += `&staffId=${staffId}`;
+    if (locationId) url += `&locationId=${locationId}`;
     const res = await fetch(url);
     const data = await res.json();
     return data.success ? data.data : [];
@@ -1135,7 +1137,7 @@ export default function EmbedBookingPage() {
           setIsLoadingSlots(false);
         }, 500); // Simulate network delay
       } else {
-        fetchAvailability(slug, booking.date, booking.serviceId, booking.staffId || undefined)
+        fetchAvailability(slug, booking.date, booking.serviceId, booking.staffId || undefined, booking.locationId || undefined)
           .then(setSlots)
           .finally(() => setIsLoadingSlots(false));
       }

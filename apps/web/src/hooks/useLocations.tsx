@@ -111,7 +111,12 @@ interface UseLocationsReturn {
 
 export function useLocations(): UseLocationsReturn {
   const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedLocationId');
+    }
+    return null;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,11 +133,15 @@ export function useLocations(): UseLocationsReturn {
         const locationsData = Array.isArray(response.data) ? response.data : [];
         setLocations(locationsData);
 
-        // Auto-select primary location if none selected
+        // Auto-select primary location if none selected AND no localStorage value
         if (!selectedLocationId && locationsData.length > 0) {
-          const primary = locationsData.find((l) => l.isPrimary);
-          if (primary) {
-            setSelectedLocationId(primary.id);
+          // Double-check localStorage to avoid race with first render
+          const savedId = typeof window !== 'undefined' ? localStorage.getItem('selectedLocationId') : null;
+          if (!savedId) {
+            const primary = locationsData.find((l) => l.isPrimary);
+            if (primary) {
+              setSelectedLocationId(primary.id);
+            }
           }
         }
       }
@@ -343,14 +352,8 @@ export function useLocations(): UseLocationsReturn {
     await fetchLocations();
   }, [fetchLocations]);
 
-  // Fetch locations on mount and restore selected location from localStorage
+  // Fetch locations on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedId = localStorage.getItem('selectedLocationId');
-      if (savedId) {
-        setSelectedLocationId(savedId);
-      }
-    }
     fetchLocations();
   }, [fetchLocations]);
 
