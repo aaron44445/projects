@@ -325,9 +325,22 @@ router.get('/notification-settings', authenticate, asyncHandler(async (req: Requ
 
   let settings: NotificationSettings;
   try {
-    settings = salon.notification_settings
+    const parsed = salon.notification_settings
       ? JSON.parse(salon.notification_settings)
-      : DEFAULT_NOTIFICATION_SETTINGS;
+      : {};
+
+    // Merge with defaults to ensure all required fields exist
+    // This handles the case where notification_settings is "{}" (empty object)
+    settings = {
+      reminders: {
+        enabled: parsed.reminders?.enabled ?? DEFAULT_NOTIFICATION_SETTINGS.reminders.enabled,
+        timings: parsed.reminders?.timings ?? DEFAULT_NOTIFICATION_SETTINGS.reminders.timings,
+      },
+      channels: {
+        email: parsed.channels?.email ?? DEFAULT_NOTIFICATION_SETTINGS.channels.email,
+        sms: parsed.channels?.sms ?? DEFAULT_NOTIFICATION_SETTINGS.channels.sms,
+      },
+    };
   } catch {
     settings = DEFAULT_NOTIFICATION_SETTINGS;
   }

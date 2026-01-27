@@ -93,7 +93,7 @@ app.get('/health', (req, res) => {
 });
 
 // Version check - UPDATE THIS ON EACH DEPLOY TO VERIFY
-const BUILD_VERSION = '2026-01-27-v7-email-redesign';
+const BUILD_VERSION = '2026-01-27-v8-notification-settings-fix';
 app.get('/api/v1/version', (req, res) => {
   res.json({
     version: BUILD_VERSION,
