@@ -168,8 +168,13 @@ Last session: 2026-01-27T13:39:32Z
 Stopped at: Completed 06-01-PLAN.md - Wire Business Hours to API
 Resume file: None
 
-**Phase 6 Status:** COMPLETE
+**Phase 6 Status:** GAPS FOUND
 - 06-01: Wire Business Hours to API - COMPLETE
+- 06-02: Verify Settings Persistence - GAPS FOUND
+
+**Phase 6 Gaps (from 06-02 verification):**
+1. Location context race condition: fetchLocations uses stale closure, may select wrong location on refresh
+2. Booking widget missing locationId: fetchAvailability doesn't pass locationId to API, hours ignored
 
 **Phase 5 Status:** AWAITING UAT RE-TEST
 - 05-01: Notification Foundation - COMPLETE
