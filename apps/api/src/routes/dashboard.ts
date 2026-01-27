@@ -167,6 +167,13 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
     },
   });
 
+  // Get salon timezone for frontend display
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { timezone: true },
+  });
+  const salonTz = salon?.timezone || 'UTC';
+
   res.json({
     success: true,
     data: {
@@ -190,6 +197,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
         average: avgRating._avg.rating ? Math.round(avgRating._avg.rating * 10) / 10 : null,
         count: avgRating._count.rating,
       },
+      timezone: salonTz,
     },
   });
 }));
@@ -266,6 +274,7 @@ router.get('/today', authenticate, asyncHandler(async (req: Request, res: Respon
     data: {
       appointments,
       summary,
+      timezone: salonTz,
     },
   });
 }));
@@ -278,6 +287,13 @@ router.get('/recent-activity', authenticate, asyncHandler(async (req: Request, r
   const salonId = req.user!.salonId;
   const { locationId } = req.query;
   const locationFilter = locationId ? { locationId: locationId as string } : {};
+
+  // Get salon timezone for frontend display
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { timezone: true },
+  });
+  const salonTz = salon?.timezone || 'UTC';
 
   // Get recent appointments (last 7 days)
   const sevenDaysAgo = new Date();
@@ -312,7 +328,10 @@ router.get('/recent-activity', authenticate, asyncHandler(async (req: Request, r
 
   res.json({
     success: true,
-    data: recentAppointments,
+    data: {
+      activity: recentAppointments,
+      timezone: salonTz,
+    },
   });
 }));
 
