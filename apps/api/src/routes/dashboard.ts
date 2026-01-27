@@ -60,6 +60,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
     },
     _sum: {
       totalAmount: true,
+      refundAmount: true,
     },
   });
 
@@ -76,20 +77,27 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
     },
     _sum: {
       totalAmount: true,
+      refundAmount: true,
     },
   });
 
-  const currentRevenue = currentMonthPayments._sum.totalAmount || 0;
-  const lastRevenue = lastMonthPayments._sum.totalAmount || 0;
+  // Calculate NET revenue (gross minus refunds)
+  const currentGross = currentMonthPayments._sum.totalAmount || 0;
+  const currentRefunds = currentMonthPayments._sum.refundAmount || 0;
+  const currentRevenue = currentGross - currentRefunds;
 
-  // Get appointments this month
+  const lastGross = lastMonthPayments._sum.totalAmount || 0;
+  const lastRefunds = lastMonthPayments._sum.refundAmount || 0;
+  const lastRevenue = lastGross - lastRefunds;
+
+  // Get appointments this month (exclude cancelled and no-show)
   const [thisMonthAppointments, lastMonthAppointments] = await Promise.all([
     prisma.appointment.count({
       where: {
         salonId,
         ...locationFilter,
         startTime: { gte: startOfThisMonth },
-        status: { notIn: ['cancelled'] },
+        status: { notIn: ['cancelled', 'no_show'] },
       },
     }),
     prisma.appointment.count({
@@ -100,7 +108,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
           gte: startOfLastMonth,
           lte: endOfLastMonth,
         },
-        status: { notIn: ['cancelled'] },
+        status: { notIn: ['cancelled', 'no_show'] },
       },
     }),
   ]);
