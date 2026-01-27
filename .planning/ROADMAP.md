@@ -156,11 +156,11 @@ Plans:
   4. Cache invalidates properly so changes appear without manual refresh
   5. Multi-instance deployments sync settings changes across all instances
 
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
+- [ ] 06-01-PLAN.md — Wire business hours settings UI to locations hours API
+- [ ] 06-02-PLAN.md — Verify settings persistence end-to-end (checkpoint)
 
 ### Phase 7: Dashboard & Validation
 
@@ -195,9 +195,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
 | 5. Notification System | 7/7 | Human Verification | - |
-| 6. Settings Persistence | 0/0 | Not started | - |
+| 6. Settings Persistence | 0/2 | Planned | - |
 | 7. Dashboard & Validation | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-26 (Phase 5 gap closure plans executed, awaiting UAT)*
+*Last updated: 2026-01-27 (Phase 6 planned - 2 plans in 2 waves)*
