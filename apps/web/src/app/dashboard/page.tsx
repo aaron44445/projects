@@ -131,6 +131,9 @@ function DashboardContent() {
     loading,
     refetch,
   } = useDashboard(selectedLocationId);
+
+  // Get salon timezone from stats (defaults to UTC if not available)
+  const salonTimezone = stats?.timezone ?? 'UTC';
   const { updateAppointment, cancelAppointment } = useAppointments();
   const { services } = useServices();
   const { clients, createClient, refetch: refetchClients } = useClients();
@@ -259,13 +262,14 @@ function DashboardContent() {
     setAppointmentMenu(null);
   };
 
-  // Format time from ISO string
+  // Format time from ISO string using salon's timezone
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
+      timeZone: salonTimezone,
     });
   };
 
