@@ -33,9 +33,9 @@ Requirements for stabilization milestone. Each maps to roadmap phases.
 
 ### Settings
 
-- [ ] **SET-01**: Settings changes apply immediately
-- [ ] **SET-02**: Business hours affect booking availability
-- [ ] **SET-03**: Service pricing updates reflect in bookings
+- [x] **SET-01**: Settings changes apply immediately
+- [x] **SET-02**: Business hours affect booking availability
+- [x] **SET-03**: Service pricing updates reflect in bookings
 
 ### Multi-Location
 
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PAY-01 | Phase 4 | Pending |
 | PAY-02 | Phase 4 | Pending |
 | PAY-03 | Phase 4 | Pending |
-| SET-01 | Phase 6 | Pending |
-| SET-02 | Phase 6 | Pending |
-| SET-03 | Phase 6 | Pending |
+| SET-01 | Phase 6 | Complete |
+| SET-02 | Phase 6 | Complete |
+| SET-03 | Phase 6 | Complete |
 | LOC-01 | Phase 2 | Complete |
 | LOC-02 | Phase 2 | Complete |
 | LOC-03 | Phase 2 | Complete |
@@ -124,4 +124,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-25 after Phase 3 completion*
+*Last updated: 2026-01-27 after Phase 6 completion*
