@@ -222,6 +222,7 @@ function SettingsContent() {
     settings: notificationSettings,
     loading: notificationSettingsLoading,
     saving: notificationSettingsSaving,
+    error: notificationSettingsError,
     setReminderTiming,
     toggleChannel,
     toggleReminders,
@@ -2112,6 +2113,22 @@ function SettingsContent() {
               <p className="text-charcoal/60 dark:text-white/60">
                 Configure how you and your clients receive notifications.
               </p>
+            </div>
+
+            {/* Error state */}
+            {notificationSettingsError && (
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-4">
+                <p className="text-red-600 dark:text-red-400 text-sm">
+                  <strong>Error:</strong> {notificationSettingsError}
+                </p>
+              </div>
+            )}
+
+            {/* Debug info - remove after testing */}
+            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mb-4 text-xs font-mono">
+              <p>Add-on locked: {notificationsLocked ? 'YES' : 'NO'}</p>
+              <p>Current timing: {notificationSettings?.reminders?.timings?.[0]?.hours ?? 'undefined'}</p>
+              <p>Saving: {notificationSettingsSaving ? 'YES' : 'NO'}</p>
             </div>
 
             {/* Loading state */}
