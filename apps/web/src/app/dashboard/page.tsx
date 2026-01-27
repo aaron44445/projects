@@ -115,7 +115,22 @@ function DashboardContent() {
   const { salon, user } = useAuth();
   const { activeAddOns, trialEndsAt, isTrialActive, monthlyTotal } = useSubscription();
   const { selectedLocationId, locations } = useLocationContext();
-  const { stats, todayAppointments, recentActivity, loading, error, refetch } = useDashboard(selectedLocationId);
+  const {
+    stats,
+    statsLoading,
+    statsError,
+    refetchStats,
+    todayAppointments,
+    appointmentsLoading,
+    appointmentsError,
+    refetchAppointments,
+    recentActivity,
+    activityLoading,
+    activityError,
+    refetchActivity,
+    loading,
+    refetch,
+  } = useDashboard(selectedLocationId);
   const { updateAppointment, cancelAppointment } = useAppointments();
   const { services } = useServices();
   const { clients, createClient, refetch: refetchClients } = useClients();
@@ -347,7 +362,7 @@ function DashboardContent() {
                 className="p-2 text-charcoal/60 hover:text-charcoal dark:text-white/60 dark:hover:text-white"
                 title="Refresh data"
               >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-5 h-5 ${(statsLoading || appointmentsLoading || activityLoading) ? 'animate-spin' : ''}`} />
               </button>
               <ThemeToggle />
               <NotificationDropdown />
@@ -357,23 +372,6 @@ function DashboardContent() {
 
         {/* Dashboard Content */}
         <div className="flex-1 p-6 overflow-auto">
-          {/* Error State */}
-          {error && (
-            <div className="mb-6 p-4 bg-rose/10 border border-rose/20 rounded-xl flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-rose flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-charcoal font-medium">Failed to load dashboard data</p>
-                <p className="text-sm text-charcoal/60">{error}</p>
-              </div>
-              <button
-                onClick={() => refetch()}
-                className="px-4 py-2 bg-white border border-charcoal/20 rounded-lg text-sm font-medium hover:bg-charcoal/5"
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
           {/* Setup Checklist Widget - shows until all required items complete */}
           {!allRequiredComplete && (
             <div className="mb-6 bg-white dark:bg-sidebar rounded-2xl border border-border dark:border-white/10 shadow-soft overflow-hidden">
@@ -476,7 +474,26 @@ function DashboardContent() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {loading && !stats ? (
+            {statsError ? (
+              // Stats error state
+              <div className="col-span-full p-6 bg-rose/10 border border-rose/20 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-rose" />
+                    <div>
+                      <p className="font-medium text-charcoal dark:text-white">Could not load statistics</p>
+                      <p className="text-sm text-charcoal/60 dark:text-white/60">{statsError}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => refetchStats()}
+                    className="px-4 py-2 bg-white dark:bg-charcoal border border-charcoal/20 dark:border-white/20 rounded-lg text-sm font-medium hover:bg-charcoal/5 dark:hover:bg-white/5"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            ) : statsLoading && !stats ? (
               // Loading skeleton for stats
               [...Array(4)].map((_, i) => (
                 <div
@@ -658,7 +675,26 @@ function DashboardContent() {
                 </Link>
               </div>
               <div className="divide-y divide-border dark:divide-white/10">
-                {loading && todayAppointments.length === 0 ? (
+                {appointmentsError ? (
+                  // Appointments error state
+                  <div className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="w-5 h-5 text-rose" />
+                        <div>
+                          <p className="font-medium text-charcoal dark:text-white">Could not load today&apos;s appointments</p>
+                          <p className="text-sm text-charcoal/60 dark:text-white/60">{appointmentsError}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => refetchAppointments()}
+                        className="px-4 py-2 bg-white dark:bg-charcoal border border-charcoal/20 dark:border-white/20 rounded-lg text-sm font-medium hover:bg-charcoal/5 dark:hover:bg-white/5"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : appointmentsLoading && todayAppointments.length === 0 ? (
                   // Loading skeleton for appointments
                   [...Array(3)].map((_, i) => (
                     <div key={i} className="p-4 animate-pulse">
@@ -759,7 +795,30 @@ function DashboardContent() {
                 <h2 className="text-lg font-semibold text-charcoal dark:text-white">Recent Activity</h2>
               </div>
               <div className="p-4 space-y-4">
-                {recentActivity && recentActivity.length > 0 ? (
+                {activityError ? (
+                  // Activity error state
+                  <div className="text-center py-6">
+                    <AlertCircle className="w-8 h-8 text-charcoal/30 dark:text-white/30 mx-auto mb-2" />
+                    <p className="text-sm text-charcoal/60 dark:text-white/60">{activityError}</p>
+                    <button
+                      onClick={() => refetchActivity()}
+                      className="mt-2 text-sm text-sage hover:text-sage-dark font-medium"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : activityLoading && (!recentActivity || recentActivity.length === 0) ? (
+                  // Activity loading skeleton
+                  [...Array(3)].map((_, i) => (
+                    <div key={i} className="flex gap-3 animate-pulse">
+                      <div className="w-2.5 h-2.5 rounded-full bg-charcoal/20 dark:bg-white/20 mt-1.5" />
+                      <div className="flex-1">
+                        <div className="w-24 h-4 bg-charcoal/10 dark:bg-white/10 rounded mb-1" />
+                        <div className="w-32 h-3 bg-charcoal/10 dark:bg-white/10 rounded" />
+                      </div>
+                    </div>
+                  ))
+                ) : recentActivity && recentActivity.length > 0 ? (
                   recentActivity.slice(0, 4).map((activity) => (
                     <div key={activity.id} className="flex gap-3">
                       <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
@@ -780,7 +839,7 @@ function DashboardContent() {
                   </div>
                 )}
               </div>
-              {recentActivity && recentActivity.length > 0 && (
+              {!activityError && recentActivity && recentActivity.length > 0 && (
                 <div className="p-4 border-t border-border dark:border-white/10">
                   <button
                     onClick={() => setShowAllActivity(true)}
