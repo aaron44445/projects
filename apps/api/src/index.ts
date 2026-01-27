@@ -93,7 +93,7 @@ app.get('/health', (req, res) => {
 });
 
 // Version check - UPDATE THIS ON EACH DEPLOY TO VERIFY
-const BUILD_VERSION = '2026-01-26-v4-email-debug';
+const BUILD_VERSION = '2026-01-26-v5-direct-email';
 app.get('/api/v1/version', (req, res) => {
   res.json({
     version: BUILD_VERSION,

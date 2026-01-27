@@ -1,14 +1,18 @@
 ---
-status: diagnosed
+status: testing
 phase: 05-notification-system
 source: 05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md
 started: 2026-01-26T06:30:00Z
-updated: 2026-01-26T10:45:00Z
+updated: 2026-01-26T16:30:00Z
 ---
 
 ## Current Test
 
-[testing complete]
+number: 2
+name: Confirmation Email Has Calendar Links (RE-TEST)
+expected: |
+  Booking confirmation email includes "Add to Calendar" section with links for Google Calendar, Outlook, Yahoo, and Apple Calendar (ICS download).
+awaiting: user response
 
 ## Tests
 
@@ -18,9 +22,9 @@ result: pass
 
 ### 2. Confirmation Email Has Calendar Links
 expected: Booking confirmation email includes "Add to Calendar" section with links for Google Calendar, Outlook, Yahoo, and Apple Calendar (ICS download).
-result: issue
-reported: "neither desktop nor mobile email includes add to calendar options"
-severity: major
+result: [pending-retest]
+previous_issue: "neither desktop nor mobile email includes add to calendar options"
+fix_applied: 05-06-PLAN.md (calendar fields now passed to all email call sites)
 
 ### 3. SMS Delivery Status Updates
 expected: When SMS is sent, delivery status updates from "sent" to "delivered" (or "failed") in NotificationLog. Requires Twilio webhook configured.
@@ -34,9 +38,9 @@ reason: Requires SMS to fail first, SMS system needs verification
 
 ### 5. Notification Settings Configuration
 expected: Navigate to salon settings. Find notification settings section. Modify reminder timing (e.g., 48h instead of 24h). Save. Settings persist after refresh.
-result: issue
-reported: "doesnt save when i select it then save then refresh the page it goes back to 24 hrs"
-severity: major
+result: [pending-retest]
+previous_issue: "doesnt save when i select it then save then refresh the page it goes back to 24 hrs"
+fix_applied: 05-07-PLAN.md (notification settings UI wired to API with auto-save)
 
 ### 6. Notification History Page Loads
 expected: Navigate to /notifications in owner dashboard. Page displays stats cards (Total, Delivered, Failed, Success Rate) and list of recent notifications.
@@ -57,9 +61,10 @@ reason: Deployment in progress - /notifications page not yet live
 
 total: 8
 passed: 1
-issues: 2
-pending: 0
+issues: 0
+pending: 2
 skipped: 5
+note: Re-testing 2 fixed issues (Tests 2 and 5)
 
 ## Gaps
 

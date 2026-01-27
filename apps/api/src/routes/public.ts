@@ -846,35 +846,15 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     ? `${loc.address || ''}, ${loc.city || ''}, ${loc.state || ''} ${loc.zip || ''}`.trim()
     : `${salon.address || ''}, ${salon.city || ''}, ${salon.state || ''} ${salon.zip || ''}`.trim();
 
-  // Send booking confirmation notification
-  const channels: ('email' | 'sms')[] = [];
-  if (client.email) channels.push('email');
-  if (client.phone && optInReminders) channels.push('sms');
-
-  // Debug: Log appointment times before notification
-  console.log('[BOOKING] Appointment created with times:', {
-    appointmentId: appointment.id,
-    startTime: appointment.startTime,
-    endTime: appointment.endTime,
-    startTimeType: typeof appointment.startTime,
-    endTimeType: typeof appointment.endTime,
-    startTimeIsDate: appointment.startTime instanceof Date,
-    endTimeIsDate: appointment.endTime instanceof Date,
-    salonTimezone: salon.timezone,
-  });
-
-  if (channels.length > 0) {
+  // Send booking confirmation email directly (bypasses NotificationLog which may not exist)
+  if (client.email) {
     try {
-      await sendNotification({
-        salonId: salon.id,
-        clientId: client.id,
-        appointmentId: appointment.id,
-        type: 'booking_confirmation',
-        channels,
-        data: {
+      console.log('[BOOKING] Sending confirmation email to:', client.email);
+      await sendEmail({
+        to: client.email,
+        subject: `Appointment Confirmed - ${salon.name}`,
+        html: appointmentConfirmationEmail({
           clientName: client.firstName,
-          clientEmail: client.email || undefined,
-          clientPhone: client.phone || undefined,
           serviceName: service.name,
           staffName: `${appointment.staff.firstName} ${appointment.staff.lastName}`,
           dateTime: formattedDateTime,
@@ -884,11 +864,28 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
           endTime: appointment.endTime,
           salonTimezone: salon.timezone,
           salonEmail: salon.email,
-        },
+        }),
+      });
+      console.log('[BOOKING] Confirmation email sent successfully');
+    } catch (e) {
+      console.error('[BOOKING] Failed to send confirmation email:', e);
+    }
+  }
+
+  // Send SMS confirmation if phone provided
+  if (client.phone && optInReminders) {
+    try {
+      await sendSms({
+        to: client.phone,
+        message: appointmentConfirmationSms({
+          clientName: client.firstName,
+          serviceName: service.name,
+          dateTime: formattedDateTime,
+          salonName: salon.name,
+        }),
       });
     } catch (e) {
-      console.error('Failed to send booking confirmation:', e);
-      // Don't block booking completion on notification failure
+      console.error('[BOOKING] Failed to send confirmation SMS:', e);
     }
   }
 
