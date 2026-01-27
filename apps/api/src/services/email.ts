@@ -175,15 +175,52 @@ export function appointmentConfirmationEmail(data: {
     const links = generateCalendarLinks(calendarEvent);
 
     calendarSection = `
-      <div style="margin: 20px 0; padding: 15px; background: #E8F4EA; border-radius: 8px;">
-        <p style="margin: 0 0 10px 0; font-weight: 600;">Add to your calendar:</p>
-        <p style="margin: 0;">
-          <a href="${links.google}" target="_blank" style="color: #4285F4; text-decoration: none; margin-right: 15px;">Google Calendar</a>
-          <a href="${links.outlook}" target="_blank" style="color: #0078D4; text-decoration: none; margin-right: 15px;">Outlook</a>
-          <a href="${links.yahoo}" target="_blank" style="color: #6001D2; text-decoration: none; margin-right: 15px;">Yahoo</a>
-          <a href="${links.icsDownload}" download="appointment.ics" style="color: #6B9B76; text-decoration: none;">Apple Calendar (.ics)</a>
-        </p>
-      </div>
+      <!-- Calendar Section -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 28px 0;">
+        <tr>
+          <td style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 12px; padding: 24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-bottom: 16px;">
+                  <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF;">Add to Calendar</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <!-- Google Calendar -->
+                      <td style="padding-right: 8px; padding-bottom: 8px;">
+                        <a href="${links.google}" target="_blank" style="display: inline-block; background: #ffffff; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 16px; border-radius: 6px; border: none;">
+                          Google
+                        </a>
+                      </td>
+                      <!-- Outlook -->
+                      <td style="padding-right: 8px; padding-bottom: 8px;">
+                        <a href="${links.outlook}" target="_blank" style="display: inline-block; background: #ffffff; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 16px; border-radius: 6px; border: none;">
+                          Outlook
+                        </a>
+                      </td>
+                      <!-- Yahoo -->
+                      <td style="padding-right: 8px; padding-bottom: 8px;">
+                        <a href="${links.yahoo}" target="_blank" style="display: inline-block; background: #ffffff; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 16px; border-radius: 6px; border: none;">
+                          Yahoo
+                        </a>
+                      </td>
+                      <!-- Apple/ICS -->
+                      <td style="padding-bottom: 8px;">
+                        <a href="${links.icsDownload}" download="appointment.ics" style="display: inline-block; background: #ffffff; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 16px; border-radius: 6px; border: none;">
+                          Apple
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     `;
   }
 
@@ -191,38 +228,150 @@ export function appointmentConfirmationEmail(data: {
     <!DOCTYPE html>
     <html>
     <head>
-      <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
-        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
-        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
-        .details { background: #FAF8F3; padding: 20px; border-radius: 8px; margin: 20px 0; }
-      </style>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Appointment Confirmed - ${data.salonName}</title>
     </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">${data.salonName}</h1>
-          <p style="margin: 10px 0 0 0; color: #2C2C2C;">Appointment Confirmed</p>
-        </div>
-        <div class="content">
-          <p>Hi ${data.clientName},</p>
-          <p>Your appointment has been confirmed! Here are the details:</p>
-          <div class="details">
-            <p><strong>Service:</strong> ${data.serviceName}</p>
-            <p><strong>With:</strong> ${data.staffName}</p>
-            <p><strong>When:</strong> ${data.dateTime}</p>
-            <p><strong>Where:</strong> ${data.salonAddress}</p>
-          </div>
-          ${calendarSection}
-          <p>Need to reschedule? Please contact us at least 24 hours before your appointment.</p>
-        </div>
-        <div class="footer">
-          <p>${data.salonName}</p>
-          <p>This email was sent because you have an upcoming appointment.</p>
-        </div>
-      </div>
+    <body style="margin: 0; padding: 0; background-color: #f5f5f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <!-- Outer wrapper for background -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f5f0; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <!-- Main container -->
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+
+              <!-- Header with Business branding -->
+              <tr>
+                <td style="background: #1a1a1a; padding: 32px 40px; border-radius: 16px 16px 0 0;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="center">
+                        <!-- Business Name -->
+                        <h1 style="margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 28px; font-weight: 400; color: #ffffff; letter-spacing: 0.5px;">${data.salonName}</h1>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Accent line -->
+              <tr>
+                <td style="background: linear-gradient(90deg, #6B9B76 0%, #8BB496 50%, #6B9B76 100%); height: 4px; font-size: 0; line-height: 0;">&nbsp;</td>
+              </tr>
+
+              <!-- Confirmation badge -->
+              <tr>
+                <td style="background: #ffffff; padding: 32px 40px 0 40px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="center">
+                        <span style="display: inline-block; background: #E8F5E9; color: #2E7D32; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; padding: 10px 20px; border-radius: 20px;">✓ Appointment Confirmed</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Main content area -->
+              <tr>
+                <td style="background: #ffffff; padding: 32px 40px 40px 40px;">
+
+                  <!-- Greeting -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 28px;">
+                    <tr>
+                      <td align="center">
+                        <h2 style="margin: 0 0 8px 0; font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 400; color: #1a1a1a;">
+                          You're all set, ${data.clientName}!
+                        </h2>
+                        <p style="margin: 0; font-size: 15px; color: #6B7280; line-height: 1.5;">
+                          We look forward to seeing you.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Appointment Details Card -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background: #FAFAF8; border: 1px solid #E5E5E0; border-radius: 12px; margin-bottom: 24px;">
+                    <tr>
+                      <td style="padding: 24px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                          <!-- Service -->
+                          <tr>
+                            <td style="padding-bottom: 16px; border-bottom: 1px solid #E5E5E0;">
+                              <span style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9CA3AF; margin-bottom: 4px;">Service</span>
+                              <span style="font-size: 17px; font-weight: 600; color: #1a1a1a;">${data.serviceName}</span>
+                            </td>
+                          </tr>
+                          <!-- Stylist -->
+                          <tr>
+                            <td style="padding: 16px 0; border-bottom: 1px solid #E5E5E0;">
+                              <span style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9CA3AF; margin-bottom: 4px;">With</span>
+                              <span style="font-size: 15px; color: #1a1a1a;">${data.staffName}</span>
+                            </td>
+                          </tr>
+                          <!-- Date & Time -->
+                          <tr>
+                            <td style="padding: 16px 0; border-bottom: 1px solid #E5E5E0;">
+                              <span style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9CA3AF; margin-bottom: 4px;">When</span>
+                              <span style="font-size: 15px; color: #1a1a1a; font-weight: 500;">${data.dateTime}</span>
+                            </td>
+                          </tr>
+                          <!-- Location -->
+                          <tr>
+                            <td style="padding-top: 16px;">
+                              <span style="display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #9CA3AF; margin-bottom: 4px;">Location</span>
+                              <span style="font-size: 15px; color: #1a1a1a;">${data.salonAddress}</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  ${calendarSection}
+
+                  <!-- Note -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="padding-top: 8px;">
+                        <p style="margin: 0; font-size: 14px; color: #6B7280; line-height: 1.6; text-align: center;">
+                          Need to reschedule? Please contact us at least 24 hours before your appointment.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background: #FAFAF8; padding: 24px 40px; border-radius: 0 0 16px 16px; border-top: 1px solid #E5E5E0;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="center">
+                        <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 500; color: #1a1a1a;">${data.salonName}</p>
+                        <p style="margin: 0; font-size: 12px; color: #9CA3AF;">${data.salonAddress}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            </table>
+
+            <!-- Powered by (very subtle, outside main card) -->
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; margin-top: 16px;">
+              <tr>
+                <td align="center">
+                  <p style="margin: 0; font-size: 11px; color: #9CA3AF;">Powered by Peacase</p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;
