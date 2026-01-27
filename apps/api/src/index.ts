@@ -93,9 +93,18 @@ app.get('/health', (req, res) => {
 });
 
 // Version check - UPDATE THIS ON EACH DEPLOY TO VERIFY
-const BUILD_VERSION = '2026-01-26-v3-calendar-fix';
+const BUILD_VERSION = '2026-01-26-v4-email-debug';
 app.get('/api/v1/version', (req, res) => {
-  res.json({ version: BUILD_VERSION, deployedAt: new Date().toISOString() });
+  res.json({
+    version: BUILD_VERSION,
+    deployedAt: new Date().toISOString(),
+    emailConfig: {
+      hasSMTP_PASS: !!env.SMTP_PASS,
+      hasSMTP_FROM_EMAIL: !!env.SMTP_FROM_EMAIL,
+      hasSENDGRID_API_KEY: !!env.SENDGRID_API_KEY,
+      hasSENDGRID_FROM_EMAIL: !!env.SENDGRID_FROM_EMAIL,
+    }
+  });
 });
 
 // Debug endpoint - test if /api routes work without database
