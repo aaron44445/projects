@@ -179,11 +179,14 @@ Plans:
   4. Timezone edge cases handled correctly (DST transitions, multi-timezone locations)
   5. Error states display user-friendly messages (network failures, invalid states)
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 07-01: TBD
-- [ ] 07-02: TBD
+- [ ] 07-01-PLAN.md — Fix dashboard API: timezone-aware today calculations and refund-adjusted revenue
+- [ ] 07-02-PLAN.md — Add auto-refresh with TanStack Query (60-second interval)
+- [ ] 07-03-PLAN.md — Implement graceful degradation with partial error states
+- [ ] 07-04-PLAN.md — Display times in salon timezone on frontend
+- [ ] 07-05-PLAN.md — End-to-end verification checkpoint
 
 ## Progress
 
@@ -198,8 +201,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
 | 5. Notification System | 7/7 | Human Verification | - |
 | 6. Settings Persistence | 4/4 | Complete | 2026-01-27 |
-| 7. Dashboard & Validation | 0/0 | Not started | - |
+| 7. Dashboard & Validation | 0/5 | Planning complete | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-27 (Phase 6 complete - all gaps closed and verified)*
+*Last updated: 2026-01-27 (Phase 7 planning complete - 5 plans in 3 waves)*
