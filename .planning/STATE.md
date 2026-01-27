@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 6 - Settings Persistence - IN PROGRESS
+**Current focus:** Phase 7 - Dashboard & Validation - EXECUTING
 
 ## Current Position
 
-Phase: 6 of 7 (Settings Persistence)
-Plan: Gap closure complete (06-01, 06-03, 06-04 complete)
-Status: Phase complete - gap closure verified
-Last activity: 2026-01-27 - Completed 06-04-PLAN.md (Fix Booking Widget LocationId)
+Phase: 7 of 7 (Dashboard & Validation)
+Plan: 1 of 5 complete (07-01)
+Status: In progress
+Last activity: 2026-01-27 - Completed 07-01-PLAN.md (Dashboard API Validation)
 
-Progress: [█████████████▓] 100% (21/21 plans completed across all phases)
+Progress: [█████████████▓░] 96% (22/23 plans completed across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 21
-- Average duration: 7.6 min
-- Total execution time: 2.82 hours
+- Total plans completed: 22
+- Average duration: 7.5 min
+- Total execution time: 2.89 hours
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [█████████████▓] 100% (21/21 plans complet
 | 04-payment-processing | 4 | 17min | 4.25min |
 | 05-notification-system | 5 | 31min | 6.2min |
 | 06-settings-persistence | 3 | 18min | 6.0min |
+| 07-dashboard-validation | 1 | 4min | 4min |
 
 **Recent Trend:**
-- Last 8 plans: 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min), 06-04 (6min)
-- Trend: Gap closure plans extremely efficient (4-6min for focused fixes)
+- Last 8 plans: 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min), 06-04 (6min), 07-01 (4min)
+- Trend: Quick execution continues (4min for focused API fixes)
 
 *Updated after each plan completion*
 
@@ -118,6 +119,10 @@ Recent decisions affecting current work:
 - **06-03:** Belt-and-suspenders approach: lazy init + double-check in fetchLocations
 - **06-04:** Optional parameter pattern for fetch functions: add param, conditionally append to URL
 - **06-04:** Booking widget passes locationId to availability API for location-aware slot generation
+- **07-01:** getTodayBoundariesInTimezone helper using Intl.DateTimeFormat for DST-safe timezone conversion
+- **07-01:** Default to 'UTC' if salon.timezone is null/undefined
+- **07-01:** Net revenue = totalAmount - refundAmount for accurate dashboard metrics
+- **07-01:** Appointment counts exclude both 'cancelled' and 'no_show' status
 
 ### Pending Todos
 
@@ -141,7 +146,7 @@ None yet.
 - Phase 3: Transaction isolation levels and locking strategies - **RESOLVED in 03-01**
 - Phase 4: Need Stripe webhook best practices and testing patterns
 - Phase 5: Need email deliverability configuration (SPF/DKIM/DMARC)
-- Phase 7: Need timezone handling library comparison
+- Phase 7: Need timezone handling library comparison - **RESOLVED in 07-01 (used native Intl.DateTimeFormat)**
 
 ## Phase 3 Verification Summary
 
@@ -169,9 +174,16 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-27T20:02:13Z
-Stopped at: Completed 06-04-PLAN.md - Fix Booking Widget LocationId
+Last session: 2026-01-27T22:46:21Z
+Stopped at: Completed 07-01-PLAN.md - Dashboard API Validation
 Resume file: None
+
+**Phase 7 Status:** IN PROGRESS
+- 07-01: Dashboard API Validation - COMPLETE
+- 07-02: Dashboard Auto-Refresh - PENDING
+- 07-03: Dashboard Accuracy Audit - PENDING
+- 07-04: Business Logic Validation - PENDING
+- 07-05: End-to-End Verification - PENDING
 
 **Phase 6 Status:** COMPLETE - GAP CLOSURE VERIFIED
 - 06-01: Wire Business Hours to API - COMPLETE
@@ -217,4 +229,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-27T20:02:13Z*
+*Last updated: 2026-01-27T22:46:21Z*
