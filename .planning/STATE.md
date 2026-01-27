@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Phase: 7 of 7 (Dashboard & Validation)
-Plan: 1 of 5 complete (07-01)
-Status: In progress
-Last activity: 2026-01-27 - Completed 07-01-PLAN.md (Dashboard API Validation)
+Plan: 2 of 5 complete (07-01, 07-02)
+Status: Wave 1 in progress
+Last activity: 2026-01-27 - Completed 07-02-PLAN.md (Dashboard Auto-Refresh)
 
-Progress: [█████████████▓░] 96% (22/23 plans completed across all phases)
+Progress: [█████████████████▓░] 96% (23/24 plans completed across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 22
-- Average duration: 7.5 min
-- Total execution time: 2.89 hours
+- Total plans completed: 23
+- Average duration: 7.4 min
+- Total execution time: 2.96 hours
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [█████████████▓░] 96% (22/23 plans compl
 | 04-payment-processing | 4 | 17min | 4.25min |
 | 05-notification-system | 5 | 31min | 6.2min |
 | 06-settings-persistence | 3 | 18min | 6.0min |
-| 07-dashboard-validation | 1 | 4min | 4min |
+| 07-dashboard-validation | 2 | 8min | 4min |
 
 **Recent Trend:**
-- Last 8 plans: 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min), 06-04 (6min), 07-01 (4min)
-- Trend: Quick execution continues (4min for focused API fixes)
+- Last 8 plans: 05-06 (3min), 05-07 (5min), 06-01 (8min), 06-03 (4min), 06-04 (6min), 07-01 (4min), 07-02 (4min)
+- Trend: Quick execution continues (4min for focused TanStack Query integration)
 
 *Updated after each plan completion*
 
@@ -123,6 +123,10 @@ Recent decisions affecting current work:
 - **07-01:** Default to 'UTC' if salon.timezone is null/undefined
 - **07-01:** Net revenue = totalAmount - refundAmount for accurate dashboard metrics
 - **07-01:** Appointment counts exclude both 'cancelled' and 'no_show' status
+- **07-02:** QueryClient created with useState for SSR-safe state isolation
+- **07-02:** refetchIntervalInBackground: true keeps dashboard fresh in background tabs
+- **07-02:** staleTime: 30000 shows cached data immediately (stale-while-revalidate)
+- **07-02:** isFetching exposed for subtle background refresh indicators
 
 ### Pending Todos
 
@@ -174,13 +178,13 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-27T22:46:21Z
-Stopped at: Completed 07-01-PLAN.md - Dashboard API Validation
+Last session: 2026-01-27T22:50:00Z
+Stopped at: Completed 07-02-PLAN.md - Dashboard Auto-Refresh
 Resume file: None
 
 **Phase 7 Status:** IN PROGRESS
 - 07-01: Dashboard API Validation - COMPLETE
-- 07-02: Dashboard Auto-Refresh - PENDING
+- 07-02: Dashboard Auto-Refresh - COMPLETE
 - 07-03: Dashboard Accuracy Audit - PENDING
 - 07-04: Business Logic Validation - PENDING
 - 07-05: End-to-End Verification - PENDING
@@ -229,4 +233,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-27T22:46:21Z*
+*Last updated: 2026-01-27T22:50:00Z*
