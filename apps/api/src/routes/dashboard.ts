@@ -5,6 +5,36 @@ import { asyncHandler } from '../lib/errorUtils.js';
 
 const router = Router();
 
+/**
+ * Get start and end of today in the salon's timezone, as UTC Date objects.
+ * Handles DST correctly by using Intl.DateTimeFormat.
+ */
+function getTodayBoundariesInTimezone(timezone: string): { startOfToday: Date; endOfToday: Date } {
+  const now = new Date();
+
+  // Format current date in salon timezone to get the date parts
+  const options: Intl.DateTimeFormatOptions = { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' };
+  const dateStr = new Intl.DateTimeFormat('en-CA', options).format(now); // en-CA gives YYYY-MM-DD format
+
+  // Create midnight in salon timezone by parsing the date string
+  // The Date constructor interprets this as local time, so we need to adjust
+  const [year, month, day] = dateStr.split('-').map(Number);
+
+  // Get the offset between UTC and salon timezone at this moment
+  const utcNow = now.getTime();
+  const tzNow = new Date(now.toLocaleString('en-US', { timeZone: timezone })).getTime();
+  const offsetMs = tzNow - utcNow;
+
+  // Midnight in salon timezone = midnight local - offset
+  const localMidnight = new Date(year, month - 1, day, 0, 0, 0, 0);
+  const startOfToday = new Date(localMidnight.getTime() - offsetMs);
+
+  const localEndOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+  const endOfToday = new Date(localEndOfDay.getTime() - offsetMs);
+
+  return { startOfToday, endOfToday };
+}
+
 // ============================================
 // GET /api/v1/dashboard/stats
 // Revenue stats, appointment counts, new clients with comparisons
@@ -165,10 +195,15 @@ router.get('/today', authenticate, asyncHandler(async (req: Request, res: Respon
   const { locationId } = req.query;
   const locationFilter = locationId ? { locationId: locationId as string } : {};
 
-  // Get today's date range
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  // Get salon timezone for accurate "today" calculation
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { timezone: true },
+  });
+  const salonTz = salon?.timezone || 'UTC';
+
+  // Use timezone-aware today boundaries
+  const { startOfToday, endOfToday } = getTodayBoundariesInTimezone(salonTz);
 
   const appointments = await prisma.appointment.findMany({
     where: {
