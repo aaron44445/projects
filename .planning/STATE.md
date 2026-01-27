@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 5 - Notification System - IN PROGRESS
+**Current focus:** Phase 6 - Settings Persistence - IN PROGRESS
 
 ## Current Position
 
-Phase: 5 of 7 (Notification System)
-Plan: 5 of 5 in current phase (05-01, 05-02, 05-04, 05-06, 05-07 complete)
+Phase: 6 of 7 (Settings Persistence)
+Plan: 1 of 1 in current phase (06-01 complete)
 Status: Phase complete
-Last activity: 2026-01-26 - Completed 05-07-PLAN.md (Wire Notification Settings to API)
+Last activity: 2026-01-27 - Completed 06-01-PLAN.md (Wire Business Hours to API)
 
-Progress: [█████████████] 95% (18/19 plans estimated across all phases)
+Progress: [█████████████▓] 100% (19/19 plans estimated across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 7.9 min
-- Total execution time: 2.52 hours
+- Total execution time: 2.65 hours
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [█████████████] 95% (18/19 plans estimated a
 | 03-online-booking-widget | 3 | 35min | 11.7min |
 | 04-payment-processing | 4 | 17min | 4.25min |
 | 05-notification-system | 5 | 31min | 6.2min |
+| 06-settings-persistence | 1 | 8min | 8.0min |
 
 **Recent Trend:**
-- Last 8 plans: 04-02 (3min), 04-03 (3min), 04-04 (3min), 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min), 05-07 (5min)
+- Last 8 plans: 04-03 (3min), 04-04 (3min), 05-01 (7min), 05-02 (9min), 05-04 (7min), 05-06 (3min), 05-07 (5min), 06-01 (8min)
 - Trend: Consistent sub-10min execution for focused plans, gap closure plans very fast
 
 *Updated after each plan completion*
@@ -109,6 +110,9 @@ Recent decisions affecting current work:
 - **05-06:** Fetch salon timezone and email fields for calendar event generation
 - **05-07:** Auto-save pattern for settings: onChange immediately triggers API update (no explicit Save button)
 - **05-07:** Console logging for save feedback instead of toast library (no toast library installed)
+- **06-01:** Save button pattern for business hours (explicit save vs auto-save for structural changes)
+- **06-01:** editingHours local state pattern: separate in-progress edits from API data
+- **06-01:** Display format helpers in hooks: getDisplayHours() and setDisplayHours() convert between API and UI formats
 
 ### Pending Todos
 
@@ -160,9 +164,12 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-26T16:08:53Z
-Stopped at: Completed 05-07-PLAN.md - Wire Notification Settings to API
+Last session: 2026-01-27T13:39:32Z
+Stopped at: Completed 06-01-PLAN.md - Wire Business Hours to API
 Resume file: None
+
+**Phase 6 Status:** COMPLETE
+- 06-01: Wire Business Hours to API - COMPLETE
 
 **Phase 5 Status:** AWAITING UAT RE-TEST
 - 05-01: Notification Foundation - COMPLETE
@@ -198,4 +205,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-26T16:08:53Z*
+*Last updated: 2026-01-27T13:39:32Z*
