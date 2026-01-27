@@ -52,6 +52,7 @@ import { useServices, type Service } from '@/hooks/useServices';
 import { useStaff, type StaffMember } from '@/hooks/useStaff';
 import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
 import { useNotificationSettings } from '@/hooks/useNotificationSettings';
+import { useLocationHours } from '@/hooks/useLocationHours';
 import type { UserSession, LoginHistoryEntry, TeamMember, TeamInvite } from '@/hooks';
 import Link from 'next/link';
 
@@ -156,7 +157,6 @@ const defaultHours: BusinessHour[] = [
 function SettingsContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('account'); // Start with My Account
-  const [hours, setHours] = useState<BusinessHour[]>(defaultHours);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -170,7 +170,7 @@ function SettingsContent() {
 
   // API hooks
   const { salon, loading: salonLoading, error: salonError, updateSalon, fetchSalon, setError: setSalonError } = useSalon();
-  const { locations, isLoading: locationsLoading, error: locationsError } = useLocationContext();
+  const { locations, selectedLocationId, isLoading: locationsLoading, error: locationsError } = useLocationContext();
   const { services, isLoading: servicesLoading, updateService } = useServices();
   const { staff, isLoading: staffLoading, updateStaff } = useStaff();
 
@@ -227,6 +227,45 @@ function SettingsContent() {
     toggleChannel,
     toggleReminders,
   } = useNotificationSettings();
+
+  const {
+    loading: hoursLoading,
+    saving: hoursSaving,
+    error: hoursError,
+    getDisplayHours,
+    setDisplayHours,
+  } = useLocationHours(selectedLocationId);
+
+  // Business hours editing state
+  const [hoursSaved, setHoursSaved] = useState(false);
+  const [editingHours, setEditingHours] = useState<Array<{
+    day: string;
+    dayOfWeek: number;
+    open: string;
+    close: string;
+    isOpen: boolean;
+  }> | null>(null);
+
+  // Initialize editingHours when API data loads
+  useEffect(() => {
+    if (!hoursLoading) {
+      setEditingHours(getDisplayHours());
+    }
+  }, [hoursLoading, getDisplayHours]);
+
+  // Reset editingHours when location changes
+  useEffect(() => {
+    setEditingHours(null);
+  }, [selectedLocationId]);
+
+  const handleSaveHours = async () => {
+    if (!editingHours) return;
+    const success = await setDisplayHours(editingHours);
+    if (success) {
+      setHoursSaved(true);
+      setTimeout(() => setHoursSaved(false), 2000);
+    }
+  };
 
   // Account section state
   const [profileForm, setProfileForm] = useState({
@@ -1288,6 +1327,28 @@ function SettingsContent() {
         );
 
       case 'hours':
+        // No location selected
+        if (!selectedLocationId) {
+          return (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 mx-auto text-charcoal/20 dark:text-white/20 mb-4" />
+              <p className="text-charcoal/60 dark:text-white/60">
+                Select a location from the header to manage its business hours.
+              </p>
+            </div>
+          );
+        }
+
+        // Loading state
+        if (hoursLoading || !editingHours) {
+          return (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-sage" />
+              <span className="ml-2 text-charcoal/60 dark:text-white/60">Loading hours...</span>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-8">
             <div>
@@ -1298,7 +1359,7 @@ function SettingsContent() {
             </div>
 
             <div className="space-y-3">
-              {hours.map((day, index) => (
+              {editingHours.map((day, index) => (
                 <div
                   key={day.day}
                   className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
@@ -1314,9 +1375,9 @@ function SettingsContent() {
                       type="checkbox"
                       checked={day.isOpen}
                       onChange={(e) => {
-                        const updated = [...hours];
-                        updated[index].isOpen = e.target.checked;
-                        setHours(updated);
+                        const updated = [...editingHours];
+                        updated[index] = { ...updated[index], isOpen: e.target.checked };
+                        setEditingHours(updated);
                       }}
                       className="w-5 h-5 rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage"
                     />
@@ -1329,9 +1390,9 @@ function SettingsContent() {
                         type="time"
                         value={day.open}
                         onChange={(e) => {
-                          const updated = [...hours];
-                          updated[index].open = e.target.value;
-                          setHours(updated);
+                          const updated = [...editingHours];
+                          updated[index] = { ...updated[index], open: e.target.value };
+                          setEditingHours(updated);
                         }}
                         className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm"
                       />
@@ -1340,9 +1401,9 @@ function SettingsContent() {
                         type="time"
                         value={day.close}
                         onChange={(e) => {
-                          const updated = [...hours];
-                          updated[index].close = e.target.value;
-                          setHours(updated);
+                          const updated = [...editingHours];
+                          updated[index] = { ...updated[index], close: e.target.value };
+                          setEditingHours(updated);
                         }}
                         className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm"
                       />
@@ -1361,6 +1422,35 @@ function SettingsContent() {
                 <strong>Note:</strong> To set up holiday closures or special hours, go to Calendar
                 and use the Block Time feature.
               </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-4 pt-4 border-t border-charcoal/10 dark:border-white/10">
+              {hoursError && (
+                <p className="text-red-500 text-sm flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  {hoursError}
+                </p>
+              )}
+              {hoursSaved && (
+                <p className="text-sage text-sm flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Hours saved
+                </p>
+              )}
+              <button
+                onClick={handleSaveHours}
+                disabled={hoursSaving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-lg font-medium hover:bg-sage-dark transition-colors disabled:opacity-50"
+              >
+                {hoursSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Hours'
+                )}
+              </button>
             </div>
           </div>
         );
