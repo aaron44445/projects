@@ -11,6 +11,7 @@ interface DashboardStats {
   revenueChange: string;
   newClients: number;
   clientsChange: number;
+  timezone: string;
 }
 
 interface ApiStatsResponse {
@@ -19,6 +20,7 @@ interface ApiStatsResponse {
   newClients: { current: number; previous: number; change: number };
   totalClients: number;
   rating: { average: number | null; count: number };
+  timezone: string;
 }
 
 interface TodayAppointment {
@@ -123,6 +125,7 @@ async function fetchStats(locationId?: string | null) {
     revenueChange: `${apiData?.revenue?.change ?? 0}%`,
     newClients: apiData?.newClients?.current ?? 0,
     clientsChange: apiData?.newClients?.change ?? 0,
+    timezone: apiData?.timezone ?? 'UTC',
   };
 }
 
@@ -138,10 +141,16 @@ async function fetchTodayAppointments(locationId?: string | null) {
     : (todayData?.appointments ?? []);
 }
 
+interface RecentActivityResponse {
+  activity: RecentAppointment[];
+  timezone: string;
+}
+
 async function fetchRecentActivity(locationId?: string | null) {
   const locationParam = locationId ? `?locationId=${locationId}` : '';
-  const response = await api.get<RecentAppointment[]>(`/dashboard/recent-activity${locationParam}`);
-  const recentData = Array.isArray(response.data) ? response.data : [];
+  const response = await api.get<RecentActivityResponse | RecentAppointment[]>(`/dashboard/recent-activity${locationParam}`);
+  // Handle both old (array) and new (object with activity) response formats
+  const recentData = Array.isArray(response.data) ? response.data : (response.data?.activity ?? []);
   return transformToActivity(recentData);
 }
 
