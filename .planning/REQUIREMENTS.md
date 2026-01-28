@@ -9,10 +9,10 @@ Requirements for audit remediation. Each maps to roadmap phases.
 
 ### Security
 
-- [ ] **SEC-01**: Application enforces ENCRYPTION_KEY in production (fails startup if missing)
-- [ ] **SEC-02**: Application enforces JWT_SECRET in production (fails startup if missing)
-- [ ] **SEC-03**: File DELETE endpoint validates ownership via database lookup, not path
-- [ ] **SEC-04**: Password validation requires uppercase, lowercase, number, and special character
+- [x] **SEC-01**: Application enforces ENCRYPTION_KEY in production (fails startup if missing)
+- [x] **SEC-02**: Application enforces JWT_SECRET in production (fails startup if missing)
+- [x] **SEC-03**: File DELETE endpoint validates ownership via database lookup, not path
+- [x] **SEC-04**: Password validation requires uppercase, lowercase, number, and special character
 
 ### Performance
 
@@ -78,10 +78,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 13: Security Hardening | Pending |
-| SEC-02 | Phase 13: Security Hardening | Pending |
-| SEC-03 | Phase 13: Security Hardening | Pending |
-| SEC-04 | Phase 13: Security Hardening | Pending |
+| SEC-01 | Phase 13: Security Hardening | Complete |
+| SEC-02 | Phase 13: Security Hardening | Complete |
+| SEC-03 | Phase 13: Security Hardening | Complete |
+| SEC-04 | Phase 13: Security Hardening | Complete |
 | PERF-01 | Phase 14: Performance Optimization | Pending |
 | PERF-02 | Phase 14: Performance Optimization | Pending |
 | PERF-03 | Phase 14: Performance Optimization | Pending |
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 (roadmap traceability added)*
+*Last updated: 2026-01-28 (Phase 13 requirements complete)*
