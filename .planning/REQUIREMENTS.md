@@ -51,9 +51,9 @@ Requirements for stabilization milestone. Each maps to roadmap phases.
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard shows accurate statistics
-- [ ] **DASH-02**: Today's appointments display correctly
-- [ ] **DASH-03**: Revenue tracking accurate
+- [x] **DASH-01**: Dashboard shows accurate statistics
+- [x] **DASH-02**: Today's appointments display correctly
+- [x] **DASH-03**: Revenue tracking accurate
 
 ## v2 Requirements
 
@@ -113,9 +113,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STAFF-01 | Phase 2 | Complete |
 | STAFF-02 | Phase 2 | Complete |
 | STAFF-03 | Phase 2 | Complete |
-| DASH-01 | Phase 7 | Pending |
-| DASH-02 | Phase 7 | Pending |
-| DASH-03 | Phase 7 | Pending |
+| DASH-01 | Phase 7 | Complete |
+| DASH-02 | Phase 7 | Complete |
+| DASH-03 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 24 total
@@ -124,4 +124,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-27 after Phase 6 completion*
+*Last updated: 2026-01-28 after Phase 8 completion*

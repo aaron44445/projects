@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Notification System** - Fix SMS and connect email reminders
 - [x] **Phase 6: Settings Persistence** - Ensure configuration changes apply immediately
 - [x] **Phase 7: Dashboard & Validation** - Accurate stats and edge case handling
-- [ ] **Phase 8: Register Missing Production Routers** - [GAP CLOSURE] Fix API route registration
+- [x] **Phase 8: Register Missing Production Routers** - [GAP CLOSURE] Fix API route registration
 - [ ] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
 
 ## Phase Details
@@ -214,7 +214,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Add missing router imports and registrations to index.ts
+- [x] 08-01-PLAN.md — Add missing router imports and registrations to index.ts
 
 ### Phase 9: Authentication & Tenant Isolation Execution
 
@@ -256,9 +256,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Notification System | 7/7 | Human Verification | - |
 | 6. Settings Persistence | 4/4 | Complete | 2026-01-27 |
 | 7. Dashboard & Validation | 5/5 | Complete | 2026-01-27 |
-| 8. Register Missing Production Routers | 0/1 | Planned | - |
+| 8. Register Missing Production Routers | 1/1 | Complete | 2026-01-28 |
 | 9. Authentication & Tenant Isolation Execution | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 8 planned)*
+*Last updated: 2026-01-28 (Phase 8 complete)*
