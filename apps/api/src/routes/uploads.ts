@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { authenticate } from '../middleware/auth.js';
+import { validateFileOwnership } from '../middleware/validateFileOwnership.js';
 import {
   uploadImage,
   uploadAvatar,
@@ -14,6 +15,7 @@ import {
   UPLOAD_PRESETS,
 } from '../services/upload.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { prisma } from '@peacase/database';
 
 const router = Router();
 
@@ -187,6 +189,21 @@ router.post(
           });
       }
 
+      // Track upload in database for ownership verification
+      await prisma.fileUpload.create({
+        data: {
+          publicId: result.publicId,
+          url: result.secureUrl,
+          salonId: req.user?.salonId || '',
+          userId: req.user?.userId || '',
+          fileType: type,
+          bytes: result.bytes,
+          width: result.width,
+          height: result.height,
+          format: result.format,
+        },
+      });
+
       res.status(201).json({
         success: true,
         data: {
@@ -253,6 +270,21 @@ router.post(
 
       const result = await uploadAvatar(file.buffer, req.user?.userId);
 
+      // Track upload in database for ownership verification
+      await prisma.fileUpload.create({
+        data: {
+          publicId: result.publicId,
+          url: result.secureUrl,
+          salonId: req.user?.salonId || '',
+          userId: req.user?.userId || '',
+          fileType: 'avatar',
+          bytes: result.bytes,
+          width: result.width,
+          height: result.height,
+          format: result.format,
+        },
+      });
+
       res.status(201).json({
         success: true,
         data: {
@@ -288,6 +320,7 @@ router.post(
 router.delete(
   '/:publicId(*)',
   authenticate,
+  validateFileOwnership,
   asyncHandler(async (req: Request, res: Response) => {
     try {
       const { publicId } = req.params;
@@ -302,25 +335,7 @@ router.delete(
         });
       }
 
-      // Validate that the publicId belongs to the user's salon
-      // This prevents users from deleting other salons' images
-      const salonId = req.user?.salonId;
-      if (salonId && !publicId.includes(`peacase/salons/${salonId}`) &&
-          !publicId.includes('peacase/avatars') &&
-          !publicId.includes('peacase/services') &&
-          !publicId.includes('peacase/gallery')) {
-        // Check if it's a valid peacase path
-        if (!publicId.startsWith('peacase/')) {
-          return res.status(403).json({
-            success: false,
-            error: {
-              code: 'FORBIDDEN',
-              message: 'You do not have permission to delete this image',
-            },
-          });
-        }
-      }
-
+      // Delete from Cloudinary
       const result = await deleteImage(publicId);
 
       if (result.result === 'not found') {
@@ -332,6 +347,11 @@ router.delete(
           },
         });
       }
+
+      // Delete from database tracking
+      await prisma.fileUpload.delete({
+        where: { publicId },
+      });
 
       res.json({
         success: true,
