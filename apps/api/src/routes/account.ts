@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { passwordSchema } from '../lib/passwordValidation.js';
 
 const router = Router();
 
@@ -18,7 +19,7 @@ const updateProfileSchema = z.object({
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+  newPassword: passwordSchema,
 });
 
 // ============================================

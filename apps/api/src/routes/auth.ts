@@ -9,6 +9,7 @@ import { sendEmail, passwordResetEmail, emailVerificationEmail } from '../servic
 import { env } from '../lib/env.js';
 import { csrfTokenHandler, clearCsrfToken } from '../middleware/csrf.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { passwordSchema } from '../lib/passwordValidation.js';
 
 const router = Router();
 
@@ -81,9 +82,7 @@ const registerSchema = z.object({
   email: z.string()
     .min(1, 'Email is required')
     .email('Please enter a valid email address'),
-  password: z.string()
-    .min(1, 'Password is required')
-    .min(8, 'Password must be at least 8 characters'),
+  password: passwordSchema,
   phone: z.string().optional(),
   businessName: z.string().optional(),
   businessType: z.string().optional(),
@@ -103,7 +102,7 @@ const forgotPasswordSchema = z.object({
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8),
+  password: passwordSchema,
 });
 
 const verifyEmailSchema = z.object({
