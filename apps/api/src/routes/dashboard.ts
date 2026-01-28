@@ -80,6 +80,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
     totalClients,
     avgRating,
     salon,
+    vipClients,
   ] = await Promise.all([
     // Current month payments
     prisma.payment.aggregate({
@@ -156,6 +157,15 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
       where: { id: salonId },
       select: { timezone: true },
     }),
+
+    // VIP clients count (clients with 'VIP' tag)
+    prisma.client.count({
+      where: {
+        salonId,
+        isActive: true,
+        tags: { has: 'VIP' },
+      },
+    }),
   ]);
 
   // Calculate NET revenue (gross minus refunds)
@@ -182,10 +192,6 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
 
   const salonTz = salon?.timezone || 'UTC';
 
-  // VIP clients count: Requires 'tags' field on Client model (not yet in schema)
-  // Returns 0 for now - see PERF-03 for VIP tagging feature
-  const vipClients = 0;
-
   res.json({
     success: true,
     data: {
@@ -205,7 +211,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
         change: clientChange,
       },
       totalClients,
-      vipClients, // PERF-03: Placeholder until Client.tags field added
+      vipClients, // PERF-03: Database COUNT of clients with 'VIP' tag
       rating: {
         average: avgRating._avg.rating ? Math.round(avgRating._avg.rating * 10) / 10 : null,
         count: avgRating._count.rating,
