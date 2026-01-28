@@ -19,6 +19,7 @@ interface ApiStatsResponse {
   appointments: { current: number; previous: number; change: number };
   newClients: { current: number; previous: number; change: number };
   totalClients: number;
+  vipClients: number; // PERF-02: VIP client count from database
   rating: { average: number | null; count: number };
   timezone: string;
 }
@@ -184,8 +185,8 @@ export function useDashboard(locationId?: string | null) {
     queryKey: ['dashboard', 'stats', locationId],
     queryFn: () => fetchStats(locationId),
     refetchInterval: REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false, // Pause polling when tab is backgrounded
+    refetchOnWindowFocus: true,          // Refresh immediately when tab returns
     staleTime: 30000,
     gcTime: 300000,
     retry: 3,
@@ -196,8 +197,8 @@ export function useDashboard(locationId?: string | null) {
     queryKey: ['dashboard', 'appointments', locationId],
     queryFn: () => fetchTodayAppointments(locationId),
     refetchInterval: REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false, // Pause polling when tab is backgrounded
+    refetchOnWindowFocus: true,          // Refresh immediately when tab returns
     staleTime: 30000,
     gcTime: 300000,
     retry: 3,
@@ -208,8 +209,8 @@ export function useDashboard(locationId?: string | null) {
     queryKey: ['dashboard', 'activity', locationId],
     queryFn: () => fetchRecentActivity(locationId),
     refetchInterval: REFRESH_INTERVAL_MS,
-    refetchIntervalInBackground: true,
-    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false, // Pause polling when tab is backgrounded
+    refetchOnWindowFocus: true,          // Refresh immediately when tab returns
     staleTime: 30000,
     gcTime: 300000,
     retry: 3,
