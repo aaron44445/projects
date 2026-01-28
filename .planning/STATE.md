@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 7 - Dashboard & Validation - COMPLETE
+**Current focus:** Phase 8 - Register Missing Routers - COMPLETE
 
 ## Current Position
 
-Phase: 7 of 7 (Dashboard & Validation)
-Plan: All plans complete (07-01 through 07-05 with gap closure)
-Status: Phase complete - verified by human testing and code review
-Last activity: 2026-01-27 - Completed 07-05-PLAN.md (E2E Verification with gap closure)
+Phase: 8 of 9 (Register Missing Routers - Gap Closure)
+Plan: 1 of 1 (08-01-PLAN.md)
+Status: Phase complete
+Last activity: 2026-01-28 - Completed 08-01-PLAN.md (Register Missing Routers)
 
-Progress: [████████████████████] 100% (26/26 plans completed across all phases)
+Progress: [████████████████████] 100% (27/27 plans completed across all phases)
 
 ## Performance Metrics
 
@@ -33,10 +33,11 @@ Progress: [████████████████████] 100% (2
 | 05-notification-system | 5 | 31min | 6.2min |
 | 06-settings-persistence | 3 | 18min | 6.0min |
 | 07-dashboard-validation | 4 | 22min | 5.5min |
+| 08-register-missing-routers | 1 | 3min | 3.0min |
 
 **Recent Trend:**
-- Last 8 plans: 06-01 (8min), 06-03 (4min), 06-04 (6min), 07-01 (4min), 07-02 (4min), 07-03 (7min), 07-04 (7min)
-- Trend: Consistent execution (4-8min for dashboard improvements)
+- Last 8 plans: 06-04 (6min), 07-01 (4min), 07-02 (4min), 07-03 (7min), 07-04 (7min), 07-05 (5min), 08-01 (3min)
+- Trend: Consistent execution (3-7min for gap closure)
 
 *Updated after each plan completion*
 
@@ -135,6 +136,8 @@ Recent decisions affecting current work:
 - **07-04:** toLocaleTimeString with timeZone option for timezone conversion
 - **07-05:** Use Intl.DateTimeFormat.formatToParts() with Date.UTC() for DST-safe timezone offset calculation
 - **07-05:** Inline TanStack Query refetchInterval options directly into useQuery calls (not spread from shared object)
+- **08-01:** Maintain parity between app.ts (dev) and index.ts (prod) entry points
+- **08-01:** Group routers by functional area with comments for organization
 
 ### Pending Todos
 
@@ -186,9 +189,12 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-27T23:30:00Z
-Stopped at: Completed 07-04-PLAN.md - Timezone Display
+Last session: 2026-01-28T03:47:00Z
+Stopped at: Completed 08-01-PLAN.md - Register Missing Routers
 Resume file: None
+
+**Phase 8 Status:** COMPLETE
+- 08-01: Register Missing Routers - COMPLETE
 
 **Phase 7 Status:** COMPLETE - VERIFIED
 - 07-01: Dashboard API Validation - COMPLETE
@@ -245,4 +251,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-27T23:30:00Z*
+*Last updated: 2026-01-28T03:47:00Z*
