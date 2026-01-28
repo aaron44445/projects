@@ -183,6 +183,7 @@ model Client {
   updatedAt               DateTime                       @updatedAt @map("updated_at")
   preferredLocationId     String?                        @map("preferred_location_id")
   country                 String?
+  tags                    String[]                       @default([])
   dataConsentAt           DateTime?                      @map("data_consent_at")
   dataConsentGiven        Boolean                        @default(false) @map("data_consent_given")
   appointments            Appointment[]
