@@ -20,7 +20,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 6: Settings Persistence** - Ensure configuration changes apply immediately
 - [x] **Phase 7: Dashboard & Validation** - Accurate stats and edge case handling
 - [x] **Phase 8: Register Missing Production Routers** - [GAP CLOSURE] Fix API route registration
-- [ ] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
+- [x] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
+- [ ] **Phase 10: Dark Mode for Public Pages** - Add dark mode support to all public-facing pages
+- [x] **Phase 11: Settings Audit** - Audit all settings functionality to identify working/broken controls
 
 ## Phase Details
 
@@ -236,11 +238,53 @@ Plans:
   4. All database queries verified to include salonId filter (multi-tenant audit complete)
   5. Two-salon test suite passes with 100% isolation (create data for both, verify zero cross-access)
 
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 09-01: TBD
-- [ ] 09-02: TBD
+- [x] 09-01-PLAN.md — Prisma query safety: add salonId to all update/delete operations
+- [x] 09-02-PLAN.md — Webhook security: Twilio signature validation & tenant verification
+- [x] 09-03-PLAN.md — Public endpoint validation: staffId & locationId verification
+- [x] 09-04-PLAN.md — Frontend consistency: token keys & API client usage
+- [x] 09-05-PLAN.md — Test suite: session persistence & tenant isolation tests
+
+### Phase 10: Dark Mode for Public Pages
+
+**Goal**: Add full dark mode support to all public-facing pages with a theme toggle
+
+**Depends on**: Phase 9
+
+**Requirements**: UX enhancement for public pages
+
+**Success Criteria** (what must be TRUE):
+  1. All public pages support dark mode (landing, pricing, features, about, contact, login, signup)
+  2. Theme toggle with sun/moon icons in top right header
+  3. No unstyled/white sections visible in dark mode
+  4. Theme preference persists in localStorage
+  5. Color scheme matches existing dashboard dark mode
+
+**Plans**: 1 plan
+
+Plans:
+- [ ] 10-01-PLAN.md — Implement dark mode for all public pages with theme toggle
+
+### Phase 11: Settings Audit
+
+**Goal**: Audit all settings functionality to identify what works and what doesn't
+
+**Depends on**: Phase 10
+
+**Requirements**: Quality assurance for settings section
+
+**Success Criteria** (what must be TRUE):
+  1. SETTINGS-AUDIT.md documents every button/toggle/input in settings
+  2. Each control categorized as WORKING, NOT WORKING, or PARTIALLY WORKING
+  3. All settings pages covered: Account, Business, Staff, Notifications, Billing, etc.
+  4. Clear documentation of what each control should do vs what it actually does
+
+**Plans**: 1 plan
+
+Plans:
+- [x] 11-01-PLAN.md — Comprehensive settings functionality audit
 
 ## Progress
 
@@ -257,8 +301,10 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 6. Settings Persistence | 4/4 | Complete | 2026-01-27 |
 | 7. Dashboard & Validation | 5/5 | Complete | 2026-01-27 |
 | 8. Register Missing Production Routers | 1/1 | Complete | 2026-01-28 |
-| 9. Authentication & Tenant Isolation Execution | 0/0 | Not started | - |
+| 9. Authentication & Tenant Isolation Execution | 5/5 | Complete | 2026-01-28 |
+| 10. Dark Mode for Public Pages | 0/1 | Not Started | - |
+| 11. Settings Audit | 1/1 | Complete | 2026-01-28 |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 8 complete)*
+*Last updated: 2026-01-28 (Phase 11 complete - Settings Audit)*
