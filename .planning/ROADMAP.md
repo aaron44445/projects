@@ -211,10 +211,10 @@ Plans:
   4. Notification history page loads without 404 errors
   5. All routers from app.ts are present in index.ts (parity verified)
 
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Add missing router imports and registrations to index.ts
 
 ### Phase 9: Authentication & Tenant Isolation Execution
 
@@ -256,9 +256,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Notification System | 7/7 | Human Verification | - |
 | 6. Settings Persistence | 4/4 | Complete | 2026-01-27 |
 | 7. Dashboard & Validation | 5/5 | Complete | 2026-01-27 |
-| 8. Register Missing Production Routers | 0/0 | Not started | - |
+| 8. Register Missing Production Routers | 0/1 | Planned | - |
 | 9. Authentication & Tenant Isolation Execution | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Gap closure phases 8-9 added from milestone audit)*
+*Last updated: 2026-01-28 (Phase 8 planned)*
