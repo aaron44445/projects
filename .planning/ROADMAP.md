@@ -1,0 +1,137 @@
+# Roadmap: Peacase v1.1 Audit Remediation
+
+## Milestones
+
+- [x] **v1.0 Stabilization** - Phases 2-12 (shipped 2026-01-28)
+- [ ] **v1.1 Audit Remediation** - Phases 13-18 (in progress)
+
+## Overview
+
+This roadmap addresses ~50 audit findings across security, performance, SEO, accessibility, code quality, and UI/UX. The approach is surgical and additive — fixing issues without introducing regressions to the production system that users depend on daily. Phase ordering follows risk and dependency analysis: security foundation first, then performance, SEO, accessibility, code quality, and finally UI polish.
+
+## Phases
+
+<details>
+<summary>v1.0 Stabilization (Phases 2-12) - SHIPPED 2026-01-28</summary>
+
+See MILESTONES.md for v1.0 details.
+
+- 40 plans executed
+- 130 commits
+- 24/24 requirements satisfied
+
+</details>
+
+### v1.1 Audit Remediation (In Progress)
+
+**Milestone Goal:** Fix all audit findings to production standards across security, performance, SEO, accessibility, code quality, and UI/UX.
+
+- [ ] **Phase 13: Security Hardening** - Environment validation, file ownership, password policy
+- [ ] **Phase 14: Performance Optimization** - Async notifications, query consolidation, background refetch
+- [ ] **Phase 15: SEO Fundamentals** - Sitemap, robots.txt, canonical URLs, structured data
+- [ ] **Phase 16: Accessibility Compliance** - Focus traps, ARIA labels, skip navigation, contrast
+- [ ] **Phase 17: Code Quality** - TypeScript strictness, structured logging, DRY utilities
+- [ ] **Phase 18: UI/UX Consistency** - Modal standardization, design tokens, component reuse
+
+## Phase Details
+
+### Phase 13: Security Hardening
+**Goal**: Application validates critical environment variables at startup and enforces secure file access patterns
+**Depends on**: Phase 12 (v1.0 complete)
+**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04
+**Success Criteria** (what must be TRUE):
+  1. Application fails to start in production if ENCRYPTION_KEY is missing or empty
+  2. Application fails to start in production if JWT_SECRET is missing or empty
+  3. File DELETE requests verify ownership via database lookup before deletion
+  4. New user passwords require uppercase, lowercase, number, and special character
+**Plans**: TBD
+
+Plans:
+- [ ] 13-01: TBD
+
+### Phase 14: Performance Optimization
+**Goal**: API responses are fast (<200ms) and dashboard queries are efficient (no N+1)
+**Depends on**: Phase 13
+**Requirements**: PERF-01, PERF-02, PERF-03, PERF-04
+**Success Criteria** (what must be TRUE):
+  1. Booking confirmation API returns before email/SMS is sent (async queue)
+  2. Dashboard stats endpoint makes 2-3 database queries, not 8
+  3. VIP client count comes from database COUNT query, not client-side filter
+  4. Dashboard does not refetch when browser tab is in background
+**Plans**: TBD
+
+Plans:
+- [ ] 14-01: TBD
+
+### Phase 15: SEO Fundamentals
+**Goal**: Public pages are discoverable and provide rich search results
+**Depends on**: Phase 13 (security must be stable first)
+**Requirements**: SEO-01, SEO-02, SEO-03, SEO-04
+**Success Criteria** (what must be TRUE):
+  1. /sitemap.xml returns valid XML with all public page URLs
+  2. /robots.txt allows crawling of public pages and blocks /dashboard, /admin
+  3. All public pages have canonical URLs in HTML head
+  4. Landing page passes Google Rich Results Test for Organization schema
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: TBD
+
+### Phase 16: Accessibility Compliance
+**Goal**: Application meets WCAG 2.1 AA standards for keyboard and screen reader users
+**Depends on**: Phase 13 (security must be stable first)
+**Requirements**: A11Y-01, A11Y-02, A11Y-03, A11Y-04
+**Success Criteria** (what must be TRUE):
+  1. Opening a modal traps focus; pressing Escape closes it and returns focus
+  2. Screen reader announces time slot information when navigating booking widget
+  3. Pressing Tab as first action on any page focuses "Skip to main content" link
+  4. All body text has minimum 4.5:1 contrast ratio (charcoal/80 or darker)
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: TBD
+
+### Phase 17: Code Quality
+**Goal**: Codebase is strictly typed with no implicit any and uses structured logging
+**Depends on**: Phase 14 (performance changes may affect types)
+**Requirements**: CODE-01, CODE-02, CODE-03, CODE-04
+**Success Criteria** (what must be TRUE):
+  1. All Prisma filter objects have explicit types (grep finds no `any` in route filters)
+  2. API builds successfully with noImplicitAny: true in tsconfig.json
+  3. Shared salonId filter utility is used in all routes (no inline where patterns)
+  4. All API console.log/warn/error calls replaced with structured logger
+**Plans**: TBD
+
+Plans:
+- [ ] 17-01: TBD
+
+### Phase 18: UI/UX Consistency
+**Goal**: UI components follow consistent patterns with shared design tokens
+**Depends on**: Phase 16 (accessibility fixes inform component patterns)
+**Requirements**: UI-01, UI-02, UI-03, UI-04
+**Success Criteria** (what must be TRUE):
+  1. All modal dialogs use packages/ui Modal component (no custom implementations)
+  2. Status colors (pending, confirmed, cancelled, etc.) come from single constants file
+  3. Error highlighting uses design tokens (error/10, error/20) not hex colors
+  4. Empty states across the app use shared EmptyState component
+**Plans**: TBD
+
+Plans:
+- [ ] 18-01: TBD
+
+## Progress
+
+**Execution Order:** Phases execute in numeric order: 13 -> 14 -> 15 -> 16 -> 17 -> 18
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 13. Security Hardening | v1.1 | 0/TBD | Not started | - |
+| 14. Performance Optimization | v1.1 | 0/TBD | Not started | - |
+| 15. SEO Fundamentals | v1.1 | 0/TBD | Not started | - |
+| 16. Accessibility Compliance | v1.1 | 0/TBD | Not started | - |
+| 17. Code Quality | v1.1 | 0/TBD | Not started | - |
+| 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
+
+---
+*Roadmap created: 2026-01-28*
+*Last updated: 2026-01-28*

@@ -78,36 +78,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 13 | Pending |
-| SEC-02 | Phase 13 | Pending |
-| SEC-03 | Phase 13 | Pending |
-| SEC-04 | Phase 13 | Pending |
-| PERF-01 | Phase 14 | Pending |
-| PERF-02 | Phase 14 | Pending |
-| PERF-03 | Phase 14 | Pending |
-| PERF-04 | Phase 14 | Pending |
-| SEO-01 | Phase 15 | Pending |
-| SEO-02 | Phase 15 | Pending |
-| SEO-03 | Phase 15 | Pending |
-| SEO-04 | Phase 15 | Pending |
-| A11Y-01 | Phase 16 | Pending |
-| A11Y-02 | Phase 16 | Pending |
-| A11Y-03 | Phase 16 | Pending |
-| A11Y-04 | Phase 16 | Pending |
-| CODE-01 | Phase 17 | Pending |
-| CODE-02 | Phase 17 | Pending |
-| CODE-03 | Phase 17 | Pending |
-| CODE-04 | Phase 17 | Pending |
-| UI-01 | Phase 18 | Pending |
-| UI-02 | Phase 18 | Pending |
-| UI-03 | Phase 18 | Pending |
-| UI-04 | Phase 18 | Pending |
+| SEC-01 | Phase 13: Security Hardening | Pending |
+| SEC-02 | Phase 13: Security Hardening | Pending |
+| SEC-03 | Phase 13: Security Hardening | Pending |
+| SEC-04 | Phase 13: Security Hardening | Pending |
+| PERF-01 | Phase 14: Performance Optimization | Pending |
+| PERF-02 | Phase 14: Performance Optimization | Pending |
+| PERF-03 | Phase 14: Performance Optimization | Pending |
+| PERF-04 | Phase 14: Performance Optimization | Pending |
+| SEO-01 | Phase 15: SEO Fundamentals | Pending |
+| SEO-02 | Phase 15: SEO Fundamentals | Pending |
+| SEO-03 | Phase 15: SEO Fundamentals | Pending |
+| SEO-04 | Phase 15: SEO Fundamentals | Pending |
+| A11Y-01 | Phase 16: Accessibility Compliance | Pending |
+| A11Y-02 | Phase 16: Accessibility Compliance | Pending |
+| A11Y-03 | Phase 16: Accessibility Compliance | Pending |
+| A11Y-04 | Phase 16: Accessibility Compliance | Pending |
+| CODE-01 | Phase 17: Code Quality | Pending |
+| CODE-02 | Phase 17: Code Quality | Pending |
+| CODE-03 | Phase 17: Code Quality | Pending |
+| CODE-04 | Phase 17: Code Quality | Pending |
+| UI-01 | Phase 18: UI/UX Consistency | Pending |
+| UI-02 | Phase 18: UI/UX Consistency | Pending |
+| UI-03 | Phase 18: UI/UX Consistency | Pending |
+| UI-04 | Phase 18: UI/UX Consistency | Pending |
 
 **Coverage:**
 - v1.1 requirements: 24 total
 - Mapped to phases: 24
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 after initial definition*
+*Last updated: 2026-01-28 (roadmap traceability added)*
