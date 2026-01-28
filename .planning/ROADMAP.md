@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
 - [x] **Phase 10: Dark Mode for Public Pages** - Add dark mode support to all public-facing pages
 - [x] **Phase 11: Settings Audit** - Audit all settings functionality to identify working/broken controls
-- [ ] **Phase 12: Security Hardening** - [GAP CLOSURE] Complete AUTH-01 with Prisma query and webhook fixes
+- [x] **Phase 12: Security Hardening** - [GAP CLOSURE] Complete AUTH-01 with Prisma query and webhook fixes
 
 ## Phase Details
 
@@ -318,13 +318,13 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Add salonId to remaining Prisma queries (clientPortal + ownerNotifications)
-- [ ] 12-02-PLAN.md — Update audit documentation to reflect fixed status
+- [x] 12-01-PLAN.md — Add salonId to remaining Prisma queries (clientPortal + ownerNotifications)
+- [x] 12-02-PLAN.md — Update audit documentation to reflect fixed status
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11 -> 12
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -339,8 +339,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 9. Authentication & Tenant Isolation Execution | 5/5 | Complete | 2026-01-28 |
 | 10. Dark Mode for Public Pages | 1/1 | Complete | 2026-01-28 |
 | 11. Settings Audit | 1/1 | Complete | 2026-01-28 |
-| 12. Security Hardening | 0/2 | Planning | - |
+| 12. Security Hardening | 2/2 | Complete | 2026-01-28 |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 12 plans created - most security gaps already fixed)*
+*Last updated: 2026-01-28 (Phase 12 complete - v1 milestone finished)*
