@@ -30,20 +30,20 @@ const tocItems = [
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-charcoal/5">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-sage flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-display font-bold text-charcoal">Peacase</span>
+              <span className="text-xl font-display font-bold text-charcoal dark:text-white">Peacase</span>
             </Link>
             <Link
               href="/"
-              className="flex items-center gap-2 text-sm font-medium text-charcoal/70 hover:text-charcoal transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-charcoal/70 dark:text-gray-300 hover:text-charcoal dark:hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
@@ -56,20 +56,20 @@ export default function PrivacyPolicyPage() {
       <section className="pt-32 pb-12 lg:pt-40 lg:pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-sage/10">
+            <div className="p-3 rounded-xl bg-sage/10 dark:bg-sage/20">
               <Shield className="w-6 h-6 text-sage" />
             </div>
             <span className="text-sm font-medium text-sage">Legal</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Privacy Policy
           </h1>
-          <p className="text-lg text-charcoal/60 mb-6">
+          <p className="text-lg text-charcoal/60 dark:text-gray-400 mb-6">
             Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.
           </p>
-          <div className="flex items-center gap-4 text-sm text-charcoal/50">
+          <div className="flex items-center gap-4 text-sm text-charcoal/50 dark:text-gray-500">
             <span>Last updated: January 24, 2026</span>
-            <span className="w-1 h-1 rounded-full bg-charcoal/30" />
+            <span className="w-1 h-1 rounded-full bg-charcoal/30 dark:bg-gray-600" />
             <span>Effective: January 24, 2026</span>
           </div>
         </div>
@@ -82,8 +82,8 @@ export default function PrivacyPolicyPage() {
             {/* Table of Contents - Sticky Sidebar */}
             <aside className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
-                <div className="p-6 rounded-2xl bg-white border border-charcoal/5 shadow-card">
-                  <h2 className="text-sm font-semibold text-charcoal mb-4 flex items-center gap-2">
+                <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card">
+                  <h2 className="text-sm font-semibold text-charcoal dark:text-white mb-4 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-sage" />
                     Table of Contents
                   </h2>
@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
                       <a
                         key={item.id}
                         href={`#${item.id}`}
-                        className="block py-1.5 text-sm text-charcoal/60 hover:text-sage transition-colors"
+                        className="block py-1.5 text-sm text-charcoal/60 dark:text-gray-400 hover:text-sage transition-colors"
                       >
                         {item.label}
                       </a>
@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
 
             {/* Policy Content */}
             <main className="lg:col-span-3">
-              <div className="prose prose-charcoal max-w-none">
+              <div className="prose prose-charcoal dark:prose-invert max-w-none">
                 {/* Introduction */}
                 <PolicySection id="introduction" title="1. Introduction">
                   <p>
@@ -130,7 +130,7 @@ export default function PrivacyPolicyPage() {
                 <PolicySection id="data-collected" title="2. Data We Collect">
                   <p>We collect different types of information depending on how you interact with our Service:</p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">2.1 Information You Provide</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">2.1 Information You Provide</h4>
 
                   <InfoCard icon={<Eye className="w-5 h-5 text-sage" />} title="Account Information">
                     <ul>
@@ -168,7 +168,7 @@ export default function PrivacyPolicyPage() {
                     </ul>
                   </InfoCard>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">2.2 Information Collected Automatically</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">2.2 Information Collected Automatically</h4>
                   <ul>
                     <li><strong>Device Information:</strong> Browser type, operating system, device identifiers</li>
                     <li><strong>Usage Data:</strong> Pages visited, features used, time spent on the Service</li>
@@ -181,7 +181,7 @@ export default function PrivacyPolicyPage() {
                 <PolicySection id="how-we-use" title="3. How We Use Your Data">
                   <p>We use the information we collect for the following purposes:</p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">3.1 Service Delivery</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">3.1 Service Delivery</h4>
                   <ul>
                     <li>Providing and maintaining the Peacase platform</li>
                     <li>Processing appointments and managing calendars</li>
@@ -190,7 +190,7 @@ export default function PrivacyPolicyPage() {
                     <li>Sending appointment reminders and confirmations</li>
                   </ul>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">3.2 Communication</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">3.2 Communication</h4>
                   <ul>
                     <li>Responding to your inquiries and support requests</li>
                     <li>Sending transactional emails (receipts, confirmations, password resets)</li>
@@ -198,7 +198,7 @@ export default function PrivacyPolicyPage() {
                     <li>Notifying you of changes to our Service or policies</li>
                   </ul>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">3.3 Improvement & Analytics</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">3.3 Improvement & Analytics</h4>
                   <ul>
                     <li>Analyzing usage patterns to improve our Service</li>
                     <li>Developing new features and functionality</li>
@@ -206,7 +206,7 @@ export default function PrivacyPolicyPage() {
                     <li>Troubleshooting technical issues</li>
                   </ul>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">3.4 Security & Compliance</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">3.4 Security & Compliance</h4>
                   <ul>
                     <li>Detecting and preventing fraud and abuse</li>
                     <li>Enforcing our Terms of Service</li>
@@ -248,7 +248,7 @@ export default function PrivacyPolicyPage() {
                     of third parties:
                   </p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">5.1 Service Providers</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">5.1 Service Providers</h4>
                   <p>We work with trusted third-party service providers who assist us in operating our Service:</p>
 
                   <div className="mt-4 space-y-4">
@@ -284,14 +284,14 @@ export default function PrivacyPolicyPage() {
                     />
                   </div>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">5.2 Business Transfers</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">5.2 Business Transfers</h4>
                   <p>
                     In the event of a merger, acquisition, or sale of all or a portion of our assets, your personal
                     information may be transferred as part of that transaction. We will notify you via email and/or
                     a prominent notice on our Service of any change in ownership or uses of your personal information.
                   </p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">5.3 Legal Requirements</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">5.3 Legal Requirements</h4>
                   <p>We may disclose your information if required to do so by law or in response to:</p>
                   <ul>
                     <li>Valid legal processes (subpoenas, court orders)</li>
@@ -311,42 +311,42 @@ export default function PrivacyPolicyPage() {
                   <div className="mt-6 overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
-                        <tr className="bg-sage/10">
-                          <th className="text-left p-3 text-sm font-semibold text-charcoal border border-charcoal/10">Data Type</th>
-                          <th className="text-left p-3 text-sm font-semibold text-charcoal border border-charcoal/10">Retention Period</th>
-                          <th className="text-left p-3 text-sm font-semibold text-charcoal border border-charcoal/10">Reason</th>
+                        <tr className="bg-sage/10 dark:bg-sage/20">
+                          <th className="text-left p-3 text-sm font-semibold text-charcoal dark:text-white border border-charcoal/10 dark:border-white/10">Data Type</th>
+                          <th className="text-left p-3 text-sm font-semibold text-charcoal dark:text-white border border-charcoal/10 dark:border-white/10">Retention Period</th>
+                          <th className="text-left p-3 text-sm font-semibold text-charcoal dark:text-white border border-charcoal/10 dark:border-white/10">Reason</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td className="p-3 text-sm border border-charcoal/10">Account Information</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Until account deletion + 30 days</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Service provision and account recovery</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Account Information</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Until account deletion + 30 days</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Service provision and account recovery</td>
                         </tr>
-                        <tr className="bg-surface-muted">
-                          <td className="p-3 text-sm border border-charcoal/10">Appointment Records</td>
-                          <td className="p-3 text-sm border border-charcoal/10">7 years after appointment</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Business records and legal compliance</td>
-                        </tr>
-                        <tr>
-                          <td className="p-3 text-sm border border-charcoal/10">Payment Records</td>
-                          <td className="p-3 text-sm border border-charcoal/10">7 years after transaction</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Tax and financial regulations</td>
-                        </tr>
-                        <tr className="bg-surface-muted">
-                          <td className="p-3 text-sm border border-charcoal/10">Marketing Preferences</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Until consent withdrawn</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Consent management</td>
+                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Appointment Records</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">7 years after appointment</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Business records and legal compliance</td>
                         </tr>
                         <tr>
-                          <td className="p-3 text-sm border border-charcoal/10">Usage Logs</td>
-                          <td className="p-3 text-sm border border-charcoal/10">90 days</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Security and troubleshooting</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Payment Records</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">7 years after transaction</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Tax and financial regulations</td>
                         </tr>
-                        <tr className="bg-surface-muted">
-                          <td className="p-3 text-sm border border-charcoal/10">Support Tickets</td>
-                          <td className="p-3 text-sm border border-charcoal/10">3 years after resolution</td>
-                          <td className="p-3 text-sm border border-charcoal/10">Service improvement and dispute resolution</td>
+                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Marketing Preferences</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Until consent withdrawn</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Consent management</td>
+                        </tr>
+                        <tr>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Usage Logs</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">90 days</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Security and troubleshooting</td>
+                        </tr>
+                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Support Tickets</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">3 years after resolution</td>
+                          <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Service improvement and dispute resolution</td>
                         </tr>
                       </tbody>
                     </table>
@@ -397,7 +397,7 @@ export default function PrivacyPolicyPage() {
                     />
                   </div>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">How to Exercise Your Rights</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">How to Exercise Your Rights</h4>
                   <p>You can exercise your rights in several ways:</p>
                   <ul>
                     <li>
@@ -429,13 +429,13 @@ export default function PrivacyPolicyPage() {
                     This section explains what cookies we use and why.
                   </p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">8.1 What Are Cookies?</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">8.1 What Are Cookies?</h4>
                   <p>
                     Cookies are small text files stored on your device when you visit a website. They help websites
                     remember your preferences and understand how you use the site.
                   </p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">8.2 Types of Cookies We Use</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">8.2 Types of Cookies We Use</h4>
 
                   <div className="mt-4 space-y-4">
                     <CookieCard
@@ -464,7 +464,7 @@ export default function PrivacyPolicyPage() {
                     />
                   </div>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">8.3 Managing Cookies</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">8.3 Managing Cookies</h4>
                   <p>
                     You can control cookies through your browser settings. Most browsers allow you to:
                   </p>
@@ -488,7 +488,7 @@ export default function PrivacyPolicyPage() {
                     or destruction.
                   </p>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">9.1 Technical Measures</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">9.1 Technical Measures</h4>
                   <div className="mt-4 grid sm:grid-cols-2 gap-4">
                     <SecurityCard
                       icon={<Lock className="w-5 h-5 text-sage" />}
@@ -512,7 +512,7 @@ export default function PrivacyPolicyPage() {
                     />
                   </div>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">9.2 Organizational Measures</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">9.2 Organizational Measures</h4>
                   <ul>
                     <li>Regular security training for all employees</li>
                     <li>Background checks for employees with access to sensitive data</li>
@@ -521,7 +521,7 @@ export default function PrivacyPolicyPage() {
                     <li>Vendor security assessments for third-party service providers</li>
                   </ul>
 
-                  <h4 className="text-lg font-semibold text-charcoal mt-6 mb-3">9.3 Data Breach Notification</h4>
+                  <h4 className="text-lg font-semibold text-charcoal dark:text-white mt-6 mb-3">9.3 Data Breach Notification</h4>
                   <p>
                     In the unlikely event of a data breach that affects your personal information, we will notify
                     you and the relevant supervisory authorities within 72 hours of becoming aware of the breach,
@@ -599,17 +599,17 @@ export default function PrivacyPolicyPage() {
                     practices, please contact us:
                   </p>
 
-                  <div className="mt-6 p-6 rounded-xl bg-sage/10 border border-sage/20">
+                  <div className="mt-6 p-6 rounded-xl bg-sage/10 dark:bg-sage/20 border border-sage/20 dark:border-sage/30">
                     <div className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-sage/20">
+                      <div className="p-3 rounded-lg bg-sage/20 dark:bg-sage/30">
                         <Mail className="w-6 h-6 text-sage" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-charcoal mb-2">Peacase Privacy Team</h4>
-                        <p className="text-sm text-charcoal/70 mb-3">
+                        <h4 className="font-semibold text-charcoal dark:text-white mb-2">Peacase Privacy Team</h4>
+                        <p className="text-sm text-charcoal/70 dark:text-gray-400 mb-3">
                           For privacy-related inquiries, data requests, or to exercise your rights:
                         </p>
-                        <ul className="space-y-1 text-sm">
+                        <ul className="space-y-1 text-sm dark:text-gray-300">
                           <li>
                             <strong>Email:</strong>{' '}
                             <a href="mailto:privacy@peacase.com" className="text-sage hover:underline">
@@ -681,10 +681,10 @@ function PolicySection({
 }) {
   return (
     <section id={id} className="mb-12 scroll-mt-24">
-      <h2 className="text-2xl font-display font-bold text-charcoal mb-4 pb-2 border-b border-charcoal/10">
+      <h2 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-4 pb-2 border-b border-charcoal/10 dark:border-white/10">
         {title}
       </h2>
-      <div className="text-charcoal/80 leading-relaxed space-y-4">
+      <div className="text-charcoal/80 dark:text-gray-300 leading-relaxed space-y-4">
         {children}
       </div>
     </section>
@@ -701,12 +701,12 @@ function InfoCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-4 p-4 rounded-xl bg-surface-muted border border-charcoal/5">
+    <div className="mt-4 p-4 rounded-xl bg-surface-muted dark:bg-gray-800/50 border border-charcoal/5 dark:border-white/10">
       <div className="flex items-center gap-3 mb-3">
         {icon}
-        <h5 className="font-semibold text-charcoal">{title}</h5>
+        <h5 className="font-semibold text-charcoal dark:text-white">{title}</h5>
       </div>
-      <div className="text-sm text-charcoal/70">
+      <div className="text-sm text-charcoal/70 dark:text-gray-400">
         {children}
       </div>
     </div>
@@ -725,10 +725,10 @@ function ThirdPartyCard({
   privacyUrl: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white border border-charcoal/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h5 className="font-semibold text-charcoal">{name}</h5>
+          <h5 className="font-semibold text-charcoal dark:text-white">{name}</h5>
           <span className="text-xs text-sage font-medium">{purpose}</span>
         </div>
         <a
@@ -740,7 +740,7 @@ function ThirdPartyCard({
           Privacy Policy
         </a>
       </div>
-      <p className="text-sm text-charcoal/70">{description}</p>
+      <p className="text-sm text-charcoal/70 dark:text-gray-400">{description}</p>
     </div>
   );
 }
@@ -753,9 +753,9 @@ function RightCard({
   description: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white border border-charcoal/10 hover:border-sage/30 transition-colors">
-      <h5 className="font-semibold text-charcoal mb-2">{title}</h5>
-      <p className="text-sm text-charcoal/70">{description}</p>
+    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10 hover:border-sage/30 dark:hover:border-sage/50 transition-colors">
+      <h5 className="font-semibold text-charcoal dark:text-white mb-2">{title}</h5>
+      <p className="text-sm text-charcoal/70 dark:text-gray-400">{description}</p>
     </div>
   );
 }
@@ -772,21 +772,21 @@ function CookieCard({
   examples: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white border border-charcoal/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-center justify-between mb-2">
-        <h5 className="font-semibold text-charcoal">{type}</h5>
+        <h5 className="font-semibold text-charcoal dark:text-white">{type}</h5>
         <span
           className={`px-2 py-0.5 rounded-full text-xs font-medium ${
             required
-              ? 'bg-sage/20 text-sage-dark'
-              : 'bg-charcoal/10 text-charcoal/60'
+              ? 'bg-sage/20 text-sage-dark dark:text-sage'
+              : 'bg-charcoal/10 dark:bg-gray-700 text-charcoal/60 dark:text-gray-400'
           }`}
         >
           {required ? 'Required' : 'Optional'}
         </span>
       </div>
-      <p className="text-sm text-charcoal/70 mb-2">{description}</p>
-      <p className="text-xs text-charcoal/50">
+      <p className="text-sm text-charcoal/70 dark:text-gray-400 mb-2">{description}</p>
+      <p className="text-xs text-charcoal/50 dark:text-gray-500">
         <strong>Examples:</strong> {examples}
       </p>
     </div>
@@ -803,12 +803,12 @@ function SecurityCard({
   description: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white border border-charcoal/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-center gap-3 mb-2">
         {icon}
-        <h5 className="font-semibold text-charcoal">{title}</h5>
+        <h5 className="font-semibold text-charcoal dark:text-white">{title}</h5>
       </div>
-      <p className="text-sm text-charcoal/70">{description}</p>
+      <p className="text-sm text-charcoal/70 dark:text-gray-400">{description}</p>
     </div>
   );
 }

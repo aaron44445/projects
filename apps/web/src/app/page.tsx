@@ -19,6 +19,7 @@ import {
   Layers,
   MapPin,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 // ============================================
 // LANDING PAGE - PEACASE.COM
@@ -27,7 +28,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
       {/* Navigation */}
       <Navigation />
 
@@ -58,7 +59,7 @@ export default function LandingPage() {
 
 function Navigation() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-charcoal/5">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -66,27 +67,28 @@ function Navigation() {
             <div className="w-8 h-8 rounded-lg bg-sage flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-display font-bold text-charcoal">Peacase</span>
+            <span className="text-xl font-display font-bold text-charcoal dark:text-white">Peacase</span>
           </Link>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
+            <Link href="#features" className="text-sm font-medium text-charcoal/90 dark:text-white/90 hover:text-charcoal dark:hover:text-white transition-colors">
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
+            <Link href="#pricing" className="text-sm font-medium text-charcoal/90 dark:text-white/90 hover:text-charcoal dark:hover:text-white transition-colors">
               Pricing
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium text-charcoal/90 hover:text-charcoal transition-colors">
+            <Link href="#testimonials" className="text-sm font-medium text-charcoal/90 dark:text-white/90 hover:text-charcoal dark:hover:text-white transition-colors">
               Testimonials
             </Link>
           </div>
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link
               href="/login"
-              className="text-sm font-medium text-charcoal hover:text-sage transition-colors"
+              className="text-sm font-medium text-charcoal dark:text-white hover:text-sage transition-colors"
             >
               Sign in
             </Link>
@@ -112,27 +114,27 @@ function HeroSection() {
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-soft-peach/30 rounded-full blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 rounded-full blur-3xl opacity-50" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sage/10 rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 dark:bg-lavender/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sage/10 dark:bg-sage/5 rounded-full blur-3xl opacity-40" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-4xl mx-auto">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 border border-sage/20 mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 dark:bg-sage/20 border border-sage/20 dark:border-sage/30 mb-8 animate-fade-in">
             <Sparkles className="w-4 h-4 text-sage" />
-            <span className="text-sm font-medium text-charcoal">New: AI-Powered Scheduling</span>
+            <span className="text-sm font-medium text-charcoal dark:text-white">New: AI-Powered Scheduling</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-display-lg font-display font-bold text-charcoal mb-6 animate-slide-up text-balance">
+          <h1 className="text-4xl sm:text-5xl lg:text-display-lg font-display font-bold text-charcoal dark:text-white mb-6 animate-slide-up text-balance">
             Premium Spa & Salon Management,{' '}
             <span className="text-sage">Reimagined</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-charcoal/70 mb-10 max-w-2xl mx-auto animate-slide-up animation-delay-100 text-balance">
+          <p className="text-lg sm:text-xl text-charcoal/70 dark:text-gray-300 mb-10 max-w-2xl mx-auto animate-slide-up animation-delay-100 text-balance">
             Everything you need to run your salon. Nothing you dont.
             Start with essentials, add only what you need.
           </p>
@@ -148,14 +150,14 @@ function HeroSection() {
             </Link>
             <Link
               href="#features"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white border-2 border-charcoal/10 text-charcoal font-semibold text-lg hover:border-charcoal/20 hover:shadow-card transition-all duration-300"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-charcoal/10 dark:border-white/10 text-charcoal dark:text-white font-semibold text-lg hover:border-charcoal/20 dark:hover:border-white/20 hover:shadow-card transition-all duration-300"
             >
               View Features
             </Link>
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-charcoal/60 animate-fade-in animation-delay-300">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-charcoal/60 dark:text-gray-400 animate-fade-in animation-delay-300">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-success" />
               <span>No credit card required</span>
@@ -174,8 +176,8 @@ function HeroSection() {
         {/* Dashboard Preview */}
         <div className="mt-16 lg:mt-24 animate-slide-up animation-delay-500">
           <div className="relative mx-auto max-w-6xl">
-            <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="rounded-2xl border border-charcoal/10 shadow-card-xl overflow-hidden bg-white">
+            <div className="absolute inset-0 bg-gradient-to-t from-cream dark:from-gray-900 via-transparent to-transparent z-10 pointer-events-none" />
+            <div className="rounded-2xl border border-charcoal/10 dark:border-white/10 shadow-card-xl overflow-hidden bg-white dark:bg-gray-800">
               {/* Browser Chrome */}
               <div className="px-4 py-3 bg-charcoal flex items-center gap-3">
                 <div className="flex gap-2">
@@ -192,14 +194,14 @@ function HeroSection() {
               </div>
 
               {/* Dashboard UI */}
-              <div className="flex bg-cream">
+              <div className="flex bg-cream dark:bg-gray-900">
                 {/* Sidebar */}
-                <div className="w-56 bg-white border-r border-charcoal/10 p-4 hidden md:block">
+                <div className="w-56 bg-white dark:bg-gray-800 border-r border-charcoal/10 dark:border-white/10 p-4 hidden md:block">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-sage flex items-center justify-center">
                       <span className="text-white font-bold text-sm">P</span>
                     </div>
-                    <span className="font-display font-bold text-charcoal">peacase</span>
+                    <span className="font-display font-bold text-charcoal dark:text-white">peacase</span>
                   </div>
                   <nav className="space-y-1">
                     {[
@@ -215,7 +217,7 @@ function HeroSection() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium ${
                           item.active
                             ? 'bg-sage text-white'
-                            : 'text-charcoal/60'
+                            : 'text-charcoal/60 dark:text-gray-400'
                         }`}
                       >
                         {item.name}
@@ -229,8 +231,8 @@ function HeroSection() {
                   {/* Header */}
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-lg font-bold text-charcoal">Dashboard</h2>
-                      <p className="text-xs text-charcoal/50">Welcome back, Sarah</p>
+                      <h2 className="text-lg font-bold text-charcoal dark:text-white">Dashboard</h2>
+                      <p className="text-xs text-charcoal/50 dark:text-gray-400">Welcome back, Sarah</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center">
@@ -247,25 +249,25 @@ function HeroSection() {
                       { label: 'New Clients', value: '5', change: '+2', color: 'bg-peach' },
                       { label: 'Avg. Time', value: '47m', change: '-5m', color: 'bg-mint' },
                     ].map((stat, i) => (
-                      <div key={i} className="bg-white rounded-xl p-4 border border-charcoal/5 shadow-soft">
+                      <div key={i} className="bg-white dark:bg-gray-700 rounded-xl p-4 border border-charcoal/5 dark:border-white/5 shadow-soft">
                         <div className="flex items-start justify-between mb-2">
                           <div className={`w-8 h-8 ${stat.color} rounded-lg`} />
                           <span className="text-xs font-medium text-success">{stat.change}</span>
                         </div>
-                        <p className="text-xl font-bold text-charcoal">{stat.value}</p>
-                        <p className="text-xs text-charcoal/50">{stat.label}</p>
+                        <p className="text-xl font-bold text-charcoal dark:text-white">{stat.value}</p>
+                        <p className="text-xs text-charcoal/50 dark:text-gray-400">{stat.label}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* Schedule Preview */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="lg:col-span-2 bg-white rounded-xl border border-charcoal/5 shadow-soft overflow-hidden">
-                      <div className="px-4 py-3 border-b border-charcoal/5 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-charcoal">Today&apos;s Schedule</span>
+                    <div className="lg:col-span-2 bg-white dark:bg-gray-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
+                      <div className="px-4 py-3 border-b border-charcoal/5 dark:border-white/5 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-charcoal dark:text-white">Today&apos;s Schedule</span>
                         <span className="text-xs text-sage font-medium">View All</span>
                       </div>
-                      <div className="divide-y divide-charcoal/5">
+                      <div className="divide-y divide-charcoal/5 dark:divide-white/5">
                         {[
                           { time: '09:00 AM', client: 'Sarah Johnson', service: 'Haircut & Style', status: 'confirmed' },
                           { time: '10:30 AM', client: 'Michael Chen', service: 'Beard Trim', status: 'in-progress' },
@@ -273,15 +275,15 @@ function HeroSection() {
                           { time: '02:00 PM', client: 'David Brown', service: 'Swedish Massage', status: 'confirmed' },
                         ].map((apt, i) => (
                           <div key={i} className="px-4 py-3 flex items-center gap-3">
-                            <div className="text-xs text-charcoal/50 w-16">{apt.time}</div>
+                            <div className="text-xs text-charcoal/50 dark:text-gray-400 w-16">{apt.time}</div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-charcoal truncate">{apt.client}</p>
-                              <p className="text-xs text-charcoal/50 truncate">{apt.service}</p>
+                              <p className="text-sm font-medium text-charcoal dark:text-white truncate">{apt.client}</p>
+                              <p className="text-xs text-charcoal/50 dark:text-gray-400 truncate">{apt.service}</p>
                             </div>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                               apt.status === 'in-progress'
-                                ? 'bg-lavender/20 text-lavender-dark'
-                                : 'bg-sage/20 text-sage-dark'
+                                ? 'bg-lavender/20 text-lavender-dark dark:bg-lavender/30'
+                                : 'bg-sage/20 text-sage-dark dark:bg-sage/30'
                             }`}>
                               {apt.status === 'in-progress' ? 'In Progress' : 'Confirmed'}
                             </span>
@@ -291,9 +293,9 @@ function HeroSection() {
                     </div>
 
                     {/* Recent Activity */}
-                    <div className="bg-white rounded-xl border border-charcoal/5 shadow-soft overflow-hidden">
-                      <div className="px-4 py-3 border-b border-charcoal/5">
-                        <span className="text-sm font-semibold text-charcoal">Recent Activity</span>
+                    <div className="bg-white dark:bg-gray-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
+                      <div className="px-4 py-3 border-b border-charcoal/5 dark:border-white/5">
+                        <span className="text-sm font-semibold text-charcoal dark:text-white">Recent Activity</span>
                       </div>
                       <div className="p-4 space-y-3">
                         {[
@@ -305,8 +307,8 @@ function HeroSection() {
                           <div key={i} className="flex items-start gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-sage mt-1.5" />
                             <div>
-                              <p className="text-xs font-medium text-charcoal">{activity.action}</p>
-                              <p className="text-xs text-charcoal/50">{activity.detail}</p>
+                              <p className="text-xs font-medium text-charcoal dark:text-white">{activity.action}</p>
+                              <p className="text-xs text-charcoal/50 dark:text-gray-400">{activity.detail}</p>
                             </div>
                           </div>
                         ))}
@@ -386,14 +388,14 @@ function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 border border-sage/20 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 dark:bg-sage/20 border border-sage/20 dark:border-sage/30 mb-6">
             <Layers className="w-4 h-4 text-sage" />
-            <span className="text-sm font-medium text-charcoal">Powerful Features</span>
+            <span className="text-sm font-medium text-charcoal dark:text-white">Powerful Features</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Everything you need to run your salon
           </h2>
-          <p className="text-lg text-charcoal/60">
+          <p className="text-lg text-charcoal/60 dark:text-gray-400">
             From scheduling to payments, we have got you covered. Choose only the features you need.
           </p>
         </div>
@@ -405,7 +407,7 @@ function FeaturesSection() {
               key={index}
               className={`group p-6 lg:p-8 rounded-2xl bg-gradient-to-br ${
                 bgColorClasses[feature.color as keyof typeof bgColorClasses]
-              } bg-white border border-white/60 shadow-card hover:shadow-card-lg hover:-translate-y-1 transition-all duration-300`}
+              } bg-white dark:bg-gray-800 border border-white/60 dark:border-white/10 shadow-card hover:shadow-card-lg hover:-translate-y-1 transition-all duration-300`}
             >
               <div
                 className={`inline-flex p-3 rounded-xl ${
@@ -414,15 +416,15 @@ function FeaturesSection() {
               >
                 <feature.icon className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold text-charcoal mb-3">{feature.title}</h3>
-              <p className="text-charcoal/60 leading-relaxed">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-3">{feature.title}</h3>
+              <p className="text-charcoal/60 dark:text-gray-400 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
 
         {/* Additional Features List */}
-        <div className="mt-16 lg:mt-20 p-8 lg:p-12 rounded-2xl bg-white border border-charcoal/5 shadow-card">
-          <h3 className="text-xl font-semibold text-charcoal mb-6 text-center">
+        <div className="mt-16 lg:mt-20 p-8 lg:p-12 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card">
+          <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-6 text-center">
             Plus all these add-on features when you need them
           </h3>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -436,9 +438,9 @@ function FeaturesSection() {
               { icon: Clock, label: 'Consultation Forms' },
               { icon: Globe, label: 'Marketplace Listing' },
             ].map((item, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-sage/5 transition-colors">
+              <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-sage/5 dark:hover:bg-sage/10 transition-colors">
                 <item.icon className="w-5 h-5 text-sage" />
-                <span className="text-sm font-medium text-charcoal">{item.label}</span>
+                <span className="text-sm font-medium text-charcoal dark:text-white">{item.label}</span>
               </div>
             ))}
           </div>
@@ -511,18 +513,18 @@ const pricingPlans = [
 
 function PricingSection() {
   return (
-    <section id="pricing" className="py-20 lg:py-32 bg-white">
+    <section id="pricing" className="py-20 lg:py-32 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 border border-sage/20 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 dark:bg-sage/20 border border-sage/20 dark:border-sage/30 mb-6">
             <Zap className="w-4 h-4 text-sage" />
-            <span className="text-sm font-medium text-charcoal">Simple Pricing</span>
+            <span className="text-sm font-medium text-charcoal dark:text-white">Simple Pricing</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Pay only for what you need
           </h2>
-          <p className="text-lg text-charcoal/60">
+          <p className="text-lg text-charcoal/60 dark:text-gray-400">
             No hidden fees, no forced bundles. Start with essentials, add features as you grow.
           </p>
         </div>
@@ -534,8 +536,8 @@ function PricingSection() {
               key={index}
               className={`relative p-8 rounded-2xl border transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 ${
                 plan.popular
-                  ? 'bg-gradient-to-br from-sage/10 to-sage/5 border-sage/30 shadow-card-lg'
-                  : 'bg-cream border-charcoal/10 shadow-card'
+                  ? 'bg-gradient-to-br from-sage/10 to-sage/5 dark:from-sage/20 dark:to-sage/10 border-sage/30 shadow-card-lg'
+                  : 'bg-cream dark:bg-gray-700 border-charcoal/10 dark:border-white/10 shadow-card'
               }`}
             >
               {plan.popular && (
@@ -547,19 +549,19 @@ function PricingSection() {
               )}
 
               <div className="mb-6">
-                <h3 className="text-xl font-semibold text-charcoal mb-2">{plan.name}</h3>
+                <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-charcoal">{plan.price}</span>
-                  <span className="text-charcoal/60">{plan.period}</span>
+                  <span className="text-4xl font-bold text-charcoal dark:text-white">{plan.price}</span>
+                  <span className="text-charcoal/60 dark:text-gray-400">{plan.period}</span>
                 </div>
-                <p className="text-sm text-charcoal/60 mt-2">{plan.description}</p>
+                <p className="text-sm text-charcoal/60 dark:text-gray-400 mt-2">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <Check className="w-5 h-5 text-success flex-shrink-0" />
-                    <span className="text-sm text-charcoal">{feature}</span>
+                    <span className="text-sm text-charcoal dark:text-gray-200">{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -569,7 +571,7 @@ function PricingSection() {
                 className={`block w-full py-3 rounded-xl font-semibold text-center transition-all duration-300 ${
                   plan.popular
                     ? 'bg-sage text-white hover:bg-sage-dark hover:shadow-hover'
-                    : 'bg-white border-2 border-charcoal/10 text-charcoal hover:border-sage/30'
+                    : 'bg-white dark:bg-gray-600 border-2 border-charcoal/10 dark:border-white/10 text-charcoal dark:text-white hover:border-sage/30 dark:hover:border-sage/50'
                 }`}
               >
                 {plan.cta}
@@ -580,7 +582,7 @@ function PricingSection() {
 
         {/* Pricing Calculator CTA */}
         <div className="mt-12 text-center">
-          <p className="text-charcoal/60 mb-2">
+          <p className="text-charcoal/60 dark:text-gray-400 mb-2">
             Not sure which features you need?
           </p>
           <Link href="/pricing" className="text-sage font-medium hover:underline inline-flex items-center gap-1">
@@ -624,14 +626,14 @@ function TestimonialsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 border border-sage/20 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sage/10 dark:bg-sage/20 border border-sage/20 dark:border-sage/30 mb-6">
             <Star className="w-4 h-4 text-sage" />
-            <span className="text-sm font-medium text-charcoal">Testimonials</span>
+            <span className="text-sm font-medium text-charcoal dark:text-white">Testimonials</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Loved by salon owners everywhere
           </h2>
-          <p className="text-lg text-charcoal/60">
+          <p className="text-lg text-charcoal/60 dark:text-gray-400">
             Join thousands of salons who switched to Peacase
           </p>
         </div>
@@ -641,21 +643,21 @@ function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="p-6 lg:p-8 rounded-2xl bg-white border border-charcoal/5 shadow-card hover:shadow-card-lg transition-all duration-300"
+              className="p-6 lg:p-8 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card hover:shadow-card-lg transition-all duration-300"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-warning text-warning" />
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">{testimonial.quote}</p>
+              <p className="text-charcoal/80 dark:text-gray-300 mb-6 leading-relaxed">{testimonial.quote}</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-sage/20 flex items-center justify-center text-sage font-semibold text-sm">
+                <div className="w-10 h-10 rounded-full bg-sage/20 dark:bg-sage/30 flex items-center justify-center text-sage font-semibold text-sm">
                   {testimonial.avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-charcoal text-sm">{testimonial.author}</p>
-                  <p className="text-charcoal/60 text-xs">{testimonial.role}</p>
+                  <p className="font-semibold text-charcoal dark:text-white text-sm">{testimonial.author}</p>
+                  <p className="text-charcoal/60 dark:text-gray-400 text-xs">{testimonial.role}</p>
                 </div>
               </div>
             </div>
@@ -720,7 +722,7 @@ function CTASection() {
 
 function Footer() {
   return (
-    <footer className="py-12 lg:py-16 bg-sidebar text-white">
+    <footer className="py-12 lg:py-16 bg-sidebar dark:bg-gray-950 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}

@@ -125,12 +125,12 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center p-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col items-center justify-center p-4 py-12 relative overflow-hidden transition-colors">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 rounded-full blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 rounded-full blur-3xl opacity-50" />
-        <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-sage/10 rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 dark:bg-lavender/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-sage/10 dark:bg-sage/5 rounded-full blur-3xl opacity-40" />
       </div>
 
       {/* Logo */}
@@ -141,21 +141,21 @@ export default function SignupPage() {
         <div className="w-10 h-10 rounded-xl bg-sage flex items-center justify-center">
           <Sparkles className="w-6 h-6 text-white" />
         </div>
-        <span className="text-2xl font-display font-bold text-charcoal">Peacase</span>
+        <span className="text-2xl font-display font-bold text-charcoal dark:text-white">Peacase</span>
       </Link>
 
       {/* Signup Card */}
       <div className="w-full max-w-md relative z-10 animate-slide-up">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card-xl p-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex p-3 rounded-xl bg-sage/10 text-sage mb-4">
+            <div className="inline-flex p-3 rounded-xl bg-sage/10 dark:bg-sage/20 text-sage mb-4">
               <User className="w-6 h-6" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+            <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-2">
               Get started free
             </h1>
-            <p className="text-charcoal/60">
+            <p className="text-charcoal/60 dark:text-gray-400">
               No credit card required
             </p>
           </div>
@@ -178,19 +178,19 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Owner Name */}
             <div>
-              <label htmlFor="ownerName" className="block text-sm font-medium text-charcoal mb-2">
+              <label htmlFor="ownerName" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                 Your Name
               </label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
                 <input
                   type="text"
                   id="ownerName"
                   value={formData.ownerName}
                   onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
                   placeholder="John Smith"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.ownerName ? 'border-error' : 'border-charcoal/10'
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                    errors.ownerName ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
                 {isFieldValid('ownerName') && (
@@ -204,19 +204,19 @@ export default function SignupPage() {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                 Email address
               </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
                 <input
                   type="email"
                   id="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@example.com"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.email ? 'border-error' : 'border-charcoal/10'
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                    errors.email ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
                 {isFieldValid('email') && (
@@ -230,25 +230,25 @@ export default function SignupPage() {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="At least 8 characters"
-                  className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.password ? 'border-error' : 'border-charcoal/10'
+                  className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                    errors.password ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -260,19 +260,19 @@ export default function SignupPage() {
 
             {/* Business Name */}
             <div>
-              <label htmlFor="businessName" className="block text-sm font-medium text-charcoal mb-2">
+              <label htmlFor="businessName" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                 Business Name
               </label>
               <div className="relative">
-                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
                 <input
                   type="text"
                   id="businessName"
                   value={formData.businessName}
                   onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   placeholder="Your Spa & Salon"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                    errors.businessName ? 'border-error' : 'border-charcoal/10'
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                    errors.businessName ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
                 {isFieldValid('businessName') && (
@@ -286,7 +286,7 @@ export default function SignupPage() {
 
             {/* Business Type */}
             <div>
-              <label htmlFor="businessType" className="block text-sm font-medium text-charcoal mb-2">
+              <label htmlFor="businessType" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                 Business Type
               </label>
               <div className="relative">
@@ -294,9 +294,9 @@ export default function SignupPage() {
                   id="businessType"
                   value={formData.businessType}
                   onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg border bg-white/50 text-charcoal focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all appearance-none cursor-pointer ${
-                    errors.businessType ? 'border-error' : 'border-charcoal/10'
-                  } ${!formData.businessType ? 'text-charcoal/40' : ''}`}
+                  className={`w-full px-4 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all appearance-none cursor-pointer ${
+                    errors.businessType ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
+                  } ${!formData.businessType ? 'text-charcoal/40 dark:text-gray-500' : ''}`}
                 >
                   <option value="">Select your business type</option>
                   {businessTypes.map((type) => (
@@ -305,7 +305,7 @@ export default function SignupPage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 pointer-events-none" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500 pointer-events-none" />
               </div>
               {errors.businessType && (
                 <p className="mt-1.5 text-sm text-error">{errors.businessType}</p>
@@ -333,8 +333,8 @@ export default function SignupPage() {
           </form>
 
           {/* Trust Indicators */}
-          <div className="mt-8 pt-6 border-t border-charcoal/10">
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-charcoal/50">
+          <div className="mt-8 pt-6 border-t border-charcoal/10 dark:border-white/10">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-charcoal/50 dark:text-gray-500">
               <div className="flex items-center gap-1.5">
                 <Shield className="w-4 h-4" />
                 <span>Secure & encrypted</span>
@@ -347,7 +347,7 @@ export default function SignupPage() {
           </div>
 
           {/* Sign In Link */}
-          <p className="mt-6 text-center text-sm text-charcoal/60">
+          <p className="mt-6 text-center text-sm text-charcoal/60 dark:text-gray-400">
             Already have an account?{' '}
             <Link href="/login" className="text-sage font-medium hover:underline">
               Sign in
@@ -359,7 +359,7 @@ export default function SignupPage() {
       {/* Back to Home */}
       <Link
         href="/"
-        className="mt-8 text-sm text-charcoal/50 hover:text-charcoal transition-colors relative z-10"
+        className="mt-8 text-sm text-charcoal/50 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors relative z-10"
       >
         Back to home
       </Link>

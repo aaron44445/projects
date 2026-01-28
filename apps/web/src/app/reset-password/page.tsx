@@ -114,10 +114,10 @@ function ResetPasswordForm() {
         <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-6">
           <AlertCircle className="w-8 h-8 text-error" />
         </div>
-        <h1 className="text-2xl font-display font-bold text-charcoal mb-3">
+        <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-3">
           Invalid Reset Link
         </h1>
-        <p className="text-charcoal/60 mb-8">
+        <p className="text-charcoal/60 dark:text-gray-400 mb-8">
           This password reset link is invalid or has expired. Please request a new one.
         </p>
         <Link
@@ -137,13 +137,13 @@ function ResetPasswordForm() {
         <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
           <CheckCircle className="w-8 h-8 text-success" />
         </div>
-        <h1 className="text-2xl font-display font-bold text-charcoal mb-3">
+        <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-3">
           Password Reset Complete
         </h1>
-        <p className="text-charcoal/60 mb-6">
+        <p className="text-charcoal/60 dark:text-gray-400 mb-6">
           Your password has been successfully reset. You can now sign in with your new password.
         </p>
-        <p className="text-sm text-charcoal/50 mb-8">
+        <p className="text-sm text-charcoal/50 dark:text-gray-500 mb-8">
           Redirecting you to sign in...
         </p>
         <Link
@@ -161,10 +161,10 @@ function ResetPasswordForm() {
     <>
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+        <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-2">
           Create new password
         </h1>
-        <p className="text-charcoal/60">
+        <p className="text-charcoal/60 dark:text-gray-400">
           Enter a new password for your account
         </p>
       </div>
@@ -180,11 +180,11 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">
+          <label htmlFor="password" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
             New Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
             <input
               type={showPassword ? 'text' : 'password'}
               id="password"
@@ -192,14 +192,14 @@ function ResetPasswordForm() {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="Enter new password"
               required
-              className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                errors.password ? 'border-error' : 'border-charcoal/10'
+              className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                errors.password ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
               }`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -214,7 +214,7 @@ function ResetPasswordForm() {
               <div
                 key={req.label}
                 className={`flex items-center gap-2 text-sm ${
-                  req.met ? 'text-success' : 'text-charcoal/50'
+                  req.met ? 'text-success' : 'text-charcoal/50 dark:text-gray-500'
                 }`}
               >
                 <Check className={`w-4 h-4 ${req.met ? 'opacity-100' : 'opacity-40'}`} />
@@ -226,11 +226,11 @@ function ResetPasswordForm() {
 
         {/* Confirm Password Field */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-charcoal mb-2">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
             Confirm Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
             <input
               type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
@@ -238,14 +238,14 @@ function ResetPasswordForm() {
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               placeholder="Confirm new password"
               required
-              className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
-                errors.confirmPassword ? 'border-error' : 'border-charcoal/10'
+              className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                errors.confirmPassword ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
               }`}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 hover:text-charcoal transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors"
             >
               {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -282,7 +282,7 @@ function ResetPasswordForm() {
       </form>
 
       {/* Back to Login */}
-      <p className="mt-8 text-center text-sm text-charcoal/60">
+      <p className="mt-8 text-center text-sm text-charcoal/60 dark:text-gray-400">
         Remember your password?{' '}
         <Link href="/login" className="text-sage font-medium hover:underline">
           Sign in
@@ -296,19 +296,19 @@ function LoadingFallback() {
   return (
     <div className="text-center py-8">
       <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto" />
-      <p className="mt-4 text-charcoal/60">Loading...</p>
+      <p className="mt-4 text-charcoal/60 dark:text-gray-400">Loading...</p>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 rounded-full blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 rounded-full blur-3xl opacity-50" />
-        <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-sage/10 rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 dark:bg-lavender/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-sage/10 dark:bg-sage/5 rounded-full blur-3xl opacity-40" />
       </div>
 
       {/* Logo */}
@@ -319,12 +319,12 @@ export default function ResetPasswordPage() {
         <div className="w-10 h-10 rounded-xl bg-sage flex items-center justify-center">
           <Sparkles className="w-6 h-6 text-white" />
         </div>
-        <span className="text-2xl font-display font-bold text-charcoal">Peacase</span>
+        <span className="text-2xl font-display font-bold text-charcoal dark:text-white">Peacase</span>
       </Link>
 
       {/* Card */}
       <div className="w-full max-w-md relative z-10 animate-slide-up">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card-xl p-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
           <Suspense fallback={<LoadingFallback />}>
             <ResetPasswordForm />
           </Suspense>
@@ -334,7 +334,7 @@ export default function ResetPasswordPage() {
       {/* Back to Home */}
       <Link
         href="/"
-        className="mt-8 text-sm text-charcoal/50 hover:text-charcoal transition-colors relative z-10"
+        className="mt-8 text-sm text-charcoal/50 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors relative z-10"
       >
         Back to home
       </Link>

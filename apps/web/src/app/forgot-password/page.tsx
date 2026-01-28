@@ -45,12 +45,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 rounded-full blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 rounded-full blur-3xl opacity-50" />
-        <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-sage/10 rounded-full blur-3xl opacity-40" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-soft-lavender/20 dark:bg-lavender/10 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-1/2 left-1/4 w-[400px] h-[400px] bg-sage/10 dark:bg-sage/5 rounded-full blur-3xl opacity-40" />
       </div>
 
       {/* Logo */}
@@ -61,26 +61,26 @@ export default function ForgotPasswordPage() {
         <div className="w-10 h-10 rounded-xl bg-sage flex items-center justify-center">
           <Sparkles className="w-6 h-6 text-white" />
         </div>
-        <span className="text-2xl font-display font-bold text-charcoal">Peacase</span>
+        <span className="text-2xl font-display font-bold text-charcoal dark:text-white">Peacase</span>
       </Link>
 
       {/* Card */}
       <div className="w-full max-w-md relative z-10 animate-slide-up">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/60 shadow-card-xl p-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
           {isSubmitted ? (
             // Success State
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-success" />
               </div>
-              <h1 className="text-2xl font-display font-bold text-charcoal mb-3">
+              <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-3">
                 Check your email
               </h1>
-              <p className="text-charcoal/60 mb-6">
-                If an account exists with <span className="font-medium text-charcoal">{email}</span>,
+              <p className="text-charcoal/60 dark:text-gray-400 mb-6">
+                If an account exists with <span className="font-medium text-charcoal dark:text-white">{email}</span>,
                 you will receive a password reset link shortly.
               </p>
-              <p className="text-sm text-charcoal/50 mb-8">
+              <p className="text-sm text-charcoal/50 dark:text-gray-500 mb-8">
                 The link will expire in 1 hour. If you do not see the email, check your spam folder.
               </p>
               <Link
@@ -96,10 +96,10 @@ export default function ForgotPasswordPage() {
             <>
               {/* Header */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+                <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-2">
                   Forgot your password?
                 </h1>
-                <p className="text-charcoal/60">
+                <p className="text-charcoal/60 dark:text-gray-400">
                   Enter your email and we will send you a reset link
                 </p>
               </div>
@@ -115,11 +115,11 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                     Email address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/40 dark:text-gray-500" />
                     <input
                       type="email"
                       id="email"
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
                       required
-                      className="w-full pl-12 pr-4 py-3 rounded-lg border border-charcoal/10 bg-white/50 text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
+                      className="w-full pl-12 pr-4 py-3 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
                     />
                   </div>
                 </div>
@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
               </form>
 
               {/* Back to Login */}
-              <p className="mt-8 text-center text-sm text-charcoal/60">
+              <p className="mt-8 text-center text-sm text-charcoal/60 dark:text-gray-400">
                 Remember your password?{' '}
                 <Link href="/login" className="text-sage font-medium hover:underline">
                   Sign in
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
       {/* Back to Home */}
       <Link
         href="/"
-        className="mt-8 text-sm text-charcoal/50 hover:text-charcoal transition-colors relative z-10"
+        className="mt-8 text-sm text-charcoal/50 dark:text-gray-500 hover:text-charcoal dark:hover:text-white transition-colors relative z-10"
       >
         Back to home
       </Link>
