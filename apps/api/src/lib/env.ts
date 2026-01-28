@@ -29,6 +29,17 @@ const envSchema = z.object({
   STRIPE_PROFESSIONAL_PRICE_ID: z.string().optional(),
   STRIPE_ENTERPRISE_PRICE_ID: z.string().optional(),
 
+  // Stripe Add-on Price IDs (optional)
+  STRIPE_ADDON_ONLINE_BOOKING_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_PAYMENT_PROCESSING_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_REMINDERS_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_REPORTS_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_REVIEWS_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_MEMBERSHIPS_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_GIFT_CARDS_PRICE_ID: z.string().optional(),
+  STRIPE_ADDON_MARKETING_PRICE_ID: z.string().optional(),
+  STRIPE_EXTRA_LOCATION_PRICE_ID: z.string().optional(),
+
   // SendGrid (optional - email features will be disabled if not set)
   SENDGRID_API_KEY: z.string().optional(),
   SENDGRID_FROM_EMAIL: z.string().default('noreply@peacase.com'),
@@ -61,6 +72,27 @@ const envSchema = z.object({
 
   // GDPR API key for executing deletion requests via cron job
   GDPR_API_KEY: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Production-only validation: Enforce critical security variables
+  if (data.NODE_ENV === 'production') {
+    // JWT_SECRET is critical for session security
+    if (!data.JWT_SECRET || data.JWT_SECRET.length < 32) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'JWT_SECRET is required in production (minimum 32 characters)',
+        path: ['JWT_SECRET'],
+      });
+    }
+
+    // ENCRYPTION_KEY is critical for API key storage
+    if (!data.ENCRYPTION_KEY || data.ENCRYPTION_KEY.length !== 64) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'ENCRYPTION_KEY is required in production (must be 64 hex characters)',
+        path: ['ENCRYPTION_KEY'],
+      });
+    }
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -73,15 +105,36 @@ function validateEnv(): Env {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    // Log warnings but don't exit - let the app start
-    console.warn('\n⚠️  Some environment variables are missing or invalid:');
-    for (const issue of result.error.issues) {
-      console.warn(`   - ${issue.path.join('.')}: ${issue.message}`);
-    }
-    console.warn('   App will start with defaults. Some features may not work.\n');
+    const nodeEnv = process.env.NODE_ENV || 'development';
 
-    // Return defaults anyway
-    return envSchema.parse({});
+    if (nodeEnv === 'production') {
+      // Production: Fail fast with clear error messages
+      process.stderr.write('\nFATAL: Missing required environment variables in production:\n');
+      for (const issue of result.error.issues) {
+        process.stderr.write(`  - ${issue.path.join('.')}: ${issue.message}\n`);
+      }
+      process.stderr.write('\nApplication cannot start without these variables.\n');
+
+      // Ensure stderr flushes before exit
+      process.exitCode = 1;
+      process.stderr.write('', () => process.exit(1));
+
+      // Fallback exit if stderr callback doesn't fire (shouldn't happen)
+      setTimeout(() => process.exit(1), 100);
+
+      // TypeScript needs a return, but we never reach here
+      throw new Error('Production validation failed');
+    } else {
+      // Development/Test: Log warnings but don't exit - let the app start
+      console.warn('\n⚠️  Some environment variables are missing or invalid:');
+      for (const issue of result.error.issues) {
+        console.warn(`   - ${issue.path.join('.')}: ${issue.message}`);
+      }
+      console.warn('   App will start with defaults. Some features may not work.\n');
+
+      // Return defaults anyway
+      return envSchema.parse({});
+    }
   }
 
   // Log what's configured
@@ -123,7 +176,8 @@ export function getEncryptionKey(): Buffer {
     _encryptionKey = Buffer.from(env.ENCRYPTION_KEY, 'hex');
   } else {
     // Generate a random key for this session (won't persist across restarts)
-    console.warn('⚠️  No ENCRYPTION_KEY set - using temporary key. Encrypted data will not persist across restarts.');
+    // Note: This only happens in development - production requires ENCRYPTION_KEY
+    console.warn('⚠️  No ENCRYPTION_KEY set - using temporary key (development only). Encrypted data will not persist across restarts.');
     _encryptionKey = crypto.randomBytes(32);
   }
 
