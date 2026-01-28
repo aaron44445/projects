@@ -41,10 +41,12 @@ import { teamRouter } from './routes/team.js';
 import { ownerNotificationsRouter } from './routes/ownerNotifications.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { integrationsRouter } from './routes/integrations.js';
+import { billingRouter } from './routes/billing.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { generalRateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
+import { startNotificationWorker } from './workers/notification-worker.js';
 import { prisma } from '@peacase/database';
 
 const app = express();
@@ -203,6 +205,9 @@ app.use('/api/v1/notifications', notificationsRouter);
 // Integrations Routes (added from app.ts parity)
 app.use('/api/v1/integrations', integrationsRouter);
 
+// Billing Routes
+app.use('/api/v1/billing', billingRouter);
+
 // ============================================
 // ERROR HANDLING
 // ============================================
@@ -229,6 +234,9 @@ if (!process.env.VERCEL) {
 
     // Start cron jobs after server is running
     startCronJobs();
+
+    // Start notification worker for async job processing
+    startNotificationWorker();
   });
 }
 
