@@ -125,7 +125,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col items-center justify-center p-4 py-12 relative overflow-hidden transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-zinc-900 flex flex-col items-center justify-center p-4 py-12 relative overflow-hidden transition-colors">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
@@ -146,7 +146,7 @@ export default function SignupPage() {
 
       {/* Signup Card */}
       <div className="w-full max-w-md relative z-10 animate-slide-up">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
+        <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex p-3 rounded-xl bg-sage/10 dark:bg-sage/20 text-sage mb-4">
@@ -189,7 +189,7 @@ export default function SignupPage() {
                   value={formData.ownerName}
                   onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
                   placeholder="John Smith"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
                     errors.ownerName ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
@@ -215,7 +215,7 @@ export default function SignupPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@example.com"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
                     errors.email ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
@@ -241,7 +241,7 @@ export default function SignupPage() {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="At least 8 characters"
-                  className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                  className={`w-full pl-12 pr-12 py-3 rounded-lg border bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
                     errors.password ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
@@ -271,7 +271,7 @@ export default function SignupPage() {
                   value={formData.businessName}
                   onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   placeholder="Your Spa & Salon"
-                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
+                  className={`w-full pl-12 pr-10 py-3 rounded-lg border bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all ${
                     errors.businessName ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   }`}
                 />
@@ -294,7 +294,7 @@ export default function SignupPage() {
                   id="businessType"
                   value={formData.businessType}
                   onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg border bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all appearance-none cursor-pointer ${
+                  className={`w-full px-4 py-3 rounded-lg border bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all appearance-none cursor-pointer ${
                     errors.businessType ? 'border-error' : 'border-charcoal/10 dark:border-white/10'
                   } ${!formData.businessType ? 'text-charcoal/40 dark:text-gray-500' : ''}`}
                 >

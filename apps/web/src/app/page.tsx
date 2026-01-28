@@ -28,7 +28,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-zinc-900 transition-colors">
       {/* Navigation */}
       <Navigation />
 
@@ -59,7 +59,7 @@ export default function LandingPage() {
 
 function Navigation() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -150,7 +150,7 @@ function HeroSection() {
             </Link>
             <Link
               href="#features"
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-gray-800 border-2 border-charcoal/10 dark:border-white/10 text-charcoal dark:text-white font-semibold text-lg hover:border-charcoal/20 dark:hover:border-white/20 hover:shadow-card transition-all duration-300"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white dark:bg-zinc-800 border-2 border-charcoal/10 dark:border-white/10 text-charcoal dark:text-white font-semibold text-lg hover:border-charcoal/20 dark:hover:border-white/20 hover:shadow-card transition-all duration-300"
             >
               View Features
             </Link>
@@ -177,7 +177,7 @@ function HeroSection() {
         <div className="mt-16 lg:mt-24 animate-slide-up animation-delay-500">
           <div className="relative mx-auto max-w-6xl">
             <div className="absolute inset-0 bg-gradient-to-t from-cream dark:from-gray-900 via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="rounded-2xl border border-charcoal/10 dark:border-white/10 shadow-card-xl overflow-hidden bg-white dark:bg-gray-800">
+            <div className="rounded-2xl border border-charcoal/10 dark:border-white/10 shadow-card-xl overflow-hidden bg-white dark:bg-zinc-800">
               {/* Browser Chrome */}
               <div className="px-4 py-3 bg-charcoal flex items-center gap-3">
                 <div className="flex gap-2">
@@ -194,9 +194,9 @@ function HeroSection() {
               </div>
 
               {/* Dashboard UI */}
-              <div className="flex bg-cream dark:bg-gray-900">
+              <div className="flex bg-cream dark:bg-zinc-900">
                 {/* Sidebar */}
-                <div className="w-56 bg-white dark:bg-gray-800 border-r border-charcoal/10 dark:border-white/10 p-4 hidden md:block">
+                <div className="w-56 bg-white dark:bg-zinc-800 border-r border-charcoal/10 dark:border-white/10 p-4 hidden md:block">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-8 h-8 rounded-lg bg-sage flex items-center justify-center">
                       <span className="text-white font-bold text-sm">P</span>
@@ -249,7 +249,7 @@ function HeroSection() {
                       { label: 'New Clients', value: '5', change: '+2', color: 'bg-peach' },
                       { label: 'Avg. Time', value: '47m', change: '-5m', color: 'bg-mint' },
                     ].map((stat, i) => (
-                      <div key={i} className="bg-white dark:bg-gray-700 rounded-xl p-4 border border-charcoal/5 dark:border-white/5 shadow-soft">
+                      <div key={i} className="bg-white dark:bg-zinc-700 rounded-xl p-4 border border-charcoal/5 dark:border-white/5 shadow-soft">
                         <div className="flex items-start justify-between mb-2">
                           <div className={`w-8 h-8 ${stat.color} rounded-lg`} />
                           <span className="text-xs font-medium text-success">{stat.change}</span>
@@ -262,7 +262,7 @@ function HeroSection() {
 
                   {/* Schedule Preview */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="lg:col-span-2 bg-white dark:bg-gray-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
+                    <div className="lg:col-span-2 bg-white dark:bg-zinc-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
                       <div className="px-4 py-3 border-b border-charcoal/5 dark:border-white/5 flex items-center justify-between">
                         <span className="text-sm font-semibold text-charcoal dark:text-white">Today&apos;s Schedule</span>
                         <span className="text-xs text-sage font-medium">View All</span>
@@ -293,7 +293,7 @@ function HeroSection() {
                     </div>
 
                     {/* Recent Activity */}
-                    <div className="bg-white dark:bg-gray-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
+                    <div className="bg-white dark:bg-zinc-700 rounded-xl border border-charcoal/5 dark:border-white/5 shadow-soft overflow-hidden">
                       <div className="px-4 py-3 border-b border-charcoal/5 dark:border-white/5">
                         <span className="text-sm font-semibold text-charcoal dark:text-white">Recent Activity</span>
                       </div>
@@ -407,7 +407,7 @@ function FeaturesSection() {
               key={index}
               className={`group p-6 lg:p-8 rounded-2xl bg-gradient-to-br ${
                 bgColorClasses[feature.color as keyof typeof bgColorClasses]
-              } bg-white dark:bg-gray-800 border border-white/60 dark:border-white/10 shadow-card hover:shadow-card-lg hover:-translate-y-1 transition-all duration-300`}
+              } bg-white dark:bg-zinc-800 border border-white/60 dark:border-white/10 shadow-card hover:shadow-card-lg hover:-translate-y-1 transition-all duration-300`}
             >
               <div
                 className={`inline-flex p-3 rounded-xl ${
@@ -423,7 +423,7 @@ function FeaturesSection() {
         </div>
 
         {/* Additional Features List */}
-        <div className="mt-16 lg:mt-20 p-8 lg:p-12 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card">
+        <div className="mt-16 lg:mt-20 p-8 lg:p-12 rounded-2xl bg-white dark:bg-zinc-800 border border-charcoal/5 dark:border-white/10 shadow-card">
           <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-6 text-center">
             Plus all these add-on features when you need them
           </h3>
@@ -513,7 +513,7 @@ const pricingPlans = [
 
 function PricingSection() {
   return (
-    <section id="pricing" className="py-20 lg:py-32 bg-white dark:bg-gray-800">
+    <section id="pricing" className="py-20 lg:py-32 bg-white dark:bg-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-20">
@@ -537,7 +537,7 @@ function PricingSection() {
               className={`relative p-8 rounded-2xl border transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 ${
                 plan.popular
                   ? 'bg-gradient-to-br from-sage/10 to-sage/5 dark:from-sage/20 dark:to-sage/10 border-sage/30 shadow-card-lg'
-                  : 'bg-cream dark:bg-gray-700 border-charcoal/10 dark:border-white/10 shadow-card'
+                  : 'bg-cream dark:bg-zinc-700 border-charcoal/10 dark:border-white/10 shadow-card'
               }`}
             >
               {plan.popular && (
@@ -643,7 +643,7 @@ function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="p-6 lg:p-8 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card hover:shadow-card-lg transition-all duration-300"
+              className="p-6 lg:p-8 rounded-2xl bg-white dark:bg-zinc-800 border border-charcoal/5 dark:border-white/10 shadow-card hover:shadow-card-lg transition-all duration-300"
             >
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (

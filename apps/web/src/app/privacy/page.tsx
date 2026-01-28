@@ -30,9 +30,9 @@ const tocItems = [
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-zinc-900 transition-colors">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
             {/* Table of Contents - Sticky Sidebar */}
             <aside className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
-                <div className="p-6 rounded-2xl bg-white dark:bg-gray-800 border border-charcoal/5 dark:border-white/10 shadow-card">
+                <div className="p-6 rounded-2xl bg-white dark:bg-zinc-800 border border-charcoal/5 dark:border-white/10 shadow-card">
                   <h2 className="text-sm font-semibold text-charcoal dark:text-white mb-4 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-sage" />
                     Table of Contents
@@ -323,7 +323,7 @@ export default function PrivacyPolicyPage() {
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Until account deletion + 30 days</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Service provision and account recovery</td>
                         </tr>
-                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                        <tr className="bg-surface-muted dark:bg-zinc-800/50">
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Appointment Records</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">7 years after appointment</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Business records and legal compliance</td>
@@ -333,7 +333,7 @@ export default function PrivacyPolicyPage() {
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">7 years after transaction</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Tax and financial regulations</td>
                         </tr>
-                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                        <tr className="bg-surface-muted dark:bg-zinc-800/50">
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Marketing Preferences</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Until consent withdrawn</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Consent management</td>
@@ -343,7 +343,7 @@ export default function PrivacyPolicyPage() {
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">90 days</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Security and troubleshooting</td>
                         </tr>
-                        <tr className="bg-surface-muted dark:bg-gray-800/50">
+                        <tr className="bg-surface-muted dark:bg-zinc-800/50">
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Support Tickets</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">3 years after resolution</td>
                           <td className="p-3 text-sm border border-charcoal/10 dark:border-white/10 dark:text-gray-300">Service improvement and dispute resolution</td>
@@ -701,7 +701,7 @@ function InfoCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-4 p-4 rounded-xl bg-surface-muted dark:bg-gray-800/50 border border-charcoal/5 dark:border-white/10">
+    <div className="mt-4 p-4 rounded-xl bg-surface-muted dark:bg-zinc-800/50 border border-charcoal/5 dark:border-white/10">
       <div className="flex items-center gap-3 mb-3">
         {icon}
         <h5 className="font-semibold text-charcoal dark:text-white">{title}</h5>
@@ -725,7 +725,7 @@ function ThirdPartyCard({
   privacyUrl: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-start justify-between mb-2">
         <div>
           <h5 className="font-semibold text-charcoal dark:text-white">{name}</h5>
@@ -753,7 +753,7 @@ function RightCard({
   description: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10 hover:border-sage/30 dark:hover:border-sage/50 transition-colors">
+    <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 border border-charcoal/10 dark:border-white/10 hover:border-sage/30 dark:hover:border-sage/50 transition-colors">
       <h5 className="font-semibold text-charcoal dark:text-white mb-2">{title}</h5>
       <p className="text-sm text-charcoal/70 dark:text-gray-400">{description}</p>
     </div>
@@ -772,7 +772,7 @@ function CookieCard({
   examples: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-center justify-between mb-2">
         <h5 className="font-semibold text-charcoal dark:text-white">{type}</h5>
         <span
@@ -803,7 +803,7 @@ function SecurityCard({
   description: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-charcoal/10 dark:border-white/10">
+    <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 border border-charcoal/10 dark:border-white/10">
       <div className="flex items-center gap-3 mb-2">
         {icon}
         <h5 className="font-semibold text-charcoal dark:text-white">{title}</h5>

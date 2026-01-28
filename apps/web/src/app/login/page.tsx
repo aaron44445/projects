@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-zinc-900 flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors">
       {/* Decorative Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-soft-peach/30 dark:bg-sage/20 rounded-full blur-3xl opacity-60" />
@@ -58,7 +58,7 @@ export default function LoginPage() {
 
       {/* Login Card */}
       <div className="w-full max-w-md relative z-10 animate-slide-up">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
+        <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/10 shadow-card-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-display font-bold text-charcoal dark:text-white mb-2">
@@ -92,7 +92,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@example.com"
                   required
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
                 />
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Enter your password"
                   required
-                  className="w-full pl-12 pr-12 py-3 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white/50 dark:bg-gray-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
+                  className="w-full pl-12 pr-12 py-3 rounded-lg border border-charcoal/10 dark:border-white/10 bg-white/50 dark:bg-zinc-700/50 text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage transition-all"
                 />
                 <button
                   type="button"

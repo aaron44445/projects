@@ -32,9 +32,9 @@ export default function TermsOfServicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-cream dark:bg-zinc-900 transition-colors">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-cream/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-charcoal/5 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Table of Contents */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-card p-6 lg:p-8 mb-8">
+          <div className="bg-white dark:bg-zinc-800 rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-card p-6 lg:p-8 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-sage/10 dark:bg-sage/20 text-sage">
                 <List className="w-5 h-5" />
@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Content Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-card p-8 lg:p-12">
+          <div className="bg-white dark:bg-zinc-800 rounded-2xl border border-charcoal/5 dark:border-white/10 shadow-card p-8 lg:p-12">
             {/* Introduction */}
             <section className="mb-10">
               <p className="text-charcoal/80 dark:text-gray-300 leading-relaxed mb-4">
@@ -277,7 +277,7 @@ export default function TermsOfServicePage() {
               title="6. Limitation of Liability"
               content={
                 <>
-                  <div className="bg-cream dark:bg-gray-900 rounded-xl p-6 border border-charcoal/5 dark:border-white/10 mb-4">
+                  <div className="bg-cream dark:bg-zinc-900 rounded-xl p-6 border border-charcoal/5 dark:border-white/10 mb-4">
                     <p className="text-charcoal/80 dark:text-gray-300 leading-relaxed text-sm">
                       TO THE MAXIMUM EXTENT PERMITTED BY LAW, PEACASE AND ITS OFFICERS, DIRECTORS, EMPLOYEES,
                       AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
@@ -406,7 +406,7 @@ export default function TermsOfServicePage() {
                 If you have any questions about these Terms, please contact us:
               </p>
 
-              <div className="bg-cream dark:bg-gray-900 rounded-xl p-6 border border-charcoal/5 dark:border-white/10">
+              <div className="bg-cream dark:bg-zinc-900 rounded-xl p-6 border border-charcoal/5 dark:border-white/10">
                 <p className="text-charcoal dark:text-white mb-2"><strong>[Company Name]</strong></p>
                 <p className="text-charcoal/80 dark:text-gray-300">Email: [Contact Email]</p>
                 <p className="text-charcoal/80 dark:text-gray-300">Address: [Company Address]</p>
