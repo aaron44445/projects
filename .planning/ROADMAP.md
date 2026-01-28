@@ -44,10 +44,12 @@ See MILESTONES.md for v1.0 details.
   2. Application fails to start in production if JWT_SECRET is missing or empty
   3. File DELETE requests verify ownership via database lookup before deletion
   4. New user passwords require uppercase, lowercase, number, and special character
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 13-01: TBD
+- [ ] 13-01-PLAN.md - Environment validation hardening (SEC-01, SEC-02)
+- [ ] 13-02-PLAN.md - Password complexity enforcement (SEC-04)
+- [ ] 13-03-PLAN.md - File ownership verification (SEC-03)
 
 ### Phase 14: Performance Optimization
 **Goal**: API responses are fast (<200ms) and dashboard queries are efficient (no N+1)
@@ -125,7 +127,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 13. Security Hardening | v1.1 | 0/TBD | Not started | - |
+| 13. Security Hardening | v1.1 | 0/3 | Planned | - |
 | 14. Performance Optimization | v1.1 | 0/TBD | Not started | - |
 | 15. SEO Fundamentals | v1.1 | 0/TBD | Not started | - |
 | 16. Accessibility Compliance | v1.1 | 0/TBD | Not started | - |
