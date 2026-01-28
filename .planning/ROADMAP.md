@@ -23,6 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
 - [x] **Phase 10: Dark Mode for Public Pages** - Add dark mode support to all public-facing pages
 - [x] **Phase 11: Settings Audit** - Audit all settings functionality to identify working/broken controls
+- [ ] **Phase 12: Security Hardening** - [GAP CLOSURE] Complete AUTH-01 with Prisma query and webhook fixes
 
 ## Phase Details
 
@@ -286,6 +287,39 @@ Plans:
 Plans:
 - [x] 11-01-PLAN.md — Comprehensive settings functionality audit
 
+### Phase 12: Security Hardening
+
+**Goal**: Complete AUTH-01 requirement by fixing all documented security gaps from Phase 9 findings
+
+**Depends on**: Phase 11
+
+**Requirements**: AUTH-01 (gap closure)
+
+**Gap Closure**: Closes tech debt from v1-MILESTONE-AUDIT-2.md
+- C1: 14 Prisma update/delete queries missing salonId in WHERE clause
+- C2: Twilio SMS webhook missing signature validation
+- C3: Subscription webhook missing cross-tenant validation
+- C4: Invoice webhook without subscription verification
+- C5: Gift card webhook trusts user-provided salonId
+- C7: ownerNotifications routes filter by userId only
+- H4: Client portal dashboard missing salonId
+
+**Success Criteria** (what must be TRUE):
+  1. All Prisma update/delete queries include salonId in WHERE clause (14 queries fixed)
+  2. Twilio SMS webhook validates signature using twilio.validateRequest()
+  3. Subscription/invoice webhooks verify tenant ownership before updates
+  4. Gift card webhooks don't trust user-provided salonId
+  5. ownerNotifications and clientPortal routes include salonId filter
+  6. AUTH-01 requirement fully SATISFIED (100% multi-tenant isolation)
+
+**Plans**: 4 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — Add salonId to all Prisma update/delete WHERE clauses
+- [ ] 12-02-PLAN.md — Add Twilio signature validation to SMS webhook
+- [ ] 12-03-PLAN.md — Fix webhook tenant validation (subscription, invoice, gift card)
+- [ ] 12-04-PLAN.md — Add salonId to ownerNotifications and clientPortal routes
+
 ## Progress
 
 **Execution Order:**
@@ -304,7 +338,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 9. Authentication & Tenant Isolation Execution | 5/5 | Complete | 2026-01-28 |
 | 10. Dark Mode for Public Pages | 1/1 | Complete | 2026-01-28 |
 | 11. Settings Audit | 1/1 | Complete | 2026-01-28 |
+| 12. Security Hardening | 0/4 | Not Started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 11 complete - Settings Audit)*
+*Last updated: 2026-01-28 (Phase 12 added - Security Hardening for AUTH-01 completion)*
