@@ -10,6 +10,18 @@ Peacase is a multi-tenant SaaS platform for spas and salons. Business owners use
 
 **Every workflow a spa owner needs must work reliably, end-to-end, every time.** If booking fails randomly or settings don't save, the software is unusable regardless of what features exist.
 
+## Current Milestone: v1.1 Audit Remediation
+
+**Goal:** Fix all issues identified in comprehensive audit across security, performance, SEO, accessibility, code quality, and UI/UX.
+
+**Target areas:**
+- Security hardening (env vars, CSRF, file validation)
+- Performance optimization (async notifications, query consolidation, caching)
+- SEO fundamentals (sitemap, robots.txt, canonical URLs, JSON-LD)
+- Accessibility compliance (focus traps, ARIA labels, skip navigation)
+- Code quality (TypeScript strictness, DRY violations)
+- UI/UX consistency (component standardization, design tokens)
+
 ## Current State
 
 **v1 Stabilization shipped:** 2026-01-28
@@ -21,6 +33,11 @@ The platform has been audited and stabilized:
 - Notification system with delivery tracking and configurable reminders
 - Dashboard with accurate timezone-aware metrics
 - Settings persistence verified across all configuration types
+
+**Comprehensive audit completed:** 2026-01-28
+- ~50 issues identified across 6 categories
+- CRITICAL: ENCRYPTION_KEY persistence, sync email/SMS blocking
+- HIGH: N+1 queries, missing SEO files, modal accessibility
 
 **Tech Stack:**
 - Frontend: Next.js 14, React 18, TailwindCSS, shadcn/ui, Zustand, TanStack Query
@@ -51,13 +68,19 @@ Features shipped in v1:
 
 ### Active
 
-For next milestone (v1.1):
+For v1.1 Audit Remediation:
 
-- [ ] Staff Portal (login, clock in/out, earnings view)
-- [ ] Subscription add-on persistence (API integration)
-- [ ] Stripe Connect integration (completed)
-- [ ] Multi-location CRUD UI completion
-- [ ] Booking widget input styling fixes
+- [ ] Security: Environment variable enforcement, CSRF Redis store, file ownership validation
+- [ ] Performance: Async email/SMS, query consolidation, background refetch fix
+- [ ] SEO: sitemap.ts, robots.txt, canonical URLs, JSON-LD schemas
+- [ ] Accessibility: Modal focus traps, ARIA labels, skip navigation, color contrast
+- [ ] Code Quality: Replace `any` types, enable noImplicitAny, extract filter utilities
+- [ ] UI/UX: Standardize modals, buttons, status colors, error states
+
+**Deferred to v1.2:**
+- Staff Portal (login, clock in/out, earnings view)
+- Subscription add-on persistence
+- Multi-location CRUD UI completion
 
 ### Out of Scope
 
@@ -100,4 +123,4 @@ For next milestone (v1.1):
 | Lazy state initialization | Eliminates LocationContext race condition | Good |
 
 ---
-*Last updated: 2026-01-28 after v1.0 milestone*
+*Last updated: 2026-01-28 after v1.1 milestone initialization*

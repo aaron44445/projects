@@ -5,49 +5,51 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1 complete — ready for next milestone
+**Current focus:** v1.1 Audit Remediation — security, performance, SEO, accessibility, code quality, UI/UX
 
 ## Current Position
 
-Phase: N/A (milestone boundary)
-Plan: N/A
-Status: Ready for next milestone
-Last activity: 2026-01-28 — v1 Stabilization shipped
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-28 — Milestone v1.1 started
 
-Progress: [████████████████████] 100% v1 complete
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0%
 
-## Milestone Summary
+## Milestone Context
 
-**v1 Stabilization: SHIPPED 2026-01-28**
+**v1.1 Audit Remediation**
 
-| Metric | Value |
-|--------|-------|
-| Requirements Satisfied | 24/24 (100%) |
-| Phases Completed | 12/12 |
-| Plans Executed | 40/40 |
-| E2E Flows Verified | 5/5 |
-| Security Findings Resolved | 11/13 (2 deferred as code style) |
+Comprehensive audit identified ~50 issues across 6 categories:
+
+| Category | Critical | High | Medium | Low |
+|----------|----------|------|--------|-----|
+| Security | 1 | 3 | 4 | 2 |
+| Performance | 2 | 5 | 3 | - |
+| SEO | 2 | 3 | 2 | - |
+| Accessibility | 1 | 4 | 3 | 1 |
+| Code Quality | 2 | 2 | 4 | 2 |
+| UI/UX | 2 | 4 | 4 | - |
 
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: v1 milestone archived
-Resume: `/gsd:new-milestone` to start v1.1
+Stopped at: Milestone initialization
+Resume: Continue with requirements definition
 
-## Next Steps
+## Accumulated Context
 
-Run `/gsd:new-milestone` to:
-1. Define v1.1 requirements (questioning phase)
-2. Research implementation approach
-3. Create new REQUIREMENTS.md
-4. Create new ROADMAP.md
+### Key Decisions (from v1.0)
+- Defense-in-depth salonId filtering on all queries
+- Advisory locks for booking concurrency
+- Insert-or-conflict idempotency for webhooks
 
-**Suggested v1.1 focus areas:**
-- Staff Portal (PORTAL-01 through PORTAL-05)
-- Settings UI polish (subscription add-ons, Stripe Connect, branding)
-- Multi-location CRUD completion
-- Booking widget styling fixes
+### Technical Debt Addressed
+- Booking widget styling (included in UI/UX phase)
+- Cron reminders NotificationLog bypass (included in performance phase)
+- Direct fetch calls (included in code quality phase)
+- Token key inconsistency (included in code quality phase)
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-28 (v1 milestone archived)*
+*Last updated: 2026-01-28 (v1.1 milestone started)*
