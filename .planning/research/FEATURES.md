@@ -2,6 +2,7 @@
 
 **Domain:** Multi-tenant spa/salon management software
 **Researched:** 2026-01-25
+**Updated:** 2026-01-28 (v1.1 Audit Remediation)
 **Confidence:** HIGH
 
 ## Executive Summary
@@ -11,6 +12,385 @@ Spa and salon owners need software that **just works** - reliability trumps feat
 **Key Finding:** The gap between having features and having working features is massive in this space. 78% of clients now prefer online booking, but software that fails randomly (double bookings, settings not saving, no-shows not prevented) causes owners to revert to pen and paper. Trust is lost instantly and rarely regained.
 
 **Critical Insight for Peacase Stabilization:** Focus on the 5 critical daily workflows - everything else is secondary. If booking fails once, owners lose trust. If reminders don't send, clients don't show up and owners lose revenue. If staff schedules are wrong, the business can't operate.
+
+---
+
+# PART 2: v1.1 Audit Remediation - Expected Outcomes
+
+**Research Focus:** What does "done" look like after audit remediation?
+**Researched:** 2026-01-28
+**Confidence:** HIGH (based on official standards, industry benchmarks)
+
+This section defines the expected behaviors and measurable success criteria for each audit remediation category.
+
+---
+
+## Remediation Table Stakes
+
+Minimum acceptable standards after fixes. Failure to meet these = remediation incomplete.
+
+### 1. Security Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| Environment variables for secrets | Zero secrets in codebase; all sensitive values from env | `grep -r` for patterns like `password=`, API keys returns empty | OWASP Top 10 |
+| CSRF protection with Redis store | All state-changing requests validate CSRF token; tokens persist across server restarts | Token survives API restart; cross-origin POST blocked | OWASP CSRF Prevention |
+| File upload validation | MIME type + extension + size validated; ownership verified on access | Upload malformed files -> rejected; access others' files -> 403 | OWASP File Upload |
+| Password complexity | Min 8 chars, uppercase, lowercase, number required | Weak passwords rejected with clear feedback | NIST 800-63B |
+| Session security | HttpOnly, Secure, SameSite cookies; reasonable expiry | Cannot read token via JS; token rotates on privilege change | OWASP Session Mgmt |
+
+**User/Developer Experience After Fix:**
+- Developers can deploy without worrying about leaked secrets
+- Users cannot execute CSRF attacks against other users
+- Uploaded files cannot escape their tenant sandbox
+- Weak passwords are rejected with helpful guidance
+- Sessions cannot be hijacked via XSS
+
+**Sources:**
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/) (HIGH confidence)
+- [OWASP CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) (HIGH confidence)
+
+### 2. Performance Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| Async email/SMS sending | Notification requests return immediately; sending happens in background | API response time < 200ms regardless of email count | BullMQ/Redis queue pattern |
+| N+1 query elimination | No endpoints trigger > 5 DB queries for list views | Query logging shows single query with includes | Prisma best practices |
+| Appropriate caching | Static assets cached; API responses cached where safe | Cache-Control headers present; repeat requests faster | HTTP caching RFC |
+| Response compression | gzip/brotli for text responses | Response headers show encoding; payload size reduced 60-80% | Express compression |
+| Lighthouse Performance >= 90 | Dashboard, booking widget pass performance audit | Lighthouse CI in mobile emulation | Google Web Vitals |
+
+**Measurable Thresholds (from Google):**
+- **LCP (Largest Contentful Paint):** < 2.5s mobile, < 1.2s desktop
+- **FCP (First Contentful Paint):** < 1.8s
+- **TBT (Total Blocking Time):** < 200ms
+- **API Response Time:** P95 < 500ms for list endpoints
+- **Background Job Processing:** Email queued -> sent within 30s
+
+**User/Developer Experience After Fix:**
+- Dashboard loads instantly, no "loading..." spinners for basic data
+- Booking widget is snappy even on mobile networks
+- Sending 50 notifications doesn't freeze the API
+- Developers see clear query counts in logs
+
+**Sources:**
+- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) (HIGH confidence)
+- [BullMQ Documentation](https://bullmq.io/) (HIGH confidence)
+- [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) (HIGH confidence)
+
+### 3. SEO Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| sitemap.xml | Auto-generated, includes all public pages, < 50k URLs per file | `/sitemap.xml` returns valid XML; GSC accepts it | Next.js sitemap.ts |
+| robots.txt | Allows indexing of public pages; blocks admin/API routes | `/robots.txt` returns correct directives | Google Webmaster Guidelines |
+| Canonical URLs | Every page has `<link rel="canonical">`; no duplicate content | Canonical matches actual URL; no self-referencing issues | SEO best practices |
+| JSON-LD structured data | LocalBusiness/BeautySalon schema on public pages | Rich Results Test passes; shows business info | Schema.org / Google |
+| Meta tags | Unique title/description per page; OG tags for sharing | SEO audit tools report no missing tags | Max 60 chars title, 160 chars description |
+
+**Measurable Thresholds:**
+- **Lighthouse SEO Score:** >= 90
+- **Google Search Console:** Zero indexing errors after submission
+- **Rich Results:** Business info appears in search previews (test with Rich Results Test)
+- **Mobile-First:** All pages pass mobile usability test
+
+**User/Developer Experience After Fix:**
+- Business appears in Google with rich snippets (hours, location, ratings)
+- Shared booking links show proper previews on social media
+- No "duplicate content" warnings in Search Console
+- New pages automatically added to sitemap
+
+**Sources:**
+- [Next.js Metadata Files: robots.txt](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots) (HIGH confidence)
+- [Google LocalBusiness Structured Data](https://developers.google.com/search/docs/appearance/structured-data/local-business) (HIGH confidence)
+- [Schema.org BeautySalon](https://schema.org/BeautySalon) (HIGH confidence)
+
+### 4. Accessibility Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| Modal focus traps | Focus stays inside modal; returns to trigger on close | Tab cycles within modal; Escape closes; focus returns | WCAG 2.4.3, WAI-ARIA APG |
+| ARIA labels | All interactive elements have accessible names | axe-core reports zero "missing accessible name" | WCAG 4.1.2 |
+| Skip navigation | "Skip to main content" link is first focusable element | Tab once from page load -> skip link focused | WCAG 2.4.1 |
+| Color contrast | 4.5:1 for normal text; 3:1 for large text | Lighthouse accessibility audit passes | WCAG 1.4.3 |
+| Keyboard navigation | All features usable without mouse | Tab through entire app; all actions possible | WCAG 2.1.1 |
+| Form error identification | Errors announced, linked to fields | Invalid field + error message + focus management | WCAG 3.3.1 |
+
+**Measurable Thresholds (Legal Requirement):**
+- **WCAG 2.1 Level AA:** Full compliance (required by April 24, 2026 per ADA Title II)
+- **Lighthouse Accessibility Score:** >= 90
+- **axe-core automated scan:** Zero critical/serious issues
+- **Keyboard-only navigation:** All user flows completable without mouse
+
+**Critical WCAG 2.1 AA Requirements:**
+| Criterion | Requirement | Threshold |
+|-----------|-------------|-----------|
+| 1.4.3 Contrast (Minimum) | Text contrast ratio | 4.5:1 normal, 3:1 large |
+| 2.1.1 Keyboard | All functionality keyboard accessible | 100% of actions |
+| 2.4.1 Bypass Blocks | Skip navigation mechanism | Present and functional |
+| 2.4.7 Focus Visible | Focus indicator visible | All interactive elements |
+| 3.3.1 Error Identification | Errors described in text | All form errors |
+| 3.3.2 Labels or Instructions | Form fields have labels | All inputs labeled |
+
+**User/Developer Experience After Fix:**
+- Screen reader users can navigate the entire app
+- Keyboard users aren't trapped in modals
+- Low-vision users can read all text
+- Form errors are clear and actionable
+
+**Sources:**
+- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/) (HIGH confidence)
+- [W3C Dialog Modal Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) (HIGH confidence)
+- [WebAIM Skip Navigation Links](https://webaim.org/techniques/skipnav/) (HIGH confidence)
+- [ADA Title II Web Accessibility Rule](https://www.ada.gov/resources/web-rule-first-steps/) (HIGH confidence)
+
+### 5. Code Quality Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| TypeScript strict mode | `noImplicitAny: true` in tsconfig; zero `any` usage | `grep -r ": any"` returns zero in type positions | TypeScript best practices |
+| No implicit any | All parameters and returns typed | TypeScript compiles without warnings | Microsoft guidance |
+| DRY violations fixed | No duplicate logic > 10 lines; shared utilities extracted | Code review; jscpd duplicate detection | Clean Code principles |
+| Consistent error handling | All API errors return standard format; all thrown errors caught | No unhandled promise rejections; consistent error shape | Express error handling |
+| ESLint clean | Zero errors; warnings addressed or justified | `npm run lint` exits 0 | Team lint rules |
+
+**Measurable Thresholds:**
+- **TypeScript Errors:** 0
+- **ESLint Errors:** 0
+- **Test Coverage:** >= 70% for critical paths
+- **Cyclomatic Complexity:** < 10 per function
+- **Duplicate Code:** < 3% (detected by tools like jscpd)
+
+**TypeScript Strict Mode Checklist:**
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true
+  }
+}
+```
+
+**User/Developer Experience After Fix:**
+- Developers get type errors at compile time, not runtime
+- Code is predictable - same patterns everywhere
+- New developers can understand the codebase quickly
+- Refactoring is safe because types catch mistakes
+
+**Sources:**
+- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig/) (HIGH confidence)
+- [TypeScript Strict Mode Guide](https://betterstack.com/community/guides/scaling-nodejs/typescript-strict-option/) (MEDIUM confidence)
+
+### 6. UI/UX Remediation
+
+| Fix | Success Criteria | Measurement | Industry Standard |
+|-----|-----------------|-------------|-------------------|
+| Modal standardization | All modals use same component; consistent close behavior | Visual audit; component usage grep | shadcn/ui Dialog |
+| Button consistency | Primary/secondary/destructive variants; consistent sizing | All buttons use shared component | Design system |
+| Status color system | Consistent colors for success/warning/error/info | Color tokens defined; no one-off colors | Semantic tokens |
+| Empty states | All list views have meaningful empty states with CTAs | Navigate to empty data -> helpful message shown | UX best practices |
+| Loading states | Skeleton loaders or spinners for all async content | No content flashing; smooth transitions | Avoid CLS |
+| Error states | All failures show user-friendly messages with recovery actions | Trigger errors -> actionable feedback | Error UX patterns |
+
+**Design Token Structure:**
+```
+Primitive tokens -> Semantic tokens -> Component tokens
+
+Example hierarchy:
+- gray-500 (primitive)
+- color-text-secondary (semantic)
+- button-secondary-text (component)
+```
+
+**Measurable Thresholds:**
+- **Design Token Coverage:** 100% of colors/spacing/typography in tokens
+- **Component Reuse:** < 5 one-off styled components
+- **Empty State Coverage:** 100% of list views
+- **Layout Shift:** CLS < 0.1
+
+**User/Developer Experience After Fix:**
+- App looks professional and consistent
+- Users know what to do when things go wrong
+- Empty states guide users to add their first item
+- Loading states prevent confusion about app status
+
+**Sources:**
+- [Design Tokens Guide](https://www.contentful.com/blog/design-token-system/) (MEDIUM confidence)
+- [Tailwind Design Token Patterns](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns) (MEDIUM confidence)
+
+---
+
+## Remediation Differentiators
+
+Above-average implementation that demonstrates quality commitment.
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Real User Monitoring (RUM) | Track actual user performance, not just lab scores | Medium | Core Web Vitals field data |
+| Automated a11y testing in CI | Catch regressions before deployment | Low | axe-core in test suite |
+| JSON-LD for services/staff | Rich snippets showing services, pricing, staff | Medium | Service schema markup |
+| Progressive enhancement | App works without JS for core viewing | High | Server components |
+| Error tracking integration | Sentry/similar for production error monitoring | Low | Auto-capture with context |
+| Performance budgets | CI fails if bundle size or LCP regresses | Low | Lighthouse CI thresholds |
+| WCAG 2.2 compliance | Exceed minimum; include focus-visible, target size | Medium | Level AAA where practical |
+| Automated visual regression | Catch unintended UI changes | Medium | Chromatic/Percy/Playwright |
+
+---
+
+## Remediation Anti-Features
+
+Things to explicitly NOT do during remediation. Common mistakes that cause regressions.
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| Over-caching API responses | Stale data causes user confusion; hard to debug | Cache static assets only; use stale-while-revalidate for dynamic |
+| Blocking main thread with sync operations | Freezes UI; terrible mobile experience | Always async; use web workers for heavy computation |
+| Overly aggressive TypeScript types | `never` and complex generics hurt DX; slow compilation | Pragmatic typing; simple is better than clever |
+| Modal-within-modal patterns | Accessibility nightmare; confusing UX | Single modal with multi-step content |
+| ARIA overuse | Wrong ARIA is worse than no ARIA | Use semantic HTML first; ARIA only when needed |
+| Hidden skip links that never show | Useless to sighted keyboard users | Show on focus with CSS |
+| Generic error messages | "Something went wrong" is useless | Specific, actionable: "Email already exists. Try logging in." |
+| Loading spinners everywhere | Feels slow even when fast | Skeleton loaders; optimistic updates |
+| Fixing accessibility with overlays | Third-party overlay tools often break more than fix | Native implementation with proper ARIA |
+| Hardcoded color values | Makes theming impossible; inconsistent appearance | Design tokens for all colors |
+| Premature optimization | Complex caching/queuing for things that aren't slow | Measure first; optimize what matters |
+| Breaking changes for quality | Users lose data or workflows during "improvements" | Backward compatible; migration paths |
+
+---
+
+## Edge Cases to Consider
+
+### Security
+- File uploads: What if user uploads executable disguised as image?
+- CSRF: What about API-only clients (mobile apps)? Use token-based auth instead
+- Sessions: What happens on clock skew between servers?
+- Passwords: Handle Unicode properly in complexity checks
+
+### Performance
+- Large tenants: What if a salon has 10,000 appointments?
+- Slow networks: 3G mobile in rural areas
+- Cold starts: First request after deployment
+- Memory pressure: Multiple concurrent background jobs
+
+### SEO
+- Dynamic routes: `/booking/:salonSlug` needs proper indexing
+- Internationalization: If/when multi-language, hreflang tags
+- Soft 404s: Pages that return 200 but show "not found"
+- Pagination: Proper rel="next/prev" or single-page with lazy load
+
+### Accessibility
+- Screen reader + magnification combo users
+- Voice control users (Dragon, Voice Control)
+- Users with cognitive disabilities needing simple language
+- Temporary disabilities (broken arm, bright sunlight)
+
+### Code Quality
+- Legacy code migration: Don't break what works
+- Third-party types: Some libraries have poor/missing types
+- Runtime vs compile time: Types don't prevent all bugs
+- Team adoption: Strict mode is useless if everyone uses `// @ts-ignore`
+
+### UI/UX
+- Responsive design: Test at 320px, 768px, 1024px, 1440px
+- Reduced motion users: `prefers-reduced-motion` support
+- High contrast mode: Windows High Contrast Mode support
+- Print styles: Appointment confirmations should print well
+
+---
+
+## Remediation Priority Order
+
+Based on dependencies and impact:
+
+1. **Security** - Foundation for everything else; legal/compliance risk
+2. **Performance (async notifications)** - Currently blocking API; immediate UX impact
+3. **Accessibility** - Legal deadline (April 2026); affects all features
+4. **Code Quality** - Makes other fixes safer and maintainable
+5. **SEO** - Additive; doesn't block other work
+6. **UI/UX** - Polish layer; best done after functional fixes
+
+**Rationale:**
+- Security fixes prevent exploits that could affect all users
+- Async notifications unblock the API performance bottleneck
+- Accessibility has hard legal deadline and touches every component
+- TypeScript strictness catches bugs in subsequent fixes
+- SEO and UI/UX are additive improvements with lower risk
+
+---
+
+## Success Verification Checklist
+
+After all fixes, these should pass:
+
+### Automated Checks
+```bash
+# Performance
+npx lighthouse --preset=desktop --only-categories=performance,seo,accessibility [URL]
+
+# Security
+npm audit --audit-level=moderate
+grep -r "ENCRYPTION_KEY\|API_KEY\|PASSWORD" --include="*.ts" src/ # Should be empty
+
+# Code Quality
+npm run typecheck # Zero errors
+npm run lint # Zero errors
+npm run test # All pass
+
+# Accessibility
+npm run test:a11y # axe-core integration tests
+```
+
+### Manual Verification
+- [ ] Keyboard navigate through booking flow start to finish
+- [ ] Screen reader (NVDA/VoiceOver) announces all form labels
+- [ ] Mobile Lighthouse scores all >= 90
+- [ ] Google Search Console shows zero errors
+- [ ] Load test with 50 concurrent bookings - no timeouts
+
+---
+
+## Authoritative Sources
+
+### Official Standards
+- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/) - W3C (HIGH confidence)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/) - OWASP Foundation (HIGH confidence)
+- [OWASP CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) (HIGH confidence)
+- [Google LocalBusiness Structured Data](https://developers.google.com/search/docs/appearance/structured-data/local-business) (HIGH confidence)
+- [W3C Dialog Modal Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) (HIGH confidence)
+
+### Industry Benchmarks
+- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) - Chrome DevRel (HIGH confidence)
+- [DebugBear Lighthouse Metrics Guide](https://www.debugbear.com/docs/metrics/lighthouse-performance) (MEDIUM confidence)
+
+### Implementation Guidance
+- [Next.js SEO with Sitemap/Robots.txt](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots) - Vercel (HIGH confidence)
+- [WebAIM Skip Navigation Links](https://webaim.org/techniques/skipnav/) (HIGH confidence)
+- [BullMQ Background Jobs](https://bullmq.io/) (HIGH confidence)
+- [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) (HIGH confidence)
+
+### Regulatory
+- [ADA Title II Web Accessibility Final Rule](https://www.ada.gov/resources/web-rule-first-steps/) - US DOJ (HIGH confidence)
+- April 24, 2026 deadline for WCAG 2.1 AA compliance (entities >= 50k population)
+
+### TypeScript
+- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig/) - Microsoft (HIGH confidence)
+- [TypeScript Strict Mode Guide](https://betterstack.com/community/guides/scaling-nodejs/typescript-strict-option/) (MEDIUM confidence)
+
+### Design Systems
+- [Design Tokens Guide](https://www.contentful.com/blog/design-token-system/) - Contentful (MEDIUM confidence)
+- [Tailwind Design Token Patterns](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns) (MEDIUM confidence)
+
+---
+
+# PART 1: Original Spa/Salon Domain Research (v1.0)
+
+*The following sections contain the original domain research from v1.0 milestone, preserved for reference.*
 
 ---
 
@@ -125,16 +505,16 @@ Features that set product apart. Not expected, but highly valued when present.
 
 | Feature | Value Proposition | What "Working" Looks Like | Complexity |
 |---------|-------------------|---------------------------|------------|
-| **Smart Waitlist Auto-Fill** | Scans calendar every 5 minutes, auto-texts waitlist clients when slot opens | Cancellation happens → waitlist client texted within 5 min → client confirms → slot filled | MEDIUM |
+| **Smart Waitlist Auto-Fill** | Scans calendar every 5 minutes, auto-texts waitlist clients when slot opens | Cancellation happens -> waitlist client texted within 5 min -> client confirms -> slot filled | MEDIUM |
 | **Pre-Booking at Checkout** | Clients who book next visit before leaving = 30-40% higher retention | Prompt to book next appointment during checkout, one-click scheduling | LOW |
 | **Precision Scheduling** | Shows "best" time slots first based on staff availability, minimizes gaps | Client sees optimal times first, staff schedule stays compact, fewer gaps | MEDIUM |
 | **Formula/Client Notes** | Track client formulas, preferences, allergies for personalization | Notes from last visit auto-show at check-in, searchable, staff can add quickly | LOW |
-| **Automated Payroll** | Calculate commissions/tips automatically, save hours/month | End of pay period → system calculates all commissions → export to payroll | HIGH |
-| **Real-time Inventory Tracking** | Know when products running low, never run out mid-service | Service uses product → inventory decrements → alert at reorder point | MEDIUM |
-| **Client Self-Rescheduling** | Clients reschedule online without calling, saves front desk time | Client clicks reschedule link → chooses new time → calendar updates → both notified | MEDIUM |
+| **Automated Payroll** | Calculate commissions/tips automatically, save hours/month | End of pay period -> system calculates all commissions -> export to payroll | HIGH |
+| **Real-time Inventory Tracking** | Know when products running low, never run out mid-service | Service uses product -> inventory decrements -> alert at reorder point | MEDIUM |
+| **Client Self-Rescheduling** | Clients reschedule online without calling, saves front desk time | Client clicks reschedule link -> chooses new time -> calendar updates -> both notified | MEDIUM |
 | **Marketing Automation** | Re-engagement for clients who haven't booked in X days | Auto-email clients 60 days after last visit with booking link | MEDIUM |
-| **Loyalty/Membership Programs** | Recurring revenue, increases retention 10-20% | Client buys package → services deduct automatically → auto-renew option | HIGH |
-| **Review Management** | Collect reviews automatically post-appointment | Appointment completes → review request sent → responses tracked | LOW |
+| **Loyalty/Membership Programs** | Recurring revenue, increases retention 10-20% | Client buys package -> services deduct automatically -> auto-renew option | HIGH |
+| **Review Management** | Collect reviews automatically post-appointment | Appointment completes -> review request sent -> responses tracked | LOW |
 
 **Post-Stabilization Priorities:**
 - Smart Waitlist (high value, medium complexity)
@@ -150,7 +530,7 @@ Features to explicitly NOT build (or build differently). Common mistakes in this
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Complex Multi-Step Booking Flow** | 65% of Gen Z abandon if too complex, users expect 1-page booking | Single-page booking: service → staff → time → done. No login required. |
+| **Complex Multi-Step Booking Flow** | 65% of Gen Z abandon if too complex, users expect 1-page booking | Single-page booking: service -> staff -> time -> done. No login required. |
 | **Forced User Registration for Booking** | Password-free booking is now standard, friction kills conversions | Allow guest booking with just name/phone/email. Account optional. |
 | **Separate POS System** | Juggling systems = data silos, owners won't use multiple tools | Integrate payment into same system as booking/calendar. |
 | **Overcomplicated Pricing Tiers** | Hidden fees for add-ons like SMS reminders breaks trust | Transparent pricing, core features included, clear upgrade path. |
@@ -169,412 +549,51 @@ Understanding what must work before other features can function.
 
 ```
 FOUNDATION LAYER (must work first):
-├─ Authentication/Multi-tenancy → Everything depends on this
-├─ Business/Location Setup → Required for scheduling
-└─ Service Menu → Required for bookings
+├─ Authentication/Multi-tenancy -> Everything depends on this
+├─ Business/Location Setup -> Required for scheduling
+└─ Service Menu -> Required for bookings
 
 CORE OPERATIONS:
-├─ Staff Management → Required for scheduling
-├─ Client Database → Required for appointments
-├─ Calendar/Scheduling → Core daily workflow
+├─ Staff Management -> Required for scheduling
+├─ Client Database -> Required for appointments
+├─ Calendar/Scheduling -> Core daily workflow
 │   ├─ Requires: Services, Staff, Locations
 │   └─ Enables: Online Booking, Reminders, Payments
 │
-├─ Online Booking Widget → Revenue driver
+├─ Online Booking Widget -> Revenue driver
 │   ├─ Requires: Calendar, Services, Staff Availability
 │   └─ Enables: Client Self-Service, Reduced Admin
 │
-└─ Payment Processing → Revenue collection
+└─ Payment Processing -> Revenue collection
     ├─ Requires: Appointments, Clients
     └─ Enables: Commission Calculation
 
 OPERATIONAL EXCELLENCE:
-├─ Automated Reminders → Reduces no-shows
+├─ Automated Reminders -> Reduces no-shows
 │   ├─ Requires: Appointments, Client Contact Info, SMS/Email Integration
 │   └─ Critical for: Revenue Protection
 │
-├─ No-Show Prevention (Deposits) → Revenue protection
+├─ No-Show Prevention (Deposits) -> Revenue protection
 │   ├─ Requires: Payment Processing, Online Booking
 │   └─ Enables: Confident Scheduling
 │
-└─ Staff Scheduling/Availability → Prevents booking errors
+└─ Staff Scheduling/Availability -> Prevents booking errors
     ├─ Requires: Staff Management, Locations
     └─ Enables: Accurate Online Booking
 
 GROWTH FEATURES:
-├─ Multi-Location → Scale operations
+├─ Multi-Location -> Scale operations
 │   ├─ Requires: All core features working
 │   └─ Enables: Enterprise growth
 │
-├─ Marketing/Loyalty → Retention
+├─ Marketing/Loyalty -> Retention
 │   ├─ Requires: Client Database, Email/SMS
 │   └─ Enables: Revenue growth
 │
-└─ Advanced Reporting → Business intelligence
+└─ Advanced Reporting -> Business intelligence
     ├─ Requires: Appointments, Payments, Services
     └─ Enables: Data-driven decisions
 ```
-
----
-
-## Critical Moments: What MUST Work or Owners Leave
-
-### Moment 1: First Online Booking
-**When:** Within 24 hours of setup
-**What happens:** Owner sets up widget, client books online for first time
-**If it works:** Owner gains confidence, tells other business owners, stays long-term
-**If it breaks:** Owner assumes software is unreliable, reverts to phone bookings, cancels within trial period
-
-**Working means:**
-- Booking appears in calendar within 60 seconds
-- All details correct (time, service, client info)
-- Owner gets notification
-- No double booking
-- Client gets confirmation
-
-### Moment 2: Busy Morning Rush
-**When:** Saturday 9am, phones ringing, walk-ins arriving
-**What happens:** Owner needs to book 3+ clients quickly while handling in-person traffic
-**If it works:** Owner trusts system under pressure, keeps using it during chaos
-**If it breaks:** Owner writes appointments on paper, never trusts system again for critical moments
-
-**Working means:**
-- Calendar loads in <2 seconds
-- Can create appointment in <30 seconds
-- No lag, no crashes
-- Changes save immediately
-- Can see availability at a glance
-
-### Moment 3: Payment Processing
-**When:** Client checking out after service
-**What happens:** Owner charges card for service + tip
-**If it works:** Seamless checkout, client happy, revenue captured
-**If it breaks:** Embarrassment with client present, lost revenue, damaged client relationship
-
-**Working means:**
-- Card charges first try, every time
-- Receipt prints/emails immediately
-- Tip amount captured correctly
-- Payment linked to appointment automatically
-- No duplicate charges
-- Clear error messages if card declined (not system error)
-
-### Moment 4: No-Show Without Reminder
-**When:** Client doesn't show up for appointment
-**What happens:** Owner checks if reminder was sent
-**If it works:** System shows reminder sent 24h before, owner can confidently charge no-show fee or note client unreliability
-**If it breaks:** Owner doesn't know if it's system fault or client fault, can't charge fee, loses trust in reminders
-
-**Working means:**
-- Reminder definitely sent (logged with timestamp)
-- Delivery confirmed (for SMS) or sent (for email)
-- Client received correct info (date, time, location)
-- Owner can see log showing reminder sent
-- If reminder failed, owner was alerted
-
-### Moment 5: Staff Payroll Dispute
-**When:** End of pay period, staff questions commission amount
-**What happens:** Owner needs to show which services were performed, at what commission rate
-**If it works:** System shows accurate breakdown, staff trusts numbers, gets paid correctly
-**If it breaks:** Staff doesn't trust software, owner must manually count, relationship strained
-
-**Working means:**
-- Every completed appointment recorded with staff assignment
-- Commission rate captured at time of service
-- Tips included correctly
-- Can filter by staff, date range
-- Numbers match manual count
-- Can export for proof
-
----
-
-## Pain Points with Existing Spa Software
-
-Based on owner complaints and software reviews:
-
-### Top 10 Trust-Breaking Issues
-
-1. **System Downtime During Business Hours**
-   - Problem: Software goes down during checkout or busy period
-   - Impact: Can't operate business, client checkout delayed, revenue lost
-   - Peacase prevention: Use reliable hosting (Vercel/Render), monitor uptime, graceful degradation
-
-2. **Data Silos (Disconnected Systems)**
-   - Problem: Booking system separate from POS, CRM separate from calendar
-   - Impact: Duplicate data entry, sync issues, incomplete client view
-   - Peacase prevention: All-in-one platform, single database
-
-3. **Poor Customer Support When Systems Fail**
-   - Problem: Software breaks, support ticket takes 2+ days, no phone number
-   - Impact: Business can't operate, revenue lost, frustration
-   - Peacase prevention: Clear error messages, self-service diagnostics, responsive support
-
-4. **Hidden Costs and Pricing Complexity**
-   - Problem: "Free" tier missing basics, charged per SMS, per location, per feature
-   - Impact: Budget unpredictability, feels nickeled-and-dimed, trust broken
-   - Peacase prevention: Transparent pricing, core features included, predictable costs
-
-5. **Settings Don't Persist or Apply**
-   - Problem: Change business hours, hours don't apply to booking widget
-   - Impact: Clients book during closed hours, owner must manually cancel, looks unprofessional
-   - Peacase prevention: Test that all settings actually apply, validate before save
-
-6. **Double Bookings**
-   - Problem: Online booking and manual booking create conflict for same slot
-   - Impact: Overbooked, client turned away or delayed, reputation damage
-   - Peacase prevention: Real-time calendar locking, conflict detection, atomic transactions
-
-7. **Reminders Not Sent (Silent Failure)**
-   - Problem: Reminder scheduled but never sent, no error alert
-   - Impact: Client no-shows, revenue lost, owner blames client but it's system fault
-   - Peacase prevention: Reminder queue monitoring, delivery confirmation, alert owner on failures
-
-8. **Slow, Dated User Interface**
-   - Problem: Menus nested 5 levels deep, looks like 2005 website, slow page loads
-   - Impact: Owner frustrated, takes 3x longer to do tasks, abandons software
-   - Peacase prevention: Modern UI, fast load times, intuitive navigation
-
-9. **Lack of Customization (One-Size-Fits-None)**
-   - Problem: Can't customize for unique business needs (different commission structures, special services)
-   - Impact: Workarounds needed, software doesn't match workflow, manual tracking continues
-   - Peacase prevention: Flexible service setup, customizable commission rates, location-specific settings
-
-10. **Security and Compliance Concerns**
-    - Problem: Client data not encrypted, no GDPR compliance, unclear data handling
-    - Impact: Legal risk, client trust broken if breach occurs
-    - Peacase prevention: Encryption, GDPR features built-in, clear data policies
-
----
-
-## What "Working" Means for Each Core Feature
-
-This section defines **acceptance criteria** for stabilization. Each feature must meet these standards before considered "working."
-
-### Online Booking Widget
-
-**Working:**
-- [ ] Loads in <3 seconds on mobile 4G
-- [ ] Shows only available time slots (respects business hours, staff availability, existing appointments)
-- [ ] Creates appointment that appears in calendar within 60 seconds
-- [ ] Sends confirmation email/SMS to client immediately
-- [ ] Notifies owner of new booking
-- [ ] Prevents double booking (even if two clients book simultaneously)
-- [ ] Handles errors gracefully (shows useful message, doesn't just fail)
-- [ ] Works without client login/account
-- [ ] Captures all required info (name, phone/email, service, preferred staff if selected)
-- [ ] Respects location-specific settings if multi-location
-- [ ] Mobile-responsive, touch-friendly
-- [ ] Matches salon branding (colors, fonts configured correctly)
-
-**Broken indicators:**
-- Bookings created but don't appear in calendar
-- Double bookings occur
-- Shows slots outside business hours
-- Fails without error message
-- Requires multiple page loads
-- Confirmation not sent
-
-### Calendar/Scheduling
-
-**Working:**
-- [ ] Loads current day view in <2 seconds
-- [ ] Displays all appointments with correct: time, client, service, staff, duration
-- [ ] Drag-and-drop reschedules appointment and saves change
-- [ ] Creating appointment checks for conflicts before saving
-- [ ] Shows staff availability visually (grayed out when unavailable)
-- [ ] Updates in real-time when online booking creates appointment
-- [ ] Week/month views available and accurate
-- [ ] Can filter by staff, location, service
-- [ ] Color-codes by service or status
-- [ ] Mobile-responsive for on-the-go checks
-- [ ] Handles time zones correctly if multi-location
-- [ ] Shows gaps in schedule (opportunity for walk-ins)
-
-**Broken indicators:**
-- Slow to load (>5 seconds)
-- Appointments missing or wrong times
-- Allows double booking
-- Changes don't save
-- Doesn't reflect online bookings
-- Staff unavailability not shown
-
-### Automated Reminders
-
-**Working:**
-- [ ] Automatically sends reminder 24 hours before appointment (configurable timing)
-- [ ] SMS delivered successfully (99%+ delivery rate for valid numbers)
-- [ ] Email sent successfully (to inbox, not spam)
-- [ ] Message contains correct: date, time, service, location, staff name
-- [ ] Message includes confirmation/reschedule links
-- [ ] Logs every reminder sent with timestamp and delivery status
-- [ ] Alerts owner if reminder fails to send
-- [ ] Respects client communication preferences (email vs SMS)
-- [ ] Doesn't send to clients who opted out
-- [ ] Handles time zones correctly
-- [ ] Can manually trigger reminder if needed
-- [ ] Shows reminder history per appointment
-
-**Broken indicators:**
-- Reminders not sent (silent failure)
-- Wrong info in message
-- Sent at wrong time
-- Not logged
-- Delivery failures not reported
-- Duplicate reminders sent
-
-### Payment Processing
-
-**Working:**
-- [ ] Charges card successfully on first attempt (for valid cards)
-- [ ] Processes in <5 seconds
-- [ ] Generates receipt immediately
-- [ ] Links payment to appointment automatically
-- [ ] Captures tips separately
-- [ ] Shows clear error if card declined (with decline reason)
-- [ ] Prevents duplicate charges
-- [ ] Handles refunds correctly
-- [ ] Updates appointment status to "paid"
-- [ ] Records payment method
-- [ ] Can process partial payments
-- [ ] Works on mobile devices (tap to pay if supported)
-- [ ] Complies with PCI security standards
-
-**Broken indicators:**
-- Random payment failures (valid cards declined)
-- Duplicate charges
-- Payments not linked to appointments
-- No receipt generated
-- Tips not captured
-- Unclear error messages
-- Slow processing (>10 seconds)
-
-### Staff Management
-
-**Working:**
-- [ ] Can create staff profiles with: name, email, phone, role, commission rate, certifications
-- [ ] Assign staff to locations
-- [ ] Assign services to staff (what they can perform)
-- [ ] Set weekly availability per staff (day/time ranges)
-- [ ] Mark time-off that blocks calendar automatically
-- [ ] Online booking only shows staff available at selected time
-- [ ] Can set different commission rates per staff or service
-- [ ] Staff portal login works (if implemented)
-- [ ] Deactivate staff without deleting historical data
-- [ ] Track which staff performed which service (for commissions)
-- [ ] Filter calendar by staff
-- [ ] Staff can't be double-booked
-
-**Broken indicators:**
-- Staff availability doesn't affect booking widget
-- Time-off doesn't block calendar
-- Can't assign services to specific staff
-- Commission rates don't save
-- Deleted staff breaks historical appointments
-
-### Client Database
-
-**Working:**
-- [ ] Search finds clients instantly (<1 second)
-- [ ] Shows visit history (all appointments, services, dates)
-- [ ] Displays client notes from all staff
-- [ ] Captures: name, phone, email, preferences, allergies, birthday
-- [ ] Can add new client in <30 seconds
-- [ ] Prevents duplicate client profiles (suggests matches)
-- [ ] Shows loyalty points/packages if applicable
-- [ ] Respects GDPR (data consent, export, deletion)
-- [ ] Communication preferences saved (email vs SMS, marketing opt-in)
-- [ ] Can tag/categorize clients
-- [ ] Shows client value (total spend)
-- [ ] Can merge duplicate profiles
-
-**Broken indicators:**
-- Search slow or incomplete
-- Visit history missing appointments
-- Notes don't save
-- Duplicate profiles created easily
-- Client data incomplete
-
-### Multi-Location Support
-
-**Working:**
-- [ ] Can create multiple locations under one salon account
-- [ ] Each location has independent: address, hours, phone
-- [ ] Staff assigned to specific locations
-- [ ] Services can be location-specific or shared
-- [ ] Calendar filterable by location
-- [ ] Online booking shows location selector
-- [ ] Reporting available per-location or combined
-- [ ] Clients can book any location (or be restricted)
-- [ ] Settings can sync from flagship or be location-specific
-- [ ] Primary location designated for defaults
-- [ ] Can manage inventory per location (if using inventory)
-
-**Broken indicators:**
-- Locations operate as separate accounts
-- Can't see cross-location data
-- Client must re-register per location
-- Settings changes don't apply correctly per location
-
----
-
-## Testing Scenarios: How to Validate "Working"
-
-To test from spa owner perspective (not developer perspective):
-
-### Scenario 1: New Client Books Online at 11pm
-1. Configure booking widget with services, staff, hours
-2. Embed widget on test page
-3. Book appointment at 11pm on Sunday for Monday 10am
-4. Check Monday morning: Does appointment appear? Correct details? Staff assigned?
-5. Check client received confirmation email/SMS
-6. Check owner received new booking notification
-7. Check calendar prevents double-booking that slot
-
-**Pass criteria:** All 7 checks pass
-**Fail indicators:** Any check fails
-
-### Scenario 2: Morning Rush - Book 3 Walk-Ins in 5 Minutes
-1. Simulate busy morning: existing appointments on calendar
-2. Time how long to create 3 new appointments with different clients, services, staff
-3. Check all 3 saved correctly
-4. Check no conflicts created
-5. Check calendar still responsive (not lagging)
-
-**Pass criteria:** 3 appointments created in <5 minutes total, all accurate, no conflicts
-**Fail indicators:** Slow performance, errors, conflicts
-
-### Scenario 3: Client No-Shows, Check Reminder Sent
-1. Create appointment for tomorrow
-2. Wait for automated reminder to send (or manually trigger)
-3. Check reminder log shows: sent timestamp, delivery status, message content
-4. Verify message contains correct info
-5. If reminder fails, check owner was alerted
-
-**Pass criteria:** Reminder logged, correct info, owner can prove it was sent
-**Fail indicators:** No log, wrong info, silent failure
-
-### Scenario 4: Process Payment with Tip
-1. Complete an appointment
-2. Charge client $100 service + $20 tip
-3. Check payment processes successfully
-4. Check receipt shows both amounts
-5. Check payment linked to appointment
-6. Check appointment marked paid
-7. Check tip recorded separately for staff commission
-
-**Pass criteria:** All 7 checks pass, total correct
-**Fail indicators:** Any amount wrong, not linked, tip missing
-
-### Scenario 5: Multi-Location Calendar Management
-1. Create 2 locations with different hours, staff
-2. Create appointments at both locations
-3. Filter calendar by location - see only that location's appointments
-4. View combined - see both locations
-5. Online booking at Location A doesn't show Location B staff
-6. Change Location A hours, verify Location B unaffected
-
-**Pass criteria:** Locations independent but manageable together
-**Fail indicators:** Settings cross-contaminate, can't filter properly
 
 ---
 

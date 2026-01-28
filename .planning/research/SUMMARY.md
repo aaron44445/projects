@@ -1,308 +1,247 @@
 # Project Research Summary
 
-**Project:** Peacase - Spa/Salon SaaS Stabilization
-**Domain:** Multi-tenant booking and management system for spas/salons
-**Researched:** 2026-01-25
+**Project:** Peacase v1.1 Audit Remediation
+**Domain:** Remediation of ~50 audit findings on production SaaS
+**Researched:** 2026-01-28
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Peacase is in the "feature-complete but unreliable" stage that kills SaaS businesses. The app has the right features (online booking, payments, reminders, calendar management) but they fail randomly in production, breaking owner trust instantly. Research shows spa/salon owners have zero tolerance for unreliability—if booking fails once, they revert to pen and paper. If reminders don't send, clients no-show and revenue is lost. If staff schedules are wrong, the business can't operate.
+Peacase v1.1 is a remediation milestone focused on fixing ~50 audit issues across security, performance, SEO, accessibility, code quality, and UI/UX in an existing, shipped production system. The core challenge is NOT implementing fixes — it's doing so without introducing regressions that break features users depend on daily. Research shows that poorly executed remediation commonly causes 43% traffic loss (SEO), mass user logouts (security), and cascading failures (performance).
 
-The recommended approach is systematic **audit-driven stabilization**, not more feature building. Follow data flows end-to-end (Appointment creation → storage → retrieval → display → modification → deletion), validating multi-tenant isolation at every layer. Use Playwright for critical user flows, Vitest + Supertest for API/integration testing, and structured logging to catch production issues. The developer can't manually QA like a spa owner, so automated testing that simulates real workflows is essential.
+The recommended approach is surgical, additive changes with extensive testing at each step. The existing stack (Next.js 14, Express.js, Prisma, TailwindCSS, shadcn/ui) is preserved. New dependencies are minimal: `csrf-csrf` for CSRF protection, `bullmq` for async notifications, `schema-dts` for SEO types, and testing tools (`jest-axe`, `eslint-plugin-jsx-a11y`). Most fixes require configuration changes or pattern updates rather than new libraries.
 
-Critical risks center on multi-tenant data leakage (missing `salonId` filters exposing cross-business data), race conditions causing double-bookings, and silent failures in reminders/payments. Every one of these destroys trust permanently. The mitigation is: audit database queries for tenant isolation, wrap booking operations in transactions with locking, and monitor delivery confirmations for all communications. Test the broken features (SMS, email reminders, settings persistence, online booking reliability) before building anything new.
+Key risks center on breaking working functionality while fixing issues. Security fixes can invalidate user sessions if not migrated properly. Performance query optimizations can timeout on production data volumes. SEO changes can tank search traffic within weeks. Accessibility fixes with improper ARIA can make features worse, not better. Each category has specific testing protocols and rollback procedures documented to mitigate these risks.
 
 ## Key Findings
 
 ### Recommended Stack
 
-Testing and debugging tools for stabilization, not building new features. The developer doesn't own a spa and can't QA like a real user, so we need automated testing to simulate real workflows and catch bugs systematically.
+The existing stack is preserved. Additions are minimal and targeted to specific audit findings.
 
-**Core technologies:**
-- **Playwright (^1.49.0)**: E2E testing with codegen to record real user workflows, native parallelization (15 workers), multi-browser coverage including Safari, API testing without browser overhead—critical for reproducing bugs systematically
-- **Vitest (^3.0.0)**: Test runner 10-20x faster than Jest, native ESM support (Peacase uses ESM), built-in TypeScript—essential for fast debugging feedback loop
-- **Supertest (^7.0.0)**: HTTP API testing for Express, chainable assertions, automatic server lifecycle—industry standard for testing API routes and authentication
-- **Winston**: Structured production logging with tenant context—your eyes into what users experience when you can't manually QA
-- **Prisma testing strategy**: prisma-mock for fast unit tests, real database for integration tests to verify tenant isolation actually works
+**New Dependencies:**
+- `csrf-csrf@^4.0.3`: Stateless CSRF protection using Double Submit Cookie pattern — no Redis required
+- `bullmq@^5.66.5` + `ioredis@^5.4.0`: Async notification queue with Upstash Redis free tier — unblocks API responses
+- `schema-dts@^1.1.2` (dev): TypeScript types for JSON-LD structured data — type-safe SEO
+- `jest-axe@^10.0.0` + `eslint-plugin-jsx-a11y@^6.10.0` (dev): Automated accessibility testing — catches 30-57% of a11y issues
 
-**Critical version requirements:**
-- Node.js inspector for remote production debugging (use cautiously)
-- Stripe CLI for local webhook testing (`stripe trigger payment_intent.succeeded`)
-- Twilio test credentials for SMS testing without charges (magic numbers like +15005550006)
+**Configuration-Only Fixes (no new dependencies):**
+- Environment validation with existing Zod
+- Prisma `include` with `relationLoadStrategy: 'join'` for N+1 queries
+- TanStack Query `staleTime` configuration to prevent UI flicker
+- Next.js built-in `sitemap.ts` and `robots.ts`
+- TypeScript `strict: true` and `noUncheckedIndexedAccess`
+- CSS design tokens for UI consistency
 
-### Expected Features
+### Expected Features (Remediation Outcomes)
 
-**Must have (table stakes):**
-- **Online Booking (24/7)**: 78% of clients prefer online, 30% book outside business hours—broken = owners leave immediately
-- **Calendar/Scheduling**: Checked 50+ times/day, core of operations—slow or allowing double-bookings breaks trust permanently
-- **Payment Processing**: Must work every time with zero tolerance for errors—random failures or duplicate charges kill credibility
-- **Automated Reminders**: Reduces no-shows by 70%, owners expect 98% delivery—silent failures cost thousands in lost revenue
-- **Client Database/CRM**: 97% of clients expect personalization, need visit history and notes—incomplete profiles or missing data frustrates staff
-- **Staff Management**: 90% of salons are multi-staff, need assignment and availability tracking—broken = can't operate business
-- **Service Menu**: Foundation for bookings with pricing and duration—wrong prices or missing services in widget = lost bookings
-- **No-Show Prevention**: 5-15% no-show rate costs thousands/month—need deposits and waitlist auto-fill
+**Security Table Stakes:**
+- Environment variables validated at startup (not just used)
+- CSRF tokens persist across server restarts
+- File uploads validate ownership before access
+- Session cookies are HttpOnly, Secure, SameSite
 
-**Critical workflows that must work:**
-1. **First online booking** (within 24h of setup)—if it fails, owner cancels during trial
-2. **Busy morning rush** (Saturday 9am)—if calendar lags during chaos, owner writes on paper forever
-3. **Payment processing** (client checkout)—embarrassment with client present destroys relationships
-4. **No-show with reminder check**—if can't prove reminder sent, can't charge fee, lose trust in system
-5. **Staff payroll dispute**—if numbers don't match manual count, staff doesn't trust software
+**Performance Table Stakes:**
+- Email/SMS notifications sent asynchronously (API responds < 200ms)
+- No N+1 queries on list endpoints (single query with JOINs)
+- Lighthouse Performance score >= 90 on mobile
 
-**Should have (competitive):**
-- Smart waitlist auto-fill (scans every 5 min, auto-texts clients when slot opens)
-- Pre-booking at checkout (30-40% higher retention when clients book next visit before leaving)
-- Client self-rescheduling online (reduces admin burden)
-- Formula/client notes auto-showing at check-in
+**SEO Table Stakes:**
+- Valid sitemap.xml and robots.txt
+- JSON-LD structured data for LocalBusiness/BeautySalon
+- Canonical URLs on all pages
 
-**Defer (v2+):**
-- Marketing automation
-- Loyalty/membership programs
-- Advanced reporting beyond basics
-- Inventory tracking
+**Accessibility Table Stakes (WCAG 2.1 AA):**
+- Modal focus trapping with Escape key close
+- Skip navigation link as first focusable element
+- 4.5:1 contrast ratio for normal text
+- All interactive elements keyboard accessible
+
+**Code Quality Table Stakes:**
+- TypeScript strict mode enabled
+- Zero ESLint errors
+- No DRY violations > 10 lines
+
+**UI/UX Table Stakes:**
+- Single modal component (shadcn/ui Dialog)
+- Consistent status colors via design tokens
+- Loading states for all async content
 
 ### Architecture Approach
 
-Peacase follows standard multi-tenant SaaS patterns: Next.js 14 frontend (Vercel), Express.js API (Render), Prisma ORM with PostgreSQL (Supabase). The critical architectural requirement is **tenant isolation at every layer**—database queries must filter by `salonId`, API endpoints must verify ownership, frontend hooks must include auth headers. A single missing tenant filter creates data leakage.
+Changes must be additive or surgical, never architectural. The existing infrastructure is leveraged extensively. Tenant isolation fixes are single-line WHERE clause additions. Webhook security adds validation layers without changing flow. Frontend auth consolidates to centralized config files before migrating individual contexts.
 
-**Major components:**
-1. **Authentication Layer** (JWT with salonId)—foundation for all tenant isolation, if broken everything fails
-2. **Database Schema** (Prisma with tenant columns)—every model needs `salonId` or foreign key chain, indexes on tenant columns, cascade deletes configured
-3. **API Routes** (Express with middleware)—extract tenant from auth, filter all queries by `salonId`, validate ownership before mutations, handle errors without data leakage
-4. **Frontend Data Flow** (Next.js with hooks)—include auth headers, show loading/error states, invalidate cache on mutations, handle 401 redirects
-5. **Third-Party Integrations** (Stripe, Twilio, SendGrid)—webhook signature verification, idempotent processing, delivery confirmation monitoring
+**Integration Points by Category:**
+1. **Security:** Route handlers (`apps/api/src/routes/*.ts`) — WHERE clause additions
+2. **Webhooks:** `webhooks.ts`, `subscriptions.ts` — signature validation layers
+3. **Public endpoints:** `public.ts` — staffId/locationId validation before processing
+4. **Frontend auth:** Auth contexts + new `config/api.ts` — centralize then migrate
+5. **SEO/A11y:** Next.js pages and components — metadata exports, ARIA attributes
+6. **UI:** Component files — standardize to shadcn/ui patterns
 
-**Audit methodology:**
-- Follow data flows end-to-end: Appointment → create → store → retrieve → display → update → delete
-- Validate tenant isolation at each step (can Salon A access Salon B's data?)
-- Test critical paths with Playwright: registration → onboarding → first appointment → payment
-- Use multi-tenant isolation tests: create data for two salons, verify cross-tenant access returns 403/404
+**Existing Test Infrastructure:**
+- `tenant-isolation.test.ts` already exists for cross-tenant testing
+- Test helpers: `createTestSalon()`, `generateTestTokens()`, `authenticatedRequest()`
+- Auth middleware already extracts `salonId` on all authenticated routes
 
 ### Critical Pitfalls
 
-1. **Multi-tenant data leakage via missing salonId filter**—One business sees another's confidential client data. Legal liability, complete platform trust destruction. EVERY database query must filter by `salonId`, use Prisma middleware to enforce, cache keys must include tenant prefix, automated testing with two test salons.
+1. **Security Fixes That Break User Sessions** — Implementing token rotation or session validation that invalidates all existing sessions causes mass logout. Prevention: Dual-token support during transition, accept both old and new formats.
 
-2. **Double-booking race conditions**—Two clients book same slot simultaneously because availability check and creation are separate operations. Staff double-booked, customer trust destroyed. Wrap in database transaction with `SELECT...FOR UPDATE` locking, test with 100 concurrent requests for same slot.
+2. **Database Query Changes That Cause Timeouts** — Adding `WHERE salonId = ?` on unindexed tables works in dev (100 rows) but times out in production (100,000 rows). Prevention: Add indexes BEFORE deploying query changes, test with production-scale data, EXPLAIN ANALYZE.
 
-3. **Timezone mismatches cause wrong appointment times**—Customer books "2:00 PM" in their timezone, shows as "7:00 PM" on salon calendar. Customers arrive at wrong time, missed appointments. Store ALL times in UTC in database, attach timezone to business/location, force booking widget to display in business timezone, test DST transitions.
+3. **SEO Fixes That Tank Search Traffic** — Wrong robots meta tags, missing redirects, or invalid structured data causes 40-60% traffic loss within weeks. Prevention: Never change URLs without 301 redirects, validate with Rich Results Test, monitor Search Console daily.
 
-4. **Payment webhook processing failures**—Stripe webhook not processed (timeout, crash, duplicate). Customer charged but appointment unpaid, or double-charged. Verify webhook signature first, use event.id as idempotency key, wrap in transaction, handle out-of-order events, log all webhooks.
+4. **Accessibility Fixes That Break Functionality** — Wrong ARIA attributes (e.g., `aria-hidden="true"` on interactive elements) makes features unusable for everyone. Prevention: Test with real assistive technology (VoiceOver, NVDA), not just automated tools which only catch 30% of issues.
 
-5. **Email/SMS reminder delivery failures**—Reminders never reach customers (spam filters, carrier blocks, expired credentials). No-shows increase, revenue lost. Configure SPF/DKIM/DMARC, use dedicated sending domain, validate phone numbers with libphonenumber-js, queue failed sends for retry, monitor delivery rates.
-
-**Moderate pitfalls:**
-- Buffer time not calculated (staff overbooked without cleanup time)
-- Settings changes don't apply immediately (cache not invalidated)
-- Calendar sync conflicts across systems (Google Calendar vs booking system)
-- Incorrect API credentials in production (test keys instead of live keys)
-
-**Minor pitfalls:**
-- Phone number formatting inconsistencies
-- Business hours edge cases (overnight, holidays)
-- No-show handling missing
+5. **Multi-Tenant Security Fixes That Break Admin Features** — Blanket "all queries must filter by salonId" breaks legitimate admin access, webhooks, and background jobs. Prevention: Document cross-tenant patterns, separate admin vs tenant routes, service account pattern for background jobs.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure for stabilization:
+Based on research, the recommended phase structure addresses dependencies and risk levels:
 
-### Phase 1: Authentication & Multi-Tenant Isolation Audit
-**Rationale:** Foundation must work first. If auth is broken, all tenant isolation fails. This is the highest-risk area and gates everything else.
-**Delivers:** Verified authentication flow, confirmed tenant isolation at database/API/frontend layers, multi-tenant test suite
-**Addresses:** Multi-tenant data leakage pitfall (Critical #1)
-**What must work:**
-- Registration creates Salon + User atomically
-- Login tokens include correct salonId
-- Token refresh maintains salonId
-- Session persists across page refresh
-- Two-salon test: Salon A cannot access Salon B data via any endpoint
-- All database queries verified to include salonId filter
+### Phase 1: Security Foundation
+**Rationale:** Security fixes are highest risk but have no dependencies. They're independent and can be tested in isolation. Must come first because they're the foundation for everything else.
+**Delivers:** Tenant isolation, webhook security, public endpoint validation
+**Addresses:** All security audit findings, OWASP compliance
+**Avoids:** Pitfall #1 (session invalidation) via dual-token support; Pitfall #5 (breaking admin) via documented cross-tenant patterns
+**Risk Level:** LOW per-file, each route is independent, < 5 min rollback
 
-**Research flag:** Standard patterns, skip deep research. Use multi-tenant isolation testing framework.
+### Phase 2: Auth Consistency
+**Rationale:** Builds on security foundation. Frontend token standardization depends on backend security being stable.
+**Delivers:** Centralized API config, consistent token storage keys across auth contexts
+**Uses:** Existing auth middleware, Zod for env validation
+**Implements:** Centralize-then-migrate pattern for auth contexts
+**Risk Level:** MEDIUM, affects all auth flows, ~15 min rollback
 
-### Phase 2: Core Data Flow Validation (Appointments, Clients, Services)
-**Rationale:** These are the entities owners interact with 50+ times daily. Data flow bugs here break daily operations.
-**Delivers:** End-to-end tests for appointment lifecycle, verified tenant filtering on all queries, structured logging for debugging
-**Addresses:** Calendar/scheduling reliability (table stakes feature #1)
-**What must work:**
-- Create appointment → appears in calendar within 60 seconds
-- Update appointment → reflects changes immediately
-- Delete appointment → removes from list and frees slot
-- Concurrent booking attempts → only one succeeds (no double-booking)
-- Appointment queries filtered by salonId + locationId (multi-location)
+### Phase 3: Test Coverage Lock-in
+**Rationale:** After security and auth fixes, lock in guarantees with comprehensive tests before moving to quality improvements.
+**Delivers:** Extended tenant isolation tests, session persistence tests, webhook validation tests
+**Addresses:** Regression prevention for Phases 1-2
+**Risk Level:** NONE, purely additive
 
-**Research flag:** May need deeper research on race condition testing patterns.
+### Phase 4: Performance Optimization
+**Rationale:** Independent of other phases, can run parallel with Phase 5-6. Requires careful testing with production-scale data.
+**Delivers:** Async notification queue (BullMQ), N+1 query elimination, TanStack Query optimization
+**Uses:** bullmq, ioredis, Prisma `include` patterns
+**Avoids:** Pitfall #2 (query timeouts) via index-first deployment, production data testing
+**Risk Level:** LOW-MEDIUM, monitor query latency
 
-### Phase 3: Online Booking Widget Stabilization
-**Rationale:** Revenue driver and first impression for clients. 78% prefer online booking. If this fails once, owner loses trust.
-**Delivers:** Reliable booking widget with availability verification, conflict detection, immediate confirmation
-**Addresses:** Double-booking race conditions (Critical #2), first online booking critical moment
-**What must work:**
-- Widget loads in <3 seconds on mobile 4G
-- Shows only available slots (respects business hours, staff availability, existing appointments)
-- Creates appointment without double-booking (even with concurrent requests)
-- Sends confirmation email/SMS immediately
-- Handles errors gracefully with useful messages
+### Phase 5: SEO Implementation
+**Rationale:** Additive improvements with low risk. No functional code changes required.
+**Delivers:** sitemap.xml, robots.txt, JSON-LD structured data, canonical URLs
+**Uses:** Next.js built-in sitemap.ts, schema-dts for types
+**Avoids:** Pitfall #3 (traffic tank) via no URL changes, Rich Results validation
+**Risk Level:** NONE for visual-only, validate with Search Console
 
-**Research flag:** Need research on transaction isolation levels and locking strategies.
+### Phase 6: Accessibility Compliance
+**Rationale:** Legal deadline (April 24, 2026 for WCAG 2.1 AA). Touches all components but changes are progressive enhancement.
+**Delivers:** Modal focus traps, skip navigation, ARIA labels, keyboard navigation
+**Uses:** Existing shadcn/ui Dialog (Radix focus management), jest-axe, eslint-plugin-jsx-a11y
+**Avoids:** Pitfall #4 (breaking functionality) via mandatory screen reader testing
+**Risk Level:** NONE for ARIA additions, test with VoiceOver/NVDA
 
-### Phase 4: Payment Processing Verification
-**Rationale:** Zero tolerance for errors. Payment failures with clients present cause embarrassment and relationship damage.
-**Delivers:** Verified Stripe integration, webhook idempotency, error handling, payment-appointment linkage
-**Addresses:** Payment webhook failures (Critical #4), payment processing critical moment
-**What must work:**
-- Card charges successfully on first attempt
-- Receipt generated immediately
-- Payment linked to appointment automatically
-- Webhook signature verification before processing
-- Idempotent webhook handling (duplicate events don't double-charge)
-- Clear error messages if card declined
+### Phase 7: Code Quality
+**Rationale:** Makes subsequent fixes safer. Best done after functional fixes to avoid cascading changes.
+**Delivers:** TypeScript strict mode, ESLint strict config, DRY utility extraction
+**Uses:** Existing TypeScript, eslint with typescript-eslint strict
+**Avoids:** Pitfall #7 (behavior changes) via test coverage before refactoring, one fix per PR
+**Risk Level:** LOW, existing tests catch behavior changes
 
-**Research flag:** Need research on Stripe webhook best practices and testing with Stripe CLI.
-
-### Phase 5: Reminder System Reliability (SMS + Email)
-**Rationale:** Directly protects revenue (reduces no-shows by 70%). Silent failures cost thousands monthly. Owner must trust reminders sent.
-**Delivers:** Verified Twilio/SendGrid integration, delivery confirmation logging, retry logic, owner alerts on failures
-**Addresses:** Email/SMS delivery failures (Critical #5), no-show prevention
-**What must work:**
-- Reminder sends 24h before appointment automatically
-- SMS delivery confirmed (99%+ for valid numbers)
-- Email lands in inbox (not spam)
-- Logs every reminder with timestamp and delivery status
-- Alerts owner if reminder fails
-- Phone numbers validated and normalized (libphonenumber-js)
-
-**Research flag:** Need research on email deliverability (SPF/DKIM/DMARC configuration).
-
-### Phase 6: Settings & Configuration Persistence
-**Rationale:** Owners report settings don't apply. Cache invalidation failures cause bookings outside business hours.
-**Delivers:** Verified settings persistence, cache invalidation, immediate application of changes
-**Addresses:** Settings persistence (moderate pitfall), business hours edge cases
-**What must work:**
-- Business hours change → booking widget updates immediately
-- Staff availability change → reflected in next booking
-- Service pricing update → correct amount charged
-- Multi-instance cache invalidation (Redis or versioning)
-- Settings version number in API responses
-
-**Research flag:** Standard caching patterns, skip deep research.
-
-### Phase 7: Edge Cases & Error Scenarios
-**Rationale:** With foundation stable, handle the unusual cases that cause frustration.
-**Delivers:** Graceful error handling, timezone edge cases, buffer time calculations, concurrent update handling
-**Addresses:** Timezone pitfall (Critical #3), buffer time calculation, calendar sync conflicts
-**What must work:**
-- Appointments at DST boundaries display correctly
-- Buffer time between appointments enforced
-- Concurrent appointment updates handled (last write wins with warning)
-- Network failures show user-friendly errors
-- Invalid state transitions blocked (cancel already-completed appointment)
-
-**Research flag:** Need research on timezone handling libraries (luxon vs date-fns-tz).
+### Phase 8: UI/UX Consistency
+**Rationale:** Polish layer, best done last. Visual changes don't affect data flow.
+**Delivers:** Design tokens, component standardization, status color system, loading/empty states
+**Uses:** shadcn/ui components, CSS variables for tokens
+**Avoids:** Pitfall #5 (visual regressions) via component-level scoped changes, visual regression testing
+**Risk Level:** LOW, visual only, easily reversible
 
 ### Phase Ordering Rationale
 
-- **Auth first**: Foundation for all security. If this is broken, everything else fails. Gates all subsequent work.
-- **Data flows second**: Core operations must work before testing integrations. Can't verify booking widget until appointment creation is reliable.
-- **Booking widget third**: Depends on stable data flows. Revenue driver that creates appointments, so appointment CRUD must work first.
-- **Payments fourth**: Depends on appointments existing. Can test payment-appointment linkage once appointments stable.
-- **Reminders fifth**: Depends on appointments + clients existing. Tests notification delivery without affecting core operations.
-- **Settings sixth**: Affects all other features, but lower risk than data corruption. Can audit after core flows verified.
-- **Edge cases last**: Foundation working, now handle unusual scenarios. Can't test timezone edge cases until basic scheduling works.
+- **Security first:** Foundation layer with highest business risk, independent of other changes
+- **Auth second:** Builds on security, required for consistent testing of other phases
+- **Tests third:** Lock in security guarantees before making more changes
+- **Performance fourth:** Independent but needs careful production testing
+- **SEO/A11y parallel:** Both additive, no code dependencies between them
+- **Code quality seventh:** Makes UI work safer via types
+- **UI last:** Polish layer with lowest risk, benefits from code quality improvements
 
 ### Research Flags
 
 **Phases needing deeper research during planning:**
-- **Phase 3 (Booking)**: Race condition testing, transaction isolation levels, locking strategies for concurrent bookings
-- **Phase 4 (Payments)**: Stripe webhook testing patterns, idempotency strategies, webhook signature verification
-- **Phase 5 (Reminders)**: Email deliverability configuration (SPF/DKIM/DMARC), Twilio best practices, delivery monitoring
-- **Phase 7 (Edge Cases)**: Timezone handling library comparison, DST transition testing
+- **Phase 4 (Performance):** Upstash Redis setup, BullMQ worker configuration, Prisma join strategies
+- **Phase 6 (Accessibility):** WCAG 2.1 AA specific requirements, screen reader testing procedures
 
 **Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Auth)**: Multi-tenant isolation testing is well-documented, use established patterns
-- **Phase 2 (Data Flows)**: Standard CRUD with tenant filtering, Playwright E2E testing patterns
-- **Phase 6 (Settings)**: Standard cache invalidation patterns, Redis or versioning approaches documented
+- **Phase 1 (Security):** Well-documented patterns, existing test infrastructure, straightforward WHERE clause additions
+- **Phase 5 (SEO):** Next.js official documentation, standard patterns
+- **Phase 8 (UI/UX):** shadcn/ui documentation, design token patterns well-established
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Official 2026 comparison articles, proven testing tools for this use case, ESM compatibility verified |
-| Features | HIGH | Multiple spa/salon software reviews, owner pain points well-documented, daily workflow research solid |
-| Architecture | HIGH | Multi-tenant SaaS patterns well-established, audit methodology from 2026 security best practices, data flow testing documented |
-| Pitfalls | HIGH | Race conditions and multi-tenant leakage heavily documented with recent 2026 articles, timezone issues verified in multiple sources |
+| Stack | HIGH | Official docs for all recommendations (csrf-csrf, BullMQ, Next.js, Prisma) |
+| Features | HIGH | Based on OWASP, WCAG, Google standards with specific thresholds |
+| Architecture | HIGH | Based on direct codebase analysis, existing patterns, phase plans already created |
+| Pitfalls | HIGH | Industry research with statistics, multiple corroborating sources |
 
 **Overall confidence:** HIGH
 
-All four research areas have strong, recent (2025-2026) sources. Multi-tenant SaaS security is particularly well-researched due to recent high-profile data leakage incidents. Testing tools have official documentation and comparison studies. Spa/salon domain knowledge verified across business-focused sources (owner workflows) and technical sources (booking system patterns).
-
 ### Gaps to Address
 
-**During implementation:**
+- **Upstash Redis free tier limits:** 500K commands/month — need to monitor BullMQ polling frequency
+- **WCAG 2.2 vs 2.1:** Research focused on 2.1 AA (legal requirement), 2.2 could be future enhancement
+- **Visual regression testing setup:** Not currently in codebase, recommended but may need tool selection
+- **Tailwind v4 migration timing:** Deferred due to newness, revisit after ecosystem stabilizes
 
-1. **Peacase-specific bugs**: Research identifies general pitfalls, but specific bugs (SMS broken, settings not applying) need root cause analysis. Use data flow tracing methodology from ARCHITECTURE.md to follow broken features end-to-end.
+## Success Metrics
 
-2. **Production credential validation**: Research flags test vs live API keys, but need to verify Peacase has correct production credentials for Twilio, SendGrid, Stripe. Check on startup with validation calls.
+**Automated Verification:**
+```bash
+# Performance
+npx lighthouse --preset=mobile --only-categories=performance,seo,accessibility [URL]
+# Target: All scores >= 90
 
-3. **Current cache implementation**: Research recommends Redis for multi-instance caching, but need to verify if Peacase uses in-memory (resets on deploy) or shared cache. Affects settings invalidation strategy.
+# Security
+npm audit --audit-level=moderate  # Zero vulnerabilities
+grep -r "ENCRYPTION_KEY\|API_KEY\|PASSWORD" --include="*.ts" src/  # Empty
 
-4. **Existing test coverage**: Research provides testing recommendations, but need to audit existing tests (if any) for gaps. May have partial coverage that can be expanded rather than starting from scratch.
+# Code Quality
+npm run typecheck  # Zero errors
+npm run lint       # Zero errors
+npm run test       # All pass
 
-5. **Time zone configuration**: Need to verify how Peacase currently stores appointment times (UTC vs naive datetime) and whether locations have timezone configured. Research assumes UTC storage, but implementation may differ.
+# Accessibility
+npm run test:a11y  # axe-core passes
+```
 
-**Validation checkpoints during stabilization:**
-
-- **After Phase 1**: Run two-salon isolation test suite, verify zero cross-tenant data access
-- **After Phase 3**: Load test booking widget with concurrent requests, measure double-booking rate (must be 0%)
-- **After Phase 4**: Replay Stripe webhook events, verify idempotency (same event processed twice = same result)
-- **After Phase 5**: Check SendGrid/Twilio delivery rates over 7 days, must be >90%
-- **After Phase 7**: Test appointment creation at DST transition boundaries (spring forward, fall back)
+**Manual Verification:**
+- Keyboard navigate booking flow start to finish
+- Screen reader announces all form labels
+- Google Search Console shows zero errors after sitemap submission
+- Load test with 50 concurrent bookings without timeouts
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-**Testing Stack:**
-- [Cypress vs Playwright: I Ran 500 E2E Tests in Both](https://medium.com/lets-code-future/cypress-vs-playwright-i-ran-500-e2e-tests-in-both-heres-what-broke-2afc448470ee) (Medium, Jan 2026)
-- [Playwright vs Cypress: The 2026 Enterprise Testing Guide](https://devin-rosario.medium.com/playwright-vs-cypress-the-2026-enterprise-testing-guide-ade8b56d3478) (Medium, Dec 2025)
-- [Testing in 2026: Jest, React Testing Library, and Full Stack Testing Strategies](https://www.nucamp.co/blog/testing-in-2026-jest-react-testing-library-and-full-stack-testing-strategies) (Nucamp)
-- [The Ultimate Guide to Testing with Prisma](https://www.prisma.io/blog/testing-series-1-8eRB5p0Y8o) (Prisma Official)
-- [Supertest: How to Test APIs Like a Pro](https://www.testim.io/blog/supertest-how-to-test-apis-like-a-pro/) (Testim)
-
-**Spa/Salon Domain:**
-- [9 Best Salon Software 2026: The Ultimate Guide](https://thesalonbusiness.com/best-salon-software/)
-- [The 4 Biggest Software Pains for Salon and Spa Staff](https://zenoti.com/blogs/the-4-biggest-software-pains-for-salon-and-spa-staff)
-- [Morning Rituals of Successful Salon Owners](https://getvish.com/morning-rituals-of-salon-owners/)
-- [10 Must-Have Salon Software Features for 2026](https://www.barbnow.com/blog/10-must-have-salon-software-features-for-2026)
-- [The #1 Way to Cut Salon No-Shows by Up to 70%](https://shortcutssoftware.com/the-1-way-to-cut-salon-no-shows-by-up-to-70/)
-
-**Multi-Tenant Security:**
-- [Multi-Tenant Leakage: When Row-Level Security Fails in SaaS](https://medium.com/@instatunnel/multi-tenant-leakage-when-row-level-security-fails-in-saas-da25f40c788c) (Medium, 2026)
-- [Implementing Secure Multi-Tenancy in SaaS Applications](https://dzone.com/articles/secure-multi-tenancy-saas-developer-checklist) (DZone)
-- [SaaS Security Audit Checklist & Best Practices](https://ardas-it.com/saas-security-audit-checklist-best-practices-and-principles) (Ardas IT)
-
-**Critical Pitfalls:**
-- [How to Solve Race Conditions in a Booking System](https://hackernoon.com/how-to-solve-race-conditions-in-a-booking-system) (HackerNoon)
-- [Concurrency Conundrum in Booking Systems](https://medium.com/@abhishekranjandev/concurrency-conundrum-in-booking-systems-2e53dc717e8c) (Medium)
-- [Best practices for testing Stripe webhook event processing](https://launchdarkly.com/blog/best-practices-for-testing-stripe-webhook-event-processing/) (LaunchDarkly)
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/) — security requirements
+- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/) — accessibility standards
+- [Next.js Documentation](https://nextjs.org/docs) — sitemap, robots, metadata
+- [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) — N+1 solutions
+- [BullMQ Documentation](https://bullmq.io/) — async queue patterns
+- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig/) — strict mode settings
 
 ### Secondary (MEDIUM confidence)
+- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) — performance thresholds
+- [csrf-csrf npm](https://www.npmjs.com/package/csrf-csrf) — Double Submit Cookie pattern
+- [Upstash BullMQ Integration](https://upstash.com/docs/redis/integrations/bullmq) — Redis setup
+- [typescript-eslint](https://typescript-eslint.io/) — ESLint strict configuration
 
-**Testing Methodologies:**
-- [Data Flow Testing: A Comprehensive Guide](https://www.stickyminds.com/article/data-flow-testing-comprehensive-guide) (StickyMinds)
-- [SaaS Testing Guide and Tools in 2025](https://bugbug.io/blog/software-testing/saas-testing-guide-and-tools/) (BugBug)
-- [10 debugging techniques we rely on (2026)](https://wearebrain.com/blog/10-effective-debugging-techniques-for-developers/) (WeAreBrain)
-
-**Third-Party Integration:**
-- [Test your SMS Application](https://www.twilio.com/docs/messaging/tutorials/automate-testing) (Twilio Official)
-- [Stripe Webhooks Documentation](https://docs.stripe.com/webhooks) (Stripe Official)
-- [Why Do Emails Get Bounced in 2026?](https://www.mailwarm.com/blog/emails-bounced-delivery-rules) (MailWarm)
-
-**Architecture Patterns:**
-- [How to Audit SaaS: A Step-by-Step Guide](https://www.hubifi.com/blog/saas-audit-guide) (HubiFi)
-- [Multitenancy Checklist on Azure](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/checklist) (Microsoft)
+### Tertiary (Referenced in Pitfalls)
+- [WP Rocket SEO Mistakes](https://wp-rocket.me/blog/seo-mistakes/) — 43% traffic loss statistic
+- [UsableNet ADA Compliance](https://blog.usablenet.com/common-ada-title-ii-compliance-mistakes) — automated tools catch 30% of issues
+- [ActiveState Vulnerability Report](https://www.activestate.com/blog/the-state-of-vulnerability-management-remediation-report-2026/) — remediation risk data
 
 ---
-
-*Research completed: 2026-01-25*
+*Research completed: 2026-01-28*
 *Ready for roadmap: yes*
