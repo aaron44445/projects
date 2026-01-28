@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Sparkles, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useStaffAuth } from '@/contexts/StaffAuthContext';
+import { PasswordChecklist } from '@/components/PasswordChecklist';
 
 function SetupForm() {
   const router = useRouter();
@@ -21,12 +22,13 @@ function SetupForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Password validation
+  // Password validation - all requirements now checked by backend
   const passwordRequirements = [
     { test: (p: string) => p.length >= 8, label: 'At least 8 characters' },
     { test: (p: string) => /[A-Z]/.test(p), label: 'One uppercase letter' },
     { test: (p: string) => /[a-z]/.test(p), label: 'One lowercase letter' },
     { test: (p: string) => /[0-9]/.test(p), label: 'One number' },
+    { test: (p: string) => /[^A-Za-z0-9]/.test(p), label: 'One special character' },
   ];
 
   const allRequirementsMet = passwordRequirements.every(r => r.test(password));
@@ -195,19 +197,8 @@ function SetupForm() {
                   </button>
                 </div>
 
-                {/* Password Requirements */}
-                {password.length > 0 && (
-                  <ul className="mt-3 space-y-1">
-                    {passwordRequirements.map((req, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm">
-                        <div className={`w-4 h-4 rounded-full flex items-center justify-center ${req.test(password) ? 'bg-sage/20' : 'bg-charcoal/10'}`}>
-                          {req.test(password) && <CheckCircle className="w-3 h-3 text-sage" />}
-                        </div>
-                        <span className={req.test(password) ? 'text-sage' : 'text-charcoal/50'}>{req.label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {/* Password Requirements Checklist */}
+                <PasswordChecklist password={password} className="mt-2" />
               </div>
 
               {/* Confirm Password Field */}

@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Check,
 } from 'lucide-react';
+import { PasswordChecklist } from '@/components/PasswordChecklist';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
@@ -32,11 +33,13 @@ function ResetPasswordForm() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Password requirements
+  // Password requirements - all requirements now checked by backend
   const passwordRequirements = [
     { label: 'At least 8 characters', met: formData.password.length >= 8 },
-    { label: 'Contains a number', met: /\d/.test(formData.password) },
-    { label: 'Contains a letter', met: /[a-zA-Z]/.test(formData.password) },
+    { label: 'Contains uppercase letter', met: /[A-Z]/.test(formData.password) },
+    { label: 'Contains lowercase letter', met: /[a-z]/.test(formData.password) },
+    { label: 'Contains a number', met: /[0-9]/.test(formData.password) },
+    { label: 'Contains special character', met: /[^A-Za-z0-9]/.test(formData.password) },
   ];
 
   const allRequirementsMet = passwordRequirements.every((req) => req.met);
@@ -208,20 +211,8 @@ function ResetPasswordForm() {
             <p className="mt-1.5 text-sm text-error">{errors.password}</p>
           )}
 
-          {/* Password Requirements */}
-          <div className="mt-3 space-y-1.5">
-            {passwordRequirements.map((req) => (
-              <div
-                key={req.label}
-                className={`flex items-center gap-2 text-sm ${
-                  req.met ? 'text-success' : 'text-charcoal/50 dark:text-gray-500'
-                }`}
-              >
-                <Check className={`w-4 h-4 ${req.met ? 'opacity-100' : 'opacity-40'}`} />
-                {req.label}
-              </div>
-            ))}
-          </div>
+          {/* Password Requirements Checklist */}
+          <PasswordChecklist password={formData.password} className="mt-2" />
         </div>
 
         {/* Confirm Password Field */}
