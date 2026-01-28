@@ -19,6 +19,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 5: Notification System** - Fix SMS and connect email reminders
 - [x] **Phase 6: Settings Persistence** - Ensure configuration changes apply immediately
 - [x] **Phase 7: Dashboard & Validation** - Accurate stats and edge case handling
+- [ ] **Phase 8: Register Missing Production Routers** - [GAP CLOSURE] Fix API route registration
+- [ ] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
 
 ## Phase Details
 
@@ -188,21 +190,75 @@ Plans:
 - [x] 07-04-PLAN.md — Display times in salon timezone on frontend
 - [x] 07-05-PLAN.md — End-to-end verification checkpoint (with gap closure)
 
+### Phase 8: Register Missing Production Routers
+
+**Goal**: Fix API route registration so all features work in production
+
+**Depends on**: Phase 7
+
+**Requirements**: NOTF-03 (partial)
+
+**Gap Closure**: Closes gaps from v1-MILESTONE-AUDIT.md
+- notificationsRouter not registered in production index.ts
+- accountRouter missing from production index.ts
+- teamRouter missing from production index.ts
+- Flow: "Owner Daily Operations" notification history 404
+
+**Success Criteria** (what must be TRUE):
+  1. notificationsRouter registered in index.ts and responds to /api/v1/notifications
+  2. accountRouter registered in index.ts and responds to /api/v1/account
+  3. teamRouter registered in index.ts and responds to /api/v1/team
+  4. Notification history page loads without 404 errors
+  5. All routers from app.ts are present in index.ts (parity verified)
+
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01: TBD
+
+### Phase 9: Authentication & Tenant Isolation Execution
+
+**Goal**: Execute Phase 1 requirements - verified multi-tenant security foundation
+
+**Depends on**: Phase 8
+
+**Requirements**: AUTH-01, AUTH-02, AUTH-03
+
+**Gap Closure**: Closes gaps from v1-MILESTONE-AUDIT.md
+- AUTH-01: Multi-tenant isolation (Phase 1 not executed)
+- AUTH-02: Session persistence (Phase 1 not executed)
+- AUTH-03: Token refresh (Phase 1 not executed)
+
+**Success Criteria** (what must be TRUE):
+  1. User stays logged in across page refreshes without losing session
+  2. User tokens refresh automatically without random logouts during use
+  3. Salon A cannot access Salon B's data through any API endpoint or UI interaction
+  4. All database queries verified to include salonId filter (multi-tenant audit complete)
+  5. Two-salon test suite passes with 100% isolation (create data for both, verify zero cross-access)
+
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: TBD
+- [ ] 09-02: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Authentication & Tenant Isolation | 0/0 | Not started | - |
+| 1. Authentication & Tenant Isolation | 0/0 | Superseded by Phase 9 | - |
 | 2. Core Data Flows | 6/6 | Complete | 2026-01-25 |
 | 3. Online Booking Widget | 3/3 | Complete | 2026-01-25 |
 | 4. Payment Processing | 5/5 | Complete | 2026-01-25 |
 | 5. Notification System | 7/7 | Human Verification | - |
 | 6. Settings Persistence | 4/4 | Complete | 2026-01-27 |
 | 7. Dashboard & Validation | 5/5 | Complete | 2026-01-27 |
+| 8. Register Missing Production Routers | 0/0 | Not started | - |
+| 9. Authentication & Tenant Isolation Execution | 0/0 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-27 (Phase 7 complete - 5/5 plans executed, verified)*
+*Last updated: 2026-01-28 (Gap closure phases 8-9 added from milestone audit)*
