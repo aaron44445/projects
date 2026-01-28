@@ -83,6 +83,8 @@ model Salon {
   timeFormat                   String              @default("24h") @map("time_format")
   vatNumber                    String?             @map("vat_number")
   weekStartsOn                 Int                 @default(1) @map("week_starts_on")
+  termsAcceptedAt              DateTime?           @map("terms_accepted_at")
+  termsVersion                 String?             @map("terms_version")
   appointments                 Appointment[]
   clients                      Client[]
   commissionRecords            CommissionRecord[]
@@ -761,25 +763,43 @@ model NotificationLog {
 }
 
 model Subscription {
-  id                   String    @id @default(uuid())
-  salonId              String    @unique @map("salon_id")
-  stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
-  stripeCustomerId     String?   @map("stripe_customer_id")
-  plan                 String    @default("free")
-  status               String    @default("active")
-  currentPeriodStart   DateTime? @map("current_period_start")
-  currentPeriodEnd     DateTime? @map("current_period_end")
-  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
-  canceledAt           DateTime? @map("canceled_at")
-  trialEndsAt          DateTime? @map("trial_ends_at")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  additionalLocations  Int       @default(0) @map("additional_locations")
-  salon                Salon     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  id                   String              @id @default(uuid())
+  salonId              String              @unique @map("salon_id")
+  stripeSubscriptionId String?             @unique @map("stripe_subscription_id")
+  stripeCustomerId     String?             @map("stripe_customer_id")
+  plan                 String              @default("free")
+  status               String              @default("active")
+  currentPeriodStart   DateTime?           @map("current_period_start")
+  currentPeriodEnd     DateTime?           @map("current_period_end")
+  cancelAtPeriodEnd    Boolean             @default(false) @map("cancel_at_period_end")
+  canceledAt           DateTime?           @map("canceled_at")
+  trialEndsAt          DateTime?           @map("trial_ends_at")
+  graceEndsAt          DateTime?           @map("grace_ends_at")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  additionalLocations  Int                 @default(0) @map("additional_locations")
+  salon                Salon               @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  addons               SubscriptionAddon[]
 
   @@index([stripeSubscriptionId])
   @@index([status])
   @@map("subscriptions")
+}
+
+model SubscriptionAddon {
+  id                       String       @id @default(uuid())
+  subscriptionId           String       @map("subscription_id")
+  addonId                  String       @map("addon_id")
+  stripeSubscriptionItemId String?      @map("stripe_subscription_item_id")
+  status                   String       @default("active")
+  enabledAt                DateTime     @default(now()) @map("enabled_at")
+  canceledAt               DateTime?    @map("canceled_at")
+  subscription             Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, addonId])
+  @@index([subscriptionId])
+  @@index([addonId])
+  @@map("subscription_addons")
 }
 
 model BillingHistory {
@@ -1008,4 +1028,22 @@ model WebhookEvent {
 
   @@index([stripeEventId])
   @@map("webhook_events")
+}
+
+model FileUpload {
+  id         String   @id @default(uuid())
+  publicId   String   @unique @map("public_id")
+  url        String
+  salonId    String   @map("salon_id")
+  userId     String   @map("user_id")
+  fileType   String   @map("file_type")
+  bytes      Int?
+  width      Int?
+  height     Int?
+  format     String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  @@index([salonId])
+  @@index([publicId])
+  @@map("file_uploads")
 }
