@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 11 - Settings Audit - COMPLETE
+**Current focus:** Phase 12 - Security Hardening
 
 ## Current Position
 
-Phase: 11 of 11 (Settings Audit)
-Plan: 1 of 1 (11-01-PLAN.md)
-Status: Phase complete
-Last activity: 2026-01-28 - Completed 11-01-PLAN.md (Comprehensive Settings Audit)
+Phase: 12 of 12 (Security Hardening)
+Plan: 1 of 2 (12-01-PLAN.md)
+Status: Plan complete
+Last activity: 2026-01-28 - Completed 12-01-PLAN.md (Tenant Isolation Defense-in-Depth)
 
-Progress: [████████████████████] 100% (28/28 plans completed across all phases)
+Progress: [████████████████████] 100% (29/30 plans completed across all phases)
 
 ## Performance Metrics
 
@@ -35,9 +35,10 @@ Progress: [████████████████████] 100% (2
 | 07-dashboard-validation | 4 | 22min | 5.5min |
 | 08-register-missing-routers | 1 | 3min | 3.0min |
 | 11-settings-audit | 1 | 5min | 5.0min |
+| 12-security-hardening | 1 | 5min | 5.0min |
 
 **Recent Trend:**
-- Last 8 plans: 07-01 (4min), 07-02 (4min), 07-03 (7min), 07-04 (7min), 07-05 (5min), 08-01 (3min), 11-01 (5min)
+- Last 8 plans: 07-03 (7min), 07-04 (7min), 07-05 (5min), 08-01 (3min), 11-01 (5min), 12-01 (5min)
 - Trend: Consistent execution (3-7min for audits and gap closure)
 
 *Updated after each plan completion*
@@ -142,6 +143,9 @@ Recent decisions affecting current work:
 - **11-01:** Three-tier status classification (WORKING/NOT WORKING/PARTIALLY WORKING) provides nuanced audit results
 - **11-01:** Include priority recommendations in audit documents for actionable next steps
 - **11-01:** Document API endpoints for each control to map UI to backend code
+- **12-01:** Changed findUnique to findFirst for client lookup since salonId is not part of unique constraint
+- **12-01:** Defense-in-depth pattern: All Prisma queries include salonId even when row-level uniqueness would suffice
+- **12-01:** User verification pattern: Check user.salonId matches request salonId before proceeding
 
 ### Pending Todos
 
@@ -200,8 +204,12 @@ All success criteria verified against actual codebase:
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 11-01-PLAN.md - Comprehensive Settings Audit
+Stopped at: Completed 12-01-PLAN.md - Tenant Isolation Defense-in-Depth
 Resume file: None
+
+**Phase 12 Status:** IN PROGRESS
+- 12-01: Tenant Isolation Defense-in-Depth - COMPLETE
+- 12-02: Pending
 
 **Phase 11 Status:** COMPLETE
 - 11-01: Comprehensive Settings Audit - COMPLETE
@@ -264,4 +272,4 @@ Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 11 complete)*
+*Last updated: 2026-01-28 (12-01 complete)*
