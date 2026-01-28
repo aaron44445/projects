@@ -64,6 +64,8 @@ From v1.1 Phase 13:
 - Audit logging for suspicious file access with full context (13-03)
 
 From v1.1 Phase 14:
+- Single Promise.all for all dashboard queries instead of sequential (14-02)
+- vipClients placeholder until Client.tags schema field added (14-02)
 - Disable background polling with refetchIntervalInBackground: false (14-03)
 - Keep refetchOnWindowFocus: true for immediate refresh on tab return (14-03)
 
