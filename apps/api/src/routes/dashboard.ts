@@ -7,30 +7,47 @@ const router = Router();
 
 /**
  * Get start and end of today in the salon's timezone, as UTC Date objects.
- * Handles DST correctly by using Intl.DateTimeFormat.
+ * Handles DST correctly by using Intl.DateTimeFormat.formatToParts().
  */
 function getTodayBoundariesInTimezone(timezone: string): { startOfToday: Date; endOfToday: Date } {
   const now = new Date();
 
-  // Format current date in salon timezone to get the date parts
-  const options: Intl.DateTimeFormatOptions = { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' };
-  const dateStr = new Intl.DateTimeFormat('en-CA', options).format(now); // en-CA gives YYYY-MM-DD format
+  // Get current date/time parts in salon timezone using formatToParts
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+  }).formatToParts(now);
 
-  // Create midnight in salon timezone by parsing the date string
-  // The Date constructor interprets this as local time, so we need to adjust
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const getPart = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+  const year = getPart('year');
+  const month = getPart('month');
+  const day = getPart('day');
+  const hour = getPart('hour');
+  const minute = getPart('minute');
+  const second = getPart('second');
 
-  // Get the offset between UTC and salon timezone at this moment
-  const utcNow = now.getTime();
-  const tzNow = new Date(now.toLocaleString('en-US', { timeZone: timezone })).getTime();
-  const offsetMs = tzNow - utcNow;
+  // Calculate offset: current time in salon timezone vs UTC
+  // Using Date.UTC ensures we're working with UTC timestamps consistently
+  const utcMs = Date.UTC(
+    now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+    now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds()
+  );
+  const tzMs = Date.UTC(year, month - 1, day, hour, minute, second);
+  const offsetMs = tzMs - utcMs;
 
-  // Midnight in salon timezone = midnight local - offset
-  const localMidnight = new Date(year, month - 1, day, 0, 0, 0, 0);
-  const startOfToday = new Date(localMidnight.getTime() - offsetMs);
+  // Midnight in salon timezone converted to UTC
+  const midnightInTzAsUTC = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
+  const startOfToday = new Date(midnightInTzAsUTC - offsetMs);
 
-  const localEndOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
-  const endOfToday = new Date(localEndOfDay.getTime() - offsetMs);
+  // End of day in salon timezone converted to UTC
+  const endOfDayInTzAsUTC = Date.UTC(year, month - 1, day, 23, 59, 59, 999);
+  const endOfToday = new Date(endOfDayInTzAsUTC - offsetMs);
 
   return { startOfToday, endOfToday };
 }

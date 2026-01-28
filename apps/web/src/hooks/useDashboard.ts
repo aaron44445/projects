@@ -101,16 +101,8 @@ function transformToActivity(appointments: RecentAppointment[]): RecentActivityI
   });
 }
 
-// Shared query options for auto-refresh
-const sharedQueryOptions = {
-  refetchInterval: 60000,
-  refetchIntervalInBackground: true,
-  refetchOnWindowFocus: true,
-  staleTime: 30000,
-  gcTime: 300000,
-  retry: 3,
-  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-};
+// Auto-refresh interval in milliseconds (60 seconds)
+const REFRESH_INTERVAL_MS = 60 * 1000;
 
 // Individual fetch functions
 async function fetchStats(locationId?: string | null) {
@@ -187,25 +179,40 @@ function formatError(error: unknown): string | null {
 export function useDashboard(locationId?: string | null) {
   const queryClient = useQueryClient();
 
-  // Stats query (revenue, new clients)
+  // Stats query (revenue, new clients) - with 60-second auto-refresh
   const statsQuery = useQuery({
     queryKey: ['dashboard', 'stats', locationId],
     queryFn: () => fetchStats(locationId),
-    ...sharedQueryOptions,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
+    gcTime: 300000,
+    retry: 3,
   });
 
-  // Today's appointments query
+  // Today's appointments query - with 60-second auto-refresh
   const appointmentsQuery = useQuery({
     queryKey: ['dashboard', 'appointments', locationId],
     queryFn: () => fetchTodayAppointments(locationId),
-    ...sharedQueryOptions,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
+    gcTime: 300000,
+    retry: 3,
   });
 
-  // Recent activity query
+  // Recent activity query - with 60-second auto-refresh
   const activityQuery = useQuery({
     queryKey: ['dashboard', 'activity', locationId],
     queryFn: () => fetchRecentActivity(locationId),
-    ...sharedQueryOptions,
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
+    gcTime: 300000,
+    retry: 3,
   });
 
   // Combine stats with appointment count
