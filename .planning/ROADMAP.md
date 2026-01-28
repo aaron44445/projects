@@ -296,29 +296,30 @@ Plans:
 **Requirements**: AUTH-01 (gap closure)
 
 **Gap Closure**: Closes tech debt from v1-MILESTONE-AUDIT-2.md
-- C1: 14 Prisma update/delete queries missing salonId in WHERE clause
-- C2: Twilio SMS webhook missing signature validation
-- C3: Subscription webhook missing cross-tenant validation
-- C4: Invoice webhook without subscription verification
-- C5: Gift card webhook trusts user-provided salonId
-- C7: ownerNotifications routes filter by userId only
-- H4: Client portal dashboard missing salonId
+
+**Already Fixed (verified by code inspection):**
+- C1: 14 Prisma update/delete queries - FIXED (all include salonId)
+- C2: Twilio SMS webhook signature - FIXED (webhooks.ts lines 29-56)
+- C3: Subscription webhook validation - FIXED (subscriptions.ts lines 294-311)
+- C4: Invoice webhook verification - FIXED (subscriptions.ts lines 394-400)
+- C5: Gift card webhook validation - FIXED (webhooks.ts lines 177-185)
+- H4: Client portal dashboard salonId - FIXED (clientPortal.ts line 21)
+
+**Remaining (addressed in this phase):**
+- C7: ownerNotifications routes filter by userId only (defense-in-depth)
+- 2 minor clientPortal queries (booking, reviews)
 
 **Success Criteria** (what must be TRUE):
-  1. All Prisma update/delete queries include salonId in WHERE clause (14 queries fixed)
-  2. Twilio SMS webhook validates signature using twilio.validateRequest()
-  3. Subscription/invoice webhooks verify tenant ownership before updates
-  4. Gift card webhooks don't trust user-provided salonId
-  5. ownerNotifications and clientPortal routes include salonId filter
-  6. AUTH-01 requirement fully SATISFIED (100% multi-tenant isolation)
+  1. All Prisma update/delete queries include salonId in WHERE clause
+  2. ownerNotifications routes include salonId verification
+  3. clientPortal remaining queries include salonId
+  4. AUTH-01 requirement fully SATISFIED (100% multi-tenant isolation)
 
-**Plans**: 4 plans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Add salonId to all Prisma update/delete WHERE clauses
-- [ ] 12-02-PLAN.md — Add Twilio signature validation to SMS webhook
-- [ ] 12-03-PLAN.md — Fix webhook tenant validation (subscription, invoice, gift card)
-- [ ] 12-04-PLAN.md — Add salonId to ownerNotifications and clientPortal routes
+- [ ] 12-01-PLAN.md — Add salonId to remaining Prisma queries (clientPortal + ownerNotifications)
+- [ ] 12-02-PLAN.md — Update audit documentation to reflect fixed status
 
 ## Progress
 
@@ -338,8 +339,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 9. Authentication & Tenant Isolation Execution | 5/5 | Complete | 2026-01-28 |
 | 10. Dark Mode for Public Pages | 1/1 | Complete | 2026-01-28 |
 | 11. Settings Audit | 1/1 | Complete | 2026-01-28 |
-| 12. Security Hardening | 0/4 | Not Started | - |
+| 12. Security Hardening | 0/2 | Planning | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 12 added - Security Hardening for AUTH-01 completion)*
+*Last updated: 2026-01-28 (Phase 12 plans created - most security gaps already fixed)*
