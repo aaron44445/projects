@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 8 - Register Missing Routers - COMPLETE
+**Current focus:** Phase 11 - Settings Audit - COMPLETE
 
 ## Current Position
 
-Phase: 8 of 9 (Register Missing Routers - Gap Closure)
-Plan: 1 of 1 (08-01-PLAN.md)
+Phase: 11 of 11 (Settings Audit)
+Plan: 1 of 1 (11-01-PLAN.md)
 Status: Phase complete
-Last activity: 2026-01-28 - Completed 08-01-PLAN.md (Register Missing Routers)
+Last activity: 2026-01-28 - Completed 11-01-PLAN.md (Comprehensive Settings Audit)
 
-Progress: [████████████████████] 100% (27/27 plans completed across all phases)
+Progress: [████████████████████] 100% (28/28 plans completed across all phases)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25
-- Average duration: 7.3 min
-- Total execution time: 3.15 hours
+- Total plans completed: 28
+- Average duration: 7.0 min
+- Total execution time: 3.28 hours
 
 **By Phase:**
 
@@ -34,10 +34,11 @@ Progress: [████████████████████] 100% (2
 | 06-settings-persistence | 3 | 18min | 6.0min |
 | 07-dashboard-validation | 4 | 22min | 5.5min |
 | 08-register-missing-routers | 1 | 3min | 3.0min |
+| 11-settings-audit | 1 | 5min | 5.0min |
 
 **Recent Trend:**
-- Last 8 plans: 06-04 (6min), 07-01 (4min), 07-02 (4min), 07-03 (7min), 07-04 (7min), 07-05 (5min), 08-01 (3min)
-- Trend: Consistent execution (3-7min for gap closure)
+- Last 8 plans: 07-01 (4min), 07-02 (4min), 07-03 (7min), 07-04 (7min), 07-05 (5min), 08-01 (3min), 11-01 (5min)
+- Trend: Consistent execution (3-7min for audits and gap closure)
 
 *Updated after each plan completion*
 
@@ -138,6 +139,9 @@ Recent decisions affecting current work:
 - **07-05:** Inline TanStack Query refetchInterval options directly into useQuery calls (not spread from shared object)
 - **08-01:** Maintain parity between app.ts (dev) and index.ts (prod) entry points
 - **08-01:** Group routers by functional area with comments for organization
+- **11-01:** Three-tier status classification (WORKING/NOT WORKING/PARTIALLY WORKING) provides nuanced audit results
+- **11-01:** Include priority recommendations in audit documents for actionable next steps
+- **11-01:** Document API endpoints for each control to map UI to backend code
 
 ### Pending Todos
 
@@ -156,6 +160,12 @@ None yet.
 - Authenticated availability endpoint uses hardcoded 9-5 hours instead of location hours
 - Missing validation: closeTime > openTime when saving location hours
 - Booking widget input fields have white text on white background - **FIXED in 04-05**
+
+**Settings Issues (from 11-01 audit):**
+- Subscription add-on toggles don't persist (no API call) - Priority 1
+- Payments section placeholder (no Stripe Connect) - Priority 1
+- Branding upload handlers unclear - Priority 1
+- Multi-location CRUD incomplete (toggle works, but no add/edit/delete) - Priority 2
 
 **Research Gaps:**
 - Phase 3: Transaction isolation levels and locking strategies - **RESOLVED in 03-01**
@@ -189,9 +199,12 @@ All success criteria verified against actual codebase:
 
 ## Session Continuity
 
-Last session: 2026-01-28T03:47:00Z
-Stopped at: Completed 08-01-PLAN.md - Register Missing Routers
+Last session: 2026-01-28
+Stopped at: Completed 11-01-PLAN.md - Comprehensive Settings Audit
 Resume file: None
+
+**Phase 11 Status:** COMPLETE
+- 11-01: Comprehensive Settings Audit - COMPLETE
 
 **Phase 8 Status:** COMPLETE
 - 08-01: Register Missing Routers - COMPLETE
