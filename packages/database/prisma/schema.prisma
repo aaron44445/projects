@@ -1047,3 +1047,23 @@ model FileUpload {
   @@index([publicId])
   @@map("file_uploads")
 }
+
+model NotificationJob {
+  id            String    @id @default(uuid())
+  salonId       String    @map("salon_id")
+  clientId      String    @map("client_id")
+  appointmentId String?   @map("appointment_id")
+  type          String    // 'booking_confirmation', 'reminder_24h', 'reminder_2h', 'cancellation'
+  payload       String    // JSON stringified notification data
+  status        String    @default("pending") // 'pending', 'processing', 'completed', 'failed'
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(3) @map("max_attempts")
+  error         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  processedAt   DateTime? @map("processed_at")
+
+  @@index([status, createdAt])
+  @@index([status, attempts])
+  @@map("notification_jobs")
+}
