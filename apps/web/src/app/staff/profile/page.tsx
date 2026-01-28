@@ -19,6 +19,8 @@ import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
 import { useStaffAuth } from '@/contexts/StaffAuthContext';
 import { api, ApiError } from '@/lib/api';
+import { TOKEN_KEYS } from '@/types/auth';
+import { API_CONFIG } from '@/config/api';
 
 interface StaffProfile {
   id: string;
@@ -143,11 +145,11 @@ function ProfileContent() {
       uploadFormData.append('avatar', file);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/staff-portal/profile/avatar`,
+        `${API_CONFIG.apiUrl}/staff-portal/profile/avatar`,
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('peacase_staff_access_token')}`,
+            Authorization: `Bearer ${localStorage.getItem(TOKEN_KEYS.staff.access)}`,
           },
           body: uploadFormData,
         }

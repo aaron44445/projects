@@ -19,6 +19,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { PaymentForm } from '@/components/booking/PaymentForm';
 import { BookingSummary } from '@/components/booking/BookingSummary';
 import { getStripe } from '@/lib/stripe';
+import { API_CONFIG } from '@/config/api';
 
 // ============================================
 // TYPES
@@ -192,12 +193,8 @@ function generateDemoSlots(): TimeSlot[] {
 // API HELPERS
 // ============================================
 
-// Use NEXT_PUBLIC_API_URL if set, otherwise fall back based on environment
-// In production (Vercel), NEXT_PUBLIC_API_URL should be set to 'https://peacase-api.onrender.com'
-// In development, fall back to localhost
-const API_BASE = process.env.NEXT_PUBLIC_API_URL
-  ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/v1$/, '') // Strip /api/v1 if present
-  : 'http://localhost:3001';
+// Use centralized API configuration
+const API_BASE = API_CONFIG.baseUrl;
 
 interface SalonFetchResult {
   salon: Salon | null;

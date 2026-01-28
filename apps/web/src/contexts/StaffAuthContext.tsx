@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { api, ApiError, isTokenExpiringSoon } from '@/lib/api';
+import { TOKEN_KEYS } from '@/types/auth';
 
 // Token refresh settings
 const TOKEN_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
@@ -67,8 +68,9 @@ interface StaffAuthContextType {
 
 const StaffAuthContext = createContext<StaffAuthContextType | undefined>(undefined);
 
-const STAFF_ACCESS_TOKEN_KEY = 'peacase_staff_access_token';
-const STAFF_REFRESH_TOKEN_KEY = 'peacase_staff_refresh_token';
+// Use centralized token keys for consistency
+const STAFF_ACCESS_TOKEN_KEY = TOKEN_KEYS.staff.access;
+const STAFF_REFRESH_TOKEN_KEY = TOKEN_KEYS.staff.refresh;
 
 export function StaffAuthProvider({ children }: { children: ReactNode }) {
   const [staff, setStaff] = useState<StaffUser | null>(null);

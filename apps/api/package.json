@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:isolation": "vitest run src/__tests__/tenant-isolation.test.ts",
+    "test:security": "vitest run src/__tests__/tenant-isolation.test.ts"
   },
   "dependencies": {
     "@peacase/database": "workspace:*",

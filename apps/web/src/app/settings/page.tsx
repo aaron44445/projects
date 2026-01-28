@@ -55,6 +55,7 @@ import { useNotificationSettings } from '@/hooks/useNotificationSettings';
 import { useLocationHours } from '@/hooks/useLocationHours';
 import type { UserSession, LoginHistoryEntry, TeamMember, TeamInvite } from '@/hooks';
 import Link from 'next/link';
+import { api } from '@/lib/api';
 
 const settingsSections = [
   { id: 'account', name: 'My Account', icon: User, description: 'Profile, email, and account settings' },
@@ -435,18 +436,18 @@ function SettingsContent() {
   useEffect(() => {
     const fetchWidgetSettings = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/salon/widget-settings`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
-        const data = await response.json();
-        if (data.success && data.data) {
+        const response = await api.get<{
+          primaryColor: string;
+          accentColor: string;
+          buttonStyle: 'rounded' | 'square';
+          fontFamily: 'system' | 'modern' | 'classic';
+        }>('/salon/widget-settings');
+        if (response.success && response.data) {
           setWidgetSettings({
-            primaryColor: data.data.primaryColor || '#7C9A82',
-            accentColor: data.data.accentColor || '#B5A8D5',
-            buttonStyle: data.data.buttonStyle || 'rounded',
-            fontFamily: data.data.fontFamily || 'system',
+            primaryColor: response.data.primaryColor || '#7C9A82',
+            accentColor: response.data.accentColor || '#B5A8D5',
+            buttonStyle: response.data.buttonStyle || 'rounded',
+            fontFamily: response.data.fontFamily || 'system',
           });
         }
       } catch (err) {
@@ -469,16 +470,8 @@ function SettingsContent() {
       setWidgetSaving(true);
       setWidgetSaveStatus('saving');
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'}/salon/widget-settings`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-          body: JSON.stringify(widgetSettings),
-        });
-        const data = await response.json();
-        if (data.success) {
+        const response = await api.patch('/salon/widget-settings', widgetSettings);
+        if (response.success) {
           setWidgetSaveStatus('saved');
           setTimeout(() => setWidgetSaveStatus('idle'), 2000);
         } else {

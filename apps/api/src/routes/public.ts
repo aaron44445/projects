@@ -7,6 +7,7 @@ import { asyncHandler } from '../lib/errorUtils.js';
 import { createBookingWithLock, BookingConflictError } from '../services/booking.js';
 import { calculateAvailableSlots, findAlternativeSlots } from '../services/availability.js';
 import { createDepositPaymentIntent } from '../services/payments.js';
+import { validateStaffBelongsToSalon, validateLocationBelongsToSalon } from '../utils/validation.js';
 
 const router = Router();
 
@@ -393,6 +394,22 @@ router.get('/:slug/availability', asyncHandler(async (req: Request, res: Respons
     });
   }
 
+  // Validate locationId if provided (security: prevent cross-tenant queries)
+  if (locationId && !(await validateLocationBelongsToSalon(locationId as string, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_LOCATION', message: 'Location not found' },
+    });
+  }
+
+  // Validate staffId if provided (security: prevent cross-tenant queries)
+  if (staffId && !(await validateStaffBelongsToSalon(staffId as string, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_STAFF', message: 'Staff member not found' },
+    });
+  }
+
   // Use the availability service to calculate slots
   const requestedDate = new Date(date as string);
   const slots = await calculateAvailableSlots({
@@ -618,6 +635,28 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
       error: {
         code: 'INVALID_SERVICE',
         message: 'Service not found',
+      },
+    });
+  }
+
+  // Validate staffId belongs to this salon (security: prevent cross-tenant booking)
+  if (staffId && !(await validateStaffBelongsToSalon(staffId, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'INVALID_STAFF',
+        message: 'Selected staff member is not available',
+      },
+    });
+  }
+
+  // Validate locationId belongs to this salon (security: prevent cross-tenant booking)
+  if (locationId && !(await validateLocationBelongsToSalon(locationId, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'INVALID_LOCATION',
+        message: 'Selected location is not available',
       },
     });
   }
@@ -955,6 +994,22 @@ router.post('/:slug/create-payment-intent', asyncHandler(async (req: Request, re
     return res.status(404).json({
       success: false,
       error: { code: 'SERVICE_NOT_FOUND', message: 'Service not found' },
+    });
+  }
+
+  // Validate staffId if provided (security: prevent cross-tenant references)
+  if (staffId && !(await validateStaffBelongsToSalon(staffId, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_STAFF', message: 'Selected staff member is not available' },
+    });
+  }
+
+  // Validate locationId if provided (security: prevent cross-tenant references)
+  if (locationId && !(await validateLocationBelongsToSalon(locationId, salon.id))) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_LOCATION', message: 'Selected location is not available' },
     });
   }
 

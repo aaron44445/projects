@@ -202,7 +202,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Respon
   }
 
   const updated = await prisma.client.update({
-    where: { id: req.params.id },
+    where: { id: req.params.id, salonId: req.user!.salonId },
     data: req.body,
   });
 

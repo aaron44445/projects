@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import express from 'express';
+import twilio from 'twilio';
 import { constructWebhookEvent } from '../services/payments.js';
 import { sendEmail, giftCardEmail } from '../services/email.js';
 import {
@@ -24,6 +25,36 @@ function generateGiftCardCode(): string {
 // Twilio SMS status callback webhook
 // Twilio sends form-encoded data, NOT JSON
 router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(async (req: Request, res: Response) => {
+  // Validate Twilio signature for security
+  if (!env.TWILIO_AUTH_TOKEN) {
+    console.error('[SMS Webhook] TWILIO_AUTH_TOKEN not configured');
+    return res.status(500).json({ error: 'Webhook not configured' });
+  }
+
+  const twilioSignature = req.headers['x-twilio-signature'] as string;
+  if (twilioSignature) {
+    // Build the URL Twilio used to sign the request
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['host'];
+    const url = `${protocol}://${host}${req.originalUrl}`;
+
+    const isValid = twilio.validateRequest(
+      env.TWILIO_AUTH_TOKEN,
+      twilioSignature,
+      url,
+      req.body
+    );
+
+    if (!isValid) {
+      console.warn('[SMS Webhook] Invalid Twilio signature');
+      return res.status(403).json({ error: 'Invalid signature' });
+    }
+  } else if (env.NODE_ENV === 'production') {
+    // In production, require signature
+    console.warn('[SMS Webhook] Missing Twilio signature');
+    return res.status(403).json({ error: 'Missing signature' });
+  }
+
   // Respond immediately to avoid Twilio timeout retries
   res.status(200).send('OK');
 
@@ -49,9 +80,23 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
   const smsStatus = statusMap[MessageStatus] || 'unknown';
 
   try {
-    // Update NotificationLog entry by twilioMessageSid
-    const result = await prisma.notificationLog.updateMany({
+    // Find notification first for tenant verification and audit trail
+    const notification = await prisma.notificationLog.findFirst({
       where: { twilioMessageSid: MessageSid },
+      select: { id: true, salonId: true }
+    });
+
+    if (!notification) {
+      console.warn(`[SMS Webhook] No notification found for MessageSid ${MessageSid}`);
+      return;
+    }
+
+    // Log the update with salonId context for audit trail
+    console.log(`[SMS Webhook] Updating notification ${notification.id} for salon ${notification.salonId} to status: ${smsStatus}`);
+
+    // Update NotificationLog entry by ID (more precise than MessageSid)
+    await prisma.notificationLog.update({
+      where: { id: notification.id },
       data: {
         smsStatus,
         smsError: ErrorMessage || null,
@@ -62,12 +107,6 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
         updatedAt: new Date(),
       },
     });
-
-    if (result.count === 0) {
-      console.log(`[SMS Webhook] No notification found for MessageSid ${MessageSid}`);
-    } else {
-      console.log(`[SMS Webhook] Updated ${result.count} notification(s) to status: ${smsStatus}`);
-    }
 
     // Handle bounced/invalid numbers - mark client phone as invalid
     if (smsStatus === 'failed' && ErrorCode) {
@@ -134,41 +173,48 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
         }
         // Handle gift card checkout
         else if (metadata?.type === 'gift_card') {
+          // Verify salon exists (security: don't trust metadata blindly)
           const salon = await prisma.salon.findUnique({
             where: { id: metadata.salonId },
+            select: { id: true, name: true, stripeCustomerId: true }
           });
 
-          if (salon) {
-            const code = generateGiftCardCode();
-            const amount = session.amount_total / 100;
+          if (!salon) {
+            console.error(`[GiftCard] Invalid salonId in metadata: ${metadata.salonId}`);
+            break;
+          }
 
-            await prisma.giftCard.create({
-              data: {
-                salonId: metadata.salonId,
-                code,
-                initialAmount: amount,
-                balance: amount,
-                purchaserEmail: session.customer_email,
-                recipientEmail: metadata.recipientEmail,
+          const code = generateGiftCardCode();
+          const amount = session.amount_total / 100;
+
+          console.log(`[GiftCard] Creating gift card for salon ${salon.id}`);
+
+          await prisma.giftCard.create({
+            data: {
+              salonId: salon.id, // Use verified ID from database
+              code,
+              initialAmount: amount,
+              balance: amount,
+              purchaserEmail: session.customer_email,
+              recipientEmail: metadata.recipientEmail,
+              recipientName: metadata.recipientName,
+              message: metadata.message || null,
+            },
+          });
+
+          if (metadata.recipientEmail) {
+            await sendEmail({
+              to: metadata.recipientEmail,
+              subject: `You've received a gift card from ${salon.name}!`,
+              html: giftCardEmail({
                 recipientName: metadata.recipientName,
-                message: metadata.message || null,
-              },
+                senderName: 'A friend',
+                amount,
+                code,
+                message: metadata.message,
+                salonName: salon.name,
+              }),
             });
-
-            if (metadata.recipientEmail) {
-              await sendEmail({
-                to: metadata.recipientEmail,
-                subject: `You've received a gift card from ${salon.name}!`,
-                html: giftCardEmail({
-                  recipientName: metadata.recipientName,
-                  senderName: 'A friend',
-                  amount,
-                  code,
-                  message: metadata.message,
-                  salonName: salon.name,
-                }),
-              });
-            }
           }
         }
         // Handle package checkout

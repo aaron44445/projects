@@ -225,7 +225,7 @@ locationsRouter.delete('/:id', authorize('admin', 'owner'), asyncHandler(async (
       });
     }
 
-    await prisma.location.delete({ where: { id } });
+    await prisma.location.delete({ where: { id, salonId } });
 
     res.json({ success: true, data: { deleted: true } });
   } catch (error) {

@@ -21,8 +21,8 @@ import {
   Info,
 } from 'lucide-react';
 import { useClientAuth } from '@/contexts/ClientAuthContext';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { TOKEN_KEYS } from '@/types/auth';
+import { API_CONFIG } from '@/config/api';
 
 interface ClientData {
   personalInformation: {
@@ -178,7 +178,7 @@ export default function ClientDataPage() {
 
   const getAccessToken = useCallback(() => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('client_access_token');
+    return localStorage.getItem(TOKEN_KEYS.client.access);
   }, []);
 
   // Redirect to login if not authenticated
@@ -197,7 +197,7 @@ export default function ClientDataPage() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/gdpr/export`, {
+      const response = await fetch(`${API_CONFIG.apiUrl}/gdpr/export`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -237,7 +237,7 @@ export default function ClientDataPage() {
     setIsExporting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/gdpr/export`, {
+      const response = await fetch(`${API_CONFIG.apiUrl}/gdpr/export`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -277,7 +277,7 @@ export default function ClientDataPage() {
     setIsUpdatingMarketing(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/gdpr/consent`, {
+      const response = await fetch(`${API_CONFIG.apiUrl}/gdpr/consent`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -315,7 +315,7 @@ export default function ClientDataPage() {
     setIsUpdatingConsent(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/gdpr/consent`, {
+      const response = await fetch(`${API_CONFIG.apiUrl}/gdpr/consent`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -353,7 +353,7 @@ export default function ClientDataPage() {
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/gdpr/delete-request`, {
+      const response = await fetch(`${API_CONFIG.apiUrl}/gdpr/delete-request`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

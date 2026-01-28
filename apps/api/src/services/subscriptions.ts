@@ -288,19 +288,32 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function handleSubscriptionUpdated(subscription: any) {
-  const salonId = subscription.metadata?.salonId;
+  const metadataSalonId = subscription.metadata?.salonId;
 
-  if (!salonId) {
-    // Try to find by subscription ID
-    const existingSub = await prisma.subscription.findUnique({
-      where: { stripeSubscriptionId: subscription.id },
-    });
-    if (!existingSub) return;
+  // Always lookup existing subscription first for security
+  const existingSub = await prisma.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { salonId: true }
+  });
+
+  if (!existingSub) {
+    console.warn(`[Subscription] No subscription found for ${subscription.id}`);
+    return;
   }
 
+  // If metadata has salonId, verify it matches (defense against metadata tampering)
+  if (metadataSalonId && metadataSalonId !== existingSub.salonId) {
+    console.error(`[Subscription] Metadata salonId mismatch: ${metadataSalonId} vs ${existingSub.salonId}`);
+    return; // Reject mismatched updates
+  }
+
+  // Use verified salonId from database
+  const salonId = existingSub.salonId;
   const planId = subscription.metadata?.planId as SubscriptionPlanId || 'professional';
 
-  await prisma.subscription.updateMany({
+  console.log(`[Subscription] Updating subscription for salon ${salonId}`);
+
+  await prisma.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
     data: {
       plan: planId,
@@ -314,15 +327,10 @@ export async function handleSubscriptionUpdated(subscription: any) {
 
   // Update salon subscription tier if subscription is active
   if (subscription.status === 'active') {
-    const sub = await prisma.subscription.findUnique({
-      where: { stripeSubscriptionId: subscription.id },
+    await prisma.salon.update({
+      where: { id: salonId },
+      data: { subscriptionTier: planId },
     });
-    if (sub) {
-      await prisma.salon.update({
-        where: { id: sub.salonId },
-        data: { subscriptionTier: planId },
-      });
-    }
   }
 }
 
@@ -372,12 +380,26 @@ export async function handleInvoicePaymentFailed(invoice: any) {
 export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
 
-  // Find the salon by Stripe customer ID
+  // Find the salon by Stripe customer ID with subscription
   const salon = await prisma.salon.findFirst({
     where: { stripeCustomerId: customerId },
+    include: { subscription: true }
   });
 
-  if (!salon) return;
+  if (!salon) {
+    console.warn(`[Invoice] No salon found for customer ${customerId}`);
+    return;
+  }
+
+  // Verify invoice subscription belongs to this customer (defense-in-depth)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const invoiceSubscriptionId = (invoice as any).subscription as string;
+  if (invoiceSubscriptionId && salon.subscription?.stripeSubscriptionId !== invoiceSubscriptionId) {
+    console.error(`[Invoice] Subscription mismatch for salon ${salon.id}: invoice has ${invoiceSubscriptionId}, salon has ${salon.subscription?.stripeSubscriptionId}`);
+    return;
+  }
+
+  console.log(`[Invoice] Recording billing history for salon ${salon.id}`);
 
   await prisma.billingHistory.upsert({
     where: { stripeInvoiceId: invoice.id },

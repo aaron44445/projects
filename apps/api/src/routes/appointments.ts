@@ -490,7 +490,7 @@ router.patch(
     if (serviceId) updateData.serviceId = serviceId;
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: updateData,
       include: {
         client: {
@@ -569,7 +569,7 @@ router.post(
 
     // Update appointment status
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: {
         status: 'cancelled',
         cancellationReason,
@@ -611,7 +611,7 @@ router.post(
     }
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: { status: 'completed' },
     });
 
@@ -646,7 +646,7 @@ router.post(
     }
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: { status: 'no_show' },
     });
 
@@ -706,7 +706,7 @@ router.post(
 
       // Update appointment
       await prisma.appointment.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id, salonId: req.user!.salonId },
         data: {
           depositStatus: 'captured',
         },

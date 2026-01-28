@@ -361,7 +361,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Respon
   }
 
   const user = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: req.params.id, salonId: req.user!.salonId },
     data: {
       ...(firstName !== undefined && { firstName }),
       ...(lastName !== undefined && { lastName }),
@@ -410,7 +410,7 @@ router.delete(
 
     // Soft delete - also anonymize email to allow reuse
     await prisma.user.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: {
         isActive: false,
         // Anonymize email so it can be reused for new staff

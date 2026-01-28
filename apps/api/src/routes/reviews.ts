@@ -217,7 +217,7 @@ router.patch(
 
     // Update the review
     await prisma.review.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: {
         isApproved: true,
         approvedAt: new Date(),

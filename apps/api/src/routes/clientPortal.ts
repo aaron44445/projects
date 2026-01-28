@@ -16,8 +16,9 @@ clientPortalRouter.use(authenticateClient);
 clientPortalRouter.get('/dashboard', asyncHandler(async (req, res, next) => {
   const { id: clientId, salonId } = (req as any as AuthenticatedClientRequest).client;
 
-  const client = await prisma.client.findUnique({
-    where: { id: clientId },
+  // Include salonId in lookup for defense-in-depth
+  const client = await prisma.client.findFirst({
+    where: { id: clientId, salonId },
   });
 
   if (!client) {
@@ -220,7 +221,7 @@ clientPortalRouter.post('/appointments/:id/cancel', asyncHandler(async (req, res
   }
 
   const updatedAppointment = await prisma.appointment.update({
-    where: { id },
+    where: { id, salonId },
     data: {
       status: 'cancelled',
       cancellationReason: reason,
@@ -414,10 +415,11 @@ clientPortalRouter.post('/booking', asyncHandler(async (req, res, next) => {
  * Get client profile
  */
 clientPortalRouter.get('/profile', asyncHandler(async (req, res, next) => {
-  const { id: clientId } = (req as any as AuthenticatedClientRequest).client;
+  const { id: clientId, salonId } = (req as any as AuthenticatedClientRequest).client;
 
-  const client = await prisma.client.findUnique({
-    where: { id: clientId },
+  // Include salonId in lookup for defense-in-depth
+  const client = await prisma.client.findFirst({
+    where: { id: clientId, salonId },
   });
 
   if (!client) {
@@ -435,11 +437,11 @@ clientPortalRouter.get('/profile', asyncHandler(async (req, res, next) => {
  * Update client profile
  */
 clientPortalRouter.put('/profile', asyncHandler(async (req, res, next) => {
-  const { id: clientId } = (req as any as AuthenticatedClientRequest).client;
+  const { id: clientId, salonId } = (req as any as AuthenticatedClientRequest).client;
   const { firstName, lastName, phone, optedInMarketing } = req.body;
 
   const updatedClient = await prisma.client.update({
-    where: { id: clientId },
+    where: { id: clientId, salonId },
     data: {
       firstName,
       lastName,

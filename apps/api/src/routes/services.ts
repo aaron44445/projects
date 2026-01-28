@@ -110,7 +110,7 @@ router.patch(
     const { name, description, displayOrder } = req.body;
 
     const updated = await prisma.serviceCategory.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
@@ -153,7 +153,7 @@ router.delete(
 
     // Delete the category
     await prisma.serviceCategory.delete({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
     });
 
     res.json({
@@ -266,7 +266,7 @@ router.patch(
     }
 
     const updated = await prisma.service.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: req.body,
     });
 
@@ -301,7 +301,7 @@ router.delete(
     }
 
     await prisma.service.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, salonId: req.user!.salonId },
       data: { isActive: false },
     });
 

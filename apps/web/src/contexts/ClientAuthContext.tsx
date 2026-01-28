@@ -2,10 +2,16 @@
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { TOKEN_KEYS } from '@/types/auth';
+import { API_CONFIG } from '@/config/api';
 
 // Token refresh settings
 const TOKEN_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
 const REFRESH_THRESHOLD_MINUTES = 30; // Refresh if expiring within 30 minutes
+
+// Use standardized token keys
+const ACCESS_TOKEN_KEY = TOKEN_KEYS.client.access;
+const REFRESH_TOKEN_KEY = TOKEN_KEYS.client.refresh;
 
 // Decode JWT payload to check expiry
 function decodeJwtPayload(token: string): { exp?: number } | null {
@@ -65,7 +71,7 @@ interface RegisterData {
 
 const ClientAuthContext = createContext<ClientAuthContextType | null>(null);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = API_CONFIG.baseUrl;
 
 export function ClientAuthProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<Client | null>(null);
@@ -76,19 +82,19 @@ export function ClientAuthProvider({ children }: { children: ReactNode }) {
   const getStoredTokens = () => {
     if (typeof window === 'undefined') return { accessToken: null, refreshToken: null };
     return {
-      accessToken: localStorage.getItem('client_access_token'),
-      refreshToken: localStorage.getItem('client_refresh_token')
+      accessToken: localStorage.getItem(ACCESS_TOKEN_KEY),
+      refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY)
     };
   };
 
   const storeTokens = (accessToken: string, refreshToken: string) => {
-    localStorage.setItem('client_access_token', accessToken);
-    localStorage.setItem('client_refresh_token', refreshToken);
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   };
 
   const clearTokens = () => {
-    localStorage.removeItem('client_access_token');
-    localStorage.removeItem('client_refresh_token');
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   };
 
   const fetchClient = async (accessToken: string): Promise<Client | null> => {
