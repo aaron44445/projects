@@ -60,12 +60,13 @@ Plans:
   2. Dashboard stats endpoint makes 2-3 database queries, not 8
   3. VIP client count comes from database COUNT query, not client-side filter
   4. Dashboard does not refetch when browser tab is in background
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
-- [ ] 14-01-PLAN.md - Async notification queue with database job table (PERF-01)
-- [ ] 14-02-PLAN.md - Dashboard query consolidation with VIP count (PERF-02, PERF-03)
-- [ ] 14-03-PLAN.md - Background refetch control (PERF-04)
+- [x] 14-01-PLAN.md - Async notification queue with database job table (PERF-01)
+- [x] 14-02-PLAN.md - Dashboard query consolidation (PERF-02)
+- [x] 14-03-PLAN.md - Background refetch control (PERF-04)
+- [ ] 14-04-PLAN.md - VIP client database COUNT (PERF-03 gap closure)
 
 ### Phase 15: SEO Fundamentals
 **Goal**: Public pages are discoverable and provide rich search results
@@ -130,7 +131,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 13. Security Hardening | v1.1 | 3/3 | Complete | 2026-01-28 |
-| 14. Performance Optimization | v1.1 | 0/3 | Planning complete | - |
+| 14. Performance Optimization | v1.1 | 3/4 | Gap closure | - |
 | 15. SEO Fundamentals | v1.1 | 0/TBD | Not started | - |
 | 16. Accessibility Compliance | v1.1 | 0/TBD | Not started | - |
 | 17. Code Quality | v1.1 | 0/TBD | Not started | - |
@@ -138,4 +139,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 14 planning complete)*
+*Last updated: 2026-01-28 (Phase 14 gap closure plan added)*
