@@ -304,8 +304,9 @@ clientPortalRouter.post('/booking', asyncHandler(async (req, res, next) => {
     });
   }
 
-  const client = await prisma.client.findUnique({
-    where: { id: clientId },
+  // Include salonId in lookup for defense-in-depth
+  const client = await prisma.client.findFirst({
+    where: { id: clientId, salonId },
   });
 
   // Check for time conflicts
@@ -544,10 +545,10 @@ clientPortalRouter.post('/reviews', asyncHandler(async (req, res, next) => {
     },
   });
 
-  // Award loyalty points for review
+  // Award loyalty points for review (include salonId for defense-in-depth)
   const loyaltyPointsEarned = 10;
   await prisma.client.update({
-    where: { id: clientId },
+    where: { id: clientId, salonId },
     data: {
       loyaltyPoints: { increment: loyaltyPointsEarned },
     },
