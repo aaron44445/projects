@@ -36,6 +36,11 @@ import { staffPortalRouter } from './routes/staffPortal.js';
 import { clientAuthRouter } from './routes/clientAuth.js';
 import { clientPortalRouter } from './routes/clientPortal.js';
 import { gdprRouter } from './routes/gdpr.js';
+import { accountRouter } from './routes/account.js';
+import { teamRouter } from './routes/team.js';
+import { ownerNotificationsRouter } from './routes/ownerNotifications.js';
+import { notificationsRouter } from './routes/notifications.js';
+import { integrationsRouter } from './routes/integrations.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { generalRateLimit } from './middleware/rateLimit.js';
@@ -186,6 +191,17 @@ app.use('/api/v1/client-portal', clientPortalRouter);
 
 // GDPR Routes (client data export, deletion requests)
 app.use('/api/v1/gdpr', gdprRouter);
+
+// Account and Team Routes (added from app.ts parity)
+app.use('/api/v1/account', accountRouter);
+app.use('/api/v1/team', teamRouter);
+
+// Notification Routes (added from app.ts parity)
+app.use('/api/v1/owner-notifications', ownerNotificationsRouter);
+app.use('/api/v1/notifications', notificationsRouter);
+
+// Integrations Routes (added from app.ts parity)
+app.use('/api/v1/integrations', integrationsRouter);
 
 // ============================================
 // ERROR HANDLING
