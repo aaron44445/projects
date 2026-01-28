@@ -27,6 +27,20 @@ router.get(
   authorize('admin', 'manager'),
   asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.userId;
+    const salonId = req.user!.salonId;
+
+    // Defense-in-depth: Verify user belongs to the salon
+    const user = await prisma.user.findFirst({
+      where: { id: userId, salonId },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'User not associated with this salon' },
+      });
+    }
 
     // Get or create preferences
     let preferences = await prisma.ownerNotificationPreferences.findUnique({
@@ -34,16 +48,10 @@ router.get(
     });
 
     if (!preferences) {
-      // Get user email as default notification email
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { email: true },
-      });
-
       preferences = await prisma.ownerNotificationPreferences.create({
         data: {
           userId,
-          notificationEmail: user?.email || null,
+          notificationEmail: user.email || null,
         },
       });
     }
@@ -74,7 +82,21 @@ router.patch(
   asyncHandler(async (req: Request, res: Response) => {
     try {
       const userId = req.user!.userId;
+      const salonId = req.user!.salonId;
       const data = updatePreferencesSchema.parse(req.body);
+
+      // Defense-in-depth: Verify user belongs to the salon
+      const user = await prisma.user.findFirst({
+        where: { id: userId, salonId },
+        select: { id: true },
+      });
+
+      if (!user) {
+        return res.status(403).json({
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'User not associated with this salon' },
+        });
+      }
 
       // Upsert preferences
       const preferences = await prisma.ownerNotificationPreferences.upsert({
@@ -126,24 +148,26 @@ router.post(
   authorize('admin', 'manager'),
   asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.userId;
+    const salonId = req.user!.salonId;
     const { type } = req.body;
+
+    // Defense-in-depth: Verify user belongs to the salon
+    const user = await prisma.user.findFirst({
+      where: { id: userId, salonId },
+      include: { salon: { select: { name: true } } },
+    });
+
+    if (!user) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'User not associated with this salon' },
+      });
+    }
 
     // Get preferences to find notification email
     const preferences = await prisma.ownerNotificationPreferences.findUnique({
       where: { userId },
     });
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { salon: { select: { name: true } } },
-    });
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: { code: 'NOT_FOUND', message: 'User not found' },
-      });
-    }
 
     const notificationEmail = preferences?.notificationEmail || user.email;
 
