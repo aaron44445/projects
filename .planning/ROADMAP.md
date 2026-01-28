@@ -21,7 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Dashboard & Validation** - Accurate stats and edge case handling
 - [x] **Phase 8: Register Missing Production Routers** - [GAP CLOSURE] Fix API route registration
 - [x] **Phase 9: Authentication & Tenant Isolation Execution** - [GAP CLOSURE] Execute Phase 1 requirements
-- [ ] **Phase 10: Dark Mode for Public Pages** - Add dark mode support to all public-facing pages
+- [x] **Phase 10: Dark Mode for Public Pages** - Add dark mode support to all public-facing pages
 - [x] **Phase 11: Settings Audit** - Audit all settings functionality to identify working/broken controls
 
 ## Phase Details
@@ -265,7 +265,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 10-01-PLAN.md — Implement dark mode for all public pages with theme toggle
+- [x] 10-01-PLAN.md — Implement dark mode for all public pages with theme toggle
 
 ### Phase 11: Settings Audit
 
@@ -302,7 +302,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 7. Dashboard & Validation | 5/5 | Complete | 2026-01-27 |
 | 8. Register Missing Production Routers | 1/1 | Complete | 2026-01-28 |
 | 9. Authentication & Tenant Isolation Execution | 5/5 | Complete | 2026-01-28 |
-| 10. Dark Mode for Public Pages | 0/1 | Not Started | - |
+| 10. Dark Mode for Public Pages | 1/1 | Complete | 2026-01-28 |
 | 11. Settings Audit | 1/1 | Complete | 2026-01-28 |
 
 ---
