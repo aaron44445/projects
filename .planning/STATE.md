@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 7 - Dashboard & Validation - EXECUTING
+**Current focus:** Phase 7 - Dashboard & Validation - COMPLETE
 
 ## Current Position
 
 Phase: 7 of 7 (Dashboard & Validation)
-Plan: 4 of 5 complete (07-01, 07-02, 07-03, 07-04)
-Status: Wave 3 in progress (07-04 complete, 07-05 pending)
-Last activity: 2026-01-27 - Completed 07-04-PLAN.md (Timezone Display)
+Plan: All plans complete (07-01 through 07-05 with gap closure)
+Status: Phase complete - verified by human testing and code review
+Last activity: 2026-01-27 - Completed 07-05-PLAN.md (E2E Verification with gap closure)
 
-Progress: [███████████████████] 98% (25/26 plans completed across all phases)
+Progress: [████████████████████] 100% (26/26 plans completed across all phases)
 
 ## Performance Metrics
 
@@ -133,6 +133,8 @@ Recent decisions affecting current work:
 - **07-04:** Timezone flows from API -> hook -> page (single source of truth)
 - **07-04:** Default to UTC if salon timezone not configured
 - **07-04:** toLocaleTimeString with timeZone option for timezone conversion
+- **07-05:** Use Intl.DateTimeFormat.formatToParts() with Date.UTC() for DST-safe timezone offset calculation
+- **07-05:** Inline TanStack Query refetchInterval options directly into useQuery calls (not spread from shared object)
 
 ### Pending Todos
 
@@ -188,12 +190,16 @@ Last session: 2026-01-27T23:30:00Z
 Stopped at: Completed 07-04-PLAN.md - Timezone Display
 Resume file: None
 
-**Phase 7 Status:** IN PROGRESS
+**Phase 7 Status:** COMPLETE - VERIFIED
 - 07-01: Dashboard API Validation - COMPLETE
 - 07-02: Dashboard Auto-Refresh - COMPLETE
 - 07-03: Partial Error States - COMPLETE
 - 07-04: Timezone Display - COMPLETE
-- 07-05: End-to-End Verification - PENDING
+- 07-05: End-to-End Verification - COMPLETE (with gap closure)
+
+**Phase 7 Gap Closure (from 07-05 verification):**
+1. Timezone calculation bug - **FIXED** - Used Intl.DateTimeFormat.formatToParts() with Date.UTC()
+2. Auto-refresh not working - **FIXED** - Inlined refetchInterval options into each useQuery call
 
 **Phase 6 Status:** COMPLETE - GAP CLOSURE VERIFIED
 - 06-01: Wire Business Hours to API - COMPLETE
