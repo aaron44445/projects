@@ -1,6 +1,7 @@
 import { prisma } from '@peacase/database';
 import { sendEmail, appointmentConfirmationEmail, appointmentReminderEmail, appointmentReminder2hEmail, appointmentCancellationEmail } from './email.js';
 import { sendSms, appointmentConfirmationSms, appointmentReminderSms, appointmentReminder2hSms, appointmentCancellationSms } from './sms.js';
+import logger from '../lib/logger.js';
 
 export interface NotificationPayload {
   salonId: string;
@@ -69,7 +70,7 @@ export async function sendNotification(payload: NotificationPayload): Promise<Se
 
       // SMS-to-email fallback
       if (!smsResult.success && payload.data.clientEmail && !payload.channels.includes('email')) {
-        console.log(`[NOTIFICATION] SMS failed for ${notificationLog.id}, attempting email fallback`);
+        logger.info({ notificationId: notificationLog.id }, 'SMS failed, attempting email fallback');
         const emailResult = await sendEmailNotification(payload, notificationLog.id);
         emailSent = emailResult.success;
       }
@@ -110,14 +111,11 @@ async function sendEmailNotification(
   let htmlContent: string;
   let subject: string;
 
-  // Debug: Log calendar fields before email generation
-  console.log('[NOTIFICATION] sendEmailNotification payload.data calendar fields:', {
+  logger.debug({
     hasStartTime: !!payload.data.startTime,
     hasEndTime: !!payload.data.endTime,
-    startTime: payload.data.startTime,
-    endTime: payload.data.endTime,
     salonTimezone: payload.data.salonTimezone,
-  });
+  }, 'Email notification calendar fields');
 
   switch (payload.type) {
     case 'booking_confirmation':

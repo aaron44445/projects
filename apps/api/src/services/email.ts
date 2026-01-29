@@ -1,5 +1,6 @@
 import { env } from '../lib/env.js';
 import { generateCalendarLinks, createAppointmentCalendarEvent, CalendarLinks } from '../lib/calendar.js';
+import logger from '../lib/logger.js';
 
 interface EmailOptions {
   to: string;
@@ -24,10 +25,7 @@ async function sendViaSMTP2GO(options: EmailOptions): Promise<boolean> {
   const fromEmail = options.from || env.SMTP_FROM_EMAIL || 'noreply@peacase.com';
   const fromName = env.SMTP_FROM_NAME || 'Peacase';
 
-  console.log(`[EMAIL] Preparing SMTP2GO request to: ${options.to}`);
-  console.log(`[EMAIL] From: ${fromName} <${fromEmail}>`);
-  console.log(`[EMAIL] Subject: ${options.subject}`);
-  console.log(`[EMAIL] API Key present: ${!!apiKey} (length: ${apiKey?.length || 0})`);
+  logger.info({ to: options.to, from: `${fromName} <${fromEmail}>`, subject: options.subject, apiKeyPresent: !!apiKey }, 'Preparing SMTP2GO email');
 
   try {
     const payload = {
@@ -39,7 +37,7 @@ async function sendViaSMTP2GO(options: EmailOptions): Promise<boolean> {
       text_body: options.text || options.html.replace(/<[^>]*>/g, ''),
     };
 
-    console.log(`[EMAIL] Sending to SMTP2GO API...`);
+    logger.debug({ to: options.to }, 'Sending to SMTP2GO API');
 
     const response = await fetch('https://api.smtp2go.com/v3/email/send', {
       method: 'POST',
@@ -50,17 +48,17 @@ async function sendViaSMTP2GO(options: EmailOptions): Promise<boolean> {
     });
 
     const result = await response.json();
-    console.log(`[EMAIL] SMTP2GO response:`, JSON.stringify(result));
+    logger.debug({ response: result }, 'SMTP2GO response received');
 
     if (result.data?.succeeded > 0) {
-      console.log(`[EMAIL] ✅ Email sent successfully to ${options.to} via SMTP2GO`);
+      logger.info({ to: options.to, provider: 'SMTP2GO' }, 'Email sent successfully');
       return true;
     } else {
-      console.error(`[EMAIL] ❌ SMTP2GO error:`, result);
+      logger.error({ to: options.to, response: result, provider: 'SMTP2GO' }, 'SMTP2GO email failed');
       return false;
     }
   } catch (error) {
-    console.error(`[EMAIL] ❌ SMTP2GO request failed:`, error);
+    logger.error({ err: error, to: options.to, provider: 'SMTP2GO' }, 'SMTP2GO request failed');
     return false;
   }
 }
@@ -84,10 +82,10 @@ async function sendViaSendGrid(options: EmailOptions): Promise<boolean> {
       text: options.text || options.html.replace(/<[^>]*>/g, ''),
       replyTo: options.replyTo,
     });
-    console.log(`Email sent successfully to ${options.to} via SendGrid`);
+    logger.info({ to: options.to, provider: 'SendGrid' }, 'Email sent successfully');
     return true;
   } catch (error: any) {
-    console.error('SendGrid error:', error?.message || error);
+    logger.error({ err: error, to: options.to, provider: 'SendGrid' }, 'SendGrid email failed');
     return false;
   }
 }
@@ -95,19 +93,19 @@ async function sendViaSendGrid(options: EmailOptions): Promise<boolean> {
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   // Try SMTP2GO first (if configured)
   if (env.SMTP_PASS) {
-    console.log(`Attempting to send email to ${options.to} via SMTP2GO...`);
+    logger.debug({ to: options.to, provider: 'SMTP2GO' }, 'Attempting email send');
     const sent = await sendViaSMTP2GO(options);
     if (sent) return true;
   }
 
   // Fall back to SendGrid
   if (env.SENDGRID_API_KEY) {
-    console.log(`Attempting to send email to ${options.to} via SendGrid...`);
+    logger.debug({ to: options.to, provider: 'SendGrid' }, 'Attempting email send');
     const sent = await sendViaSendGrid(options);
     if (sent) return true;
   }
 
-  console.warn('No email provider configured - email not sent to:', options.to);
+  logger.warn({ to: options.to }, 'No email provider configured - email not sent');
   return false;
 }
 
@@ -147,17 +145,11 @@ export function appointmentConfirmationEmail(data: {
   salonTimezone?: string;
   salonEmail?: string;
 }): string {
-  // Debug: Log calendar field values
-  console.log('[EMAIL] appointmentConfirmationEmail called with calendar fields:', {
+  logger.debug({
     hasStartTime: !!data.startTime,
     hasEndTime: !!data.endTime,
-    startTimeType: typeof data.startTime,
-    endTimeType: typeof data.endTime,
-    startTime: data.startTime,
-    endTime: data.endTime,
     salonTimezone: data.salonTimezone,
-    salonEmail: data.salonEmail,
-  });
+  }, 'Building appointment confirmation email with calendar fields');
 
   // Generate calendar links if appointment times provided
   let calendarSection = '';
@@ -567,43 +559,123 @@ export function passwordResetEmail(data: {
 }): string {
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-      <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #2C2C2C; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #C7DCC8 0%, #E8F0E8 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
-        .content { background: #FFFFFF; padding: 30px; border: 1px solid #E5E5E5; }
-        .footer { background: #FAF8F3; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
-        .button { display: inline-block; background: #6B9B76; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-        .button:hover { background: #5A8A65; }
-        .warning { background: #FEF3E7; border-left: 4px solid #F5A623; padding: 15px; margin: 20px 0; font-size: 14px; }
-      </style>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <title>Reset Your Password - Peacase</title>
+      <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+      <![endif]-->
     </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1 style="margin: 0; color: #2C2C2C;">Password Reset</h1>
-          <p style="margin: 10px 0 0 0; color: #2C2C2C; font-weight: 600;">Peacase</p>
-        </div>
-        <div class="content">
-          <p>Hi ${data.recipientName},</p>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <p style="text-align: center;">
-            <a href="${data.resetUrl}" class="button">Reset Password</a>
-          </p>
-          <div class="warning">
-            <p style="margin: 0;"><strong>This link will expire in ${data.expiresInMinutes} minutes.</strong></p>
-            <p style="margin: 5px 0 0 0;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
-          </div>
-          <p>If the button above doesn't work, copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; font-size: 14px; color: #666; background: #f5f5f5; padding: 10px; border-radius: 4px;">${data.resetUrl}</p>
-        </div>
-        <div class="footer">
-          <p>Peacase - Spa & Salon Management</p>
-          <p>This is an automated email. Please do not reply.</p>
-        </div>
-      </div>
+    <body style="margin: 0; padding: 0; background-color: #F5F3EE; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+      <!-- Outer wrapper for email clients -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F5F3EE;">
+        <tr>
+          <td align="center" style="padding: 40px 20px;">
+
+            <!-- Main container -->
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width: 520px; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);">
+
+              <!-- Header with brand -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #5A8A5B 0%, #7BA37C 100%); padding: 36px 40px; text-align: center;">
+                  <!-- Logo mark -->
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                    <tr>
+                      <td style="width: 48px; height: 48px; background-color: rgba(255, 255, 255, 0.2); border-radius: 12px; text-align: center; vertical-align: middle;">
+                        <span style="font-size: 24px; line-height: 48px;">&#10024;</span>
+                      </td>
+                    </tr>
+                  </table>
+                  <h1 style="margin: 16px 0 0 0; font-size: 26px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px;">Peacase</h1>
+                  <p style="margin: 6px 0 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.85); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500;">Spa & Salon Management</p>
+                </td>
+              </tr>
+
+              <!-- Decorative line -->
+              <tr>
+                <td style="height: 4px; background: linear-gradient(90deg, #E8A87C 0%, #D4956A 50%, #E8A87C 100%);"></td>
+              </tr>
+
+              <!-- Main content -->
+              <tr>
+                <td style="padding: 40px;">
+                  <h2 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 600; color: #2C2C2C; letter-spacing: -0.3px;">Reset Your Password</h2>
+                  <p style="margin: 0 0 28px 0; font-size: 15px; line-height: 1.6; color: #666666;">Hi ${data.recipientName},</p>
+                  <p style="margin: 0 0 32px 0; font-size: 15px; line-height: 1.6; color: #666666;">We received a request to reset your password. Click the button below to create a new one.</p>
+
+                  <!-- CTA Button -->
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
+                    <tr>
+                      <td style="border-radius: 10px; background: linear-gradient(135deg, #5A8A5B 0%, #7BA37C 100%); box-shadow: 0 4px 14px rgba(90, 138, 91, 0.35);">
+                        <a href="${data.resetUrl}" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 15px; font-weight: 600; color: #FFFFFF; text-decoration: none; letter-spacing: 0.3px;">
+                          Reset Password &rarr;
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Time warning -->
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 32px;">
+                    <tr>
+                      <td style="background-color: #FEF8F3; border-radius: 10px; padding: 18px 20px; border-left: 4px solid #E8A87C;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td style="vertical-align: top; padding-right: 12px;">
+                              <span style="font-size: 18px;">&#9200;</span>
+                            </td>
+                            <td>
+                              <p style="margin: 0; font-size: 14px; font-weight: 600; color: #2C2C2C;">This link expires in ${data.expiresInMinutes} minutes</p>
+                              <p style="margin: 4px 0 0 0; font-size: 13px; color: #888888; line-height: 1.5;">If you didn't request this, you can safely ignore this email.</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Fallback link -->
+                  <p style="margin: 28px 0 0 0; font-size: 13px; color: #999999; line-height: 1.5;">If the button doesn't work, copy and paste this link:</p>
+                  <p style="margin: 8px 0 0 0; padding: 12px 14px; background-color: #F8F7F5; border-radius: 8px; font-size: 12px; color: #7BA37C; word-break: break-all; font-family: 'Monaco', 'Menlo', monospace;">${data.resetUrl}</p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #FAFAF8; padding: 24px 40px; border-top: 1px solid #EEEEE9;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                      <td style="text-align: center;">
+                        <p style="margin: 0; font-size: 13px; color: #999999;">Sent with care by <strong style="color: #7BA37C;">Peacase</strong></p>
+                        <p style="margin: 8px 0 0 0; font-size: 11px; color: #BBBBBB;">This is an automated message. Please do not reply directly.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            </table>
+
+            <!-- Bottom branding -->
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top: 24px;">
+              <tr>
+                <td style="text-align: center;">
+                  <p style="margin: 0; font-size: 11px; color: #AAAAAA;">&copy; ${new Date().getFullYear()} Peacase. All rights reserved.</p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;

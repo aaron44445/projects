@@ -1,5 +1,6 @@
 import twilio from 'twilio';
 import { env } from '../lib/env.js';
+import logger from '../lib/logger.js';
 
 // Initialize Twilio client only if credentials are configured
 const client = env.TWILIO_ACCOUNT_SID && env.TWILIO_AUTH_TOKEN
@@ -70,7 +71,7 @@ function formatPhoneNumber(phone: string): string {
 
 export async function sendSms(options: SendSmsOptions): Promise<SendSmsResult> {
   if (!client || !FROM_NUMBER) {
-    console.warn('Twilio not configured - SMS not sent to:', options.to);
+    logger.warn({ to: options.to }, 'Twilio not configured - SMS not sent');
     return { success: false, error: 'Twilio not configured' };
   }
 
@@ -87,10 +88,10 @@ export async function sendSms(options: SendSmsOptions): Promise<SendSmsResult> {
       statusCallback,  // Twilio will POST updates to this URL
     });
 
-    console.log(`[SMS] Sent to ${options.to}, MessageSid: ${message.sid}`);
+    logger.info({ to: options.to, messageSid: message.sid }, 'SMS sent successfully');
     return { success: true, messageSid: message.sid };
   } catch (error: any) {
-    console.error('Twilio SMS error:', error);
+    logger.error({ err: error, to: options.to }, 'Twilio SMS error');
     return {
       success: false,
       error: error?.message || 'Unknown error',
