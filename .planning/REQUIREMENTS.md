@@ -17,10 +17,10 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Schedule & Appointments
 
-- [ ] **SCHED-01**: Staff can view today's appointments on portal dashboard
-- [ ] **SCHED-02**: Staff can view upcoming schedule (week view)
-- [ ] **SCHED-03**: Appointments automatically filtered by staff's assigned locations
-- [ ] **SCHED-04**: Staff can see appointment details (time, service, client name, notes)
+- [x] **SCHED-01**: Staff can view today's appointments on portal dashboard
+- [x] **SCHED-02**: Staff can view upcoming schedule (week view)
+- [x] **SCHED-03**: Appointments automatically filtered by staff's assigned locations
+- [x] **SCHED-04**: Staff can see appointment details (time, service, client name, notes)
 
 ### Availability Management
 
@@ -43,8 +43,8 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Profile
 
-- [ ] **PROF-01**: Staff can view their profile info and assigned services/locations
-- [ ] **PROF-02**: Staff can edit phone number and avatar (owner controls name/services)
+- [x] **PROF-01**: Staff can view their profile info and assigned services/locations
+- [x] **PROF-02**: Staff can edit phone number and avatar (owner controls name/services)
 
 ### Permissions & Settings
 
@@ -91,10 +91,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-03 | Phase 19 | Complete |
 | AUTH-04 | Phase 19 | Complete |
 | AUTH-05 | Phase 19 | Complete |
-| SCHED-01 | Phase 20 | Pending |
-| SCHED-02 | Phase 20 | Pending |
-| SCHED-03 | Phase 20 | Pending |
-| SCHED-04 | Phase 20 | Pending |
+| SCHED-01 | Phase 20 | Complete |
+| SCHED-02 | Phase 20 | Complete |
+| SCHED-03 | Phase 20 | Complete |
+| SCHED-04 | Phase 20 | Complete |
 | AVAIL-01 | Phase 21 | Pending |
 | AVAIL-02 | Phase 21 | Pending |
 | AVAIL-03 | Phase 21 | Pending |
@@ -105,8 +105,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EARN-02 | Phase 23 | Pending |
 | EARN-03 | Phase 23 | Pending |
 | EARN-04 | Phase 23 | Pending |
-| PROF-01 | Phase 20 | Pending |
-| PROF-02 | Phase 20 | Pending |
+| PROF-01 | Phase 20 | Complete |
+| PROF-02 | Phase 20 | Complete |
 | PERM-01 | Phase 23 | Pending |
 | DEBT-01 | Phase 24 | Pending |
 | DEBT-02 | Phase 24 | Pending |
@@ -120,4 +120,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-29 after Phase 19 completion*
+*Last updated: 2026-01-29 after Phase 20 completion*
