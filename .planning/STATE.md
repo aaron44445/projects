@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 Phase: 17 of 18 (Code Quality) - COMPLETE
 Plan: 14 of 14 complete (9 requirements + 5 gap closures)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed 17-11-PLAN.md (adopt withSalonId in services and staff routes)
+Last activity: 2026-01-29 - Completed 17-13-PLAN.md (verify withSalonId adoption in clients, notifications, packages)
 
 Progress: [████████████████░░░░] 88%
 
@@ -32,9 +32,9 @@ Progress: [████████████████░░░░] 88%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 33 (v1.1)
+- Total plans completed: 34 (v1.1)
 - Average duration: 6.9 minutes
-- Total execution time: 227 minutes
+- Total execution time: 236 minutes
 
 **By Phase:**
 
@@ -44,7 +44,7 @@ Progress: [████████████████░░░░] 88%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 14/14 | 161 min | 11.5 min |
+| 17 | 14/14 | 170 min | 12.1 min |
 
 *Updated after each plan completion*
 
@@ -127,6 +127,7 @@ From v1.1 Phase 17:
 - Extract subscription ID from invoice.parent.subscription_details (new Stripe API) (17-09)
 - Use spread operator pattern for withSalonId in all Prisma where/data clauses (17-10)
 - Logger context patterns should NOT use withSalonId - it's for database filters only (17-14)
+- Function parameters to service methods keep direct salonId assignment, not withSalonId spread (17-13)
 
 ### Pending Todos
 
@@ -139,9 +140,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-11-PLAN.md (Gap closure - adopt withSalonId in services and staff routes)
+Stopped at: Completed 17-13-PLAN.md (Gap closure - verify withSalonId in clients, notifications, packages)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-11 complete - Gap closure withSalonId adoption for services and staff routes)*
+*Last updated: 2026-01-29 (17-13 complete - Verified withSalonId adoption in clients, notifications, packages routes)*
