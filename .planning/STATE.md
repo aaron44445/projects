@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 
 ## Current Position
 
-Phase: 15 of 18 (SEO Fundamentals)
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-01-28 - Phase 15 verified and complete
+Phase: 16 of 18 (Accessibility Compliance)
+Plan: 3 of 4 complete
+Status: In progress
+Last activity: 2026-01-28 - Completed 16-03-PLAN.md
 
-Progress: [██████░░░░░░░░░░░░░░] 33%
+Progress: [███████░░░░░░░░░░░░░] 35%
 
 ## Milestone Context
 
@@ -25,16 +25,16 @@ Progress: [██████░░░░░░░░░░░░░░] 33%
 | 13 | Security | SEC-01 to SEC-04 | Complete |
 | 14 | Performance | PERF-01 to PERF-04 | Complete |
 | 15 | SEO | SEO-01 to SEO-04 | Complete |
-| 16 | Accessibility | A11Y-01 to A11Y-04 | Pending |
+| 16 | Accessibility | A11Y-01 to A11Y-04 | Planning complete |
 | 17 | Code Quality | CODE-01 to CODE-04 | Pending |
 | 18 | UI/UX | UI-01 to UI-04 | Pending |
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9 (v1.1)
-- Average duration: 4.6 minutes
-- Total execution time: 41 minutes
+- Total plans completed: 10 (v1.1)
+- Average duration: 4.5 minutes
+- Total execution time: 45 minutes
 
 **By Phase:**
 
@@ -43,6 +43,7 @@ Progress: [██████░░░░░░░░░░░░░░] 33%
 | 13 | 3/3 | 18 min | 6 min |
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
+| 16 | 1/4 | 4 min | 4 min |
 
 *Updated after each plan completion*
 
@@ -84,7 +85,12 @@ From v1.1 Phase 15:
 - Use NEXT_PUBLIC_APP_URL env var with peacase.com fallback (15-01)
 - Use metadataBase with alternates.canonical for automatic canonical URLs (15-02)
 - Render JSON-LD in client component body (valid for Google parsing) (15-02)
-- Hardcoded schema data is safe for dangerouslySetInnerHTML (15-02)
+- Hardcoded schema data is safe for inserting as HTML (15-02)
+
+From v1.1 Phase 16:
+- Added sr-only class following standard Tailwind pattern (16-03)
+- Used aria-pressed for date button toggle state (16-03)
+- Combined date label with selection state in aria-label (16-03)
 
 ### Pending Todos
 
@@ -97,9 +103,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Phase 15 complete
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 15 complete - 2/2 plans)*
+*Last updated: 2026-01-28 (Completed plan 16-03: Date Labels and SR-Only Class)*
