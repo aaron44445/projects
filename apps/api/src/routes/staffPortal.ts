@@ -1851,7 +1851,8 @@ router.get('/time-clock/status', authenticate, staffOnly, asyncHandler(async (re
         id: activeEntry.id,
         clockIn: activeEntry.clockIn.toISOString(),
         timezone: activeEntry.timezone,
-        location: activeEntry.location,
+        locationId: activeEntry.location.id,
+        locationName: activeEntry.location.name,
       } : null,
     },
   });
