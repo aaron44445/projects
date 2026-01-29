@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { staffOnly, ownDataOnly } from '../middleware/staffAuth.js';
@@ -10,6 +11,8 @@ import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { loginRateLimit } from '../middleware/rateLimit.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
@@ -374,7 +377,7 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
 
   // Send invite email
   const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
-  console.log(`[STAFF PORTAL INVITE] Sending invite email to ${data.email}, inviteUrl: ${inviteUrl}`);
+  logger.info({ email: data.email, staffId: staff.id, salonId: req.user.salonId }, 'Sending staff invite email');
 
   try {
     const emailSent = await sendEmail({
@@ -389,9 +392,9 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
         <p>If you didn't expect this invitation, you can safely ignore this email.</p>
       `,
     });
-    console.log(`[STAFF PORTAL INVITE] Email ${emailSent ? 'sent' : 'failed'} for ${data.email}`);
+    logger.info({ email: data.email, emailSent }, 'Staff invite email result');
   } catch (emailError) {
-    console.error('[STAFF PORTAL INVITE] Failed to send invite email:', emailError);
+    logger.error({ err: emailError, email: data.email }, 'Failed to send staff invite email');
   }
 
   res.status(201).json({

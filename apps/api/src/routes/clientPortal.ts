@@ -1,8 +1,11 @@
 import { Router } from 'express';
+import { Prisma } from '@prisma/client';
 import { authenticateClient, AuthenticatedClientRequest } from '../middleware/clientAuth.js';
 import { prisma } from '@peacase/database';
 import { sendEmail, appointmentCancellationEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 export const clientPortalRouter = Router();
 
@@ -99,7 +102,7 @@ clientPortalRouter.get('/appointments', asyncHandler(async (req, res, next) => {
   const limitNum = parseInt(limit as string);
   const skip = (pageNum - 1) * limitNum;
 
-  let statusFilter: any = {};
+  let statusFilter: Prisma.AppointmentWhereInput = {};
 
   if (status === 'upcoming') {
     statusFilter = {
@@ -258,7 +261,7 @@ clientPortalRouter.post('/appointments/:id/cancel', asyncHandler(async (req, res
     });
   } catch (emailError) {
     // Don't fail the request if email fails
-    console.error('Failed to send cancellation email:', emailError);
+    logger.error({ err: emailError, appointmentId: id }, 'Failed to send cancellation email');
   }
 
   res.json({
@@ -402,7 +405,7 @@ clientPortalRouter.post('/booking', asyncHandler(async (req, res, next) => {
       }),
     });
   } catch (emailError) {
-    console.error('Failed to send confirmation email:', emailError);
+    logger.error({ err: emailError, appointmentId: appointment.id }, 'Failed to send confirmation email');
   }
 
   res.status(201).json({
@@ -481,84 +484,6 @@ clientPortalRouter.get('/packages', asyncHandler(async (req, res, next) => {
     data: {
       myPackages,
       availablePackages,
-    },
-  });
-}));
-
-/**
- * POST /api/v1/client-portal/reviews
- * Submit a review for a completed appointment
- */
-clientPortalRouter.post('/reviews', asyncHandler(async (req, res, next) => {
-  const { id: clientId, salonId } = (req as any as AuthenticatedClientRequest).client;
-  const { appointmentId, rating, comment } = req.body;
-
-  if (!appointmentId || rating === undefined) {
-    return res.status(400).json({
-      success: false,
-      error: { code: 'MISSING_FIELDS', message: 'appointmentId and rating are required' },
-    });
-  }
-
-  if (rating < 1 || rating > 5) {
-    return res.status(400).json({
-      success: false,
-      error: { code: 'INVALID_RATING', message: 'Rating must be between 1 and 5' },
-    });
-  }
-
-  const appointment = await prisma.appointment.findFirst({
-    where: {
-      id: appointmentId,
-      clientId,
-      salonId,
-    },
-  });
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      error: { code: 'APPOINTMENT_NOT_FOUND', message: 'Appointment not found' },
-    });
-  }
-
-  // Check if review already exists
-  const existingReview = await prisma.review.findFirst({
-    where: { appointmentId },
-  });
-
-  if (existingReview) {
-    return res.status(409).json({
-      success: false,
-      error: { code: 'REVIEW_EXISTS', message: 'Review already submitted for this appointment' },
-    });
-  }
-
-  const review = await prisma.review.create({
-    data: {
-      salonId,
-      clientId,
-      appointmentId,
-      rating,
-      comment,
-      isApproved: false,
-    },
-  });
-
-  // Award loyalty points for review (include salonId for defense-in-depth)
-  const loyaltyPointsEarned = 10;
-  await prisma.client.update({
-    where: { id: clientId, salonId },
-    data: {
-      loyaltyPoints: { increment: loyaltyPointsEarned },
-    },
-  });
-
-  res.status(201).json({
-    success: true,
-    data: {
-      review,
-      loyaltyPointsEarned,
     },
   });
 }));
