@@ -18,7 +18,7 @@ router.use(authenticate, requireActiveSubscription());
 router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const services = await prisma.service.findMany({
     where: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       isActive: true,
     },
     include: {
@@ -39,7 +39,7 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
 // ============================================
 router.get('/categories', asyncHandler(async (req: Request, res: Response) => {
   const categories = await prisma.serviceCategory.findMany({
-    where: { salonId: req.user!.salonId },
+    where: { ...withSalonId(req.user!.salonId) },
     include: {
       services: {
         where: { isActive: true },
@@ -69,7 +69,7 @@ router.post(
     let order = displayOrder;
     if (order === undefined) {
       const maxOrder = await prisma.serviceCategory.findFirst({
-        where: { salonId: req.user!.salonId },
+        where: { ...withSalonId(req.user!.salonId) },
         orderBy: { displayOrder: 'desc' },
         select: { displayOrder: true },
       });
@@ -78,7 +78,7 @@ router.post(
 
     const category = await prisma.serviceCategory.create({
       data: {
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         name,
         description,
         displayOrder: order,
@@ -101,7 +101,7 @@ router.patch(
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const category = await prisma.serviceCategory.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!category) {
@@ -114,7 +114,7 @@ router.patch(
     const { name, description, displayOrder } = req.body;
 
     const updated = await prisma.serviceCategory.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
@@ -138,7 +138,7 @@ router.delete(
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const category = await prisma.serviceCategory.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!category) {
@@ -156,7 +156,7 @@ router.delete(
 
     // Delete the category
     await prisma.serviceCategory.delete({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     res.json({
@@ -174,7 +174,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const service = await prisma.service.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       category: true,
@@ -225,7 +225,7 @@ router.post(
 
     const service = await prisma.service.create({
       data: {
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         name,
         description,
         durationMinutes: durationMinutes || 30,
@@ -253,7 +253,7 @@ router.patch(
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const service = await prisma.service.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!service) {
@@ -267,7 +267,7 @@ router.patch(
     }
 
     const updated = await prisma.service.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: req.body,
     });
 
@@ -287,7 +287,7 @@ router.delete(
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const service = await prisma.service.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!service) {
@@ -301,7 +301,7 @@ router.delete(
     }
 
     await prisma.service.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: { isActive: false },
     });
 
