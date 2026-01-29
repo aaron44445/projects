@@ -53,7 +53,7 @@ interface StaffAuthContextType {
   staff: StaffUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, pin?: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<boolean>;
   updateProfile: (data: Partial<StaffUser>) => Promise<void>;
@@ -241,11 +241,11 @@ export function StaffAuthProvider({ children }: { children: ReactNode }) {
   }, [getStoredTokens, refreshAuth]);
 
   // Login function
-  const login = async (email: string, password: string, pin?: string): Promise<void> => {
+  const login = async (email: string, password: string, rememberMe?: boolean): Promise<void> => {
     const response = await api.post<StaffLoginResponse>('/staff-portal/auth/login', {
       email: email.toLowerCase().trim(),
       password,
-      pin,
+      rememberMe: rememberMe ?? false,
     });
 
     if (response.success && response.data) {
