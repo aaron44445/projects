@@ -100,6 +100,7 @@ From v1.1 Phase 16:
 - Replace text-charcoal/50, /60, /70 with semantic text-text-muted/text-text-secondary (16-06)
 - Use clip-path technique instead of transform for skip-link visibility (16-10)
 - Use hidden class instead of conditional rendering for modal focus restoration (16-07)
+- Use single escape handler with priority stacking for multiple modal states (16-08)
 
 ### Pending Todos
 
@@ -112,9 +113,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 16-07-PLAN.md
+Stopped at: Completed 16-08-PLAN.md (gap closure)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Completed plan 16-07: Fix Modal Focus Trap - Gap Closure)*
+*Last updated: 2026-01-29 (Completed plan 16-08: Staff Page Modal Accessibility - Gap Closure)*
