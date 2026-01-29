@@ -148,14 +148,14 @@ export function BookingModal({
               <div>
                 <h2 id={titleId} className="text-xl font-bold text-charcoal dark:text-white">Book Appointment</h2>
                 {prefilledClientName && (
-                  <p id={descriptionId} className="text-sm text-charcoal/60 dark:text-white/60">for {prefilledClientName}</p>
+                  <p id={descriptionId} className="text-sm text-text-muted dark:text-white/60">for {prefilledClientName}</p>
                 )}
               </div>
             </div>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
+              className="p-2 text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -189,11 +189,11 @@ export function BookingModal({
             {isClientLocked ? (
               <div className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white">
                 <p className="font-medium">{prefilledClientName}</p>
-                <p className="text-xs text-charcoal/60 dark:text-white/60">Client pre-selected</p>
+                <p className="text-xs text-text-muted dark:text-white/60">Client pre-selected</p>
               </div>
             ) : (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted dark:text-white/60" />
                 <input
                   type="text"
                   placeholder="Search clients..."
@@ -217,7 +217,7 @@ export function BookingModal({
                         <p className="font-medium text-charcoal dark:text-white">
                           {client.firstName} {client.lastName}
                         </p>
-                        <p className="text-xs text-charcoal/60 dark:text-white/60">{client.email || client.phone}</p>
+                        <p className="text-xs text-text-muted dark:text-white/60">{client.email || client.phone}</p>
                       </button>
                     ))}
                   </div>
