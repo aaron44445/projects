@@ -23,6 +23,7 @@ import {
 import { useClientAuth } from '@/contexts/ClientAuthContext';
 import { TOKEN_KEYS } from '@/types/auth';
 import { API_CONFIG } from '@/config/api';
+import { Modal } from '@peacase/ui';
 
 interface ClientData {
   personalInformation: {
@@ -71,8 +72,6 @@ interface DeleteModalProps {
 function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteModalProps) {
   const [confirmText, setConfirmText] = useState('');
 
-  if (!isOpen) return null;
-
   const canDelete = confirmText.toLowerCase() === 'delete my account';
 
   // Calculate scheduled deletion date (30 days from now)
@@ -86,79 +85,73 @@ function DeleteAccountModal({ isOpen, onClose, onConfirm, isDeleting }: DeleteMo
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-card-xl max-w-md w-full mx-4 p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center">
-            <AlertCircle className="w-6 h-6 text-rose-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-charcoal">Request Account Deletion</h3>
-            <p className="text-sm text-charcoal/60">30-day grace period applies</p>
-          </div>
-        </div>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-          <p className="text-sm text-amber-700">
-            <strong>30-Day Grace Period:</strong> Your data will be scheduled for deletion on <strong>{formattedDate}</strong>. You can cancel this request anytime before that date.
-          </p>
-        </div>
-
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-4">
-          <p className="text-sm text-rose-700">
-            <strong>After the grace period, the following will be permanently deleted:</strong>
-          </p>
-          <ul className="mt-2 text-sm text-rose-700 list-disc list-inside space-y-1">
-            <li>Personal information (name, email, phone, address)</li>
-            <li>Notes and preferences</li>
-            <li>Reviews you submitted</li>
-            <li>Loyalty points</li>
-          </ul>
-          <p className="mt-2 text-sm text-rose-700">
-            <em>Payment and appointment history will be anonymized for business records.</em>
-          </p>
-        </div>
-
-        <p className="text-sm text-charcoal/70 mb-3">
-          To confirm, please type <strong>delete my account</strong> below:
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Request Account Deletion"
+      description="30-day grace period applies"
+      size="md"
+    >
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+        <p className="text-sm text-amber-700">
+          <strong>30-Day Grace Period:</strong> Your data will be scheduled for deletion on <strong>{formattedDate}</strong>. You can cancel this request anytime before that date.
         </p>
-
-        <input
-          type="text"
-          value={confirmText}
-          onChange={(e) => setConfirmText(e.target.value)}
-          placeholder="Type here to confirm"
-          className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 outline-none transition-colors mb-4"
-        />
-
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isDeleting}
-            className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={!canDelete || isDeleting}
-            className="flex-1 px-4 py-3 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Requesting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-5 h-5" />
-                Request Deletion
-              </>
-            )}
-          </button>
-        </div>
       </div>
-    </div>
+
+      <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 mb-4">
+        <p className="text-sm text-rose-700">
+          <strong>After the grace period, the following will be permanently deleted:</strong>
+        </p>
+        <ul className="mt-2 text-sm text-rose-700 list-disc list-inside space-y-1">
+          <li>Personal information (name, email, phone, address)</li>
+          <li>Notes and preferences</li>
+          <li>Reviews you submitted</li>
+          <li>Loyalty points</li>
+        </ul>
+        <p className="mt-2 text-sm text-rose-700">
+          <em>Payment and appointment history will be anonymized for business records.</em>
+        </p>
+      </div>
+
+      <p className="text-sm text-charcoal/70 mb-3">
+        To confirm, please type <strong>delete my account</strong> below:
+      </p>
+
+      <input
+        type="text"
+        value={confirmText}
+        onChange={(e) => setConfirmText(e.target.value)}
+        placeholder="Type here to confirm"
+        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 outline-none transition-colors mb-4"
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={onClose}
+          disabled={isDeleting}
+          className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={!canDelete || isDeleting}
+          className="flex-1 px-4 py-3 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isDeleting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Requesting...
+            </>
+          ) : (
+            <>
+              <Trash2 className="w-5 h-5" />
+              Request Deletion
+            </>
+          )}
+        </button>
+      </div>
+    </Modal>
   );
 }
 
