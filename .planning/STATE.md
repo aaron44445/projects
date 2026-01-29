@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality) - COMPLETE
-Plan: 10 of 10 complete (9 requirements + 1 gap closure)
+Plan: 12 of 12 complete (9 requirements + 3 gap closures)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed 17-10-PLAN.md (adopt withSalonId in appointments.ts)
+Last activity: 2026-01-29 - Completed 17-12-PLAN.md (adopt withSalonId in users.ts)
 
-Progress: [████████████████░░░░] 84%
+Progress: [████████████████░░░░] 86%
 
 ## Milestone Context
 
@@ -32,9 +32,9 @@ Progress: [████████████████░░░░] 84%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29 (v1.1)
-- Average duration: 7.2 minutes
-- Total execution time: 208 minutes
+- Total plans completed: 31 (v1.1)
+- Average duration: 7.0 minutes
+- Total execution time: 214 minutes
 
 **By Phase:**
 
@@ -44,7 +44,7 @@ Progress: [████████████████░░░░] 84%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 10/10 | 142 min | 14.2 min |
+| 17 | 12/12 | 148 min | 12.3 min |
 
 *Updated after each plan completion*
 
@@ -138,9 +138,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-10-PLAN.md (Gap closure - adopt withSalonId in appointments.ts)
+Stopped at: Completed 17-12-PLAN.md (Gap closure - adopt withSalonId in users.ts)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-10 complete - Gap closure withSalonId adoption)*
+*Last updated: 2026-01-29 (17-12 complete - Gap closure withSalonId adoption)*
