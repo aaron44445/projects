@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality)
-Plan: 4 of 9 complete
+Plan: 5 of 9 complete
 Status: Executing wave 2
-Last activity: 2026-01-29 - Completed 17-04-PLAN.md
+Last activity: 2026-01-29 - Completed 17-02-PLAN.md
 
-Progress: [████████████░░░░░░░░] 65%
+Progress: [█████████████░░░░░░░] 66%
 
 ## Milestone Context
 
@@ -44,7 +44,7 @@ Progress: [████████████░░░░░░░░] 65%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 4/9 | 15 min | 3.75 min |
+| 17 | 5/9 | 38 min | 7.6 min |
 
 *Updated after each plan completion*
 
@@ -109,7 +109,8 @@ From v1.1 Phase 17:
 - LOG_LEVEL env var for runtime log level control (17-01)
 - ISO timestamp format for consistency (17-01)
 - withSalonId returns simple typed object, not Prisma-dependent (17-01)
-- Import Prisma from @peacase/database not @prisma/client (17-04)
+- Import Prisma from @peacase/database not @prisma/client (17-02)
+- Use error: unknown with instanceof Error for type-safe error handling (17-02)
 - Use Prisma.DateTimeFilter cast for dynamic date range filters (17-05)
 - Include reportType context in all report error logs (17-04)
 
@@ -124,9 +125,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-04-PLAN.md
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-04 complete - Portal and reporting routes)*
+*Last updated: 2026-01-29 (17-02 complete - High-traffic routes migration)*
