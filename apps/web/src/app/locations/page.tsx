@@ -6,19 +6,17 @@ import {
   Search,
   Plus,
   Clock,
-  X,
   Edit2,
   Trash2,
   Loader2,
   AlertCircle,
-  MapPin,
   Building2,
   Phone,
   Star,
   Users,
   Calendar,
-  Globe,
 } from 'lucide-react';
+import { Modal } from '@peacase/ui';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
@@ -539,22 +537,14 @@ function LocationsContent() {
       </main>
 
       {/* New/Edit Location Modal */}
-      {showLocationModal && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">
-                {editingLocation ? 'Edit Location' : 'Add New Location'}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={showLocationModal}
+        onClose={closeModal}
+        title={editingLocation ? 'Edit Location' : 'Add New Location'}
+        size="lg"
+        className="max-h-[90vh] overflow-auto dark:bg-sidebar"
+      >
+        <div className="space-y-6">
               {/* Error Message */}
               {formError && (
                 <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl flex items-start gap-3 text-rose-700 dark:text-rose-300">
@@ -704,87 +694,86 @@ function LocationsContent() {
                 </p>
               </div>
 
-              {/* Primary Location Toggle */}
-              {!editingLocation?.isPrimary && (
-                <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                  <div className="flex items-center gap-3">
-                    <Star className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                    <div>
-                      <p className="font-medium text-charcoal dark:text-white">Set as Primary Location</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">This will be the default location for your business</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLocationForm((prev) => ({ ...prev, isPrimary: !prev.isPrimary }))}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      locationForm.isPrimary ? 'bg-amber-500' : 'bg-charcoal/20 dark:bg-white/20'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        locationForm.isPrimary ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
+          {/* Primary Location Toggle */}
+          {!editingLocation?.isPrimary && (
+            <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+              <div className="flex items-center gap-3">
+                <Star className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <p className="font-medium text-charcoal dark:text-white">Set as Primary Location</p>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60">This will be the default location for your business</p>
                 </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
+              </div>
               <button
-                onClick={closeModal}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+                type="button"
+                onClick={() => setLocationForm((prev) => ({ ...prev, isPrimary: !prev.isPrimary }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  locationForm.isPrimary ? 'bg-amber-500' : 'bg-charcoal/20 dark:bg-white/20'
+                }`}
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveLocation}
-                disabled={isSubmitting || !locationForm.name}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {editingLocation ? 'Save Changes' : 'Add Location'}
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    locationForm.isPrimary ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
               </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
+
+        <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 mt-6">
+          <button
+            onClick={closeModal}
+            disabled={isSubmitting}
+            className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveLocation}
+            disabled={isSubmitting || !locationForm.name}
+            className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {editingLocation ? 'Save Changes' : 'Add Location'}
+          </button>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-6 h-6 text-rose-500" />
-              </div>
-              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Location?</h2>
-              <p className="text-charcoal/60 dark:text-white/60 mb-6">
-                Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDeleteLocation(deleteConfirm.id)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
-                </button>
-              </div>
-            </div>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Delete Location?"
+        size="sm"
+        className="dark:bg-sidebar"
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-6 h-6 text-rose-500" />
+          </div>
+          <p className="text-charcoal/60 dark:text-white/60 mb-6">
+            Are you sure you want to delete &quot;{deleteConfirm?.name}&quot;? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteConfirm && handleDeleteLocation(deleteConfirm.id)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Delete
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
