@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 21 of 24 (Availability & Time Off)
-Plan: 2 of 4 complete (21-01, 21-04)
+Plan: 3 of 4 complete (21-01, 21-02, 21-04)
 Status: In progress
-Last activity: 2026-01-29 - Completed 21-01-PLAN.md (Time-Off Auto-Approve Setting)
+Last activity: 2026-01-29 - Completed 21-02-PLAN.md (Owner Approval UI)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███████░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████████░░░░
 
 ## Milestone History
 
@@ -39,6 +39,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Location filter applied only when staff has >0 location assignments (otherwise show all)
 - staffCanViewClientContact defaults to true if salon setting not found
 - Time-off auto-approve: when requireTimeOffApproval=false, requests auto-approve with reviewNotes='Auto-approved'
+- Owner approval UI: Staff Policies settings section with pending requests list, approve/reject modal with optional notes
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -70,7 +71,8 @@ Progress: v1.0 ████████████ v1.1 ███████�
 **Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03) - IN PROGRESS
 - Weekly availability management (21-04 complete)
 - Time-off auto-approve setting (21-01 complete)
-- Time-off requests with approval (21-02, 21-03 pending)
+- Owner approval UI (21-02 complete)
+- Time-off approval notifications (21-03 pending)
 
 **Phase 22:** Time Tracking (TIME-01 to TIME-03)
 - Clock in/out
@@ -105,9 +107,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 21-01-PLAN.md (Time-Off Auto-Approve Setting)
+Stopped at: Completed 21-02-PLAN.md (Owner Approval UI)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 21 in progress: 21-01, 21-04 complete)*
+*Last updated: 2026-01-29 (Phase 21 in progress: 21-01, 21-02, 21-04 complete)*
