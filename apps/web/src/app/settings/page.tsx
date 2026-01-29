@@ -233,6 +233,7 @@ function SettingsContent() {
     loading: hoursLoading,
     saving: hoursSaving,
     error: hoursError,
+    fetchHours,
     getDisplayHours,
     setDisplayHours,
   } = useLocationHours(selectedLocationId);
@@ -247,22 +248,30 @@ function SettingsContent() {
     isOpen: boolean;
   }> | null>(null);
 
-  // Initialize editingHours when API data loads
-  useEffect(() => {
-    if (!hoursLoading) {
-      setEditingHours(getDisplayHours());
-    }
-  }, [hoursLoading, getDisplayHours]);
+  // Initialize editingHours when API data loads (only on initial load or location change)
+  const [hoursInitialized, setHoursInitialized] = useState(false);
 
-  // Reset editingHours when location changes
   useEffect(() => {
+    // Reset initialization flag when location changes
+    setHoursInitialized(false);
     setEditingHours(null);
   }, [selectedLocationId]);
+
+  useEffect(() => {
+    // Only initialize editingHours once after loading completes for this location
+    if (!hoursLoading && !hoursInitialized) {
+      setEditingHours(getDisplayHours());
+      setHoursInitialized(true);
+    }
+  }, [hoursLoading, hoursInitialized, getDisplayHours]);
 
   const handleSaveHours = async () => {
     if (!editingHours) return;
     const success = await setDisplayHours(editingHours);
     if (success) {
+      // Re-fetch hours and re-sync editingHours from database
+      setHoursInitialized(false);
+      await fetchHours();
       setHoursSaved(true);
       setTimeout(() => setHoursSaved(false), 2000);
     }
@@ -282,6 +291,7 @@ function SettingsContent() {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
@@ -416,6 +426,9 @@ function SettingsContent() {
     primaryColor: '#C7DCC8',
     backgroundColor: '#FAF8F3',
   });
+  const [isSavingBranding, setIsSavingBranding] = useState(false);
+  const [brandingSaved, setBrandingSaved] = useState(false);
+  const [brandingError, setBrandingError] = useState<string | null>(null);
 
   // Widget customization state - synced with API
   const [widgetSettings, setWidgetSettings] = useState({
@@ -526,6 +539,12 @@ function SettingsContent() {
         taxIncluded: salon.taxIncluded ?? false,
         vatNumber: salon.vatNumber || '',
       });
+
+      // Sync branding settings
+      setBrandingForm({
+        primaryColor: salon.brand_primary_color || '#C7DCC8',
+        backgroundColor: salon.brand_background_color || '#FAF8F3',
+      });
     }
   }, [salon]);
 
@@ -605,6 +624,26 @@ function SettingsContent() {
     }
   };
 
+  // Save branding settings
+  const handleSaveBranding = async () => {
+    setIsSavingBranding(true);
+    setBrandingError(null);
+    setBrandingSaved(false);
+
+    try {
+      await updateSalon({
+        brand_primary_color: brandingForm.primaryColor,
+        brand_background_color: brandingForm.backgroundColor,
+      });
+      setBrandingSaved(true);
+      setTimeout(() => setBrandingSaved(false), 2000);
+    } catch (err) {
+      setBrandingError(err instanceof Error ? err.message : 'Failed to save branding settings');
+    } finally {
+      setIsSavingBranding(false);
+    }
+  };
+
   const toggleAddOn = async (addOnId: AddOnId) => {
     try {
       if (hasAddOn(addOnId)) {
@@ -649,7 +688,7 @@ function SettingsContent() {
     if (salonDependentSections.includes(activeSection) && salonError) {
       return (
         <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-rose/10 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
           <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">Failed to Load Settings</h3>
@@ -727,12 +766,21 @@ function SettingsContent() {
                     <button
                       onClick={async () => {
                         setIsUpdatingProfile(true);
+                        setProfileError(null);
+                        setProfileSaved(false);
                         try {
-                          await updateProfile(profileForm);
-                          setProfileSaved(true);
-                          setTimeout(() => setProfileSaved(false), 2000);
+                          const result = await updateProfile(profileForm);
+                          if (result) {
+                            // Re-fetch to verify persistence
+                            await fetchProfile();
+                            setProfileSaved(true);
+                            setTimeout(() => setProfileSaved(false), 2000);
+                          } else {
+                            setProfileError('Failed to save profile');
+                          }
                         } catch (err) {
                           console.error('Failed to update profile:', err);
+                          setProfileError(err instanceof Error ? err.message : 'Failed to save profile');
                         } finally {
                           setIsUpdatingProfile(false);
                         }
@@ -747,6 +795,9 @@ function SettingsContent() {
                       ) : null}
                       {profileSaved ? 'Saved!' : 'Save Changes'}
                     </button>
+                    {profileError && (
+                      <span className="text-red-500 text-sm">{profileError}</span>
+                    )}
                   </div>
                 </div>
 
@@ -788,9 +839,9 @@ function SettingsContent() {
                 </div>
 
                 {/* Delete Account Section */}
-                <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-red-200 dark:border-red-900/50">
+                <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-rose/20 dark:border-rose/20">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-rose/10 dark:bg-rose/20 flex items-center justify-center flex-shrink-0">
                       <Trash2 className="w-6 h-6 text-red-500" />
                     </div>
                     <div className="flex-1">
@@ -828,7 +879,7 @@ function SettingsContent() {
                                 }
                               }
                             }}
-                            className="px-4 py-2 border border-red-500 text-red-500 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            className="px-4 py-2 border border-rose text-rose rounded-lg font-medium hover:bg-rose/10 dark:hover:bg-rose/20 transition-colors"
                           >
                             Delete Account
                           </button>
@@ -1085,7 +1136,7 @@ function SettingsContent() {
                             </button>
                             <button
                               onClick={() => cancelInvite(invite.id)}
-                              className="p-2 text-text-muted dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                              className="p-2 text-text-muted dark:text-white/60 hover:text-rose hover:bg-rose/10 dark:hover:bg-rose/20 rounded-lg"
                               title="Cancel"
                             >
                               <X className="w-4 h-4" />
@@ -1130,7 +1181,7 @@ function SettingsContent() {
                                 removeMember(member.id);
                               }
                             }}
-                            className="p-2 text-text-muted dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                            className="p-2 text-text-muted dark:text-white/60 hover:text-rose hover:bg-rose/10 dark:hover:bg-rose/20 rounded-lg"
                             title="Remove"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1216,7 +1267,7 @@ function SettingsContent() {
 
               {/* Error/Success feedback */}
               {multiLocationError && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                <div className="mt-4 p-3 bg-rose/10 border border-rose/20 rounded-lg flex items-center gap-2 text-rose-dark text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {multiLocationError}
                 </div>
@@ -2204,7 +2255,7 @@ function SettingsContent() {
 
             {/* Error state */}
             {notificationSettingsError && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mb-4">
+              <div className="p-4 bg-rose/10 dark:bg-rose/20 border border-rose/20 dark:border-rose/30 rounded-lg mb-4">
                 <p className="text-red-600 dark:text-red-400 text-sm">
                   <strong>Error:</strong> {notificationSettingsError}
                 </p>
@@ -2229,20 +2280,26 @@ function SettingsContent() {
                       <p className="font-medium text-charcoal dark:text-white">Appointment Confirmation</p>
                       <p className="text-sm text-text-muted dark:text-white/60">Send when booking is confirmed</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-sage font-medium">Always On</span>
+                      <div className="w-11 h-6 bg-sage rounded-full relative">
+                        <span className="absolute top-[2px] right-[2px] w-5 h-5 rounded-full bg-white" />
+                      </div>
+                    </div>
                   </div>
                   <div className="flex gap-2">
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                    <div className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg">
+                      <div className="w-4 h-4 rounded border border-sage bg-sage flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
                       <span className="text-sm text-charcoal dark:text-white">Email</span>
-                    </label>
-                    <label className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage disabled:opacity-50" />
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-charcoal/5 dark:bg-white/5 rounded-lg">
+                      <div className="w-4 h-4 rounded border border-sage bg-sage flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
                       <span className="text-sm text-charcoal dark:text-white">SMS</span>
-                    </label>
+                    </div>
                   </div>
                 </div>
 
@@ -2314,10 +2371,12 @@ function SettingsContent() {
                       <p className="font-medium text-charcoal dark:text-white">New Booking Alert</p>
                       <p className="text-sm text-text-muted dark:text-white/60">Notify staff when a new booking is made</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-sage font-medium">Always On</span>
+                      <div className="w-11 h-6 bg-sage rounded-full relative">
+                        <span className="absolute top-[2px] right-[2px] w-5 h-5 rounded-full bg-white" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -2327,10 +2386,12 @@ function SettingsContent() {
                       <p className="font-medium text-charcoal dark:text-white">Cancellation Alert</p>
                       <p className="text-sm text-text-muted dark:text-white/60">Notify staff when a booking is cancelled</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-charcoal/20 peer-focus:ring-4 peer-focus:ring-sage/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sage"></div>
-                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-sage font-medium">Always On</span>
+                      <div className="w-11 h-6 bg-sage rounded-full relative">
+                        <span className="absolute top-[2px] right-[2px] w-5 h-5 rounded-full bg-white" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3002,6 +3063,25 @@ function SettingsContent() {
                 </div>
               </div>
             </div>
+
+            {/* Save Button */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSaveBranding}
+                disabled={isSavingBranding}
+                className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isSavingBranding ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : brandingSaved ? (
+                  <Check className="w-4 h-4" />
+                ) : null}
+                {brandingSaved ? 'Saved!' : 'Save Branding'}
+              </button>
+              {brandingError && (
+                <span className="text-red-500 text-sm">{brandingError}</span>
+              )}
+            </div>
           </div>
         );
 
@@ -3160,7 +3240,7 @@ function SettingsContent() {
                         ) : (
                           <button
                             onClick={() => revokeSession(session.id)}
-                            className="px-3 py-1 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                            className="px-3 py-1 text-xs text-rose hover:bg-rose/10 dark:hover:bg-rose/20 rounded"
                           >
                             Revoke
                           </button>
@@ -3189,7 +3269,7 @@ function SettingsContent() {
                   {loginHistory.slice(0, 10).map((entry) => (
                     <div key={entry.id} className="flex items-center justify-between py-2 border-b border-charcoal/5 dark:border-white/5 last:border-0">
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${entry.success ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${entry.success ? 'bg-green-500' : 'bg-rose'}`} />
                         <div>
                           <p className="text-sm text-charcoal dark:text-white">
                             {entry.success ? 'Successful login' : `Failed login: ${entry.failReason || 'Unknown'}`}
