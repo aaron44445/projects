@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/auth.js';
-import { prisma } from '@peacase/database';
+import { requireActiveSubscription } from '../middleware/subscription.js';
+import { prisma, Prisma } from '@peacase/database';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 export const locationsRouter = Router();
 
-// All routes require authentication
-locationsRouter.use(authenticate);
+// All routes require authentication and active subscription
+locationsRouter.use(authenticate, requireActiveSubscription());
 
 /**
  * GET /api/v1/locations
@@ -72,17 +75,34 @@ locationsRouter.post('/', authorize('admin', 'owner'), asyncHandler(async (req, 
       });
     }
 
-    // Check if salon has multi-location enabled
+    // Check if salon has multi-location enabled and subscription limits
     const salon = await prisma.salon.findUnique({
       where: { id: salonId },
       include: {
         _count: {
           select: { locations: true },
         },
+        subscription: true,
       },
     });
 
     const existingLocationCount = salon?._count.locations || 0;
+    const additionalLocationsPurchased = salon?.subscription?.additionalLocations || 0;
+
+    // Base plan includes 1 location, extra locations require add-on purchase
+    const allowedLocations = 1 + additionalLocationsPurchased;
+
+    // Check subscription-based location limit
+    if (existingLocationCount >= allowedLocations) {
+      return res.status(402).json({
+        success: false,
+        error: {
+          code: 'LOCATION_LIMIT_REACHED',
+          message: `You have reached your location limit (${allowedLocations}). Add extra locations at $100/month each.`,
+          upgrade_url: '/settings?tab=subscription',
+        },
+      });
+    }
 
     // If this is the second location and multi-location is not enabled, reject
     if (existingLocationCount >= 1 && !salon?.multiLocationEnabled) {

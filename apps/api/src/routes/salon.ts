@@ -1,10 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '@peacase/database';
+import { prisma, Prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
+
+// Salon settings require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // Valid currency codes
 const VALID_CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'NZD', 'CHF', 'SEK'] as const;
@@ -80,7 +85,7 @@ const salonUpdateSchema = z.object({
 // GET /api/v1/salon
 // Get current salon details
 // ============================================
-router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
   });
@@ -105,7 +110,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 // PATCH /api/v1/salon
 // Update salon details
 // ============================================
-router.patch('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.patch('/', asyncHandler(async (req: Request, res: Response) => {
   // Validate request body with zod schema
   let data;
   try {
@@ -169,7 +174,7 @@ router.patch('/', authenticate, asyncHandler(async (req: Request, res: Response)
 // GET /api/v1/salon/features
 // Get enabled features
 // ============================================
-router.get('/features', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/features', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: { featuresEnabled: true, subscriptionPlan: true },
@@ -198,7 +203,7 @@ router.get('/features', authenticate, asyncHandler(async (req: Request, res: Res
 // GET /api/v1/salon/widget-settings
 // Get widget customization settings
 // ============================================
-router.get('/widget-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/widget-settings', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: {
@@ -234,7 +239,7 @@ router.get('/widget-settings', authenticate, asyncHandler(async (req: Request, r
 // PATCH /api/v1/salon/widget-settings
 // Update widget customization settings
 // ============================================
-router.patch('/widget-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.patch('/widget-settings', asyncHandler(async (req: Request, res: Response) => {
   const { primaryColor, accentColor, buttonStyle, fontFamily } = req.body;
 
   // Validate color format (hex)
@@ -313,7 +318,7 @@ router.patch('/widget-settings', authenticate, asyncHandler(async (req: Request,
 // GET /api/v1/salon/notification-settings
 // Get notification settings
 // ============================================
-router.get('/notification-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/notification-settings', asyncHandler(async (req: Request, res: Response) => {
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
     select: { notification_settings: true },
@@ -352,7 +357,7 @@ router.get('/notification-settings', authenticate, asyncHandler(async (req: Requ
 // PUT /api/v1/salon/notification-settings
 // Update notification settings
 // ============================================
-router.put('/notification-settings', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.put('/notification-settings', asyncHandler(async (req: Request, res: Response) => {
   // Only owner/admin can change notification settings
   if (!['owner', 'admin'].includes(req.user!.role)) {
     return res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Only owners and admins can update notification settings' } });
