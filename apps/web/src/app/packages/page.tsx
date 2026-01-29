@@ -31,6 +31,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
+import { Modal } from '@peacase/ui';
 
 const services = [
   'Haircut & Style',
@@ -652,19 +653,13 @@ function PackagesContent() {
       </main>
 
       {/* Create/Edit Package/Membership Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">
-                {editingItem ? 'Edit' : 'Create'} {showModal === 'package' ? 'Package' : 'Membership'}
-              </h2>
-              <button onClick={() => { setShowModal(null); resetForm(); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={!!showModal}
+        onClose={() => { setShowModal(null); resetForm(); }}
+        title={`${editingItem ? 'Edit' : 'Create'} ${showModal === 'package' ? 'Package' : 'Membership'}`}
+        size="lg"
+      >
+        <div className="space-y-6">
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
@@ -797,48 +792,41 @@ function PackagesContent() {
                   ))}
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
-              <button
-                onClick={() => { setShowModal(null); resetForm(); }}
-                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={editingItem ? handleUpdatePackage : handleCreatePackage}
-                disabled={!formData.name || !formData.price || isSubmitting}
-                className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : showModal === 'package' ? (
-                  <Package className="w-4 h-4" />
-                ) : (
-                  <RefreshCw className="w-4 h-4" />
-                )}
-                {editingItem ? 'Save Changes' : `Create ${showModal === 'package' ? 'Package' : 'Membership'}`}
-              </button>
-            </div>
-          </div>
         </div>
-      )}
+
+        <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end">
+          <button
+            onClick={() => { setShowModal(null); resetForm(); }}
+            className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={editingItem ? handleUpdatePackage : handleCreatePackage}
+            disabled={!formData.name || !formData.price || isSubmitting}
+            className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : showModal === 'package' ? (
+              <Package className="w-4 h-4" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            {editingItem ? 'Save Changes' : `Create ${showModal === 'package' ? 'Package' : 'Membership'}`}
+          </button>
+        </div>
+      </Modal>
 
       {/* View Details Modal */}
-      {viewingItem && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">
-                {viewingItem.type === 'PACKAGE' || viewingItem.type === 'package' ? 'Package' : 'Membership'} Details
-              </h2>
-              <button onClick={() => setViewingItem(null)} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+        title={`${viewingItem?.type === 'PACKAGE' || viewingItem?.type === 'package' ? 'Package' : 'Membership'} Details`}
+        size="lg"
+      >
+        {viewingItem && (
+          <div className="space-y-6">
               {/* Header with icon and status */}
               <div className="flex items-start gap-4">
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
@@ -956,9 +944,8 @@ function PackagesContent() {
                   </div>
                 );
               })()}
-            </div>
 
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
+            <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end">
               <button
                 onClick={() => setViewingItem(null)}
                 className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
@@ -977,21 +964,18 @@ function PackagesContent() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
       {/* View Member Profile Modal */}
-      {viewingMember && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Member Profile</h2>
-              <button onClick={() => setViewingMember(null)} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={!!viewingMember}
+        onClose={() => setViewingMember(null)}
+        title="Member Profile"
+        size="md"
+      >
+        {viewingMember && (
+          <div className="space-y-6">
               {/* Member Info */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-sage/20 flex items-center justify-center">
@@ -1075,9 +1059,8 @@ function PackagesContent() {
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-between sticky bottom-0 bg-white dark:bg-sidebar">
+            <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-between">
               <button
                 onClick={() => {
                   handlePauseMember(viewingMember);
@@ -1098,8 +1081,8 @@ function PackagesContent() {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
       {/* Click outside to close action menu */}
       {actionMenu && (
