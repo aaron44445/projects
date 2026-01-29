@@ -119,14 +119,32 @@ export function BookingModal({
       ).slice(0, 5)
     : [];
 
-  if (!isOpen) return null;
-
   const isClientLocked = !!prefilledClientId;
 
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   return (
-    <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
+    <div
+      className={`fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 ${!isOpen ? 'hidden' : ''}`}
+      aria-hidden={!isOpen}
+    >
       <FocusTrap
-        active={true}
+        active={isOpen}
         focusTrapOptions={{
           escapeDeactivates: false,
           returnFocusOnDeactivate: true,
