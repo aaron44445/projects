@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Bell,
   Menu,
   Sparkles,
   Mail,
@@ -22,6 +21,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
+import { Modal } from '@peacase/ui';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -994,96 +994,84 @@ function MarketingContent() {
       </main>
 
       {/* Modal */}
-      {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-charcoal/50 dark:bg-black/70" onClick={closeModal} />
-          <div className="relative bg-white dark:bg-sidebar rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-charcoal/10 dark:border-white/10">
-              <div className="flex items-center gap-3">
-                {activeModal === 'email' && <Mail className="w-6 h-6 text-sage" />}
-                {activeModal === 'sms' && <MessageSquare className="w-6 h-6 text-lavender" />}
-                {activeModal === 'automation' && <Clock className="w-6 h-6 text-peach" />}
-                <h2 className="text-xl font-bold text-charcoal dark:text-white">
-                  {activeModal === 'email' && 'Create Email Campaign'}
-                  {activeModal === 'sms' && 'Create SMS Campaign'}
-                  {activeModal === 'automation' && 'Create Automation'}
-                </h2>
-              </div>
-              <button onClick={closeModal} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            {/* Progress Steps */}
-            {!isSuccess && (
-              <div className="px-6 pt-4">
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: getMaxSteps() }).map((_, i) => (
-                    <div key={i} className="flex-1 flex items-center gap-2">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                          i + 1 < step
-                            ? 'bg-sage text-white'
-                            : i + 1 === step
-                              ? 'bg-sage/20 text-sage border-2 border-sage'
-                              : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/40 dark:text-white/40'
-                        }`}
-                      >
-                        {i + 1 < step ? <Check className="w-4 h-4" /> : i + 1}
-                      </div>
-                      {i < getMaxSteps() - 1 && (
-                        <div className={`flex-1 h-1 rounded ${i + 1 < step ? 'bg-sage' : 'bg-charcoal/10 dark:bg-white/10'}`} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              {renderModalContent()}
-            </div>
-
-            {/* Modal Footer */}
-            {!isSuccess && (
-              <div className="flex items-center justify-between p-6 border-t border-charcoal/10 dark:border-white/10 bg-charcoal/5 dark:bg-white/5">
-                <button
-                  onClick={() => step > 1 ? setStep(step - 1) : closeModal()}
-                  className="flex items-center gap-2 px-4 py-2 text-charcoal/70 dark:text-white/70 hover:text-charcoal dark:hover:text-white transition-colors"
-                  disabled={isSubmitting}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  {step > 1 ? 'Back' : 'Cancel'}
-                </button>
-                <button
-                  onClick={() => step < getMaxSteps() ? setStep(step + 1) : handleSubmit()}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : step < getMaxSteps() ? (
-                    <>
-                      Continue
-                      <ChevronRight className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      {activeModal === 'automation' ? 'Activate' : campaignData.sendTime === 'now' ? 'Send Now' : 'Schedule'}
-                      <Send className="w-4 h-4" />
-                    </>
+      <Modal
+        isOpen={!!activeModal}
+        onClose={closeModal}
+        title={
+          activeModal === 'email' ? 'Create Email Campaign' :
+          activeModal === 'sms' ? 'Create SMS Campaign' :
+          activeModal === 'automation' ? 'Create Automation' : ''
+        }
+        size="lg"
+        className="max-h-[90vh] overflow-hidden dark:bg-sidebar"
+      >
+        {/* Progress Steps */}
+        {!isSuccess && (
+          <div className="pb-4 -mt-2">
+            <div className="flex items-center gap-2">
+              {Array.from({ length: getMaxSteps() }).map((_, i) => (
+                <div key={i} className="flex-1 flex items-center gap-2">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      i + 1 < step
+                        ? 'bg-sage text-white'
+                        : i + 1 === step
+                          ? 'bg-sage/20 text-sage border-2 border-sage'
+                          : 'bg-charcoal/10 dark:bg-white/10 text-charcoal/40 dark:text-white/40'
+                    }`}
+                  >
+                    {i + 1 < step ? <Check className="w-4 h-4" /> : i + 1}
+                  </div>
+                  {i < getMaxSteps() - 1 && (
+                    <div className={`flex-1 h-1 rounded ${i + 1 < step ? 'bg-sage' : 'bg-charcoal/10 dark:bg-white/10'}`} />
                   )}
-                </button>
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Modal Content */}
+        <div className="overflow-y-auto max-h-[calc(90vh-280px)]">
+          {renderModalContent()}
         </div>
-      )}
+
+        {/* Modal Footer */}
+        {!isSuccess && (
+          <div className="flex items-center justify-between pt-6 border-t border-charcoal/10 dark:border-white/10 mt-6 -mx-6 -mb-6 px-6 py-4 bg-charcoal/5 dark:bg-white/5">
+            <button
+              onClick={() => step > 1 ? setStep(step - 1) : closeModal()}
+              className="flex items-center gap-2 px-4 py-2 text-charcoal/70 dark:text-white/70 hover:text-charcoal dark:hover:text-white transition-colors"
+              disabled={isSubmitting}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              {step > 1 ? 'Back' : 'Cancel'}
+            </button>
+            <button
+              onClick={() => step < getMaxSteps() ? setStep(step + 1) : handleSubmit()}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating...
+                </>
+              ) : step < getMaxSteps() ? (
+                <>
+                  Continue
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  {activeModal === 'automation' ? 'Activate' : campaignData.sendTime === 'now' ? 'Send Now' : 'Schedule'}
+                  <Send className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
