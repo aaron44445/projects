@@ -153,6 +153,9 @@ From v1.1 Phase 18:
 - text-red-500/600 -> text-rose-dark for accessible error text contrast (18-10)
 - dark:text-red-400 -> dark:text-rose for dark mode error visibility (18-10)
 - hover:bg-red-50 -> hover:bg-rose/10 for opacity-based hover tokens (18-10)
+- Dynamic Modal title for edit states: title={editing ? 'Edit X' : 'Add X'} (18-07)
+- Custom footer inside Modal children with pt-6 border-t mt-6 pattern (18-07)
+- Remove unused icon imports when migrating modals (X, Bell, Ban, MapPin, Globe) (18-07)
 
 ### Pending Todos
 
@@ -165,9 +168,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-10-PLAN.md (Settings Page Error Token Migration)
+Stopped at: Completed 18-07-PLAN.md (Gift-cards, Locations, Marketing Modal Migration)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 gap closure: plan 10 complete)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 07 complete)*
