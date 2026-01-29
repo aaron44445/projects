@@ -7,6 +7,8 @@ interface JWTPayload {
   userId: string;
   salonId: string;
   role: string;
+  portalType?: 'staff' | 'owner';  // Optional for backward compatibility
+  staffId?: string;  // Only present on staff tokens
 }
 
 declare global {

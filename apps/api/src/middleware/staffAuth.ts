@@ -1,6 +1,54 @@
 import { Request, Response, NextFunction } from 'express';
 
 /**
+ * Middleware that ensures the request is from the staff portal.
+ * Checks for portalType: 'staff' claim in the JWT token.
+ * Used to protect staff-only routes from owner portal access.
+ */
+export function staffPortalOnly(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+    });
+  }
+
+  // If token doesn't have portalType, it's an owner token (backward compatible)
+  if (req.user.portalType && req.user.portalType !== 'staff') {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Staff portal access required' },
+    });
+  }
+
+  next();
+}
+
+/**
+ * Middleware that ensures the request is NOT from the staff portal.
+ * Rejects tokens with portalType: 'staff' to prevent cross-portal access.
+ * Used to protect owner routes from staff portal tokens.
+ */
+export function ownerPortalOnly(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
+    });
+  }
+
+  // If portalType is 'staff', reject - staff cannot access owner routes
+  if (req.user.portalType === 'staff') {
+    return res.status(401).json({
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: 'Staff tokens cannot access owner routes' },
+    });
+  }
+
+  next();
+}
+
+/**
  * Middleware that ensures the authenticated user can only access their own data.
  * Used for staff-specific routes where staff should only see/modify their own records.
  */
