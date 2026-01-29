@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription } from '../middleware/subscription.js';
 import { validateFileOwnership } from '../middleware/validateFileOwnership.js';
 import {
   uploadImage,
@@ -16,8 +18,13 @@ import {
 } from '../services/upload.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { prisma } from '@peacase/database';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All upload routes require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // ============================================
 // MULTER CONFIGURATION
@@ -126,7 +133,6 @@ const deleteParamsSchema = z.object({
  */
 router.post(
   '/image',
-  authenticate,
   upload.single('file'),
   handleMulterError,
   asyncHandler(async (req: Request, res: Response) => {
@@ -217,7 +223,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error({ err: error, salonId: req.user?.salonId, fileType: req.body.type }, 'Image upload failed');
       res.status(500).json({
         success: false,
         error: {
@@ -240,7 +246,6 @@ router.post(
  */
 router.post(
   '/avatar',
-  authenticate,
   upload.single('file'),
   handleMulterError,
   asyncHandler(async (req: Request, res: Response) => {
@@ -298,7 +303,7 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Avatar upload error:', error);
+      logger.error({ err: error, userId: req.user?.userId }, 'Avatar upload failed');
       res.status(500).json({
         success: false,
         error: {
@@ -319,7 +324,6 @@ router.post(
  */
 router.delete(
   '/:publicId(*)',
-  authenticate,
   validateFileOwnership,
   asyncHandler(async (req: Request, res: Response) => {
     try {
@@ -361,7 +365,7 @@ router.delete(
         },
       });
     } catch (error) {
-      console.error('Delete error:', error);
+      logger.error({ err: error, publicId: req.params.publicId, salonId: req.user?.salonId }, 'Image delete failed');
       res.status(500).json({
         success: false,
         error: {
@@ -377,7 +381,7 @@ router.delete(
  * GET /api/v1/uploads/config
  * Get upload configuration for frontend
  */
-router.get('/config', authenticate, (req: Request, res: Response) => {
+router.get('/config', (req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
