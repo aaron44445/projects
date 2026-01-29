@@ -55,23 +55,27 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
 const salonUpdateSchema = z.object({
   // Basic fields
   name: z.string().min(1).optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zip: z.string().optional(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  zip: z.string().optional().nullable(),
   timezone: z.string().optional(),
-  website: z.string().url().optional().or(z.literal('')),
-  description: z.string().optional(),
+  website: z.string().url().optional().nullable().or(z.literal('')),
+  description: z.string().optional().nullable(),
   multiLocationEnabled: z.boolean().optional(),
 
   // Internationalization fields
   currency: z.enum(VALID_CURRENCIES).optional(),
-  locale: z.string().min(2).max(10).optional(),
+  locale: z.string().min(2).max(10).optional().nullable(),
   timeFormat: z.enum(VALID_TIME_FORMATS).optional(),
   dateFormat: z.enum(VALID_DATE_FORMATS).optional(),
   weekStartsOn: z.number().int().min(0).max(6).optional(),
-  country: z.string().regex(countryCodeRegex, 'Country must be a 2-letter ISO code').optional(),
+  country: z.string().regex(countryCodeRegex, 'Country must be a 2-letter ISO code').optional().nullable(),
+
+  // Branding fields
+  brand_primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional(),
+  brand_background_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional(),
 
   // Tax fields
   vatNumber: z.string().optional().nullable(),
@@ -158,6 +162,10 @@ router.patch('/', asyncHandler(async (req: Request, res: Response) => {
   if (data.taxRate !== undefined) updateData.taxRate = data.taxRate;
   if (data.taxName !== undefined) updateData.taxName = data.taxName;
   if (data.taxIncluded !== undefined) updateData.taxIncluded = data.taxIncluded;
+
+  // Branding fields
+  if (data.brand_primary_color !== undefined) updateData.brand_primary_color = data.brand_primary_color;
+  if (data.brand_background_color !== undefined) updateData.brand_background_color = data.brand_background_color;
 
   const salon = await prisma.salon.update({
     where: { id: req.user!.salonId },
@@ -412,6 +420,91 @@ router.put('/notification-settings', asyncHandler(async (req: Request, res: Resp
   });
 
   res.json({ success: true, data: newSettings });
+}));
+
+// ============================================
+// GET /api/v1/salon/time-off-requests
+// List pending time-off requests for all staff
+// ============================================
+router.get('/time-off-requests', asyncHandler(async (req: Request, res: Response) => {
+  const salonId = req.user!.salonId;
+  const { status } = req.query; // Optional filter: 'pending', 'approved', 'rejected'
+
+  const requests = await prisma.timeOff.findMany({
+    where: {
+      staff: { salonId },
+      ...(status ? { status: status as string } : {}),
+    },
+    include: {
+      staff: {
+        select: { id: true, firstName: true, lastName: true, email: true },
+      },
+    },
+    orderBy: [{ status: 'asc' }, { startDate: 'asc' }], // pending first, then by date
+  });
+
+  res.json({ success: true, data: requests });
+}));
+
+// ============================================
+// PATCH /api/v1/salon/time-off-requests/:id
+// Approve or reject a time-off request
+// ============================================
+const timeOffReviewSchema = z.object({
+  status: z.enum(['approved', 'rejected']),
+  reviewNotes: z.string().optional(),
+});
+
+router.patch('/time-off-requests/:id', asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const salonId = req.user!.salonId;
+  const reviewerId = req.user!.userId;
+
+  let data;
+  try {
+    data = timeOffReviewSchema.parse(req.body);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid input',
+          details: error.flatten(),
+        },
+      });
+    }
+    throw error;
+  }
+
+  // Verify request belongs to this salon's staff
+  const existing = await prisma.timeOff.findFirst({
+    where: { id, staff: { salonId } },
+  });
+
+  if (!existing) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Time off request not found' },
+    });
+  }
+
+  const updated = await prisma.timeOff.update({
+    where: { id },
+    data: {
+      status: data.status,
+      reviewedAt: new Date(),
+      reviewedBy: reviewerId,
+      reviewNotes: data.reviewNotes,
+    },
+    include: {
+      staff: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+    },
+  });
+
+  res.json({ success: true, data: updated });
 }));
 
 export { router as salonRouter };
