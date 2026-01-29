@@ -685,6 +685,19 @@ router.get('/dashboard', authenticate, staffOnly, asyncHandler(async (req: Reque
   const staffId = req.user.userId;
   const salonId = req.user.salonId;
 
+  // Get staff's assigned locations for filtering
+  const staffLocations = await prisma.staffLocation.findMany({
+    where: { staffId },
+    select: { locationId: true },
+  });
+  const staffLocationIds = staffLocations.map(sl => sl.locationId);
+
+  // Fetch salon's staffCanViewClientContact setting
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { staffCanViewClientContact: true },
+  });
+
   // Get today's date range
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -697,32 +710,47 @@ router.get('/dashboard', authenticate, staffOnly, asyncHandler(async (req: Reque
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 7);
 
-  // Today's appointments
+  // Today's appointments (filtered by location if staff has assignments)
   const todayAppointments = await prisma.appointment.findMany({
     where: {
       staffId,
       salonId,
       startTime: { gte: today, lt: tomorrow },
       status: { notIn: ['cancelled'] },
+      // Only filter by location if staff has assignments; otherwise show all
+      ...(staffLocationIds.length > 0 && { locationId: { in: staffLocationIds } }),
     },
-    include: {
+    select: {
+      id: true,
+      startTime: true,
+      endTime: true,
+      status: true,
+      notes: true,
       client: { select: { id: true, firstName: true, lastName: true, phone: true } },
-      service: { select: { id: true, name: true, durationMinutes: true, color: true } },
+      service: { select: { id: true, name: true, durationMinutes: true, color: true, price: true } },
+      location: { select: { id: true, name: true } },
     },
     orderBy: { startTime: 'asc' },
   });
 
-  // Upcoming appointments (next 7 days, excluding today)
+  // Upcoming appointments (next 7 days, excluding today) - same location filter
   const upcomingAppointments = await prisma.appointment.findMany({
     where: {
       staffId,
       salonId,
       startTime: { gte: tomorrow, lt: weekEnd },
       status: { notIn: ['cancelled'] },
+      ...(staffLocationIds.length > 0 && { locationId: { in: staffLocationIds } }),
     },
-    include: {
-      client: { select: { id: true, firstName: true, lastName: true } },
-      service: { select: { id: true, name: true, durationMinutes: true, color: true } },
+    select: {
+      id: true,
+      startTime: true,
+      endTime: true,
+      status: true,
+      notes: true,
+      client: { select: { id: true, firstName: true, lastName: true, phone: true } },
+      service: { select: { id: true, name: true, durationMinutes: true, color: true, price: true } },
+      location: { select: { id: true, name: true } },
     },
     orderBy: { startTime: 'asc' },
     take: 10,
@@ -775,6 +803,8 @@ router.get('/dashboard', authenticate, staffOnly, asyncHandler(async (req: Reque
         todayCount: todayAppointments.length,
         weekCount: todayAppointments.length + upcomingAppointments.length,
       },
+      staffCanViewClientContact: salon?.staffCanViewClientContact ?? true,
+      hasMultipleLocations: staffLocationIds.length > 1,
     },
   });
 }));
@@ -1107,7 +1137,31 @@ router.get('/profile', authenticate, staffOnly, asyncHandler(async (req: Request
     });
   }
 
-  res.json({ success: true, data: staff });
+  // Get staff's assigned locations
+  const staffLocations = await prisma.staffLocation.findMany({
+    where: { staffId: req.user.userId },
+    include: {
+      location: {
+        select: { id: true, name: true, address: true }
+      }
+    },
+    orderBy: { isPrimary: 'desc' }  // Primary location first
+  });
+
+  const assignedLocations = staffLocations.map(sl => ({
+    id: sl.location.id,
+    name: sl.location.name,
+    address: sl.location.address,
+    isPrimary: sl.isPrimary
+  }));
+
+  res.json({
+    success: true,
+    data: {
+      ...staff,
+      assignedLocations
+    }
+  });
 }));
 
 // ============================================
