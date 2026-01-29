@@ -70,6 +70,7 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<DashboardData['todayAppointments'][0] | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
@@ -294,6 +295,7 @@ function DashboardContent() {
                         return (
                           <div
                             key={appointment.id}
+                            onClick={() => setSelectedAppointment(appointment)}
                             className={`p-4 hover:bg-charcoal/5 transition-colors cursor-pointer ${
                               isPast ? 'opacity-50' : ''
                             }`}
@@ -398,6 +400,99 @@ function DashboardContent() {
             </div>
           )}
         </div>
+
+        {/* Appointment Detail Modal */}
+        <Modal
+          isOpen={!!selectedAppointment}
+          onClose={() => setSelectedAppointment(null)}
+          title="Appointment Details"
+          size="md"
+        >
+          {selectedAppointment && (
+            <div className="space-y-4">
+              {/* Time */}
+              <div className="flex items-center gap-3 p-4 bg-sage/10 rounded-xl">
+                <Clock className="w-5 h-5 text-sage" />
+                <div>
+                  <p className="font-medium text-charcoal">
+                    {formatTime(selectedAppointment.startTime)} - {formatTime(selectedAppointment.endTime)}
+                  </p>
+                  <p className="text-sm text-charcoal/60">
+                    {new Date(selectedAppointment.startTime).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Client */}
+              <div className="p-4 border border-charcoal/10 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-lavender/20 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-lavender-dark" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-charcoal">
+                      {selectedAppointment.client.firstName} {selectedAppointment.client.lastName}
+                    </p>
+                    {dashboardData?.staffCanViewClientContact && selectedAppointment.client.phone && (
+                      <p className="text-sm text-charcoal/60">{selectedAppointment.client.phone}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Service */}
+              <div className="p-4 border border-charcoal/10 rounded-xl">
+                <p className="text-sm text-charcoal/60 mb-2">Service</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-charcoal">{selectedAppointment.service.name}</p>
+                    {selectedAppointment.service.durationMinutes && (
+                      <p className="text-sm text-charcoal/60">
+                        {selectedAppointment.service.durationMinutes} minutes
+                      </p>
+                    )}
+                  </div>
+                  <p className="font-semibold text-sage">
+                    {formatCurrency(selectedAppointment.service.price)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Location (if multi-location) */}
+              {dashboardData?.hasMultipleLocations && selectedAppointment.location && (
+                <div className="p-4 border border-charcoal/10 rounded-xl">
+                  <p className="text-sm text-charcoal/60 mb-1">Location</p>
+                  <p className="font-medium text-charcoal flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-charcoal/40" />
+                    {selectedAppointment.location.name}
+                  </p>
+                </div>
+              )}
+
+              {/* Notes (if any) */}
+              {selectedAppointment.notes && (
+                <div className="p-4 border border-charcoal/10 rounded-xl">
+                  <p className="text-sm text-charcoal/60 mb-1">Notes</p>
+                  <p className="text-charcoal">{selectedAppointment.notes}</p>
+                </div>
+              )}
+
+              {/* Status */}
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-sm text-charcoal/60">Status</span>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(selectedAppointment.status)}`}
+                >
+                  {selectedAppointment.status}
+                </span>
+              </div>
+            </div>
+          )}
+        </Modal>
       </main>
     </div>
   );
