@@ -101,10 +101,10 @@ Plans:
 - [x] 16-04-PLAN.md - Skip to main content navigation (A11Y-03)
 - [x] 16-05-PLAN.md - Text contrast core components (A11Y-04)
 - [x] 16-06-PLAN.md - Text contrast batch component updates (A11Y-04)
-- [ ] 16-07-PLAN.md - Gap closure: Modal focus restoration fix (A11Y-01)
-- [ ] 16-08-PLAN.md - Gap closure: Add Staff modal ARIA fix (A11Y-01)
-- [ ] 16-09-PLAN.md - Gap closure: Booking widget radiogroup semantics (A11Y-02)
-- [ ] 16-10-PLAN.md - Gap closure: Skip link CSS fix (A11Y-03)
+- [x] 16-07-PLAN.md - Gap closure: Modal focus restoration fix (A11Y-01)
+- [x] 16-08-PLAN.md - Gap closure: Add Staff modal ARIA fix (A11Y-01)
+- [x] 16-09-PLAN.md - Gap closure: Booking widget radiogroup semantics (A11Y-02)
+- [x] 16-10-PLAN.md - Gap closure: Skip link CSS fix (A11Y-03)
 
 ### Phase 17: Code Quality
 **Goal**: Codebase is strictly typed with no implicit any and uses structured logging
@@ -115,10 +115,18 @@ Plans:
   2. API builds successfully with noImplicitAny: true in tsconfig.json
   3. Shared salonId filter utility is used in all routes (no inline where patterns)
   4. All API console.log/warn/error calls replaced with structured logger
-**Plans**: TBD
+**Plans**: 9 plans
 
 Plans:
-- [ ] 17-01: TBD
+- [ ] 17-01-PLAN.md - Logger and prismaUtils foundation (CODE-03, CODE-04 foundation)
+- [ ] 17-02-PLAN.md - High-traffic routes migration (CODE-01)
+- [ ] 17-03-PLAN.md - Business routes migration (CODE-01)
+- [ ] 17-04-PLAN.md - Portal routes migration (CODE-01)
+- [ ] 17-05-PLAN.md - System routes migration (CODE-01)
+- [ ] 17-06-PLAN.md - Remaining routes migration (CODE-01)
+- [ ] 17-07-PLAN.md - Services and middleware logging (CODE-04)
+- [ ] 17-08-PLAN.md - Lib, cron, and worker logging (CODE-04)
+- [ ] 17-09-PLAN.md - Enable noImplicitAny and verify (CODE-02)
 
 ### Phase 18: UI/UX Consistency
 **Goal**: UI components follow consistent patterns with shared design tokens
@@ -144,9 +152,9 @@ Plans:
 | 14. Performance Optimization | v1.1 | 4/4 | Complete | 2026-01-28 |
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
 | 16. Accessibility Compliance | v1.1 | 10/10 | Complete | 2026-01-29 |
-| 17. Code Quality | v1.1 | 0/TBD | Not started | - |
+| 17. Code Quality | v1.1 | 0/9 | Not started | - |
 | 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 16 complete - all 10 plans including gap closures)*
+*Last updated: 2026-01-29 (Phase 17 planned - 9 plans in 3 waves)*
