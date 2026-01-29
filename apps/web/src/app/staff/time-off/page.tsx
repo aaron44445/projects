@@ -294,12 +294,27 @@ function TimeOffContent() {
 
                           <p className="text-charcoal/70 ml-8">{request.reason}</p>
 
-                          {request.reviewNotes && (
+                          {request.status === 'approved' && request.reviewNotes === 'Auto-approved' && (
+                            <div className="mt-3 ml-8 flex items-center gap-2 text-xs text-sage">
+                              <CheckCircle2 className="w-4 h-4" />
+                              <span>Automatically approved</span>
+                            </div>
+                          )}
+                          {request.reviewNotes && request.reviewNotes !== 'Auto-approved' && (
                             <div className="mt-3 ml-8 p-3 bg-charcoal/5 rounded-lg">
                               <p className="text-sm text-charcoal/60">
-                                <span className="font-medium">Manager note:</span>{' '}
+                                <span className="font-medium">
+                                  {request.status === 'approved' ? 'Approved' : request.status === 'denied' ? 'Denied' : 'Manager'} note:
+                                </span>{' '}
                                 {request.reviewNotes}
                               </p>
+                              {request.reviewedAt && (
+                                <p className="text-xs text-charcoal/40 mt-1">
+                                  {new Date(request.reviewedAt).toLocaleDateString('en-US', {
+                                    month: 'short', day: 'numeric', year: 'numeric'
+                                  })}
+                                </p>
+                              )}
                             </div>
                           )}
 
