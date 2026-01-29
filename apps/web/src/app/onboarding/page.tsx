@@ -230,7 +230,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 function OnboardingContent() {
   const router = useRouter();
   const { salon, user, refreshSalonData } = useAuth();
-  const { setActiveAddOns } = useSubscription();
+  const { refreshSubscription } = useSubscription();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -475,7 +475,9 @@ function OnboardingContent() {
           setIsSubmitting(false);
           return;
         }
-        setActiveAddOns(selectedAddOns as AddOnId[]);
+        // During trial, all add-ons are accessible
+        // Selected add-ons will be activated when trial ends
+        await refreshSubscription();
       }
 
       if (currentStepId === 'hours') {

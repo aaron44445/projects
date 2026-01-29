@@ -35,7 +35,7 @@ router.post('/', authenticate, authorize('admin', 'manager'), asyncHandler(async
 
   const pkg = await prisma.package.create({
     data: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       name,
       description,
       price,

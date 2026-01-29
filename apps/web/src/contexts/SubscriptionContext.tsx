@@ -1,6 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { api } from '@/lib/api';
 
 // Add-on definitions with setup guides
 export const ADD_ON_DETAILS = {
@@ -56,19 +58,6 @@ export const ADD_ON_DETAILS = {
     ],
     helpUrl: '/reports',
   },
-  reviews: {
-    id: 'reviews',
-    name: 'Reviews & Ratings',
-    description: 'Collect and display client reviews',
-    price: 25,
-    setupSteps: [
-      'Automatic review requests are sent after appointments',
-      'Moderate reviews in Settings > Reviews',
-      'Display approved reviews on your booking page',
-      'Respond to reviews to engage with clients',
-    ],
-    helpUrl: '/settings?tab=reviews',
-  },
   memberships: {
     id: 'memberships',
     name: 'Packages & Memberships',
@@ -112,66 +101,152 @@ export const ADD_ON_DETAILS = {
 
 export type AddOnId = keyof typeof ADD_ON_DETAILS;
 
+// Plan prices - Professional only
+const PLAN_PRICES: Record<string, number> = {
+  professional: 49,
+};
+
+interface SubscriptionData {
+  id: string | null;
+  plan: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  currentPeriodStart: string | null;
+  cancelAtPeriodEnd: boolean;
+  trialEndsAt: string | null;
+  graceEndsAt: string | null;
+  addons: string[];
+  planDetails: {
+    id: string;
+    name: string;
+    price: number;
+    features: string[];
+    limits: { maxStaff: number | null; maxClients: number | null };
+  };
+}
+
 interface SubscriptionContextType {
+  subscription: SubscriptionData | null;
   activeAddOns: AddOnId[];
-  setActiveAddOns: (addOns: AddOnId[]) => void;
+  loading: boolean;
+  error: string | null;
   hasAddOn: (addOnId: AddOnId) => boolean;
+  addAddon: (addOnId: AddOnId) => Promise<void>;
+  removeAddon: (addOnId: AddOnId) => Promise<void>;
+  refreshSubscription: () => Promise<void>;
   monthlyTotal: number;
   trialEndsAt: Date | null;
   isTrialActive: boolean;
+  plan: string;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const [activeAddOns, setActiveAddOnsState] = useState<AddOnId[]>([]);
-  const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
+  const { isAuthenticated } = useAuth();
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load subscription from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('peacase_subscription');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        setActiveAddOnsState(data.addOns || []);
-        setTrialEndsAt(data.trialEndsAt ? new Date(data.trialEndsAt) : null);
-      } catch {
-        // Invalid data, start fresh
+  // Fetch subscription data from API
+  const fetchSubscription = useCallback(async () => {
+    if (!isAuthenticated) {
+      setSubscription(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await api.get('/billing/subscription') as { success: boolean; data?: { subscription: SubscriptionData }; error?: { message: string } };
+      if (data.success && data.data) {
+        setSubscription(data.data.subscription);
+      } else {
+        throw new Error(data.error?.message || 'Failed to fetch subscription');
       }
+    } catch (err) {
+      console.error('Error fetching subscription:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
+      // Set null subscription on error - no free tier
+      setSubscription(null);
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
-  // Save subscription to localStorage
-  const setActiveAddOns = (addOns: AddOnId[]) => {
-    setActiveAddOnsState(addOns);
+  // Fetch subscription on mount and when auth changes
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
 
-    // Calculate trial end date (14 days from now if not set)
-    const trialEnd = trialEndsAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    if (!trialEndsAt) {
-      setTrialEndsAt(trialEnd);
+  // Add an addon
+  const addAddon = async (addOnId: AddOnId) => {
+    if (!isAuthenticated) {
+      throw new Error('Not authenticated');
     }
 
-    localStorage.setItem('peacase_subscription', JSON.stringify({
-      addOns,
-      trialEndsAt: trialEnd.toISOString(),
-    }));
+    try {
+      const data = await api.post('/billing/add-addon', { addonId: addOnId });
+      if (!data.success) {
+        throw new Error(data.error?.message || 'Failed to add addon');
+      }
+
+      // Refresh subscription data
+      await fetchSubscription();
+    } catch (err) {
+      console.error('Error adding addon:', err);
+      throw err;
+    }
   };
 
-  const hasAddOn = (addOnId: AddOnId) => activeAddOns.includes(addOnId);
+  // Remove an addon
+  const removeAddon = async (addOnId: AddOnId) => {
+    if (!isAuthenticated) {
+      throw new Error('Not authenticated');
+    }
 
-  const monthlyTotal = 50 + (activeAddOns.length * 25); // Base + add-ons
+    try {
+      const data = await api.delete(`/billing/remove-addon/${addOnId}`);
+      if (!data.success) {
+        throw new Error(data.error?.message || 'Failed to remove addon');
+      }
 
-  const isTrialActive = trialEndsAt ? new Date() < trialEndsAt : true;
+      // Refresh subscription data
+      await fetchSubscription();
+    } catch (err) {
+      console.error('Error removing addon:', err);
+      throw err;
+    }
+  };
+
+  // Helper functions
+  const activeAddOns = (subscription?.addons || []) as AddOnId[];
+  // During trial, all add-ons are accessible
+  const isTrialStatus = subscription?.status === 'trialing';
+  const hasAddOn = (addOnId: AddOnId) => isTrialStatus || activeAddOns.includes(addOnId);
+  const plan = subscription?.plan || 'none';
+  const planPrice = PLAN_PRICES[plan] || 0;
+  const monthlyTotal = planPrice + activeAddOns.length * 25;
+  const trialEndsAt = subscription?.trialEndsAt ? new Date(subscription.trialEndsAt) : null;
+  const isTrialActive = isTrialStatus || (trialEndsAt ? new Date() < trialEndsAt : false);
 
   return (
     <SubscriptionContext.Provider
       value={{
+        subscription,
         activeAddOns,
-        setActiveAddOns,
+        loading,
+        error,
         hasAddOn,
+        addAddon,
+        removeAddon,
+        refreshSubscription: fetchSubscription,
         monthlyTotal,
         trialEndsAt,
         isTrialActive,
+        plan,
       }}
     >
       {children}

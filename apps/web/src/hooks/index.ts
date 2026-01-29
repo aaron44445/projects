@@ -38,9 +38,6 @@ export type { Package, PackageMember } from './usePackages';
 
 export { useDashboard } from './useDashboard';
 
-export { useReviews } from './useReviews';
-export type { Review } from './useReviews';
-
 export { useGiftCards } from './useGiftCards';
 export type { GiftCard } from './useGiftCards';
 

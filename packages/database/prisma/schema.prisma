@@ -95,7 +95,6 @@ model Salon {
   notificationLogs             NotificationLog[]
   packages                     Package[]
   payments                     Payment[]
-  reviews                      Review[]
   serviceCategories            ServiceCategory[]
   services                     Service[]
   subscription                 Subscription?
@@ -137,7 +136,6 @@ model User {
   ownerNotificationPreferences OwnerNotificationPreferences?
   passwordResetTokens          PasswordResetToken[]
   refreshTokens                RefreshToken[]
-  reviewResponses              ReviewResponse[]
   scheduleChangesReviewed      ScheduleChangeRequest[]       @relation("ScheduleChangeReviewer")
   scheduleChangeRequests       ScheduleChangeRequest[]
   staffAvailability            StaffAvailability[]
@@ -198,7 +196,6 @@ model Client {
   salon                   Salon                          @relation(fields: [salonId], references: [id], onDelete: Cascade)
   formResponses           FormResponse[]
   payments                Payment[]
-  reviews                 Review[]
 
   @@index([salonId])
   @@index([email])
@@ -357,7 +354,6 @@ model Location {
   locationHours          LocationHours[]
   salon                  Salon                   @relation(fields: [salonId], references: [id], onDelete: Cascade)
   payments               Payment[]
-  reviews                Review[]
   scheduleChangeRequests ScheduleChangeRequest[]
   serviceLocations       ServiceLocation[]
   staffAvailability      StaffAvailability[]
@@ -433,7 +429,6 @@ model Appointment {
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
   cancelledAt        DateTime?          @map("cancelled_at")
-  reviewToken        String?            @map("review_token")
   client             Client             @relation(fields: [clientId], references: [id])
   location           Location?          @relation(fields: [locationId], references: [id])
   salon              Salon              @relation(fields: [salonId], references: [id], onDelete: Cascade)
@@ -444,7 +439,6 @@ model Appointment {
   notificationLogs   NotificationLog[]
   payments           Payment[]
   reminderLogs       ReminderLog[]
-  reviews            Review[]
 
   @@index([salonId])
   @@index([staffId])
@@ -555,44 +549,6 @@ model GiftCard {
   @@index([salonId])
   @@index([status])
   @@map("gift_cards")
-}
-
-model Review {
-  id            String           @id @default(uuid())
-  salonId       String           @map("salon_id")
-  appointmentId String           @map("appointment_id")
-  clientId      String           @map("client_id")
-  staffId       String?          @map("staff_id")
-  rating        Int
-  comment       String?
-  isApproved    Boolean          @default(false) @map("is_approved")
-  submittedAt   DateTime         @default(now()) @map("submitted_at")
-  approvedAt    DateTime?        @map("approved_at")
-  locationId    String?          @map("location_id")
-  responses     ReviewResponse[]
-  appointment   Appointment      @relation(fields: [appointmentId], references: [id])
-  client        Client           @relation(fields: [clientId], references: [id])
-  location      Location?        @relation(fields: [locationId], references: [id])
-  salon         Salon            @relation(fields: [salonId], references: [id], onDelete: Cascade)
-
-  @@index([salonId])
-  @@index([locationId])
-  @@index([staffId])
-  @@index([isApproved])
-  @@index([salonId, isApproved])
-  @@map("reviews")
-}
-
-model ReviewResponse {
-  id            String   @id @default(uuid())
-  reviewId      String   @map("review_id")
-  responseText  String   @map("response_text")
-  respondedById String   @map("responded_by_id")
-  respondedAt   DateTime @default(now()) @map("responded_at")
-  respondedBy   User     @relation(fields: [respondedById], references: [id])
-  review        Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-
-  @@map("review_responses")
 }
 
 model MarketingCampaign {

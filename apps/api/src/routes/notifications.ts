@@ -121,7 +121,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const notification = await prisma.notificationLog.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       client: true,
@@ -157,7 +157,7 @@ router.post('/:id/resend', asyncHandler(async (req: Request, res: Response) => {
   const notification = await prisma.notificationLog.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       client: true,
