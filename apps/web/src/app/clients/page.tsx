@@ -35,7 +35,7 @@ import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { BookingModal } from '@/components/BookingModal';
 import { useClients, Client, CreateClientInput, UpdateClientInput } from '@/hooks';
-import { EmptyState } from '@peacase/ui';
+import { EmptyState, Modal } from '@peacase/ui';
 
 // Filter types
 interface ClientFilters {
@@ -901,341 +901,326 @@ function ClientsContent() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && selectedClient && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white mb-2">Delete Client</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
-                Are you sure you want to delete{' '}
-                <span className="font-medium text-charcoal dark:text-white">
-                  {selectedClient.firstName} {selectedClient.lastName}
-                </span>
-                ? This action cannot be undone.
-              </p>
-              {submitError && (
-                <div className="mt-4 p-3 bg-rose/10 border border-rose/20 rounded-lg">
-                  <p className="text-sm text-rose">{submitError}</p>
-                </div>
+      <Modal
+        isOpen={showDeleteConfirm && !!selectedClient}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setSubmitError(null);
+        }}
+        title="Delete Client"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-charcoal/60 dark:text-white/60">
+            Are you sure you want to delete{' '}
+            <span className="font-medium text-charcoal dark:text-white">
+              {selectedClient?.firstName} {selectedClient?.lastName}
+            </span>
+            ? This action cannot be undone.
+          </p>
+          {submitError && (
+            <div className="p-3 bg-rose/10 border border-rose/20 rounded-lg">
+              <p className="text-sm text-rose">{submitError}</p>
+            </div>
+          )}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setSubmitError(null);
+              }}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteClient}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-rose text-white rounded-xl font-medium hover:bg-rose/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
               )}
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setSubmitError(null);
-                }}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteClient}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 bg-rose text-white rounded-xl font-medium hover:bg-rose/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete'
-                )}
-              </button>
-            </div>
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* New Client Modal */}
-      {showNewClient && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <form onSubmit={handleCreateClient}>
-              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-charcoal dark:text-white">Add New Client</h2>
-                <button
-                  type="button"
-                  onClick={handleCloseNewClient}
-                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+      <Modal
+        isOpen={showNewClient}
+        onClose={handleCloseNewClient}
+        title="Add New Client"
+        size="lg"
+      >
+        <form onSubmit={handleCreateClient}>
+          <div className="space-y-6">
+            {submitError && (
+              <div className="p-3 bg-rose/10 border border-rose/20 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose flex-shrink-0" />
+                <p className="text-sm text-rose">{submitError}</p>
               </div>
-              <div className="p-6 space-y-6">
-                {submitError && (
-                  <div className="p-3 bg-rose/10 border border-rose/20 rounded-lg flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose flex-shrink-0" />
-                    <p className="text-sm text-rose">{submitError}</p>
-                  </div>
-                )}
+            )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                      First Name <span className="text-rose">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="First name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                      Last Name <span className="text-rose">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="Last name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="client@email.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                    Notes (optional)
-                  </label>
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="Any special notes about this client..."
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                  First Name <span className="text-rose">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="First name"
+                />
               </div>
-              <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleCloseNewClient}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Adding...
-                    </>
-                  ) : (
-                    'Add Client'
-                  )}
-                </button>
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                  Last Name <span className="text-rose">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="Last name"
+                />
               </div>
-            </form>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="client@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="(555) 123-4567"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                Notes (optional)
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="Any special notes about this client..."
+              />
+            </div>
           </div>
-        </div>
-      )}
+          <div className="flex gap-3 mt-6 pt-6 border-t border-charcoal/10 dark:border-white/10">
+            <button
+              type="button"
+              onClick={handleCloseNewClient}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                'Add Client'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Edit Client Modal */}
-      {showEditClient && selectedClient && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <form onSubmit={handleUpdateClient}>
-              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-charcoal dark:text-white">Edit Client</h2>
-                <button
-                  type="button"
-                  onClick={handleCloseEditClient}
-                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+      <Modal
+        isOpen={showEditClient && !!selectedClient}
+        onClose={handleCloseEditClient}
+        title="Edit Client"
+        size="lg"
+      >
+        <form onSubmit={handleUpdateClient}>
+          <div className="space-y-6">
+            {submitError && (
+              <div className="p-3 bg-rose/10 border border-rose/20 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose flex-shrink-0" />
+                <p className="text-sm text-rose">{submitError}</p>
               </div>
-              <div className="p-6 space-y-6">
-                {submitError && (
-                  <div className="p-3 bg-rose/10 border border-rose/20 rounded-lg flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose flex-shrink-0" />
-                    <p className="text-sm text-rose">{submitError}</p>
-                  </div>
-                )}
+            )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                      First Name <span className="text-rose">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="First name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                      Last Name <span className="text-rose">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="Last name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="client@email.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address || ''}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="Street address"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="City"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">State</label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={formData.state || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="State"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">ZIP</label>
-                    <input
-                      type="text"
-                      name="zip"
-                      value={formData.zip || ''}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                      placeholder="ZIP"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Notes</label>
-                  <textarea
-                    name="notes"
-                    value={formData.notes || ''}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    placeholder="Any special notes about this client..."
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                  First Name <span className="text-rose">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="First name"
+                />
               </div>
-              <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleCloseEditClient}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </button>
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+                  Last Name <span className="text-rose">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="Last name"
+                />
               </div>
-            </form>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="client@email.com"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="(555) 123-4567"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Address</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address || ''}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="Street address"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">City</label>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="City"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">State</label>
+                <input
+                  type="text"
+                  name="state"
+                  value={formData.state || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="State"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">ZIP</label>
+                <input
+                  type="text"
+                  name="zip"
+                  value={formData.zip || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                  placeholder="ZIP"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Notes</label>
+              <textarea
+                name="notes"
+                value={formData.notes || ''}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                placeholder="Any special notes about this client..."
+              />
+            </div>
           </div>
-        </div>
-      )}
+          <div className="flex gap-3 mt-6 pt-6 border-t border-charcoal/10 dark:border-white/10">
+            <button
+              type="button"
+              onClick={handleCloseEditClient}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Click outside to close client menu */}
       {clientMenuId && (
