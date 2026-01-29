@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '@peacase/database';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticateClient, AuthenticatedClientRequest } from '../middleware/clientAuth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import logger from '../lib/logger.js';
 
 export const gdprRouter = Router();
 
@@ -255,7 +256,7 @@ gdprRouter.post('/delete-request', authenticateClient, asyncHandler(async (req: 
       });
     }
   } catch (emailError) {
-    console.error('Failed to send GDPR deletion confirmation email:', emailError);
+    logger.error({ err: emailError, salonId: fullClient.salonId, clientId: client.id }, 'Failed to send GDPR deletion confirmation email');
     // Don't fail the request if email fails
   }
 
@@ -338,7 +339,7 @@ gdprRouter.post('/cancel-request', authenticateClient, asyncHandler(async (req: 
   }
 
   // Find the pending request
-  const whereClause: any = {
+  const whereClause: Prisma.GdprDeletionRequestWhereInput = {
     clientId: client.id,
     status: 'pending'
   };
@@ -388,7 +389,7 @@ gdprRouter.post('/cancel-request', authenticateClient, asyncHandler(async (req: 
       });
     }
   } catch (emailError) {
-    console.error('Failed to send GDPR cancellation confirmation email:', emailError);
+    logger.error({ err: emailError, salonId: fullClient.salonId, clientId: client.id }, 'Failed to send GDPR cancellation confirmation email');
   }
 
   return res.status(200).json({
@@ -451,7 +452,6 @@ gdprRouter.post('/execute-deletion/:requestId', asyncHandler(async (req: Request
       appointments: { select: { id: true } },
       clientNotes: { select: { id: true } },
       payments: { select: { id: true } },
-      reviews: { select: { id: true } },
       formResponses: { select: { id: true } },
       clientPackages: { select: { id: true } }
     }
@@ -500,13 +500,7 @@ gdprRouter.post('/execute-deletion/:requestId', asyncHandler(async (req: Request
     });
     summary.packages = deletedPackages.count;
 
-    // 4. Count reviews that will be orphaned (kept for business reporting)
-    const reviewCount = await tx.review.count({
-      where: { clientId: request.clientId }
-    });
-    summary.reviewsAnonymized = reviewCount;
-
-    // 5. Count payments that will be orphaned (kept for financial records)
+    // 4. Count payments that will be orphaned (kept for financial records)
     const paymentCount = await tx.payment.count({
       where: { clientId: request.clientId }
     });
@@ -584,7 +578,7 @@ gdprRouter.post('/execute-deletion/:requestId', asyncHandler(async (req: Request
       });
     }
   } catch (emailError) {
-    console.error('Failed to send GDPR deletion complete email:', emailError);
+    logger.error({ err: emailError, requestId }, 'Failed to send GDPR deletion complete email');
   }
 
   return res.status(200).json({
@@ -630,7 +624,6 @@ gdprRouter.get('/export', authenticateClient, asyncHandler(async (req: Request, 
     payments,
     notes,
     packages,
-    reviews,
     formResponses,
     salon,
   ] = await Promise.all([
@@ -714,25 +707,6 @@ gdprRouter.get('/export', authenticateClient, asyncHandler(async (req: Request, 
         },
       },
       orderBy: { purchaseDate: 'desc' },
-    }),
-
-    // Reviews submitted by client
-    prisma.review.findMany({
-      where: { clientId: client.id },
-      select: {
-        id: true,
-        rating: true,
-        comment: true,
-        submittedAt: true,
-        isApproved: true,
-        responses: {
-          select: {
-            responseText: true,
-            respondedAt: true,
-          },
-        },
-      },
-      orderBy: { submittedAt: 'desc' },
     }),
 
     // Form responses (consultation forms)
@@ -864,18 +838,6 @@ gdprRouter.get('/export', authenticateClient, asyncHandler(async (req: Request, 
       isActive: pkg.isActive,
     })),
 
-    reviews: reviews.map(review => ({
-      id: review.id,
-      rating: review.rating,
-      comment: review.comment,
-      submittedAt: review.submittedAt,
-      isPublished: review.isApproved,
-      businessResponses: review.responses.map(r => ({
-        response: r.responseText,
-        respondedAt: r.respondedAt,
-      })),
-    })),
-
     formResponses: formResponses.map(response => ({
       id: response.id,
       formName: response.form.name,
@@ -899,7 +861,6 @@ gdprRouter.get('/export', authenticateClient, asyncHandler(async (req: Request, 
         .reduce((sum, p) => sum + p.totalAmount, 0),
       totalNotes: notes.length,
       totalPackages: packages.length,
-      totalReviews: reviews.length,
       totalFormResponses: formResponses.length,
     },
   };
@@ -964,7 +925,7 @@ gdprRouter.patch('/consent', authenticateClient, asyncHandler(async (req: Reques
   const { client } = req as AuthenticatedClientRequest;
   const { dataConsent, optedInReminders, optedInMarketing, communicationPreference } = req.body;
 
-  const updateData: any = {};
+  const updateData: Prisma.ClientUpdateInput = {};
 
   if (dataConsent !== undefined) {
     updateData.dataConsentGiven = dataConsent;

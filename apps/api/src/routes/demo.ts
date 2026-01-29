@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@peacase/database';
 import { sendEmail } from '../services/email.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
 
@@ -63,7 +64,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
         `,
       });
     } catch (emailError) {
-      console.error('Failed to send demo confirmation email:', emailError);
+      logger.error({ err: emailError, email: data.email }, 'Failed to send demo confirmation email');
       // Don't fail the request if email fails
     }
 
@@ -89,7 +90,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
         `,
       });
     } catch (emailError) {
-      console.error('Failed to send sales notification email:', emailError);
+      logger.error({ err: emailError, businessName: data.businessName }, 'Failed to send sales notification email');
       // Don't fail the request if email fails
     }
 
@@ -111,7 +112,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
         },
       });
     }
-    console.error('Demo request error:', error);
+    logger.error({ err: error }, 'Demo request error');
     return res.status(500).json({
       success: false,
       error: {

@@ -6,6 +6,7 @@ import { encrypt } from '../lib/encryption.js';
 import sgMail from '@sendgrid/mail';
 import twilio from 'twilio';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
 
@@ -159,7 +160,7 @@ router.get(
         },
       });
     } catch (error) {
-      console.error('Error fetching integration status:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error fetching integration status');
       res.status(500).json({
         success: false,
         error: {
@@ -211,14 +212,15 @@ router.put(
           text: `Hello ${user.firstName || 'there'},\n\nYour SendGrid integration has been successfully configured for your Peacase salon management account.\n\nYou can now send appointment reminders and marketing emails to your clients.\n\nBest regards,\nThe Peacase Team`,
           html: `<p>Hello ${user.firstName || 'there'},</p><p>Your SendGrid integration has been successfully configured for your Peacase salon management account.</p><p>You can now send appointment reminders and marketing emails to your clients.</p><p>Best regards,<br>The Peacase Team</p>`,
         });
-      } catch (sendError: any) {
-        console.error('SendGrid validation failed:', sendError);
+      } catch (sendError: unknown) {
+        const err = sendError as { message?: string; response?: { body?: { errors?: unknown } } };
+        logger.error({ err: sendError, salonId: req.user!.salonId }, 'SendGrid validation failed');
         return res.status(400).json({
           success: false,
           error: {
             code: 'SENDGRID_VALIDATION_FAILED',
-            message: sendError.message || 'Failed to validate SendGrid API key',
-            details: sendError.response?.body?.errors || null,
+            message: err.message || 'Failed to validate SendGrid API key',
+            details: err.response?.body?.errors || null,
           },
         });
       }
@@ -256,7 +258,7 @@ router.put(
           },
         });
       }
-      console.error('Error saving SendGrid configuration:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error saving SendGrid configuration');
       res.status(500).json({
         success: false,
         error: {
@@ -326,14 +328,15 @@ router.post(
             sentTo: user.email,
           },
         });
-      } catch (sendError: any) {
-        console.error('SendGrid test failed:', sendError);
+      } catch (sendError: unknown) {
+        const err = sendError as { message?: string; response?: { body?: { errors?: unknown } } };
+        logger.error({ err: sendError, salonId: req.user!.salonId }, 'SendGrid test failed');
         res.status(400).json({
           success: false,
           error: {
             code: 'SENDGRID_TEST_FAILED',
-            message: sendError.message || 'Failed to send test email',
-            details: sendError.response?.body?.errors || null,
+            message: err.message || 'Failed to send test email',
+            details: err.response?.body?.errors || null,
           },
         });
       }
@@ -348,7 +351,7 @@ router.post(
           },
         });
       }
-      console.error('Error testing SendGrid:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error testing SendGrid');
       res.status(500).json({
         success: false,
         error: {
@@ -387,7 +390,7 @@ router.delete(
         },
       });
     } catch (error) {
-      console.error('Error removing SendGrid configuration:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error removing SendGrid configuration');
       res.status(500).json({
         success: false,
         error: {
@@ -433,13 +436,14 @@ router.put(
             },
           });
         }
-      } catch (twilioError: any) {
-        console.error('Twilio validation failed:', twilioError);
+      } catch (twilioError: unknown) {
+        const err = twilioError as { message?: string };
+        logger.error({ err: twilioError, salonId: req.user!.salonId }, 'Twilio validation failed');
         return res.status(400).json({
           success: false,
           error: {
             code: 'TWILIO_VALIDATION_FAILED',
-            message: twilioError.message || 'Failed to validate Twilio credentials',
+            message: err.message || 'Failed to validate Twilio credentials',
           },
         });
       }
@@ -479,7 +483,7 @@ router.put(
           },
         });
       }
-      console.error('Error saving Twilio configuration:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error saving Twilio configuration');
       res.status(500).json({
         success: false,
         error: {
@@ -522,13 +526,14 @@ router.post(
             sentTo: data.testPhoneNumber,
           },
         });
-      } catch (twilioError: any) {
-        console.error('Twilio test failed:', twilioError);
+      } catch (twilioError: unknown) {
+        const err = twilioError as { message?: string };
+        logger.error({ err: twilioError, salonId: req.user!.salonId }, 'Twilio test failed');
         res.status(400).json({
           success: false,
           error: {
             code: 'TWILIO_TEST_FAILED',
-            message: twilioError.message || 'Failed to send test SMS',
+            message: err.message || 'Failed to send test SMS',
           },
         });
       }
@@ -543,7 +548,7 @@ router.post(
           },
         });
       }
-      console.error('Error testing Twilio:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error testing Twilio');
       res.status(500).json({
         success: false,
         error: {
@@ -583,7 +588,7 @@ router.delete(
         },
       });
     } catch (error) {
-      console.error('Error removing Twilio configuration:', error);
+      logger.error({ err: error, salonId: req.user!.salonId }, 'Error removing Twilio configuration');
       res.status(500).json({
         success: false,
         error: {
