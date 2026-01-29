@@ -1,16 +1,28 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/subscription.js';
 import { createPackageCheckoutSession } from '../services/payments.js';
 import { env } from '../lib/env.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
+// All packages routes require the memberships add-on
+router.use(authenticate, requireAddon('memberships'));
+
 // GET /api/v1/packages
 router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const where: Prisma.PackageWhereInput = {
+    ...withSalonId(req.user!.salonId),
+    isActive: true,
+  };
+
   const packages = await prisma.package.findMany({
-    where: { salonId: req.user!.salonId, isActive: true },
+    where,
     include: { packageServices: { include: { service: true } } },
     orderBy: { createdAt: 'desc' },
   });
@@ -46,8 +58,13 @@ router.post('/', authenticate, authorize('admin', 'manager'), asyncHandler(async
 
 // GET /api/v1/packages/members
 router.get('/members', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const where: Prisma.ClientPackageWhereInput = {
+    package: withSalonId(req.user!.salonId),
+    isActive: true,
+  };
+
   const members = await prisma.clientPackage.findMany({
-    where: { package: { salonId: req.user!.salonId }, isActive: true },
+    where,
     include: {
       client: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
       package: { select: { name: true, type: true, price: true } },
@@ -62,9 +79,12 @@ router.get('/members', authenticate, asyncHandler(async (req: Request, res: Resp
 router.post('/:id/checkout', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = req.body;
 
-  const pkg = await prisma.package.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
-  });
+  const where: Prisma.PackageWhereInput = {
+    id: req.params.id,
+    ...withSalonId(req.user!.salonId),
+  };
+
+  const pkg = await prisma.package.findFirst({ where });
 
   if (!pkg) {
     return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Package not found' } });
@@ -92,8 +112,13 @@ router.post('/:id/checkout', authenticate, asyncHandler(async (req: Request, res
 router.post('/:id/purchase', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = req.body;
 
+  const where: Prisma.PackageWhereInput = {
+    id: req.params.id,
+    ...withSalonId(req.user!.salonId),
+  };
+
   const pkg = await prisma.package.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
+    where,
     include: { packageServices: true },
   });
 
@@ -120,9 +145,12 @@ router.post('/:id/purchase', authenticate, asyncHandler(async (req: Request, res
 
 // DELETE /api/v1/packages/:id
 router.delete('/:id', authenticate, authorize('admin', 'manager'), asyncHandler(async (req: Request, res: Response) => {
-  const pkg = await prisma.package.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
-  });
+  const where: Prisma.PackageWhereInput = {
+    id: req.params.id,
+    ...withSalonId(req.user!.salonId),
+  };
+
+  const pkg = await prisma.package.findFirst({ where });
 
   if (!pkg) {
     return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Package not found' } });
