@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 19 of 24 (Staff Authentication Foundation)
-Plan: 05 complete (19-02, 19-03, 19-05 done; 19-01, 19-04 pending)
+Plan: 01 complete (19-01, 19-02, 19-03, 19-05 done; 19-04 pending)
 Status: In progress
-Last activity: 2026-01-29 — Completed 19-05-PLAN.md (Logout flow verification)
+Last activity: 2026-01-29 — Completed 19-01-PLAN.md (Portal-specific JWT tokens)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ██░░░░░░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███░░░░░░░░░
 
 ## Milestone History
 
@@ -26,13 +26,15 @@ Progress: v1.0 ████████████ v1.1 ███████�
 
 ## Accumulated Context
 
-### Key Decisions (from v1.0 + v1.1)
+### Key Decisions (from v1.0 + v1.1 + v1.2)
 
 **Architecture:**
 - Defense-in-depth salonId filtering on all queries
 - Advisory locks for booking concurrency
 - Insert-or-conflict idempotency for webhooks
 - Database-backed notification queue (not external broker)
+- Portal-specific JWT tokens with portalType claim for staff/owner discrimination
+- 15-minute staff access tokens (vs 7-day owner tokens) for security
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -94,9 +96,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 19-05-PLAN.md
+Stopped at: Completed 19-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (19-05 complete)*
+*Last updated: 2026-01-29 (19-01 complete)*
