@@ -65,7 +65,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       appointments: {
@@ -164,7 +164,7 @@ router.post('/', checkPlanLimits('clients'), asyncHandler(async (req: Request, r
 
   const client = await prisma.client.create({
     data: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       firstName,
       lastName,
       email,
@@ -192,7 +192,7 @@ router.post('/', checkPlanLimits('clients'), asyncHandler(async (req: Request, r
 // ============================================
 router.patch('/:id', asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
+    where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
   });
 
   if (!client) {
@@ -206,7 +206,7 @@ router.patch('/:id', asyncHandler(async (req: Request, res: Response) => {
   }
 
   const updated = await prisma.client.update({
-    where: { id: req.params.id, salonId: req.user!.salonId },
+    where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     data: req.body,
   });
 
@@ -224,7 +224,7 @@ router.post('/:id/notes', asyncHandler(async (req: Request, res: Response) => {
   const { content } = req.body;
 
   const client = await prisma.client.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
+    where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
   });
 
   if (!client) {

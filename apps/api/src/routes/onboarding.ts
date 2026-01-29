@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
@@ -102,7 +103,7 @@ router.post('/working-hours', authorize('admin'), asyncHandler(async (req: Reque
 
     // Get the admin user for this salon to store availability
     const adminUser = await prisma.user.findFirst({
-      where: { salonId: req.user!.salonId, role: 'admin' },
+      where: { ...withSalonId(req.user!.salonId), role: 'admin' },
     });
 
     if (!adminUser) {
@@ -166,7 +167,7 @@ router.post('/services', authorize('admin'), asyncHandler(async (req: Request, r
     // Create services using createMany to avoid N+1 queries
     await prisma.service.createMany({
       data: data.services.map(service => ({
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         name: service.name,
         durationMinutes: service.duration,
         price: service.price,
