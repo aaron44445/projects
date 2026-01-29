@@ -122,10 +122,11 @@ Plans:
   3. Staff can view their complete clock in/out history with dates and durations
   4. Time entries display in staff's correct timezone for multi-location salons
 
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 22-01: TBD during phase planning
+- [ ] 22-01-PLAN.md — TimeEntry model and time clock API endpoints
+- [ ] 22-02-PLAN.md — Time clock UI with clock button and history
 
 ### Phase 23: Earnings & Permissions
 
@@ -178,7 +179,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 | 19. Staff Authentication Foundation | 5/5 | Complete | 2026-01-29 |
 | 20. Staff Portal Core | 3/3 | Complete | 2026-01-29 |
 | 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
-| 22. Time Tracking | 0/TBD | Not started | - |
+| 22. Time Tracking | 0/2 | Not started | - |
 | 23. Earnings & Permissions | 0/TBD | Not started | - |
 | 24. Technical Debt | 0/TBD | Not started | - |
 
