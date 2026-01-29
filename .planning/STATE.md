@@ -109,10 +109,11 @@ From v1.1 Phase 17:
 - LOG_LEVEL env var for runtime log level control (17-01)
 - ISO timestamp format for consistency (17-01)
 - withSalonId returns simple typed object, not Prisma-dependent (17-01)
-- Import Prisma from @peacase/database not @prisma/client (17-02)
+- Import Prisma from @peacase/database not @prisma/client (17-02, 17-03)
 - Use error: unknown with instanceof Error for type-safe error handling (17-02)
 - Use Prisma.DateTimeFilter cast for dynamic date range filters (17-05)
 - Include reportType context in all report error logs (17-04)
+- Declare explicit Prisma.XxxWhereInput before queries for type safety (17-03)
 
 ### Pending Todos
 
