@@ -12,6 +12,7 @@ import { asyncHandler } from '../lib/errorUtils.js';
 import { loginRateLimit } from '../middleware/rateLimit.js';
 import logger from '../lib/logger.js';
 import { withSalonId } from '../lib/prismaUtils.js';
+import { differenceInMinutes, subDays, startOfDay, endOfDay } from 'date-fns';
 
 const router = Router();
 
@@ -50,6 +51,15 @@ const profileUpdateSchema = z.object({
   phone: z.string().optional(),
   avatarUrl: z.string().url().optional().nullable(),
   certifications: z.string().optional(),
+});
+
+const clockInSchema = z.object({
+  locationId: z.string().uuid(),
+});
+
+const historyQuerySchema = z.object({
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 });
 
 // Token expiration constants for staff portal
@@ -1806,6 +1816,212 @@ router.patch('/admin/schedule-change/:id/reject', authenticate, asyncHandler(asy
   });
 
   res.json({ success: true, data: updated });
+}));
+
+// ============================================
+// TIME CLOCK ENDPOINTS
+// ============================================
+
+// GET /api/v1/staff-portal/time-clock/status
+// Get current clock status
+router.get('/time-clock/status', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+  }
+
+  const staffId = req.user.userId;
+
+  // Find active entry (no clockOut)
+  const activeEntry = await prisma.timeEntry.findFirst({
+    where: { staffId, clockOut: null },
+    include: {
+      location: { select: { id: true, name: true } },
+    },
+  });
+
+  const isClockedIn = !!activeEntry;
+  const canClockIn = !isClockedIn;
+
+  res.json({
+    success: true,
+    data: {
+      isClockedIn,
+      canClockIn,
+      activeEntry: activeEntry ? {
+        id: activeEntry.id,
+        clockIn: activeEntry.clockIn.toISOString(),
+        timezone: activeEntry.timezone,
+        location: activeEntry.location,
+      } : null,
+    },
+  });
+}));
+
+// POST /api/v1/staff-portal/time-clock/clock-in
+// Clock in at a location
+router.post('/time-clock/clock-in', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+  }
+
+  const data = clockInSchema.parse(req.body);
+  const staffId = req.user.userId;
+  const salonId = req.user.salonId;
+
+  // Verify staff is assigned to this location
+  const staffLocation = await prisma.staffLocation.findUnique({
+    where: { staffId_locationId: { staffId, locationId: data.locationId } },
+  });
+
+  if (!staffLocation) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'NOT_ASSIGNED', message: 'You are not assigned to this location' },
+    });
+  }
+
+  // Check for existing active entry
+  const activeEntry = await prisma.timeEntry.findFirst({
+    where: { staffId, clockOut: null },
+  });
+
+  if (activeEntry) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_CLOCKED_IN', message: 'You are already clocked in. Please clock out first.' },
+    });
+  }
+
+  // Get location and salon timezone
+  const location = await prisma.location.findUnique({
+    where: { id: data.locationId },
+    include: { salon: { select: { timezone: true } } },
+  });
+
+  const timezone = location?.timezone || location?.salon.timezone || 'UTC';
+
+  // Create time entry
+  const entry = await prisma.timeEntry.create({
+    data: {
+      staffId,
+      salonId,
+      locationId: data.locationId,
+      clockIn: new Date(),
+      timezone,
+    },
+    include: {
+      location: { select: { id: true, name: true } },
+    },
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      id: entry.id,
+      clockIn: entry.clockIn.toISOString(),
+      timezone: entry.timezone,
+      location: entry.location,
+    },
+  });
+}));
+
+// POST /api/v1/staff-portal/time-clock/clock-out/:entryId
+// Clock out from a time entry
+router.post('/time-clock/clock-out/:entryId', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+  }
+
+  const { entryId } = req.params;
+  const staffId = req.user.userId;
+
+  // Verify entry exists and belongs to this staff
+  const entry = await prisma.timeEntry.findFirst({
+    where: { id: entryId, staffId },
+    include: {
+      location: { select: { id: true, name: true } },
+    },
+  });
+
+  if (!entry) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Time entry not found' },
+    });
+  }
+
+  if (entry.clockOut) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_CLOCKED_OUT', message: 'You have already clocked out' },
+    });
+  }
+
+  // Update with clock out time
+  const clockOut = new Date();
+  const updated = await prisma.timeEntry.update({
+    where: { id: entryId },
+    data: { clockOut },
+    include: {
+      location: { select: { id: true, name: true } },
+    },
+  });
+
+  // Calculate duration in minutes
+  const durationMinutes = differenceInMinutes(clockOut, updated.clockIn);
+
+  res.json({
+    success: true,
+    data: {
+      id: updated.id,
+      clockIn: updated.clockIn.toISOString(),
+      clockOut: updated.clockOut!.toISOString(),
+      timezone: updated.timezone,
+      location: updated.location,
+      durationMinutes,
+    },
+  });
+}));
+
+// GET /api/v1/staff-portal/time-clock/history
+// Get time clock history
+router.get('/time-clock/history', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+  }
+
+  const staffId = req.user.userId;
+  const query = historyQuerySchema.parse(req.query);
+
+  // Default to last 30 days if no date range provided
+  const endDate = query.endDate ? endOfDay(new Date(query.endDate)) : endOfDay(new Date());
+  const startDate = query.startDate ? startOfDay(new Date(query.startDate)) : subDays(endDate, 30);
+
+  const entries = await prisma.timeEntry.findMany({
+    where: {
+      staffId,
+      clockIn: { gte: startDate, lte: endDate },
+    },
+    include: {
+      location: { select: { id: true, name: true } },
+    },
+    orderBy: { clockIn: 'desc' },
+  });
+
+  res.json({
+    success: true,
+    data: entries.map(entry => ({
+      id: entry.id,
+      clockIn: entry.clockIn.toISOString(),
+      clockOut: entry.clockOut?.toISOString() || null,
+      locationId: entry.locationId,
+      locationName: entry.location.name,
+      timezone: entry.timezone,
+      durationMinutes: entry.clockOut ? differenceInMinutes(entry.clockOut, entry.clockIn) : null,
+      isActive: !entry.clockOut,
+      notes: entry.notes,
+    })),
+  });
 }));
 
 export { router as staffPortalRouter };
