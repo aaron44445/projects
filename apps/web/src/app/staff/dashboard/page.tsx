@@ -14,6 +14,7 @@ import {
   Loader2,
   AlertCircle,
   TrendingUp,
+  MapPin,
 } from 'lucide-react';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
@@ -23,24 +24,43 @@ import { api, ApiError } from '@/lib/api';
 interface DashboardData {
   todayAppointments: {
     id: string;
-    clientName: string;
-    serviceName: string;
     startTime: string;
     endTime: string;
     status: string;
-    price: number;
+    notes?: string;
+    client: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      phone?: string;
+    };
+    service: {
+      id: string;
+      name: string;
+      durationMinutes: number;
+      color?: string;
+      price: number;
+    };
+    location?: {
+      id: string;
+      name: string;
+    };
   }[];
   earnings: {
     commission: number;
     tips: number;
     total: number;
-    period: string;
+    period: {
+      start: string;
+      end: string;
+    };
   };
   stats: {
-    appointmentsToday: number;
-    appointmentsWeek: number;
-    completedToday: number;
+    todayCount: number;
+    weekCount: number;
   };
+  staffCanViewClientContact: boolean;
+  hasMultipleLocations: boolean;
 }
 
 function DashboardContent() {
@@ -189,7 +209,7 @@ function DashboardContent() {
                     <span className="text-xs text-charcoal/50">Today</span>
                   </div>
                   <p className="text-2xl font-bold text-charcoal">
-                    {dashboardData.stats.appointmentsToday}
+                    {dashboardData.stats.todayCount}
                   </p>
                   <p className="text-sm text-charcoal/60">Appointments</p>
                 </div>
@@ -203,7 +223,7 @@ function DashboardContent() {
                     <span className="text-xs text-charcoal/50">This Week</span>
                   </div>
                   <p className="text-2xl font-bold text-charcoal">
-                    {dashboardData.stats.appointmentsWeek}
+                    {dashboardData.stats.weekCount}
                   </p>
                   <p className="text-sm text-charcoal/60">Appointments</p>
                 </div>
@@ -217,7 +237,7 @@ function DashboardContent() {
                     <span className="text-xs text-charcoal/50">Completed</span>
                   </div>
                   <p className="text-2xl font-bold text-charcoal">
-                    {dashboardData.stats.completedToday}
+                    {dashboardData.todayAppointments.filter(a => a.status === 'completed').length}
                   </p>
                   <p className="text-sm text-charcoal/60">Today</p>
                 </div>
@@ -228,7 +248,7 @@ function DashboardContent() {
                     <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
                       <DollarSign className="w-5 h-5 text-amber-600" />
                     </div>
-                    <span className="text-xs text-charcoal/50">{dashboardData.earnings.period}</span>
+                    <span className="text-xs text-charcoal/50">This Month</span>
                   </div>
                   <p className="text-2xl font-bold text-charcoal">
                     {formatCurrency(dashboardData.earnings.total)}
@@ -276,11 +296,22 @@ function DashboardContent() {
                               </div>
                               <div>
                                 <p className="font-medium text-charcoal">
-                                  {appointment.clientName}
+                                  {appointment.client.firstName} {appointment.client.lastName}
                                 </p>
+                                {/* Show phone if allowed */}
+                                {dashboardData.staffCanViewClientContact && appointment.client.phone && (
+                                  <p className="text-xs text-charcoal/50">{appointment.client.phone}</p>
+                                )}
                                 <p className="text-sm text-charcoal/60">
-                                  {appointment.serviceName}
+                                  {appointment.service.name}
                                 </p>
+                                {/* Location badge for multi-location staff */}
+                                {dashboardData.hasMultipleLocations && appointment.location && (
+                                  <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-lavender/20 text-lavender-dark rounded-full text-xs">
+                                    <MapPin className="w-3 h-3" />
+                                    {appointment.location.name}
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -304,7 +335,7 @@ function DashboardContent() {
                 <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5">
                   <div className="p-5 border-b border-charcoal/10">
                     <h2 className="text-lg font-semibold text-charcoal">Earnings Summary</h2>
-                    <p className="text-sm text-charcoal/60">{dashboardData.earnings.period}</p>
+                    <p className="text-sm text-charcoal/60">This Month</p>
                   </div>
 
                   <div className="p-5 space-y-4">
