@@ -19,3 +19,4 @@ export { Input, type InputProps } from './components/Input';
 export { Modal } from './components/Modal';
 export { Badge, badgeVariants, type BadgeProps } from './components/Badge';
 export { StatCard } from './components/StatCard';
+export { EmptyState, type EmptyStateProps } from './components/EmptyState';
