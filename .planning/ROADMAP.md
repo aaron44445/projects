@@ -115,18 +115,23 @@ Plans:
   2. API builds successfully with noImplicitAny: true in tsconfig.json
   3. Shared salonId filter utility is used in all routes (no inline where patterns)
   4. All API console.log/warn/error calls replaced with structured logger
-**Plans**: 9 plans
+**Plans**: 14 plans (9 original + 5 gap closure)
 
 Plans:
-- [ ] 17-01-PLAN.md - Logger and prismaUtils foundation (CODE-03, CODE-04 foundation)
-- [ ] 17-02-PLAN.md - High-traffic routes migration (CODE-01)
-- [ ] 17-03-PLAN.md - Business routes migration (CODE-01)
-- [ ] 17-04-PLAN.md - Portal routes migration (CODE-01)
-- [ ] 17-05-PLAN.md - System routes migration (CODE-01)
-- [ ] 17-06-PLAN.md - Remaining routes migration (CODE-01)
-- [ ] 17-07-PLAN.md - Services and middleware logging (CODE-04)
-- [ ] 17-08-PLAN.md - Lib, cron, and worker logging (CODE-04)
-- [ ] 17-09-PLAN.md - Enable noImplicitAny and verify (CODE-02)
+- [x] 17-01-PLAN.md - Logger and prismaUtils foundation (CODE-03, CODE-04 foundation)
+- [x] 17-02-PLAN.md - High-traffic routes migration (CODE-01)
+- [x] 17-03-PLAN.md - Business routes migration (CODE-01)
+- [x] 17-04-PLAN.md - Portal routes migration (CODE-01)
+- [x] 17-05-PLAN.md - System routes migration (CODE-01)
+- [x] 17-06-PLAN.md - Remaining routes migration (CODE-01)
+- [x] 17-07-PLAN.md - Services and middleware logging (CODE-04)
+- [x] 17-08-PLAN.md - Lib, cron, and worker logging (CODE-04)
+- [x] 17-09-PLAN.md - Enable noImplicitAny and verify (CODE-02)
+- [ ] 17-10-PLAN.md - Gap closure: withSalonId in appointments.ts (CODE-03)
+- [ ] 17-11-PLAN.md - Gap closure: withSalonId in services.ts and staff.ts (CODE-03)
+- [ ] 17-12-PLAN.md - Gap closure: withSalonId in users.ts (CODE-03)
+- [ ] 17-13-PLAN.md - Gap closure: withSalonId in clients, notifications, packages (CODE-03)
+- [ ] 17-14-PLAN.md - Gap closure: withSalonId in onboarding, marketing, gift-cards (CODE-03)
 
 ### Phase 18: UI/UX Consistency
 **Goal**: UI components follow consistent patterns with shared design tokens
@@ -152,9 +157,9 @@ Plans:
 | 14. Performance Optimization | v1.1 | 4/4 | Complete | 2026-01-28 |
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
 | 16. Accessibility Compliance | v1.1 | 10/10 | Complete | 2026-01-29 |
-| 17. Code Quality | v1.1 | 0/9 | Not started | - |
+| 17. Code Quality | v1.1 | 9/14 | Gap closure | - |
 | 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 17 planned - 9 plans in 3 waves)*
+*Last updated: 2026-01-29 (Phase 17 gap closure - 5 additional plans for CODE-03)*
