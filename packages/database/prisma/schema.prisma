@@ -70,6 +70,7 @@ model Salon {
   staffCanRequestTimeOff       Boolean             @default(true) @map("staff_can_request_time_off")
   staffCanViewClientContact    Boolean             @default(true) @map("staff_can_view_client_contact")
   staffScheduleNeedsApproval   Boolean             @default(false) @map("staff_schedule_needs_approval")
+  requireTimeOffApproval       Boolean             @default(false) @map("require_time_off_approval")
   currency                     String              @default("USD")
   dateFormat                   String              @default("DMY") @map("date_format")
   locale                       String              @default("en")
