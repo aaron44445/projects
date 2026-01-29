@@ -43,6 +43,7 @@ import {
   type Service,
 } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { Modal } from '@peacase/ui';
 import { STATUS_COLORS, type StatusKey } from '@/lib/statusColors';
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
@@ -1056,356 +1057,340 @@ function CalendarContent() {
       </main>
 
       {/* New Appointment Modal */}
-      {showNewAppointment && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">New Appointment</h2>
-              <button
-                onClick={() => {
-                  setShowNewAppointment(false);
-                  resetForm();
-                }}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={showNewAppointment}
+        onClose={() => {
+          setShowNewAppointment(false);
+          resetForm();
+        }}
+        title="New Appointment"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {submitError && (
+            <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
+              {submitError}
             </div>
-            <div className="p-6 space-y-6">
-              {submitError && (
-                <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
-                  {submitError}
-                </div>
-              )}
+          )}
 
-              {/* Client Selection */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40" />
-                  <input
-                    type="text"
-                    placeholder="Search clients..."
-                    value={clientSearch}
-                    onChange={(e) => setClientSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-                {clientSearch && (clients || []).length > 0 && (
-                  <div className="mt-2 border border-charcoal/10 dark:border-white/10 rounded-xl max-h-40 overflow-auto bg-white dark:bg-charcoal">
-                    {(clients || []).map((client) => (
-                      <button
-                        key={client.id}
-                        onClick={() => {
-                          setAppointmentForm((prev) => ({ ...prev, clientId: client.id }));
-                          setClientSearch(`${client.firstName} ${client.lastName}`);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-charcoal/5 dark:hover:bg-white/5 ${
-                          appointmentForm.clientId === client.id ? 'bg-sage/10' : ''
-                        }`}
-                      >
-                        <p className="font-medium text-charcoal dark:text-white">
-                          {client.firstName} {client.lastName}
-                        </p>
-                        <p className="text-xs text-charcoal/60 dark:text-white/60">{client.email || client.phone}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Service Selection */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
-                <select
-                  value={appointmentForm.serviceId}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                >
-                  <option value="">Select a service...</option>
-                  {(services || []).map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Staff Selection */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
-                <select
-                  value={appointmentForm.staffId}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                >
-                  <option value="">Select staff...</option>
-                  {(staff || []).map((staffMember) => (
-                    <option key={staffMember.id} value={staffMember.id}>
-                      {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Date & Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={appointmentForm.date}
-                    onChange={(e) =>
-                      setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
-                  <select
-                    value={appointmentForm.time}
-                    onChange={(e) =>
-                      setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+          {/* Client Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/40 dark:text-white/40" />
+              <input
+                type="text"
+                placeholder="Search clients..."
+                value={clientSearch}
+                onChange={(e) => setClientSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              />
+            </div>
+            {clientSearch && (clients || []).length > 0 && (
+              <div className="mt-2 border border-charcoal/10 dark:border-white/10 rounded-xl max-h-40 overflow-auto bg-white dark:bg-charcoal">
+                {(clients || []).map((client) => (
+                  <button
+                    key={client.id}
+                    onClick={() => {
+                      setAppointmentForm((prev) => ({ ...prev, clientId: client.id }));
+                      setClientSearch(`${client.firstName} ${client.lastName}`);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-charcoal/5 dark:hover:bg-white/5 ${
+                      appointmentForm.clientId === client.id ? 'bg-sage/10' : ''
+                    }`}
                   >
-                    <option value="">Select time...</option>
-                    {hours.map((hour) => (
-                      <>
-                        <option key={`${hour}:00`} value={`${hour.toString().padStart(2, '0')}:00`}>
-                          {hour.toString().padStart(2, '0')}:00
-                        </option>
-                        <option key={`${hour}:30`} value={`${hour.toString().padStart(2, '0')}:30`}>
-                          {hour.toString().padStart(2, '0')}:30
-                        </option>
-                      </>
-                    ))}
-                  </select>
-                </div>
+                    <p className="font-medium text-charcoal dark:text-white">
+                      {client.firstName} {client.lastName}
+                    </p>
+                    <p className="text-xs text-charcoal/60 dark:text-white/60">{client.email || client.phone}</p>
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
 
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                  Notes (optional)
-                </label>
-                <textarea
-                  rows={3}
-                  value={appointmentForm.notes}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                  placeholder="Add any special notes..."
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
-                />
-              </div>
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowNewAppointment(false);
-                  resetForm();
-                }}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateAppointment}
-                disabled={
-                  isSubmitting ||
-                  !appointmentForm.clientId ||
-                  !appointmentForm.serviceId ||
-                  !appointmentForm.staffId ||
-                  !appointmentForm.date ||
-                  !appointmentForm.time
+          {/* Service Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
+            <select
+              value={appointmentForm.serviceId}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
+              }
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+            >
+              <option value="">Select a service...</option>
+              {(services || []).map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Staff Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
+            <select
+              value={appointmentForm.staffId}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
+              }
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+            >
+              <option value="">Select staff...</option>
+              {(staff || []).map((staffMember) => (
+                <option key={staffMember.id} value={staffMember.id}>
+                  {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date & Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
+              <input
+                type="date"
+                value={appointmentForm.date}
+                onChange={(e) =>
+                  setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
                 }
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
+              <select
+                value={appointmentForm.time}
+                onChange={(e) =>
+                  setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
+                }
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
               >
-                {isSubmitting ? (
+                <option value="">Select time...</option>
+                {hours.map((hour) => (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Booking...
+                    <option key={`${hour}:00`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                      {hour.toString().padStart(2, '0')}:00
+                    </option>
+                    <option key={`${hour}:30`} value={`${hour.toString().padStart(2, '0')}:30`}>
+                      {hour.toString().padStart(2, '0')}:30
+                    </option>
                   </>
-                ) : (
-                  'Book Appointment'
-                )}
-              </button>
+                ))}
+              </select>
             </div>
           </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+              Notes (optional)
+            </label>
+            <textarea
+              rows={3}
+              value={appointmentForm.notes}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
+              }
+              placeholder="Add any special notes..."
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+            />
+          </div>
         </div>
-      )}
+        <div className="flex gap-3 mt-6 pt-6 border-t border-charcoal/10 dark:border-white/10">
+          <button
+            onClick={() => {
+              setShowNewAppointment(false);
+              resetForm();
+            }}
+            className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreateAppointment}
+            disabled={
+              isSubmitting ||
+              !appointmentForm.clientId ||
+              !appointmentForm.serviceId ||
+              !appointmentForm.staffId ||
+              !appointmentForm.date ||
+              !appointmentForm.time
+            }
+            className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Booking...
+              </>
+            ) : (
+              'Book Appointment'
+            )}
+          </button>
+        </div>
+      </Modal>
 
       {/* Edit Appointment Modal */}
-      {showEditAppointment && selectedAppointment && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">Edit Appointment</h2>
-              <button
-                onClick={() => {
-                  setShowEditAppointment(false);
-                  setSelectedAppointment(null);
-                  resetForm();
-                }}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={showEditAppointment && !!selectedAppointment}
+        onClose={() => {
+          setShowEditAppointment(false);
+          setSelectedAppointment(null);
+          resetForm();
+        }}
+        title="Edit Appointment"
+        size="lg"
+      >
+        <div className="space-y-6">
+          {submitError && (
+            <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
+              {submitError}
             </div>
-            <div className="p-6 space-y-6">
-              {submitError && (
-                <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
-                  {submitError}
-                </div>
-              )}
+          )}
 
-              {/* Client (read-only for edit) */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
-                <input
-                  type="text"
-                  value={
-                    selectedAppointment.client
-                      ? `${selectedAppointment.client.firstName} ${selectedAppointment.client.lastName}`
-                      : 'Unknown Client'
-                  }
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-charcoal/5 dark:bg-white/5 text-charcoal/70 dark:text-white/70"
-                />
-              </div>
+          {/* Client (read-only for edit) */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Client</label>
+            <input
+              type="text"
+              value={
+                selectedAppointment?.client
+                  ? `${selectedAppointment.client.firstName} ${selectedAppointment.client.lastName}`
+                  : 'Unknown Client'
+              }
+              readOnly
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-charcoal/5 dark:bg-white/5 text-charcoal/70 dark:text-white/70"
+            />
+          </div>
 
-              {/* Service Selection */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
-                <select
-                  value={appointmentForm.serviceId}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                >
-                  <option value="">Select a service...</option>
-                  {(services || []).map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Service Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service</label>
+            <select
+              value={appointmentForm.serviceId}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, serviceId: e.target.value }))
+              }
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+            >
+              <option value="">Select a service...</option>
+              {(services || []).map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name} - {service.durationMinutes} min - {formatPrice(service.price)}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Staff Selection */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
-                <select
-                  value={appointmentForm.staffId}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                >
-                  <option value="">Select staff...</option>
-                  {(staff || []).map((staffMember) => (
-                    <option key={staffMember.id} value={staffMember.id}>
-                      {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Staff Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Staff Member</label>
+            <select
+              value={appointmentForm.staffId}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, staffId: e.target.value }))
+              }
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+            >
+              <option value="">Select staff...</option>
+              {(staff || []).map((staffMember) => (
+                <option key={staffMember.id} value={staffMember.id}>
+                  {staffMember.firstName} {staffMember.lastName} - {staffMember.role}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {/* Date & Time */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={appointmentForm.date}
-                    onChange={(e) =>
-                      setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
-                  <select
-                    value={appointmentForm.time}
-                    onChange={(e) =>
-                      setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  >
-                    <option value="">Select time...</option>
-                    {hours.map((hour) => (
-                      <>
-                        <option key={`${hour}:00`} value={`${hour.toString().padStart(2, '0')}:00`}>
-                          {hour.toString().padStart(2, '0')}:00
-                        </option>
-                        <option key={`${hour}:30`} value={`${hour.toString().padStart(2, '0')}:30`}>
-                          {hour.toString().padStart(2, '0')}:30
-                        </option>
-                      </>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
-                  Notes (optional)
-                </label>
-                <textarea
-                  rows={3}
-                  value={appointmentForm.notes}
-                  onChange={(e) =>
-                    setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                  placeholder="Add any special notes..."
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
-                />
-              </div>
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowEditAppointment(false);
-                  setSelectedAppointment(null);
-                  resetForm();
-                }}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateAppointment}
-                disabled={
-                  isSubmitting ||
-                  !appointmentForm.serviceId ||
-                  !appointmentForm.staffId ||
-                  !appointmentForm.date ||
-                  !appointmentForm.time
+          {/* Date & Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date</label>
+              <input
+                type="date"
+                value={appointmentForm.date}
+                onChange={(e) =>
+                  setAppointmentForm((prev) => ({ ...prev, date: e.target.value }))
                 }
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time</label>
+              <select
+                value={appointmentForm.time}
+                onChange={(e) =>
+                  setAppointmentForm((prev) => ({ ...prev, time: e.target.value }))
+                }
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
               >
-                {isSubmitting ? (
+                <option value="">Select time...</option>
+                {hours.map((hour) => (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Updating...
+                    <option key={`${hour}:00`} value={`${hour.toString().padStart(2, '0')}:00`}>
+                      {hour.toString().padStart(2, '0')}:00
+                    </option>
+                    <option key={`${hour}:30`} value={`${hour.toString().padStart(2, '0')}:30`}>
+                      {hour.toString().padStart(2, '0')}:30
+                    </option>
                   </>
-                ) : (
-                  'Update Appointment'
-                )}
-              </button>
+                ))}
+              </select>
             </div>
           </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
+              Notes (optional)
+            </label>
+            <textarea
+              rows={3}
+              value={appointmentForm.notes}
+              onChange={(e) =>
+                setAppointmentForm((prev) => ({ ...prev, notes: e.target.value }))
+              }
+              placeholder="Add any special notes..."
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+            />
+          </div>
         </div>
-      )}
+        <div className="flex gap-3 mt-6 pt-6 border-t border-charcoal/10 dark:border-white/10">
+          <button
+            onClick={() => {
+              setShowEditAppointment(false);
+              setSelectedAppointment(null);
+              resetForm();
+            }}
+            className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleUpdateAppointment}
+            disabled={
+              isSubmitting ||
+              !appointmentForm.serviceId ||
+              !appointmentForm.staffId ||
+              !appointmentForm.date ||
+              !appointmentForm.time
+            }
+            className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              'Update Appointment'
+            )}
+          </button>
+        </div>
+      </Modal>
 
       {/* Click outside to close appointment menu */}
       {appointmentMenuOpen && (
