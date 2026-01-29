@@ -9,11 +9,11 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Staff Authentication
 
-- [ ] **AUTH-01**: Owner can send email invite to staff with magic link
-- [ ] **AUTH-02**: Staff can set password via magic link
-- [ ] **AUTH-03**: Staff can log in at /staff/login with email/password
-- [ ] **AUTH-04**: Staff session uses portal-specific JWT tokens (separate from owner tokens)
-- [ ] **AUTH-05**: Staff can opt to stay logged in (remember device)
+- [x] **AUTH-01**: Owner can send email invite to staff with magic link
+- [x] **AUTH-02**: Staff can set password via magic link
+- [x] **AUTH-03**: Staff can log in at /staff/login with email/password
+- [x] **AUTH-04**: Staff session uses portal-specific JWT tokens (separate from owner tokens)
+- [x] **AUTH-05**: Staff can opt to stay logged in (remember device)
 
 ### Schedule & Appointments
 
@@ -86,11 +86,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 19 | Pending |
-| AUTH-02 | Phase 19 | Pending |
-| AUTH-03 | Phase 19 | Pending |
-| AUTH-04 | Phase 19 | Pending |
-| AUTH-05 | Phase 19 | Pending |
+| AUTH-01 | Phase 19 | Complete |
+| AUTH-02 | Phase 19 | Complete |
+| AUTH-03 | Phase 19 | Complete |
+| AUTH-04 | Phase 19 | Complete |
+| AUTH-05 | Phase 19 | Complete |
 | SCHED-01 | Phase 20 | Pending |
 | SCHED-02 | Phase 20 | Pending |
 | SCHED-03 | Phase 20 | Pending |
@@ -120,4 +120,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-29 after roadmap creation*
+*Last updated: 2026-01-29 after Phase 19 completion*
