@@ -85,17 +85,22 @@ Plans:
 
 ### Phase 16: Accessibility Compliance
 **Goal**: Application meets WCAG 2.1 AA standards for keyboard and screen reader users
-**Depends on**: Phase 13 (security must be stable first)
+**Depends on**: Phase 15
 **Requirements**: A11Y-01, A11Y-02, A11Y-03, A11Y-04
 **Success Criteria** (what must be TRUE):
   1. Opening a modal traps focus; pressing Escape closes it and returns focus
   2. Screen reader announces time slot information when navigating booking widget
   3. Pressing Tab as first action on any page focuses "Skip to main content" link
   4. All body text has minimum 4.5:1 contrast ratio (charcoal/80 or darker)
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 16-01: TBD
+- [ ] 16-01-PLAN.md - Modal focus trap and ARIA compliance (A11Y-01)
+- [ ] 16-02-PLAN.md - Booking widget live regions and time slot labels (A11Y-02)
+- [ ] 16-03-PLAN.md - Booking widget date labels and sr-only class (A11Y-02)
+- [ ] 16-04-PLAN.md - Skip to main content navigation (A11Y-03)
+- [ ] 16-05-PLAN.md - Text contrast core components (A11Y-04)
+- [ ] 16-06-PLAN.md - Text contrast batch component updates (A11Y-04)
 
 ### Phase 17: Code Quality
 **Goal**: Codebase is strictly typed with no implicit any and uses structured logging
@@ -134,10 +139,10 @@ Plans:
 | 13. Security Hardening | v1.1 | 3/3 | Complete | 2026-01-28 |
 | 14. Performance Optimization | v1.1 | 4/4 | Complete | 2026-01-28 |
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
-| 16. Accessibility Compliance | v1.1 | 0/TBD | Not started | - |
+| 16. Accessibility Compliance | v1.1 | 0/6 | In progress | - |
 | 17. Code Quality | v1.1 | 0/TBD | Not started | - |
 | 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 15 complete)*
+*Last updated: 2026-01-28 (Phase 16 plans revised - checker feedback)*
