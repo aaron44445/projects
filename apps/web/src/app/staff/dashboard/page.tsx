@@ -21,6 +21,9 @@ import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
 import { useStaffAuth } from '@/contexts/StaffAuthContext';
 import { api, ApiError } from '@/lib/api';
+import { useTimeClock } from '@/hooks/useTimeClock';
+import { formatInTimeZone } from 'date-fns-tz';
+import { parseISO } from 'date-fns';
 
 interface DashboardData {
   todayAppointments: {
@@ -71,6 +74,18 @@ function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<DashboardData['todayAppointments'][0] | null>(null);
+
+  // Time Clock state
+  const {
+    status: clockStatus,
+    history: clockHistory,
+    loading: clockLoading,
+    historyLoading,
+    clockIn,
+    clockOut,
+  } = useTimeClock();
+  const [clockSubmitting, setClockSubmitting] = useState(false);
+  const [clockError, setClockError] = useState<string | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
@@ -135,6 +150,31 @@ function DashboardContent() {
 
   const isPastAppointment = (startTime: string) => {
     return new Date(startTime) < new Date();
+  };
+
+  // Get primary location for clock in
+  const primaryLocation = staff?.assignedLocations?.find(l => l.isPrimary) || staff?.assignedLocations?.[0];
+
+  // Handle clock action (clock in or clock out)
+  const handleClockAction = async () => {
+    if (!primaryLocation) {
+      setClockError('No assigned location');
+      return;
+    }
+
+    setClockSubmitting(true);
+    setClockError(null);
+    try {
+      if (clockStatus?.isClockedIn) {
+        await clockOut();
+      } else {
+        await clockIn(primaryLocation.id);
+      }
+    } catch (err) {
+      setClockError(err instanceof Error ? err.message : 'Failed to clock in/out');
+    } finally {
+      setClockSubmitting(false);
+    }
   };
 
   return (
@@ -261,6 +301,146 @@ function DashboardContent() {
                   </p>
                   <p className="text-sm text-charcoal/60">Total Earnings</p>
                 </div>
+              </div>
+
+              {/* Time Clock Section */}
+              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-6">
+                <h2 className="text-lg font-semibold text-charcoal mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-sage" />
+                  Time Clock
+                </h2>
+
+                {clockLoading ? (
+                  <div className="h-24 bg-cream/50 animate-pulse rounded-xl" />
+                ) : (
+                  <div className="text-center space-y-4">
+                    {clockStatus?.isClockedIn && clockStatus.activeEntry ? (
+                      <>
+                        <div className="w-16 h-16 mx-auto rounded-full bg-sage/10 flex items-center justify-center">
+                          <Clock className="w-8 h-8 text-sage animate-pulse" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-charcoal/60">Clocked in since</p>
+                          <p className="text-2xl font-bold text-sage">
+                            {formatInTimeZone(
+                              parseISO(clockStatus.activeEntry.clockIn),
+                              clockStatus.activeEntry.timezone || 'UTC',
+                              'h:mm a'
+                            )}
+                          </p>
+                          {clockStatus.activeEntry.locationName && (
+                            <p className="text-sm text-charcoal/60">{clockStatus.activeEntry.locationName}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={handleClockAction}
+                          disabled={clockSubmitting}
+                          className="w-full px-6 py-3 bg-rose text-cream rounded-xl font-medium hover:bg-rose/90 transition-colors disabled:opacity-50"
+                        >
+                          {clockSubmitting ? 'Clocking out...' : 'Clock Out'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-16 h-16 mx-auto rounded-full bg-sage/10 flex items-center justify-center">
+                          <Clock className="w-8 h-8 text-sage" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-medium text-charcoal">Not clocked in</p>
+                          <p className="text-sm text-charcoal/60">Tap below to start your shift</p>
+                        </div>
+                        <button
+                          onClick={handleClockAction}
+                          disabled={clockSubmitting || !primaryLocation}
+                          className="w-full px-6 py-3 bg-sage text-cream rounded-xl font-medium hover:bg-sage/90 transition-colors disabled:opacity-50"
+                        >
+                          {clockSubmitting ? 'Clocking in...' : 'Clock In'}
+                        </button>
+                      </>
+                    )}
+
+                    {clockError && (
+                      <div className="flex items-center gap-2 text-rose text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        {clockError}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Time History Section */}
+              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 p-6">
+                <h2 className="text-lg font-semibold text-charcoal mb-4">Recent Time Entries</h2>
+
+                {historyLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-16 bg-cream/50 animate-pulse rounded-xl" />
+                    ))}
+                  </div>
+                ) : clockHistory.length === 0 ? (
+                  <EmptyState
+                    icon={Clock}
+                    title="No time entries yet"
+                    description="Your clock in/out history will appear here"
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {clockHistory.slice(0, 10).map((entry) => (
+                      <div
+                        key={entry.id}
+                        className={`p-4 rounded-xl border ${
+                          entry.isActive
+                            ? 'bg-sage/5 border-sage/20'
+                            : 'bg-cream/30 border-charcoal/5'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-charcoal">
+                              {formatInTimeZone(
+                                parseISO(entry.clockIn),
+                                entry.timezone || 'UTC',
+                                'MMM d, yyyy'
+                              )}
+                            </p>
+                            <p className="text-sm text-charcoal/60">
+                              {formatInTimeZone(
+                                parseISO(entry.clockIn),
+                                entry.timezone || 'UTC',
+                                'h:mm a'
+                              )}
+                              {entry.clockOut ? (
+                                <> - {formatInTimeZone(
+                                  parseISO(entry.clockOut),
+                                  entry.timezone || 'UTC',
+                                  'h:mm a'
+                                )}</>
+                              ) : (
+                                <span className="text-lavender ml-2">(active)</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            {entry.durationMinutes ? (
+                              <p className="font-medium text-charcoal">
+                                {Math.floor(entry.durationMinutes / 60)}h {entry.durationMinutes % 60}m
+                              </p>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-lavender/10 text-lavender">
+                                In progress
+                              </span>
+                            )}
+                            {entry.locationName && (
+                              <p className="text-xs text-charcoal/50">{entry.locationName}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
