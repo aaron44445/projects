@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1.1 Audit Remediation - Phase 14: Performance Optimization
+**Current focus:** v1.1 Audit Remediation - Phase 15: SEO Fundamentals
 
 ## Current Position
 
-Phase: 14 of 18 (Performance Optimization)
-Plan: 4 of 4 complete
-Status: Phase complete
-Last activity: 2026-01-28 - Completed 14-04-PLAN.md (VIP client COUNT gap closure)
+Phase: 15 of 18 (SEO Fundamentals)
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-01-29 - Completed 15-01-PLAN.md (Sitemap and Robots.txt)
 
-Progress: [████░░░░░░░░░░░░░░░░] 24%
+Progress: [████████████████░░░░] 84%
 
 ## Milestone Context
 
@@ -24,7 +24,7 @@ Progress: [████░░░░░░░░░░░░░░░░] 24%
 |-------|----------|--------------|--------|
 | 13 | Security | SEC-01 to SEC-04 | Complete |
 | 14 | Performance | PERF-01 to PERF-04 | Complete |
-| 15 | SEO | SEO-01 to SEO-04 | Pending |
+| 15 | SEO | SEO-01 to SEO-04 | In Progress (1/5) |
 | 16 | Accessibility | A11Y-01 to A11Y-04 | Pending |
 | 17 | Code Quality | CODE-01 to CODE-04 | Pending |
 | 18 | UI/UX | UI-01 to UI-04 | Pending |
@@ -32,9 +32,9 @@ Progress: [████░░░░░░░░░░░░░░░░] 24%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7 (v1.1)
-- Average duration: 4.3 minutes
-- Total execution time: 30 minutes
+- Total plans completed: 8 (v1.1)
+- Average duration: 4.4 minutes
+- Total execution time: 35 minutes
 
 **By Phase:**
 
@@ -42,6 +42,7 @@ Progress: [████░░░░░░░░░░░░░░░░] 24%
 |-------|-------|-------|----------|
 | 13 | 3/3 | 18 min | 6 min |
 | 14 | 4/4 | 12 min | 3 min |
+| 15 | 1/5 | 5 min | 5 min |
 
 *Updated after each plan completion*
 
@@ -76,6 +77,12 @@ From v1.1 Phase 14:
 - Query VIP clients using Prisma has filter on tags array (14-04)
 - Add VIP count to existing Promise.all for zero-overhead parallel execution (14-04)
 
+From v1.1 Phase 15:
+- Use Next.js native MetadataRoute convention instead of static files (15-01)
+- Block all authenticated routes from crawling via robots.txt (15-01)
+- Set homepage priority to 1.0, signup/pricing to 0.8 (15-01)
+- Use NEXT_PUBLIC_APP_URL env var with peacase.com fallback (15-01)
+
 ### Pending Todos
 
 None yet.
@@ -86,10 +93,10 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-28
-Stopped at: Completed 14-04-PLAN.md (VIP client COUNT gap closure)
+Last session: 2026-01-29
+Stopped at: Completed 15-01-PLAN.md (Sitemap and Robots.txt)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 14 complete - 4/4 plans)*
+*Last updated: 2026-01-29 (Phase 15 in progress - 1/5 plans)*
