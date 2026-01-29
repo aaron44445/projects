@@ -57,10 +57,10 @@ const StatCard: React.FC<StatCardProps> = ({
           {icon}
         </div>
       )}
-      <p className="text-sm font-medium text-charcoal/70 mb-2">{label}</p>
+      <p className="text-sm font-medium text-text-secondary mb-2">{label}</p>
       <p className="text-3xl lg:text-4xl font-bold text-charcoal">{value}</p>
       {trend && (
-        <p className="text-sm text-charcoal/50 mt-3">{trend}</p>
+        <p className="text-sm text-text-muted mt-3">{trend}</p>
       )}
     </div>
   );

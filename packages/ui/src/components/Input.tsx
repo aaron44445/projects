@@ -27,7 +27,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
               {leftIcon}
             </div>
           )}
@@ -36,7 +36,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={cn(
               'flex w-full rounded-lg border bg-white px-4 py-3 text-base text-charcoal transition-all duration-200',
-              'placeholder:text-charcoal/40',
+              'placeholder:text-text-muted',
               'focus:outline-none focus:ring-2 focus:ring-sage/50 focus:border-sage',
               'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50',
               error
@@ -50,13 +50,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">
               {rightIcon}
             </div>
           )}
         </div>
         {error && <p className="mt-1.5 text-sm text-error">{error}</p>}
-        {hint && !error && <p className="mt-1.5 text-sm text-charcoal/50">{hint}</p>}
+        {hint && !error && <p className="mt-1.5 text-sm text-text-muted">{hint}</p>}
       </div>
     );
   }
