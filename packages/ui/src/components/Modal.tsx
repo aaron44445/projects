@@ -52,10 +52,11 @@ const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className={cn("fixed inset-0 z-50 flex items-center justify-center", !isOpen && "hidden")}
+      aria-hidden={!isOpen}
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-charcoal/50 backdrop-blur-sm animate-fade-in"
@@ -64,7 +65,7 @@ const Modal: React.FC<ModalProps> = ({
 
       {/* Modal */}
       <FocusTrap
-        active={true}
+        active={isOpen}
         focusTrapOptions={{
           escapeDeactivates: false,
           returnFocusOnDeactivate: true,
