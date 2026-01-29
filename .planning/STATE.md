@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 15 of 18 (SEO Fundamentals)
-Plan: 1 of 5 complete
+Plan: 2 of 5 complete
 Status: In progress
-Last activity: 2026-01-29 - Completed 15-01-PLAN.md (Sitemap and Robots.txt)
+Last activity: 2026-01-28 - Completed 15-02-PLAN.md (Canonical URLs & Organization Schema)
 
 Progress: [████████████████░░░░] 84%
 
@@ -24,7 +24,7 @@ Progress: [████████████████░░░░] 84%
 |-------|----------|--------------|--------|
 | 13 | Security | SEC-01 to SEC-04 | Complete |
 | 14 | Performance | PERF-01 to PERF-04 | Complete |
-| 15 | SEO | SEO-01 to SEO-04 | In Progress (1/5) |
+| 15 | SEO | SEO-01 to SEO-04 | In Progress (2/5) |
 | 16 | Accessibility | A11Y-01 to A11Y-04 | Pending |
 | 17 | Code Quality | CODE-01 to CODE-04 | Pending |
 | 18 | UI/UX | UI-01 to UI-04 | Pending |
@@ -32,9 +32,9 @@ Progress: [████████████████░░░░] 84%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8 (v1.1)
-- Average duration: 4.4 minutes
-- Total execution time: 35 minutes
+- Total plans completed: 9 (v1.1)
+- Average duration: 4.6 minutes
+- Total execution time: 41 minutes
 
 **By Phase:**
 
@@ -42,7 +42,7 @@ Progress: [████████████████░░░░] 84%
 |-------|-------|-------|----------|
 | 13 | 3/3 | 18 min | 6 min |
 | 14 | 4/4 | 12 min | 3 min |
-| 15 | 1/5 | 5 min | 5 min |
+| 15 | 2/5 | 11 min | 5.5 min |
 
 *Updated after each plan completion*
 
@@ -82,6 +82,9 @@ From v1.1 Phase 15:
 - Block all authenticated routes from crawling via robots.txt (15-01)
 - Set homepage priority to 1.0, signup/pricing to 0.8 (15-01)
 - Use NEXT_PUBLIC_APP_URL env var with peacase.com fallback (15-01)
+- Use metadataBase with alternates.canonical for automatic canonical URLs (15-02)
+- Render JSON-LD in client component body (valid for Google parsing) (15-02)
+- Hardcoded schema data is safe for dangerouslySetInnerHTML (15-02)
 
 ### Pending Todos
 
