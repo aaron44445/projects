@@ -647,7 +647,12 @@ function DateTimeStep({
               return (
                 <button
                   key={slot.time}
-                  onClick={() => onTimeSelect(slot.time)}
+                  onClick={() => {
+                    setAnnouncement(`${formatTime(slot.time)} selected`);
+                    onTimeSelect(slot.time);
+                  }}
+                  aria-label={`${formatTime(slot.time)}, ${slot.available !== false ? 'available' : 'unavailable'}`}
+                  disabled={slot.available === false}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     isSelected
                       ? 'text-white'
