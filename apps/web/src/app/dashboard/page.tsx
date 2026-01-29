@@ -43,7 +43,7 @@ import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
-import { EmptyState } from '@peacase/ui';
+import { EmptyState, Modal } from '@peacase/ui';
 import { STATUS_COLORS, type StatusKey } from '@/lib/statusColors';
 
 // Helper to get status classes with underscore-to-hyphen normalization
@@ -984,112 +984,98 @@ function DashboardContent() {
       )}
 
       {/* Quick Add Client Modal */}
-      {showAddClient && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-sage/10 rounded-xl flex items-center justify-center">
-                  <UserPlus className="w-5 h-5 text-sage" />
-                </div>
-                <h2 className="text-xl font-bold text-charcoal">Add Client</h2>
-              </div>
-              <button
-                onClick={() => {
-                  setShowAddClient(false);
-                  setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
-                  setAddClientError(null);
-                }}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={showAddClient}
+        onClose={() => {
+          setShowAddClient(false);
+          setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
+          setAddClientError(null);
+        }}
+        title="Add Client"
+        size="md"
+      >
+        <div className="space-y-4">
+          {addClientError && (
+            <div className="p-3 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
+              {addClientError}
             </div>
+          )}
 
-            <div className="p-6 space-y-4">
-              {addClientError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm">
-                  {addClientError}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
-                    First Name <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={clientForm.firstName}
-                    onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="John"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    value={clientForm.lastName}
-                    onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
-                  Email <span className="text-charcoal/40 text-xs">(optional)</span>
-                </label>
-                <input
-                  type="email"
-                  value={clientForm.email}
-                  onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">
-                  Phone <span className="text-charcoal/40 text-xs">(optional)</span>
-                </label>
-                <input
-                  type="tel"
-                  value={clientForm.phone}
-                  onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">
+                First Name <span className="text-rose">*</span>
+              </label>
+              <input
+                type="text"
+                value={clientForm.firstName}
+                onChange={(e) => setClientForm({ ...clientForm, firstName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                placeholder="John"
+                autoFocus
+              />
             </div>
-
-            <div className="p-6 border-t border-charcoal/10 flex gap-3">
-              <button
-                onClick={() => {
-                  setShowAddClient(false);
-                  setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
-                  setAddClientError(null);
-                }}
-                disabled={isAddingClient}
-                className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddClient}
-                disabled={isAddingClient || !clientForm.firstName.trim()}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isAddingClient && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add Client
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">Last Name</label>
+              <input
+                type="text"
+                value={clientForm.lastName}
+                onChange={(e) => setClientForm({ ...clientForm, lastName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+                placeholder="Doe"
+              />
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-charcoal mb-2">
+              Email <span className="text-charcoal/40 text-xs">(optional)</span>
+            </label>
+            <input
+              type="email"
+              value={clientForm.email}
+              onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              placeholder="john@example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-charcoal mb-2">
+              Phone <span className="text-charcoal/40 text-xs">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              value={clientForm.phone}
+              onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/20 bg-white dark:bg-charcoal text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              placeholder="(555) 123-4567"
+            />
+          </div>
         </div>
-      )}
+
+        <div className="flex gap-3 mt-6 pt-6 border-t border-charcoal/10">
+          <button
+            onClick={() => {
+              setShowAddClient(false);
+              setClientForm({ firstName: '', lastName: '', email: '', phone: '' });
+              setAddClientError(null);
+            }}
+            disabled={isAddingClient}
+            className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAddClient}
+            disabled={isAddingClient || !clientForm.firstName.trim()}
+            className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isAddingClient && <Loader2 className="w-4 h-4 animate-spin" />}
+            Add Client
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
