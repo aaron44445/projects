@@ -142,13 +142,22 @@ Plans:
   2. Status colors (pending, confirmed, cancelled, etc.) come from single constants file
   3. Error highlighting uses design tokens (error/10, error/20) not hex colors
   4. Empty states across the app use shared EmptyState component
-**Plans**: 4 plans
+**Plans**: 13 plans (4 foundation + 9 gap closure)
 
 Plans:
-- [ ] 18-01-PLAN.md - Status colors utility and EmptyState component (UI-02, UI-04 foundation)
-- [ ] 18-02-PLAN.md - BookingModal migration to packages/ui Modal (UI-01, UI-03)
-- [ ] 18-03-PLAN.md - Calendar page status colors and error states (UI-02, UI-03)
-- [ ] 18-04-PLAN.md - Empty states migration across key pages (UI-04)
+- [x] 18-01-PLAN.md - Status colors utility and EmptyState component (UI-02, UI-04 foundation)
+- [x] 18-02-PLAN.md - BookingModal migration to packages/ui Modal (UI-01, UI-03)
+- [x] 18-03-PLAN.md - Calendar page status colors and error states (UI-02, UI-03)
+- [x] 18-04-PLAN.md - Empty states migration across key pages (UI-04)
+- [ ] 18-05-PLAN.md - Gap closure: Status colors migration (4 files) (UI-02)
+- [ ] 18-06-PLAN.md - Gap closure: Modal migration part 1 - clients, dashboard, calendar (UI-01)
+- [ ] 18-07-PLAN.md - Gap closure: Modal migration part 2 - gift-cards, locations, marketing (UI-01)
+- [ ] 18-08-PLAN.md - Gap closure: Modal migration part 3 - packages, services (UI-01)
+- [ ] 18-09-PLAN.md - Gap closure: Modal migration part 4 - staff, schedule, time-off, portal (UI-01)
+- [ ] 18-10-PLAN.md - Gap closure: Error tokens - settings page (UI-03)
+- [ ] 18-11-PLAN.md - Gap closure: Error tokens - marketing, gift-cards, notifications, packages (UI-03)
+- [ ] 18-12-PLAN.md - Gap closure: Error tokens - schedule, embed, PaymentForm (UI-03)
+- [ ] 18-13-PLAN.md - Gap closure: Empty states audit (6 pages) (UI-04)
 
 ## Progress
 
@@ -161,8 +170,8 @@ Plans:
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
 | 16. Accessibility Compliance | v1.1 | 10/10 | Complete | 2026-01-29 |
 | 17. Code Quality | v1.1 | 14/14 | Complete | 2026-01-29 |
-| 18. UI/UX Consistency | v1.1 | 0/4 | Not started | - |
+| 18. UI/UX Consistency | v1.1 | 4/13 | In progress (gap closure) | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 18 planned - 4 plans in 2 waves)*
+*Last updated: 2026-01-29 (Phase 18 gap closure - 9 additional plans for full migration)*
