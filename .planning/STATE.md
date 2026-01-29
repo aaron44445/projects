@@ -94,6 +94,9 @@ From v1.1 Phase 16:
 - Use aria-live=polite instead of assertive for non-urgent announcements (16-02)
 - Include availability status in time slot aria-labels for efficient scanning (16-02)
 - Announce selection confirmation in live region for immediate feedback (16-02)
+- Skip link positioned as first focusable element in body (16-04)
+- Hidden-until-focused skip links using CSS transform (16-04)
+- Main element inside Providers to maintain context access (16-04)
 
 ### Pending Todos
 
@@ -106,9 +109,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 16-02-PLAN.md (Phase 16 complete)
+Stopped at: Completed 16-04-PLAN.md (Phase 16 in progress)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Completed plan 16-02: Booking Widget Live Regions - Phase 16 complete)*
+*Last updated: 2026-01-29 (Completed plan 16-04: Skip to Main Content Navigation)*
