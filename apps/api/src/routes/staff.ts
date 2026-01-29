@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
-import { Prisma } from '@prisma/client';
-import { prisma } from '@peacase/database';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { sendEmail } from '../services/email.js';
