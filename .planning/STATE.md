@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1.1 Audit Remediation - Phase 18: UI/UX (gap closure in progress)
+**Current focus:** v1.1 Audit Remediation - Phase 18: UI/UX (gap closure complete)
 
 ## Current Position
 
 Phase: 18 of 18 (UI/UX Consistency)
-Plan: 11 of 13 (gap closure plans)
-Status: Gap closure in progress
-Last activity: 2026-01-29 - Completed 18-11-PLAN.md (Medium Page Rose Migration)
+Plan: 5 of 5 (gap closure plans complete)
+Status: Gap closure complete
+Last activity: 2026-01-29 - Completed 18-05-PLAN.md (Status Colors Migration)
 
 Progress: [████████████████████] 100%
 
@@ -158,6 +158,9 @@ From v1.1 Phase 18:
 - Remove unused icon imports when migrating modals (X, Bell, Ban, MapPin, Globe) (18-07)
 - Use bg-rose/10 border-rose/20 text-rose-dark pattern for all error states (18-11)
 - Migrate green/blue status colors to sage/lavender tokens for consistency (18-11)
+- Map staff active/inactive to confirmed/draft tokens, keep amber for on-leave (18-05)
+- Map transaction refunded to cancelled styling for consistent negative states (18-05)
+- Map time off pending/approved/rejected to pending/confirmed/cancelled tokens (18-05)
 
 ### Pending Todos
 
@@ -170,9 +173,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-11-PLAN.md (Medium Page Rose Migration)
+Stopped at: Completed 18-05-PLAN.md (Status Colors Migration) - Gap closure complete
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 gap closure: plan 11 complete)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 05 complete - all gaps closed)*
