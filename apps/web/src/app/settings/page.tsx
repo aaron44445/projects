@@ -689,7 +689,7 @@ function SettingsContent() {
       return (
         <div className="text-center py-12">
           <div className="w-16 h-16 rounded-2xl bg-rose/10 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-500" />
+            <AlertCircle className="w-8 h-8 text-rose" />
           </div>
           <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">Failed to Load Settings</h3>
           <p className="text-text-muted dark:text-white/60 mb-6">{salonError}</p>
@@ -796,7 +796,7 @@ function SettingsContent() {
                       {profileSaved ? 'Saved!' : 'Save Changes'}
                     </button>
                     {profileError && (
-                      <span className="text-red-500 text-sm">{profileError}</span>
+                      <span className="text-rose-dark text-sm">{profileError}</span>
                     )}
                   </div>
                 </div>
@@ -842,13 +842,13 @@ function SettingsContent() {
                 <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-rose/20 dark:border-rose/20">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-rose/10 dark:bg-rose/20 flex items-center justify-center flex-shrink-0">
-                      <Trash2 className="w-6 h-6 text-red-500" />
+                      <Trash2 className="w-6 h-6 text-rose" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-charcoal dark:text-white mb-1">Delete Account</h3>
                       {deletionRequest ? (
                         <div>
-                          <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                          <p className="text-sm text-rose-dark dark:text-rose mb-4">
                             Your account is scheduled for deletion on {new Date(deletionRequest.scheduledDeletion).toLocaleDateString()}.
                           </p>
                           <button
@@ -1299,7 +1299,7 @@ function SettingsContent() {
                     <Loader2 className="w-6 h-6 animate-spin text-sage" />
                   </div>
                 ) : locationsError ? (
-                  <div className="text-center py-4 text-red-500">
+                  <div className="text-center py-4 text-rose-dark">
                     Failed to load locations
                   </div>
                 ) : locations.length === 0 ? (
@@ -1474,7 +1474,7 @@ function SettingsContent() {
 
             <div className="flex items-center justify-end gap-4 pt-4 border-t border-charcoal/10 dark:border-white/10">
               {hoursError && (
-                <p className="text-red-500 text-sm flex items-center gap-2">
+                <p className="text-rose-dark text-sm flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
                   {hoursError}
                 </p>
@@ -1664,7 +1664,7 @@ function SettingsContent() {
                   </span>
                 )}
                 {regionalError && (
-                  <span className="flex items-center gap-2 text-red-600">
+                  <span className="flex items-center gap-2 text-rose-dark">
                     <AlertCircle className="w-4 h-4" />
                     {regionalError}
                   </span>
@@ -1889,7 +1889,7 @@ function SettingsContent() {
                   </span>
                 )}
                 {taxError && (
-                  <span className="flex items-center gap-2 text-red-600">
+                  <span className="flex items-center gap-2 text-rose-dark">
                     <AlertCircle className="w-4 h-4" />
                     {taxError}
                   </span>
@@ -2256,7 +2256,7 @@ function SettingsContent() {
             {/* Error state */}
             {notificationSettingsError && (
               <div className="p-4 bg-rose/10 dark:bg-rose/20 border border-rose/20 dark:border-rose/30 rounded-lg mb-4">
-                <p className="text-red-600 dark:text-red-400 text-sm">
+                <p className="text-rose-dark dark:text-rose text-sm">
                   <strong>Error:</strong> {notificationSettingsError}
                 </p>
               </div>
@@ -3079,7 +3079,7 @@ function SettingsContent() {
                 {brandingSaved ? 'Saved!' : 'Save Branding'}
               </button>
               {brandingError && (
-                <span className="text-red-500 text-sm">{brandingError}</span>
+                <span className="text-rose-dark text-sm">{brandingError}</span>
               )}
             </div>
           </div>
@@ -3127,7 +3127,7 @@ function SettingsContent() {
                   />
                 </div>
                 {passwordError && (
-                  <p className="text-sm text-red-500">{passwordError}</p>
+                  <p className="text-sm text-rose-dark">{passwordError}</p>
                 )}
                 {passwordChanged && (
                   <p className="text-sm text-green-600 flex items-center gap-2">
@@ -3198,7 +3198,7 @@ function SettingsContent() {
                         await revokeAllOtherSessions();
                       }
                     }}
-                    className="text-sm text-red-500 hover:text-red-600"
+                    className="text-sm text-rose hover:text-rose-dark"
                   >
                     Sign out all other sessions
                   </button>
@@ -3395,7 +3395,7 @@ function SettingsContent() {
                       </span>
                     )}
                     {saveError && (
-                      <span className="flex items-center gap-2 text-red-600">
+                      <span className="flex items-center gap-2 text-rose-dark">
                         <AlertCircle className="w-4 h-4" />
                         {saveError}
                       </span>
