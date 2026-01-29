@@ -11,6 +11,8 @@ import cookieParser from 'cookie-parser';
 import { initSentry, Sentry } from './lib/sentry.js';
 initSentry();
 
+import logger from './lib/logger.js';
+
 // Import and validate environment (will exit if invalid)
 import { env } from './lib/env.js';
 
@@ -23,7 +25,6 @@ import { appointmentsRouter } from './routes/appointments.js';
 import { usersRouter } from './routes/users.js';
 import { staffRouter } from './routes/staff.js';
 import { publicRouter } from './routes/public.js';
-import { reviewsRouter } from './routes/reviews.js';
 import { giftCardsRouter } from './routes/gift-cards.js';
 import { packagesRouter } from './routes/packages.js';
 import { dashboardRouter } from './routes/dashboard.js';
@@ -173,7 +174,6 @@ app.use('/api/v1/staff', staffRouter);
 app.use('/api/v1/clients', clientsRouter);
 app.use('/api/v1/services', servicesRouter);
 app.use('/api/v1/appointments', appointmentsRouter);
-app.use('/api/v1/reviews', reviewsRouter);
 app.use('/api/v1/gift-cards', giftCardsRouter);
 app.use('/api/v1/packages', packagesRouter);
 app.use('/api/v1/dashboard', dashboardRouter);
@@ -222,15 +222,7 @@ app.use(errorHandler);
 // Only start server if not running in Vercel serverless
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`
-  ============================================
-  Peacase API Server
-  ============================================
-  Status: Running
-  Port: ${PORT}
-  Environment: ${env.NODE_ENV}
-  ============================================
-  `);
+    logger.info({ port: PORT, environment: env.NODE_ENV }, 'Peacase API Server started');
 
     // Start cron jobs after server is running
     startCronJobs();

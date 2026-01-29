@@ -1,5 +1,6 @@
 import { prisma } from '@peacase/database';
 import { refundPayment, cancelPaymentIntent } from '../services/payments.js';
+import logger from './logger.js';
 
 export interface RefundOptions {
   appointmentId: string;
@@ -173,7 +174,7 @@ export async function processAppointmentRefund(options: RefundOptions): Promise<
         };
       }
     } catch (error: any) {
-      console.error('[Refund] Error processing refund:', error);
+      logger.error({ error, appointmentId: options.appointmentId }, 'Error processing refund');
       throw new Error(`Failed to process refund: ${error.message}`);
     }
   }

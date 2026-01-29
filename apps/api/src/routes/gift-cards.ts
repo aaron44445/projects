@@ -1,13 +1,20 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/subscription.js';
 import { randomBytes } from 'crypto';
 import { createGiftCardCheckoutSession } from '../services/payments.js';
 import { sendEmail, giftCardEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All gift card routes require the gift_cards add-on
+router.use(authenticate, requireAddon('gift_cards'));
 
 function generateGiftCardCode(): string {
   return randomBytes(8).toString('hex').toUpperCase().match(/.{1,4}/g)!.join('-');
@@ -17,11 +24,13 @@ function generateGiftCardCode(): string {
 router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { status } = req.query;
 
+  const where: Prisma.GiftCardWhereInput = {
+    ...withSalonId(req.user!.salonId),
+    ...(status && { status: status as string }),
+  };
+
   const giftCards = await prisma.giftCard.findMany({
-    where: {
-      salonId: req.user!.salonId,
-      ...(status && { status: status as string }),
-    },
+    where,
     orderBy: { purchasedAt: 'desc' },
   });
 

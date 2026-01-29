@@ -1,5 +1,6 @@
 import { createEvent, EventAttributes } from 'ics';
 import { google, outlook, yahoo, ics as icsLink } from 'calendar-link';
+import logger from './logger.js';
 
 export interface CalendarEventData {
   title: string;
@@ -83,7 +84,7 @@ export function generateICSContent(event: CalendarEventData): string {
   const { error, value } = createEvent(eventAttrs);
 
   if (error) {
-    console.error('Error generating ICS:', error);
+    logger.error({ error }, 'Error generating ICS');
     // Return minimal valid ICS on error
     return `BEGIN:VCALENDAR
 VERSION:2.0
