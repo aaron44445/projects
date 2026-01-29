@@ -10,6 +10,20 @@ import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
+// Helper to compute invite status for staff members
+function getInviteStatus(staff: {
+  passwordHash: string | null;
+  magicLinkExpires: Date | null;
+}): 'active' | 'invited' | 'expired' {
+  if (staff.passwordHash) {
+    return 'active';
+  }
+  if (staff.magicLinkExpires && staff.magicLinkExpires > new Date()) {
+    return 'invited';
+  }
+  return 'expired';
+}
+
 // ============================================
 // GET /api/v1/staff
 // List staff members with services and availability
@@ -104,9 +118,15 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
     });
   }
 
+  // Add inviteStatus to each user
+  const usersWithInviteStatus = users.map(user => ({
+    ...user,
+    inviteStatus: getInviteStatus(user),
+  }));
+
   res.json({
     success: true,
-    data: users,
+    data: usersWithInviteStatus,
   });
 }));
 
