@@ -67,7 +67,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable}`}>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
+        <Providers>
+          <main id="main-content" tabIndex={-1}>
+            {children}
+          </main>
+        </Providers>
         <CookieConsent />
       </body>
     </html>
