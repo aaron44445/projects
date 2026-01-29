@@ -437,7 +437,7 @@ router.put('/:id/availability', authenticate, asyncHandler(async (req: Request, 
 
   // Verify staff belongs to salon
   const user = await prisma.user.findFirst({
-    where: { id: staffId, salonId: req.user!.salonId },
+    where: { id: staffId, ...withSalonId(req.user!.salonId) },
   });
 
   if (!user) {
@@ -511,7 +511,7 @@ router.put(
 
     // Verify staff belongs to salon
     const user = await prisma.user.findFirst({
-      where: { id: staffId, salonId: req.user!.salonId },
+      where: { id: staffId, ...withSalonId(req.user!.salonId) },
     });
 
     if (!user) {
@@ -539,7 +539,7 @@ router.put(
     const services = await prisma.service.findMany({
       where: {
         id: { in: serviceIds },
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
       },
     });
 
