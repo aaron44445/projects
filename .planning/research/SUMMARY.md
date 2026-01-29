@@ -1,247 +1,312 @@
 # Project Research Summary
 
-**Project:** Peacase v1.1 Audit Remediation
-**Domain:** Remediation of ~50 audit findings on production SaaS
-**Researched:** 2026-01-28
+**Project:** Peacase Staff Portal v1.2
+**Domain:** Staff self-service portal for spa/salon SaaS
+**Researched:** 2026-01-29
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Peacase v1.1 is a remediation milestone focused on fixing ~50 audit issues across security, performance, SEO, accessibility, code quality, and UI/UX in an existing, shipped production system. The core challenge is NOT implementing fixes — it's doing so without introducing regressions that break features users depend on daily. Research shows that poorly executed remediation commonly causes 43% traffic loss (SEO), mass user logouts (security), and cascading failures (performance).
+The Peacase Staff Portal is an extension to an existing multi-tenant spa/salon booking system that enables staff to authenticate, view their schedules, track earnings, manage availability, and request time off. Research shows that 95% of required infrastructure already exists—JWT authentication with role-based access, commission tracking, appointment management, and time-off workflows are production-ready. The primary challenge is not building new features but safely integrating staff access into a production system serving paying customers without compromising tenant isolation or breaking existing booking workflows.
 
-The recommended approach is surgical, additive changes with extensive testing at each step. The existing stack (Next.js 14, Express.js, Prisma, TailwindCSS, shadcn/ui) is preserved. New dependencies are minimal: `csrf-csrf` for CSRF protection, `bullmq` for async notifications, `schema-dts` for SEO types, and testing tools (`jest-axe`, `eslint-plugin-jsx-a11y`). Most fixes require configuration changes or pattern updates rather than new libraries.
+The recommended approach prioritizes authentication security first (establishing separate staff token paths with portal verification), then data visibility rules (ensuring staff can only access their own salon's data with appropriate field-level filtering), followed by feature rollout (schedule, earnings, availability). The only new technology required is Luxon 3.7.2 for robust timezone-aware time tracking in multi-location salons—everything else leverages the existing Next.js 14, Express, Prisma 5.22, PostgreSQL stack.
 
-Key risks center on breaking working functionality while fixing issues. Security fixes can invalidate user sessions if not migrated properly. Performance query optimizations can timeout on production data volumes. SEO changes can tank search traffic within weeks. Accessibility fixes with improper ARIA can make features worse, not better. Each category has specific testing protocols and rollback procedures documented to mitigate these risks.
+Critical risks center on authentication path confusion (dual login systems sharing JWT infrastructure without proper portal claims), multi-tenant isolation weakening (staff queries missing salonId filters), and earnings calculation race conditions (concurrent appointment completion). These are preventable through disciplined security patterns: portal claims in JWTs, mandatory dual-filtering (staffId + salonId), and database transactions for financial operations. Research confidence is high because the codebase already implements sophisticated multi-tenant patterns—the task is extending them correctly, not inventing new approaches.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The existing stack is preserved. Additions are minimal and targeted to specific audit findings.
+**No major stack changes required.** The existing technology foundation (Next.js 14, Express 4.18, Prisma 5.22, PostgreSQL, JWT auth with refresh tokens) handles all Staff Portal requirements. Only one strategic addition: **Luxon 3.7.2** for timezone-aware datetime operations.
 
-**New Dependencies:**
-- `csrf-csrf@^4.0.3`: Stateless CSRF protection using Double Submit Cookie pattern — no Redis required
-- `bullmq@^5.66.5` + `ioredis@^5.4.0`: Async notification queue with Upstash Redis free tier — unblocks API responses
-- `schema-dts@^1.1.2` (dev): TypeScript types for JSON-LD structured data — type-safe SEO
-- `jest-axe@^10.0.0` + `eslint-plugin-jsx-a11y@^6.10.0` (dev): Automated accessibility testing — catches 30-57% of a11y issues
+**Core technologies:**
+- **Luxon 3.7.2**: Timezone-aware time tracking — Required for multi-location salons spanning timezones. Built on native Intl API (no bundle bloat), immutable API, superior to date-fns-tz for this use case.
+- **Existing JWT middleware**: Extend with portal claims and role verification — Already supports refresh tokens, multi-tenant isolation, and role-based access.
+- **Prisma ORM**: Schema extensions only — TimeEntry model for clock in/out (if needed), but core staff functionality requires zero schema changes (all tables exist).
+- **Express routing**: Add `/api/v1/staff-portal/*` routes — Follows existing patterns, reuses authentication middleware with staff-specific permission checks.
 
-**Configuration-Only Fixes (no new dependencies):**
-- Environment validation with existing Zod
-- Prisma `include` with `relationLoadStrategy: 'join'` for N+1 queries
-- TanStack Query `staleTime` configuration to prevent UI flicker
-- Next.js built-in `sitemap.ts` and `robots.ts`
-- TypeScript `strict: true` and `noUncheckedIndexedAccess`
-- CSS design tokens for UI consistency
+**Critical constraint:** jsonwebtoken patch to 9.0.3 for security fixes (currently 9.0.0).
 
-### Expected Features (Remediation Outcomes)
+### Expected Features
 
-**Security Table Stakes:**
-- Environment variables validated at startup (not just used)
-- CSRF tokens persist across server restarts
-- File uploads validate ownership before access
-- Session cookies are HttpOnly, Secure, SameSite
+Research shows clear division between table stakes (already built) and differentiators (prioritize for v1.2).
 
-**Performance Table Stakes:**
-- Email/SMS notifications sent asynchronously (API responds < 200ms)
-- No N+1 queries on list endpoints (single query with JOINs)
-- Lighthouse Performance score >= 90 on mobile
+**Must have (table stakes — ALL EXIST):**
+- Staff authentication with magic link onboarding — JWT tokens, RefreshToken model, password setup flow
+- Schedule viewing (appointments with date range filtering) — `/schedule` endpoint with staffId filtering
+- Earnings/commission display — CommissionRecord aggregation with service-level breakdown
+- Profile management — Name, phone, avatar updates via `/profile` endpoint
+- Time-off requests with approval workflow — TimeOff model with status tracking
+- Multi-location support — StaffLocation model with isPrimary flag
 
-**SEO Table Stakes:**
-- Valid sitemap.xml and robots.txt
-- JSON-LD structured data for LocalBusiness/BeautySalon
-- Canonical URLs on all pages
+**Should have (competitive advantages):**
+- Self-service availability editing with optional approval workflow — Existing ScheduleChangeRequest model handles this
+- Real-time earnings transparency with tips breakdown — CommissionRecord tracks tips separately
+- Mobile-first responsive interface — Requires frontend design work, not backend changes
+- Appointment completion from portal — `PATCH /appointments/:id/complete` with staff permission
 
-**Accessibility Table Stakes (WCAG 2.1 AA):**
-- Modal focus trapping with Escape key close
-- Skip navigation link as first focusable element
-- 4.5:1 contrast ratio for normal text
-- All interactive elements keyboard accessible
+**Defer (v2+):**
+- Clock in/out time tracking — HIGH complexity (GPS verification, fraud prevention), not core to booking workflow. Use appointment times as proxy.
+- Push notifications — Requires Firebase/OneSignal integration, high operational overhead
+- Staff-to-staff messaging — Moderation burden, liability issues
+- Shift swapping — Complex approval logic, recommend owner-managed reassignment instead
 
-**Code Quality Table Stakes:**
-- TypeScript strict mode enabled
-- Zero ESLint errors
-- No DRY violations > 10 lines
-
-**UI/UX Table Stakes:**
-- Single modal component (shadcn/ui Dialog)
-- Consistent status colors via design tokens
-- Loading states for all async content
+**Anti-features (never build):**
+- Payroll integration (regulatory complexity)
+- Staff can cancel client appointments (bypasses owner control)
+- Performance analytics visible to staff (creates unhealthy competition)
 
 ### Architecture Approach
 
-Changes must be additive or surgical, never architectural. The existing infrastructure is leveraged extensively. Tenant isolation fixes are single-line WHERE clause additions. Webhook security adds validation layers without changing flow. Frontend auth consolidates to centralized config files before migrating individual contexts.
+**Integration strategy:** Extend existing multi-tenant architecture with shared authentication infrastructure and role-based routing, not separate systems. The existing JWT middleware, permission system (`PERMISSIONS` object in middleware), and tenant isolation utilities (`withSalonId()`) are production-proven—add staff-specific permissions and route prefixes.
 
-**Integration Points by Category:**
-1. **Security:** Route handlers (`apps/api/src/routes/*.ts`) — WHERE clause additions
-2. **Webhooks:** `webhooks.ts`, `subscriptions.ts` — signature validation layers
-3. **Public endpoints:** `public.ts` — staffId/locationId validation before processing
-4. **Frontend auth:** Auth contexts + new `config/api.ts` — centralize then migrate
-5. **SEO/A11y:** Next.js pages and components — metadata exports, ARIA attributes
-6. **UI:** Component files — standardize to shadcn/ui patterns
+**Major components:**
 
-**Existing Test Infrastructure:**
-- `tenant-isolation.test.ts` already exists for cross-tenant testing
-- Test helpers: `createTestSalon()`, `generateTestTokens()`, `authenticatedRequest()`
-- Auth middleware already extracts `salonId` on all authenticated routes
+1. **Authentication Extension** — Add `/staff-portal/auth/login` and `/staff-portal/auth/setup` routes that generate JWTs with `portal: 'staff'` claim. Frontend uses separate token storage keys (`peacase_staff_access_token`) to prevent owner/staff session collision. StaffAuthContext already scaffolded.
+
+2. **Staff Portal API Routes** — New `/api/v1/staff-portal/*` namespace for staff-facing endpoints (profile, schedule, appointments, earnings, time-off). Each route uses existing `authenticate` middleware plus staff-specific role checks. All queries MUST filter by both `staffId` AND `salonId` for tenant isolation.
+
+3. **Frontend Staff Portal** — `/staff/*` routes with dedicated layout and StaffAuthProvider. Reuses existing design system (TailwindCSS, shadcn/ui), API client patterns (TanStack Query), and form handling (react-hook-form + zod). No new libraries.
+
+4. **Permission System Extension** — Add staff-specific permissions to existing `PERMISSIONS` object: `VIEW_OWN_SCHEDULE`, `EDIT_OWN_SCHEDULE`, `VIEW_OWN_APPOINTMENTS`, `COMPLETE_OWN_APPOINTMENTS`, `VIEW_OWN_EARNINGS`, `REQUEST_TIME_OFF`. Reuse `hasPermission()` and `requirePermission()` middleware.
+
+5. **Data Visibility Rules** — Staff endpoints return filtered client data based on salon settings (`staffCanViewClientContact`). Use explicit Prisma `select` to whitelist allowed fields, never full includes. Separate DTOs: `ClientSummaryForStaff` vs full `Client`.
+
+**Critical integration points:**
+- Public booking widget must remain unauthenticated after adding staff auth
+- Owner dashboard staff queries must distinguish authenticated staff from legacy profiles
+- Commission calculations must handle concurrent owner/staff appointment completion
 
 ### Critical Pitfalls
 
-1. **Security Fixes That Break User Sessions** — Implementing token rotation or session validation that invalidates all existing sessions causes mass logout. Prevention: Dual-token support during transition, accept both old and new formats.
+Top 5 pitfalls from research, prioritized by impact:
 
-2. **Database Query Changes That Cause Timeouts** — Adding `WHERE salonId = ?` on unindexed tables works in dev (100 rows) but times out in production (100,000 rows). Prevention: Add indexes BEFORE deploying query changes, test with production-scale data, EXPLAIN ANALYZE.
+1. **Dual Authentication Path Confusion** — Two login endpoints (`/staff-portal/auth/login`, `/auth/login`) issue identical JWTs without portal differentiation, allowing staff tokens to authenticate against owner routes and vice versa. **Prevention:** Add `portal: 'staff' | 'owner'` claim to JWT payload, create `authenticateStaff` and `authenticateOwner` middleware that verify portal claim matches route context.
 
-3. **SEO Fixes That Tank Search Traffic** — Wrong robots meta tags, missing redirects, or invalid structured data causes 40-60% traffic loss within weeks. Prevention: Never change URLs without 301 redirects, validate with Rich Results Test, monitor Search Console daily.
+2. **Multi-Tenant Isolation Weakening** — Staff queries filter by `staffId` but forget `salonId`, allowing cross-tenant data access if staff guesses another salon's resource IDs. **Prevention:** Mandatory dual-filter rule (ALL staff queries MUST include BOTH `staffId` AND `salonId`), integration tests with multi-tenant fixtures verifying Staff A cannot access Salon B data.
 
-4. **Accessibility Fixes That Break Functionality** — Wrong ARIA attributes (e.g., `aria-hidden="true"` on interactive elements) makes features unusable for everyone. Prevention: Test with real assistive technology (VoiceOver, NVDA), not just automated tools which only catch 30% of issues.
+3. **Client PII Exposure Through Overly Permissive Access** — Staff endpoints return full client records (email, phone, payment methods, medical notes) when staff only need name and appointment details, violating GDPR data minimization. **Prevention:** Explicit Prisma `select` whitelisting fields, separate `ClientSummaryForStaff` DTO, sanitize notes before returning to staff.
 
-5. **Multi-Tenant Security Fixes That Break Admin Features** — Blanket "all queries must filter by salonId" breaks legitimate admin access, webhooks, and background jobs. Prevention: Document cross-tenant patterns, separate admin vs tenant routes, service account pattern for background jobs.
+4. **Earnings Calculation Race Conditions** — Owner and staff both mark appointment complete simultaneously, concurrent commission calculations read-modify-write without locking, final save overwrites previous, losing commission data. **Prevention:** Wrap all commission operations in `prisma.$transaction`, use `upsert` with unique constraint on `appointmentId`, disable completion button after first click.
+
+5. **Retroactive Permission Changes Don't Take Effect** — Owner disables schedule editing but staff's 7-day access token remains valid, allowing forbidden actions until expiry. **Prevention:** Shorten access token to 1 hour, check salon permission settings on every request (not just at login), implement session revocation table for immediate permission changes.
+
+**Additional high-impact pitfalls:**
+- Breaking booking widget flow (public endpoints require auth after staff portal added)
+- Appointment status confusion (owner + staff both update status without conflict resolution)
+- Commission rate changes applied retroactively (historical earnings corrupted)
+- Staff deletion cascades and removes appointment history
 
 ## Implications for Roadmap
 
-Based on research, the recommended phase structure addresses dependencies and risk levels:
+Based on research findings, recommended 6-phase structure prioritizing security, then data access, then features:
 
-### Phase 1: Security Foundation
-**Rationale:** Security fixes are highest risk but have no dependencies. They're independent and can be tested in isolation. Must come first because they're the foundation for everything else.
-**Delivers:** Tenant isolation, webhook security, public endpoint validation
-**Addresses:** All security audit findings, OWASP compliance
-**Avoids:** Pitfall #1 (session invalidation) via dual-token support; Pitfall #5 (breaking admin) via documented cross-tenant patterns
-**Risk Level:** LOW per-file, each route is independent, < 5 min rollback
+### Phase 1: Authentication Foundation
+**Rationale:** Nothing works without secure auth. Must establish portal separation before building features that consume authentication.
 
-### Phase 2: Auth Consistency
-**Rationale:** Builds on security foundation. Frontend token standardization depends on backend security being stable.
-**Delivers:** Centralized API config, consistent token storage keys across auth contexts
-**Uses:** Existing auth middleware, Zod for env validation
-**Implements:** Centralize-then-migrate pattern for auth contexts
-**Risk Level:** MEDIUM, affects all auth flows, ~15 min rollback
+**Delivers:** Staff can log in via magic link, authenticate against staff routes, logout. Owner portal unaffected.
 
-### Phase 3: Test Coverage Lock-in
-**Rationale:** After security and auth fixes, lock in guarantees with comprehensive tests before moving to quality improvements.
-**Delivers:** Extended tenant isolation tests, session persistence tests, webhook validation tests
-**Addresses:** Regression prevention for Phases 1-2
-**Risk Level:** NONE, purely additive
+**Critical elements:**
+- `/staff-portal/auth/login`, `/staff-portal/auth/setup`, `/staff-portal/auth/refresh` endpoints
+- `portal: 'staff'` claim in JWT payload
+- `authenticateStaff` middleware that verifies portal claim
+- Frontend `/staff/login` and `/staff/setup` pages with StaffAuthContext
+- Token expiry shortened to 1 hour (refresh token flow for persistence)
+- Integration test: Staff token should 401 on owner routes
 
-### Phase 4: Performance Optimization
-**Rationale:** Independent of other phases, can run parallel with Phase 5-6. Requires careful testing with production-scale data.
-**Delivers:** Async notification queue (BullMQ), N+1 query elimination, TanStack Query optimization
-**Uses:** bullmq, ioredis, Prisma `include` patterns
-**Avoids:** Pitfall #2 (query timeouts) via index-first deployment, production data testing
-**Risk Level:** LOW-MEDIUM, monitor query latency
+**Addresses:** Pitfall #1 (dual auth confusion), Pitfall #5 (permission lag)
 
-### Phase 5: SEO Implementation
-**Rationale:** Additive improvements with low risk. No functional code changes required.
-**Delivers:** sitemap.xml, robots.txt, JSON-LD structured data, canonical URLs
-**Uses:** Next.js built-in sitemap.ts, schema-dts for types
-**Avoids:** Pitfall #3 (traffic tank) via no URL changes, Rich Results validation
-**Risk Level:** NONE for visual-only, validate with Search Console
+**Stack:** Existing JWT infrastructure (jsonwebtoken 9.0.3), bcryptjs for password hashing
 
-### Phase 6: Accessibility Compliance
-**Rationale:** Legal deadline (April 24, 2026 for WCAG 2.1 AA). Touches all components but changes are progressive enhancement.
-**Delivers:** Modal focus traps, skip navigation, ARIA labels, keyboard navigation
-**Uses:** Existing shadcn/ui Dialog (Radix focus management), jest-axe, eslint-plugin-jsx-a11y
-**Avoids:** Pitfall #4 (breaking functionality) via mandatory screen reader testing
-**Risk Level:** NONE for ARIA additions, test with VoiceOver/NVDA
+**Estimated effort:** 1 week
 
-### Phase 7: Code Quality
-**Rationale:** Makes subsequent fixes safer. Best done after functional fixes to avoid cascading changes.
-**Delivers:** TypeScript strict mode, ESLint strict config, DRY utility extraction
-**Uses:** Existing TypeScript, eslint with typescript-eslint strict
-**Avoids:** Pitfall #7 (behavior changes) via test coverage before refactoring, one fix per PR
-**Risk Level:** LOW, existing tests catch behavior changes
+### Phase 2: Data Visibility & Security Rules
+**Rationale:** Security foundation before feature rollout. Establish which data staff can access and ensure tenant isolation.
 
-### Phase 8: UI/UX Consistency
-**Rationale:** Polish layer, best done last. Visual changes don't affect data flow.
-**Delivers:** Design tokens, component standardization, status color system, loading/empty states
-**Uses:** shadcn/ui components, CSS variables for tokens
-**Avoids:** Pitfall #5 (visual regressions) via component-level scoped changes, visual regression testing
-**Risk Level:** LOW, visual only, easily reversible
+**Delivers:** Security boundaries for staff data access, field-level permissions, multi-tenant isolation verified.
+
+**Critical elements:**
+- Dual-filter query helper: `staffQuery({ staffId, salonId })`
+- `ClientSummaryForStaff` DTO with limited fields
+- Multi-tenant integration tests (Staff A attempts Salon B access)
+- Audit all Prisma queries in staff routes for missing `salonId`
+- Document field-level access control (which roles see which client fields)
+
+**Addresses:** Pitfall #2 (tenant isolation), Pitfall #3 (PII exposure), Pitfall #9 (deleted client visibility)
+
+**Estimated effort:** 3-5 days
+
+### Phase 3: Profile & Appointments (Core Features)
+**Rationale:** Basic read-only functionality staff needs immediately. No financial calculations yet (defer risk).
+
+**Delivers:** Staff dashboard showing today's appointments, profile management, appointment details.
+
+**Features:**
+- `GET /staff-portal/me` (profile)
+- `PATCH /staff-portal/profile` (update name, phone, avatar)
+- `GET /staff-portal/appointments` (list with date range)
+- `GET /staff-portal/appointments/:id` (detail view)
+- `PATCH /staff-portal/appointments/:id/complete` (mark complete)
+- Frontend: `/staff/dashboard`, `/staff/appointments`, `/staff/profile` pages
+
+**Addresses:** Table stakes features (schedule viewing, profile management)
+
+**Stack:** Existing Appointment, User models. No new libraries.
+
+**Estimated effort:** 1 week
+
+### Phase 4: Schedule & Availability Management
+**Rationale:** Self-service scheduling after read-only features proven secure. Optional approval workflow based on salon settings.
+
+**Delivers:** Staff can view/edit availability, request time off with approval tracking.
+
+**Features:**
+- `GET /staff-portal/schedule` (view availability)
+- `PUT /staff-portal/schedule` (update with optional approval workflow)
+- `GET /staff-portal/time-off` (list requests)
+- `POST /staff-portal/time-off` (create request)
+- `DELETE /staff-portal/time-off/:id` (cancel pending request)
+- Frontend: `/staff/schedule`, `/staff/time-off` pages with calendar UI
+
+**Addresses:** Differentiator (self-service availability), table stakes (time-off requests), Pitfall #10 (concurrent double-booking)
+
+**Stack:** Existing StaffAvailability, TimeOff, ScheduleChangeRequest models. Consider Luxon for timezone display if multi-location.
+
+**Estimated effort:** 1 week
+
+### Phase 5: Earnings & Commission Display
+**Rationale:** Financial features last—highest risk, requires transaction safety. Staff can view but not modify.
+
+**Delivers:** Transparent earnings display with service-level breakdown, tips tracking.
+
+**Features:**
+- `GET /staff-portal/earnings` (commission records with aggregation)
+- Group by pay period, show total/paid/unpaid
+- Frontend: `/staff/earnings` page with chart visualization
+
+**Addresses:** Table stakes (earnings view), Pitfall #4 (race conditions), Pitfall #8 (retroactive rate changes)
+
+**Critical implementation:**
+- Wrap commission calculations in `prisma.$transaction`
+- Snapshot `commissionRate` on CommissionRecord at creation (no retroactive changes)
+- Unique constraint on `appointmentId` prevents duplicate records
+- Read-only for staff (display only, no modifications)
+
+**Stack:** Existing CommissionRecord model, Recharts for visualization (already in stack)
+
+**Estimated effort:** 5-7 days
+
+### Phase 6: Multi-Location & Polish
+**Rationale:** Optional enhancement for salons with multiple locations. Can be deferred if single-location.
+
+**Delivers:** Location-aware filtering, timezone-correct display, mobile responsiveness, empty states.
+
+**Features:**
+- Location selector in staff nav (filter by assigned locations)
+- Timezone-aware schedule display using Luxon
+- Mobile-responsive UI optimization
+- Empty states for new staff
+- Permission UI refinements
+
+**Addresses:** Multi-location support (table stakes for multi-location salons), Pitfall #7 (timezone handling)
+
+**Stack:** Luxon 3.7.2 for timezone operations, existing StaffLocation model
+
+**Estimated effort:** 3-5 days
 
 ### Phase Ordering Rationale
 
-- **Security first:** Foundation layer with highest business risk, independent of other changes
-- **Auth second:** Builds on security, required for consistent testing of other phases
-- **Tests third:** Lock in security guarantees before making more changes
-- **Performance fourth:** Independent but needs careful production testing
-- **SEO/A11y parallel:** Both additive, no code dependencies between them
-- **Code quality seventh:** Makes UI work safer via types
-- **UI last:** Polish layer with lowest risk, benefits from code quality improvements
+**Why authentication first:** Foundation for all other phases. Security vulnerabilities in auth affect every feature.
+
+**Why data visibility second:** Prevents building features that leak data. Establishes security boundaries before feature complexity.
+
+**Why appointments before earnings:** Read-only features validate integration before introducing financial calculations with transaction requirements.
+
+**Why earnings before multi-location:** Single-location salons (majority) get core value faster. Multi-location is enhancement, not blocker.
+
+**Dependency chain:**
+- Phase 3 depends on Phase 1 (auth) and Phase 2 (data rules)
+- Phase 4 depends on Phase 3 (staff dashboard patterns established)
+- Phase 5 depends on Phase 4 (appointment completion triggers commission calculation)
+- Phase 6 depends on Phase 5 (location filtering needs data to filter)
 
 ### Research Flags
 
 **Phases needing deeper research during planning:**
-- **Phase 4 (Performance):** Upstash Redis setup, BullMQ worker configuration, Prisma join strategies
-- **Phase 6 (Accessibility):** WCAG 2.1 AA specific requirements, screen reader testing procedures
+- **Phase 5 (Earnings):** Complex commission calculation logic. Needs research into transaction isolation levels, optimistic locking patterns, and Prisma best practices for financial operations.
+- **Phase 6 (Multi-Location):** If salon has `multiLocationEnabled`, research timezone conversion edge cases (DST transitions, cross-timezone scheduling conflicts).
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Security):** Well-documented patterns, existing test infrastructure, straightforward WHERE clause additions
-- **Phase 5 (SEO):** Next.js official documentation, standard patterns
-- **Phase 8 (UI/UX):** shadcn/ui documentation, design token patterns well-established
+**Phases with standard patterns (skip `/gsd:research-phase`):**
+- **Phase 1 (Authentication):** Well-documented JWT + refresh token pattern. Follow existing Peacase auth implementation.
+- **Phase 2 (Data Visibility):** Standard multi-tenant filtering patterns. Existing codebase demonstrates approach.
+- **Phase 3 (Appointments):** CRUD operations on existing models. Straightforward implementation.
+- **Phase 4 (Schedule):** Existing StaffAvailability model and approval workflow (ScheduleChangeRequest). Proven patterns.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Official docs for all recommendations (csrf-csrf, BullMQ, Next.js, Prisma) |
-| Features | HIGH | Based on OWASP, WCAG, Google standards with specific thresholds |
-| Architecture | HIGH | Based on direct codebase analysis, existing patterns, phase plans already created |
-| Pitfalls | HIGH | Industry research with statistics, multiple corroborating sources |
+| Stack | HIGH | 95% of stack already exists. Luxon verified via official docs + npm registry. Only one new library. |
+| Features | MEDIUM-HIGH | Table stakes features verified across 5+ competitor platforms. All backend models exist. Confidence docked for anti-features categorization (based on industry trends, not Peacase-specific data). |
+| Architecture | HIGH | Existing multi-tenant architecture is production-proven. Integration points clearly identified in codebase. StaffAuthContext already scaffolded. |
+| Pitfalls | HIGH | Critical pitfalls verified through multi-tenant security best practices (WorkOS, Permit.io), authentication regression patterns, and Peacase codebase analysis. Phase-specific warnings mapped to likely development stages. |
 
 **Overall confidence:** HIGH
 
+Research is comprehensive and actionable. The primary finding—that existing infrastructure handles 95% of requirements—was verified through codebase inspection (schema.prisma, auth.ts, staffPortal.ts routes). Security pitfalls are drawn from established multi-tenant SaaS patterns and authentication best practices, not speculation.
+
 ### Gaps to Address
 
-- **Upstash Redis free tier limits:** 500K commands/month — need to monitor BullMQ polling frequency
-- **WCAG 2.2 vs 2.1:** Research focused on 2.1 AA (legal requirement), 2.2 could be future enhancement
-- **Visual regression testing setup:** Not currently in codebase, recommended but may need tool selection
-- **Tailwind v4 migration timing:** Deferred due to newness, revisit after ecosystem stabilizes
+**During implementation:**
+- **Clock in/out necessity:** Research shows conflicting data—some platforms emphasize it, others omit entirely. Categorized as anti-feature due to complexity, but if Peacase owners demand it, would require significant research into GPS verification, fraud prevention, and always-on mobile app infrastructure.
+- **Mobile usage patterns:** No data on how often staff access portal from phones vs desktop. Phase 6 assumes mobile-first optimization needed, but could be deprioritized if analytics show primarily desktop usage.
+- **Notification preferences:** Research didn't uncover best practices for staff notification settings (frequency, channels, batching). Pitfall #11 identifies spam risk, but detailed notification strategy needs definition during Phase 7 planning.
 
-## Success Metrics
+**Validation needed during Phase 1:**
+- Confirm whether Peacase owners expect staff to self-manage schedules or prefer owner-controlled assignment
+- Verify earnings transparency is desired (some salon cultures may prefer owner-only visibility)
+- Test token expiry UX (1-hour access token with refresh vs 7-day long-lived token)
 
-**Automated Verification:**
-```bash
-# Performance
-npx lighthouse --preset=mobile --only-categories=performance,seo,accessibility [URL]
-# Target: All scores >= 90
+**Open architectural decisions:**
+- Session revocation mechanism (table vs Redis vs JWT blacklist)
+- Permission enforcement approach (DB query every request vs short-lived tokens with embedded claims)
+- Calendar UI library (custom TailwindCSS build vs lightweight scheduler component)
 
-# Security
-npm audit --audit-level=moderate  # Zero vulnerabilities
-grep -r "ENCRYPTION_KEY\|API_KEY\|PASSWORD" --include="*.ts" src/  # Empty
-
-# Code Quality
-npm run typecheck  # Zero errors
-npm run lint       # Zero errors
-npm run test       # All pass
-
-# Accessibility
-npm run test:a11y  # axe-core passes
-```
-
-**Manual Verification:**
-- Keyboard navigate booking flow start to finish
-- Screen reader announces all form labels
-- Google Search Console shows zero errors after sitemap submission
-- Load test with 50 concurrent bookings without timeouts
+These gaps are not blockers—they're refinement points during implementation.
 
 ## Sources
 
-### Primary (HIGH confidence)
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/) — security requirements
-- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/) — accessibility standards
-- [Next.js Documentation](https://nextjs.org/docs) — sitemap, robots, metadata
-- [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) — N+1 solutions
-- [BullMQ Documentation](https://bullmq.io/) — async queue patterns
-- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig/) — strict mode settings
+### Stack Research (HIGH confidence)
+- Luxon 3.7.2 official documentation and npm registry
+- npm trends comparison: date-fns vs dayjs vs luxon vs moment
+- Timezone handling comparison (Phrase blog, CodeSandbox demos)
+- Peacase codebase analysis (package.json, existing date-fns usage patterns)
 
-### Secondary (MEDIUM confidence)
-- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) — performance thresholds
-- [csrf-csrf npm](https://www.npmjs.com/package/csrf-csrf) — Double Submit Cookie pattern
-- [Upstash BullMQ Integration](https://upstash.com/docs/redis/integrations/bullmq) — Redis setup
-- [typescript-eslint](https://typescript-eslint.io/) — ESLint strict configuration
+### Features Research (MEDIUM-HIGH confidence)
+- GlossGenius Staff Management features
+- Meevo Employee Management documentation
+- BarbNow Must-Have Features 2026 (industry trends)
+- MioSalon Staff Management capabilities
+- Salonkee Employee Management features
+- Homebase Salon Payroll Guide (time tracking patterns)
+- Peacase codebase analysis (schema.prisma models, staffPortal.ts routes)
 
-### Tertiary (Referenced in Pitfalls)
-- [WP Rocket SEO Mistakes](https://wp-rocket.me/blog/seo-mistakes/) — 43% traffic loss statistic
-- [UsableNet ADA Compliance](https://blog.usablenet.com/common-ada-title-ii-compliance-mistakes) — automated tools catch 30% of issues
-- [ActiveState Vulnerability Report](https://www.activestate.com/blog/the-state-of-vulnerability-management-remediation-report-2026/) — remediation risk data
+### Architecture Research (HIGH confidence)
+- Multi-tenant SaaS architecture (WorkOS, Microsoft Azure, Permit.io best practices)
+- Next.js authentication patterns (official docs, Clerk RBAC guide)
+- Express.js API design (Treblle best practices, Toptal secure REST API)
+- Peacase codebase analysis (auth.ts, middleware/permissions.ts, StaffAuthContext.tsx)
+
+### Pitfalls Research (HIGH confidence)
+- Multi-tenant security patterns (WorkOS tenant isolation, Aserto RBAC)
+- RBAC implementation pitfalls (idenhaus, TechPrescient, Oso best practices)
+- Salon software security (MioSalon staff access levels, Meevo security permissions)
+- Data isolation patterns (Propelius anti-patterns, Justin Hamade medium article)
+- Commission calculation errors (Blitz commission blog, Yocale salon payroll)
+- Time tracking pitfalls (Timeero common errors, QuickBooks timesheet best practices)
 
 ---
-*Research completed: 2026-01-28*
-*Ready for roadmap: yes*
+
+*Research completed: 2026-01-29*
+*Ready for roadmap: Yes*
+*Confidence: HIGH — Existing infrastructure handles 95% of requirements*
