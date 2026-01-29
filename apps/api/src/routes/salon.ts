@@ -83,6 +83,9 @@ const salonUpdateSchema = z.object({
   taxRate: z.number().min(0).max(100).optional().nullable(),
   taxName: z.string().min(1).max(50).optional(),
   taxIncluded: z.boolean().optional(),
+
+  // Staff policy fields
+  requireTimeOffApproval: z.boolean().optional(),
 });
 
 // ============================================
@@ -166,6 +169,9 @@ router.patch('/', asyncHandler(async (req: Request, res: Response) => {
   // Branding fields
   if (data.brand_primary_color !== undefined) updateData.brand_primary_color = data.brand_primary_color;
   if (data.brand_background_color !== undefined) updateData.brand_background_color = data.brand_background_color;
+
+  // Staff policy fields
+  if (data.requireTimeOffApproval !== undefined) updateData.requireTimeOffApproval = data.requireTimeOffApproval;
 
   const salon = await prisma.salon.update({
     where: { id: req.user!.salonId },
