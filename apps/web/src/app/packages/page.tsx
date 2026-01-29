@@ -259,7 +259,7 @@ function PackagesContent() {
         <AppSidebar currentPage="packages" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center bg-white dark:bg-sidebar p-8 rounded-2xl shadow-soft max-w-md">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <AlertCircle className="w-12 h-12 text-rose-dark mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-charcoal dark:text-white mb-2">Failed to load packages</h2>
             <p className="text-charcoal/60 dark:text-white/60 mb-4">{error}</p>
             <button
@@ -445,7 +445,7 @@ function PackagesContent() {
                             </button>
                             <button
                               onClick={() => handleDeletePackage(pkg.id)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-rose-dark"
                             >
                               <Trash2 className="w-4 h-4" />
                               Delete
@@ -539,7 +539,7 @@ function PackagesContent() {
                             </button>
                             <button
                               onClick={() => handleDeletePackage(pkg.id)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-rose-dark"
                             >
                               <Trash2 className="w-4 h-4" />
                               Delete
@@ -604,7 +604,7 @@ function PackagesContent() {
                             </p>
                           )}
                           <span className={`text-xs flex items-center gap-1 justify-end ${
-                            member.isActive ? 'text-sage-dark' : 'text-red-600'
+                            member.isActive ? 'text-sage-dark' : 'text-rose-dark'
                           }`}>
                             {member.isActive ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                             {member.isActive ? 'Active' : 'Inactive'}
@@ -635,7 +635,7 @@ function PackagesContent() {
                             </button>
                             <button
                               onClick={() => handleCancelMember(member)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-red-600"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-sage/5 dark:hover:bg-white/5 flex items-center gap-2 text-rose-dark"
                             >
                               <X className="w-4 h-4" />
                               Cancel membership

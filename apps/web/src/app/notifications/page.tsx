@@ -34,11 +34,11 @@ export default function NotificationsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-sage-dark" />;
       case 'sent':
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-lavender-dark" />;
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-rose-dark" />;
       default:
         return <AlertCircle className="h-4 w-4 text-gray-500" />;
     }
@@ -46,9 +46,9 @@ export default function NotificationsPage() {
 
   const getStatusBadge = (status: string) => {
     const colorMap: Record<string, string> = {
-      delivered: 'bg-green-100 text-green-800',
-      sent: 'bg-blue-100 text-blue-800',
-      failed: 'bg-red-100 text-red-800',
+      delivered: 'bg-sage/10 text-sage-dark',
+      sent: 'bg-lavender/10 text-lavender-dark',
+      failed: 'bg-rose/10 text-rose-dark',
     };
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${colorMap[status] || 'bg-gray-100 text-gray-800'}`}>
@@ -95,14 +95,14 @@ export default function NotificationsPage() {
           <Card>
             <div className="p-4">
               <div className="text-sm font-medium text-gray-600 mb-2">Delivered</div>
-              <div className="text-2xl font-bold text-green-600">{stats.delivered}</div>
+              <div className="text-2xl font-bold text-sage-dark">{stats.delivered}</div>
             </div>
           </Card>
 
           <Card>
             <div className="p-4">
               <div className="text-sm font-medium text-gray-600 mb-2">Failed</div>
-              <div className="text-2xl font-bold text-red-600">{stats.failed}</div>
+              <div className="text-2xl font-bold text-rose-dark">{stats.failed}</div>
             </div>
           </Card>
 
@@ -178,7 +178,7 @@ export default function NotificationsPage() {
           {loading ? (
             <div className="text-center py-8 text-gray-500">Loading notifications...</div>
           ) : error ? (
-            <div className="text-center py-8 text-red-500">{error}</div>
+            <div className="text-center py-8 text-rose-dark">{error}</div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-8 text-gray-500">No notifications found</div>
           ) : (
@@ -224,7 +224,7 @@ export default function NotificationsPage() {
                           <div className="text-xs text-gray-500">
                             Email: {notification.emailStatus}
                             {notification.emailError && (
-                              <span className="text-red-500 ml-2">({notification.emailError})</span>
+                              <span className="text-rose-dark ml-2">({notification.emailError})</span>
                             )}
                           </div>
                         )}
@@ -232,7 +232,7 @@ export default function NotificationsPage() {
                           <div className="text-xs text-gray-500">
                             SMS: {notification.smsStatus}
                             {notification.smsError && (
-                              <span className="text-red-500 ml-2">({notification.smsError})</span>
+                              <span className="text-rose-dark ml-2">({notification.smsError})</span>
                             )}
                           </div>
                         )}
