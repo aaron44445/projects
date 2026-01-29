@@ -20,6 +20,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { OrganizationSchema } from '@/components/OrganizationSchema';
 
 // ============================================
 // LANDING PAGE - PEACASE.COM
@@ -29,6 +30,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-cream dark:bg-zinc-900 transition-colors">
+      <OrganizationSchema />
       {/* Navigation */}
       <Navigation />
 
