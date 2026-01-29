@@ -1972,7 +1972,7 @@ function SettingsContent() {
                         <span className="text-sm font-semibold text-charcoal dark:text-white">$25/mo</span>
                         <button
                           onClick={() => toggleAddOn(addOnId)}
-                          className="px-3 py-1.5 text-sm text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-sm text-rose-dark hover:bg-rose/10 rounded-lg transition-colors"
                         >
                           Remove
                         </button>
@@ -2521,7 +2521,7 @@ function SettingsContent() {
                   </span>
                 )}
                 {widgetSaveStatus === 'error' && (
-                  <span className="flex items-center gap-2 text-rose-500">
+                  <span className="flex items-center gap-2 text-rose-dark">
                     <AlertCircle className="w-4 h-4" />
                     Save failed
                   </span>
