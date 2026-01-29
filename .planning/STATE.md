@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality)
-Plan: 1 of 9 complete
-Status: Executing wave 1
-Last activity: 2026-01-29 - Completed 17-01-PLAN.md
+Plan: 2 of 9 complete
+Status: Executing wave 2
+Last activity: 2026-01-29 - Completed 17-05-PLAN.md
 
-Progress: [████████████░░░░░░░░] 62%
+Progress: [████████████░░░░░░░░] 63%
 
 ## Milestone Context
 
@@ -44,7 +44,7 @@ Progress: [████████████░░░░░░░░] 62%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 1/9 | 3 min | 3 min |
+| 17 | 2/9 | 7 min | 3.5 min |
 
 *Updated after each plan completion*
 
@@ -109,6 +109,8 @@ From v1.1 Phase 17:
 - LOG_LEVEL env var for runtime log level control (17-01)
 - ISO timestamp format for consistency (17-01)
 - withSalonId returns simple typed object, not Prisma-dependent (17-01)
+- Import Prisma from @peacase/database not @prisma/client (17-05)
+- Use Prisma.DateTimeFilter cast for dynamic date range filters (17-05)
 
 ### Pending Todos
 
@@ -121,9 +123,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-01-PLAN.md
+Stopped at: Completed 17-05-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-01 complete - Foundation utilities)*
+*Last updated: 2026-01-29 (17-05 complete - System/core routes)*
