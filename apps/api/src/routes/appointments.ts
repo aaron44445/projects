@@ -150,7 +150,7 @@ router.get('/availability', asyncHandler(async (req: Request, res: Response) => 
   }
 
   const service = await prisma.service.findFirst({
-    where: { id: serviceId as string, salonId: req.user!.salonId },
+    where: { id: serviceId as string, ...withSalonId(req.user!.salonId) },
   });
 
   if (!service) {
@@ -171,7 +171,7 @@ router.get('/availability', asyncHandler(async (req: Request, res: Response) => 
 
   const existingAppointments = await prisma.appointment.findMany({
     where: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       startTime: { gte: startOfDay, lte: endOfDay },
       status: { notIn: ['cancelled'] },
       ...(staffId && { staffId: staffId as string }),
@@ -219,7 +219,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const appointment = await prisma.appointment.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       client: true,
@@ -301,7 +301,7 @@ router.post(
 
     // Get service details
     const service = await prisma.service.findFirst({
-      where: { id: serviceId, salonId: req.user!.salonId },
+      where: { id: serviceId, ...withSalonId(req.user!.salonId) },
     });
 
     if (!service) {
@@ -321,7 +321,7 @@ router.post(
     // Check for conflicts
     const conflict = await prisma.appointment.findFirst({
       where: {
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         staffId,
         status: { notIn: ['cancelled'] },
         OR: [
@@ -356,7 +356,7 @@ router.post(
 
     const appointment = await prisma.appointment.create({
       data: {
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         clientId,
         staffId,
         serviceId,
@@ -407,7 +407,7 @@ router.post(
     if (client?.optedInReminders && (client?.email || client?.phone)) {
       await prisma.notificationJob.create({
         data: {
-          salonId: req.user!.salonId,
+          ...withSalonId(req.user!.salonId),
           clientId: appointment.clientId,
           appointmentId: appointment.id,
           type: 'booking_confirmation',
@@ -455,7 +455,7 @@ router.patch(
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!appointment) {
@@ -495,7 +495,7 @@ router.patch(
     if (serviceId) updateData.serviceId = serviceId;
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: updateData,
       include: {
         client: {
@@ -529,7 +529,7 @@ router.post(
   requirePermission(PERMISSIONS.CANCEL_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!appointment) {
@@ -573,7 +573,7 @@ router.post(
 
     // Update appointment status
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: {
         status: 'cancelled',
         cancellationReason,
@@ -600,7 +600,7 @@ router.post(
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!appointment) {
@@ -614,7 +614,7 @@ router.post(
     }
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: { status: 'completed' },
     });
 
@@ -634,7 +634,7 @@ router.post(
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!appointment) {
@@ -648,7 +648,7 @@ router.post(
     }
 
     const updated = await prisma.appointment.update({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
       data: { status: 'no_show' },
     });
 
@@ -668,7 +668,7 @@ router.post(
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!appointment) {
@@ -707,7 +707,7 @@ router.post(
 
       // Update appointment
       await prisma.appointment.update({
-        where: { id: req.params.id, salonId: req.user!.salonId },
+        where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
         data: {
           depositStatus: 'captured',
         },
