@@ -120,6 +120,25 @@ function ScheduleContent() {
     ));
   };
 
+  // Copy current day's schedule to all weekdays (Mon-Fri)
+  const copyToWeekdays = (sourceDayOfWeek: number) => {
+    const sourceDay = editedSchedule.find(s => s.dayOfWeek === sourceDayOfWeek);
+    if (!sourceDay) return;
+
+    setEditedSchedule(prev => prev.map(s => {
+      // Apply to Mon(1), Tue(2), Wed(3), Thu(4), Fri(5)
+      if (s.dayOfWeek >= 1 && s.dayOfWeek <= 5) {
+        return {
+          ...s,
+          startTime: sourceDay.startTime,
+          endTime: sourceDay.endTime,
+          isWorking: sourceDay.isWorking,
+        };
+      }
+      return s;
+    }));
+  };
+
   // Calculate total hours
   const calculateTotalHours = (sched: Array<{ startTime: string; endTime: string; isWorking?: boolean; isAvailable?: boolean }>) => {
     return sched
@@ -238,6 +257,22 @@ function ScheduleContent() {
                     <Save className="w-4 h-4" />
                     Save Changes
                   </button>
+                  {editedSchedule.length > 0 && (
+                    <div className="flex items-center gap-2 ml-2 pl-2 border-l border-charcoal/20">
+                      <button
+                        onClick={() => {
+                          const firstWorkingDay = editedSchedule.find(s => s.isWorking);
+                          if (firstWorkingDay) {
+                            copyToWeekdays(firstWorkingDay.dayOfWeek);
+                          }
+                        }}
+                        className="text-xs text-sage hover:text-sage-dark px-2 py-1"
+                        title="Copy first working day's hours to Monday-Friday"
+                      >
+                        Copy to weekdays
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
