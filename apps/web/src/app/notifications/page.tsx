@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Card } from '@peacase/ui';
-import { RefreshCw, Send, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { RefreshCw, Send, CheckCircle, XCircle, Clock, AlertCircle, Bell } from 'lucide-react';
+import { EmptyState } from '@peacase/ui';
 
 export default function NotificationsPage() {
   const [filters, setFilters] = useState<{
@@ -180,7 +181,11 @@ export default function NotificationsPage() {
           ) : error ? (
             <div className="text-center py-8 text-rose-dark">{error}</div>
           ) : notifications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No notifications found</div>
+            <EmptyState
+              icon={Bell}
+              title={filters.type || filters.status ? "No notifications found" : "No notifications yet"}
+              description={filters.type || filters.status ? "Try adjusting your filters to see more results." : "Notifications will appear here once you start sending reminders."}
+            />
           ) : (
             <div className="space-y-4">
               {notifications.map((notification) => (
