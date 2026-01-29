@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
-import { prisma } from '@peacase/database';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { requireAddon } from '../middleware/subscription.js';
 import { randomBytes } from 'crypto';
