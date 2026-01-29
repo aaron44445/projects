@@ -90,13 +90,13 @@ const Modal: React.FC<ModalProps> = ({
                     <h2 id={titleId} className="text-xl font-semibold text-charcoal">{title}</h2>
                   )}
                   {description && (
-                    <p id={descriptionId} className="mt-1 text-sm text-charcoal/60">{description}</p>
+                    <p id={descriptionId} className="mt-1 text-sm text-text-muted">{description}</p>
                   )}
                 </div>
                 <button
                   onClick={onClose}
                   aria-label="Close"
-                  className="p-2 -mr-2 text-charcoal/40 hover:text-charcoal hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 -mr-2 text-text-muted hover:text-charcoal hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <X size={20} />
                 </button>
