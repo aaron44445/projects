@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 18 of 18 (UI/UX Consistency)
-Plan: 12 of 12+ (gap closure plans)
+Plan: 08 of 12+ (gap closure plans)
 Status: Gap closure in progress
-Last activity: 2026-01-29 - Completed 18-12-PLAN.md (Error Token Migration: Schedule, Embed, PaymentForm)
+Last activity: 2026-01-29 - Completed 18-08-PLAN.md (Packages and Services Modal Migration)
 
 Progress: [████████████████████] 100%
 
@@ -146,6 +146,8 @@ From v1.1 Phase 18:
 - Use text-rose-dark for error icon and text colors (better contrast than text-rose) (18-12)
 - Use hover:text-rose for interactive error elements (lighter on hover) (18-12)
 - Error pattern: bg-rose/10 border-rose/20 text-rose-dark for all error states (18-12)
+- Use size=lg for complex form modals, size=md for standard dialogs, size=sm for confirmations (18-08)
+- Conditional rendering inside Modal for null-safe dynamic titles (18-08)
 
 ### Pending Todos
 
@@ -158,9 +160,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-12-PLAN.md (Error Token Migration: Schedule, Embed, PaymentForm)
+Stopped at: Completed 18-08-PLAN.md (Packages and Services Modal Migration)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 gap closure: plan 12 complete)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 08 complete)*
