@@ -26,7 +26,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
-import { EmptyState } from '@peacase/ui';
+import { EmptyState, Modal } from '@peacase/ui';
 
 interface CategoryWithUI extends ServiceCategory {
   expanded: boolean;
@@ -640,21 +640,13 @@ function ServicesContent() {
       </main>
 
       {/* New/Edit Service Modal */}
-      {showNewService && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">
-                {editingService ? 'Edit Service' : 'Add New Service'}
-              </h2>
-              <button
-                onClick={closeServiceModal}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={showNewService}
+        onClose={closeServiceModal}
+        title={editingService ? 'Edit Service' : 'Add New Service'}
+        size="lg"
+      >
+        <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Service Name</label>
                 <input
@@ -804,42 +796,35 @@ function ServicesContent() {
                   </p>
                 </div>
               )}
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={closeServiceModal}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveService}
-                disabled={isSubmitting || !serviceForm.name || !serviceForm.price}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {editingService ? 'Save Changes' : 'Add Service'}
-              </button>
-            </div>
+
+          <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
+            <button
+              onClick={closeServiceModal}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveService}
+              disabled={isSubmitting || !serviceForm.name || !serviceForm.price}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {editingService ? 'Save Changes' : 'Add Service'}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* New Category Modal */}
-      {showNewCategory && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">Add Category</h2>
-              <button
-                onClick={() => setShowNewCategory(false)}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={showNewCategory}
+        onClose={() => setShowNewCategory(false)}
+        title="Add Category"
+        size="md"
+      >
+        <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Category Name</label>
                 <input
@@ -862,69 +847,66 @@ function ServicesContent() {
                   placeholder="Brief description..."
                 />
               </div>
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={() => setShowNewCategory(false)}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveCategory}
-                disabled={isSubmitting || !categoryForm.name}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                Add Category
-              </button>
-            </div>
+
+          <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
+            <button
+              onClick={() => setShowNewCategory(false)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveCategory}
+              disabled={isSubmitting || !categoryForm.name}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Add Category
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-6 h-6 text-rose-500" />
-              </div>
-              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">
-                Delete {deleteConfirm.type === 'service' ? 'Service' : 'Category'}?
-              </h2>
-              <p className="text-charcoal/60 dark:text-white/60 mb-6">
-                Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (deleteConfirm.type === 'service') {
-                      handleDeleteService(deleteConfirm.id);
-                    } else {
-                      handleDeleteCategory(deleteConfirm.id);
-                    }
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
-                </button>
-              </div>
-            </div>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title={`Delete ${deleteConfirm?.type === 'service' ? 'Service' : 'Category'}?`}
+        size="sm"
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-6 h-6 text-rose-500" />
+          </div>
+          <p className="text-charcoal/60 dark:text-white/60 mb-6">
+            Are you sure you want to delete &quot;{deleteConfirm?.name}&quot;? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (deleteConfirm?.type === 'service') {
+                  handleDeleteService(deleteConfirm.id);
+                } else if (deleteConfirm) {
+                  handleDeleteCategory(deleteConfirm.id);
+                }
+              }}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Delete
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
