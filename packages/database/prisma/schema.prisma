@@ -1009,9 +1009,10 @@ model FileUpload {
 model NotificationJob {
   id            String    @id @default(uuid())
   salonId       String    @map("salon_id")
-  clientId      String    @map("client_id")
+  clientId      String?   @map("client_id")  // Optional for staff notifications (time_off_approved, time_off_rejected)
+  staffId       String?   @map("staff_id")   // For staff-targeted notifications
   appointmentId String?   @map("appointment_id")
-  type          String    // 'booking_confirmation', 'reminder_24h', 'reminder_2h', 'cancellation'
+  type          String    // 'booking_confirmation', 'reminder_24h', 'reminder_2h', 'cancellation', 'time_off_approved', 'time_off_rejected'
   payload       String    // JSON stringified notification data
   status        String    @default("pending") // 'pending', 'processing', 'completed', 'failed'
   attempts      Int       @default(0)

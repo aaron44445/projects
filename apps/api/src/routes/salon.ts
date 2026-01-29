@@ -505,8 +505,27 @@ router.patch('/time-off-requests/:id', asyncHandler(async (req: Request, res: Re
     },
     include: {
       staff: {
-        select: { id: true, firstName: true, lastName: true },
+        select: { id: true, firstName: true, lastName: true, email: true },
       },
+    },
+  });
+
+  // Create notification for staff about status change
+  await prisma.notificationJob.create({
+    data: {
+      salonId,
+      staffId: updated.staffId,
+      type: `time_off_${data.status}`,
+      payload: JSON.stringify({
+        staffId: updated.staffId,
+        staffEmail: updated.staff.email,
+        staffName: `${updated.staff.firstName} ${updated.staff.lastName}`,
+        startDate: updated.startDate.toISOString(),
+        endDate: updated.endDate.toISOString(),
+        status: data.status,
+        reviewNotes: data.reviewNotes || null,
+      }),
+      status: 'pending',
     },
   });
 
