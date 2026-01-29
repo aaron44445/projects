@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 20 of 24 (Staff Portal Core)
-Plan: 2 of 3 complete
-Status: In progress
-Last activity: 2026-01-29 - Completed 20-01-PLAN.md (Location-Aware Dashboard)
+Plan: 3 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-29 - Completed 20-03-PLAN.md (Dashboard UX Enhancements)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 █████░░░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ██████░░░░░░
 
 ## Milestone History
 
@@ -50,6 +50,8 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - rose-* design tokens for error states
 - EmptyState for all empty views
 - Primary location badge: sage/20 background with sage/30 border plus 'Primary' badge
+- opacity-50 for past appointments (visual dimming)
+- Click-to-expand appointment detail modal pattern
 
 ### v1.2 Roadmap Structure
 
@@ -58,10 +60,11 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Magic link invites
 - Remember device functionality
 
-**Phase 20:** Staff Portal Core (SCHED-01 to SCHED-04, PROF-01, PROF-02) - IN PROGRESS
+**Phase 20:** Staff Portal Core (SCHED-01 to SCHED-04, PROF-01, PROF-02) - COMPLETE
 - Schedule viewing (today + week)
 - Profile management with assigned locations
 - Location-filtered appointments
+- Past appointment dimming, EmptyState, detail modal
 
 **Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03)
 - Weekly availability management
@@ -100,9 +103,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 20-01-PLAN.md (Location-Aware Dashboard)
+Stopped at: Completed 20-03-PLAN.md (Dashboard UX Enhancements) - Phase 20 complete
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (20-01 complete, 20-02 complete)*
+*Last updated: 2026-01-29 (Phase 20 complete: 20-01, 20-02, 20-03)*
