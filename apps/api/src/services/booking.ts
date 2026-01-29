@@ -1,4 +1,5 @@
 import { prisma, Prisma } from '@peacase/database';
+import logger from '../lib/logger.js';
 
 /**
  * Error thrown when a booking attempt conflicts with an existing appointment.
@@ -171,9 +172,7 @@ export async function createBookingWithLock(data: BookingData) {
         const jitter = Math.random() * baseDelay * 0.5;
         const delayMs = Math.floor(baseDelay + jitter);
 
-        console.warn(
-          `[Booking] Transaction conflict on attempt ${attempt}/${MAX_RETRIES}, retrying in ${delayMs}ms...`
-        );
+        logger.warn({ attempt, maxRetries: MAX_RETRIES, delayMs, staffId: data.staffId }, 'Booking transaction conflict, retrying');
 
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, delayMs));

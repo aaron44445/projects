@@ -1,4 +1,5 @@
 import { prisma } from '@peacase/database';
+import logger from '../lib/logger.js';
 
 /**
  * Webhook Event Idempotency Service
@@ -47,7 +48,7 @@ export async function checkAndMarkEventProcessed(
     // Unique constraint violation = already processed
     // Prisma error code P2002 indicates unique constraint failure
     if (error.code === 'P2002') {
-      console.log(`[Webhook] Event ${stripeEventId} already processed, skipping`);
+      logger.info({ stripeEventId, eventType }, 'Webhook event already processed, skipping');
       return { alreadyProcessed: true };
     }
     // Re-throw other errors (connection issues, etc.)
