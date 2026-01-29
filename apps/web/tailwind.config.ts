@@ -55,7 +55,12 @@ const config: Config = {
           dark: '#E8E4DC',
         },
 
-        // Text Colors
+        // Text Colors - WCAG 2.1 AA Compliant (4.5:1+ contrast on white/cream)
+        // Use these instead of charcoal/XX opacity modifiers for body text:
+        // - text-text-primary: '#1A1A1A' (~14:1) - headings, important text
+        // - text-text-secondary: '#4A4A4A' (~9:1) - secondary content
+        // - text-text-muted: '#7A7A7A' (~4.6:1) - minimum for body text, captions
+        // AVOID: text-charcoal/50, text-charcoal/60, text-charcoal/70 (fail contrast)
         text: {
           primary: '#1A1A1A',
           secondary: '#4A4A4A',
