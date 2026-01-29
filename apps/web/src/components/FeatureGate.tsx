@@ -52,7 +52,7 @@ export function FeatureGate({ feature, children, minimal = false, className = ''
           <Lock className="w-8 h-8 text-charcoal/40" />
         </div>
         <h3 className="text-xl font-bold text-charcoal mb-2">{addOn.name}</h3>
-        <p className="text-charcoal/60 mb-6">{addOn.description}</p>
+        <p className="text-text-secondary mb-6">{addOn.description}</p>
         <Link
           href="/settings?tab=subscription"
           className="inline-flex items-center gap-2 px-6 py-3 bg-sage text-white rounded-xl font-semibold hover:bg-sage-dark transition-all"
@@ -60,7 +60,7 @@ export function FeatureGate({ feature, children, minimal = false, className = ''
           <Sparkles className="w-5 h-5" />
           Add to Your Plan - ${addOn.price}/mo
         </Link>
-        <p className="text-xs text-charcoal/40 mt-4">
+        <p className="text-xs text-text-muted mt-4">
           Upgrade anytime from Settings &gt; Subscription
         </p>
       </div>

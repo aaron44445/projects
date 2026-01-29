@@ -47,7 +47,7 @@ export function LocationSwitcher({ showAllOption = true, className = '' }: Locat
         <span className="text-sm font-medium text-charcoal dark:text-white truncate max-w-[160px]">
           {displayName}
         </span>
-        <ChevronDown className={`w-4 h-4 text-charcoal/50 dark:text-white/50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-text-muted dark:text-white/50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -67,7 +67,7 @@ export function LocationSwitcher({ showAllOption = true, className = '' }: Locat
                 <Building2 className="w-4 h-4 text-sage" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-charcoal dark:text-white">All Locations</p>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50">Aggregate view</p>
+                  <p className="text-xs text-text-muted dark:text-white/50">Aggregate view</p>
                 </div>
                 {!selectedLocationId && <Check className="w-4 h-4 text-sage" />}
               </button>
@@ -98,7 +98,7 @@ export function LocationSwitcher({ showAllOption = true, className = '' }: Locat
                   )}
                 </div>
                 {location.city && (
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 truncate">
+                  <p className="text-xs text-text-muted dark:text-white/50 truncate">
                     {location.city}, {location.state}
                   </p>
                 )}
@@ -108,7 +108,7 @@ export function LocationSwitcher({ showAllOption = true, className = '' }: Locat
           ))}
 
           {locations.length === 0 && (
-            <div className="px-4 py-3 text-sm text-charcoal/50 dark:text-white/50 text-center">
+            <div className="px-4 py-3 text-sm text-text-muted dark:text-white/50 text-center">
               No locations found
             </div>
           )}

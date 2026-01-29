@@ -11,7 +11,6 @@ import {
   BarChart3,
   LogOut,
   Sparkles,
-  Star,
   Gift,
   CreditCard,
   MapPin,
@@ -76,7 +75,6 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
   // Add add-on items after Reports (index 6) but before Settings
   const addOnItems = [];
   if (hasAddOn('marketing')) addOnItems.push({ name: 'Marketing', href: '/marketing', icon: Sparkles });
-  if (hasAddOn('reviews')) addOnItems.push({ name: 'Reviews', href: '/reviews', icon: Star });
   if (hasAddOn('gift_cards')) addOnItems.push({ name: 'Gift Cards', href: '/gift-cards', icon: Gift });
   if (hasAddOn('memberships')) addOnItems.push({ name: 'Packages', href: '/packages', icon: CreditCard });
 
@@ -124,7 +122,7 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isCurrent
                       ? 'bg-sage text-white'
-                      : 'text-charcoal/70 dark:text-white/70 hover:bg-sage/10 hover:text-sage'
+                      : 'text-text-secondary dark:text-white/70 hover:bg-sage/10 hover:text-sage'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -142,7 +140,7 @@ export function AppSidebar({ currentPage, sidebarOpen, onClose }: AppSidebarProp
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-charcoal dark:text-white truncate">{getDisplayName()}</p>
-                <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{getRoleDisplay()}</p>
+                <p className="text-sm text-text-muted dark:text-white/60 truncate">{getRoleDisplay()}</p>
               </div>
               <button
                 onClick={handleLogout}

@@ -111,7 +111,7 @@ export function NotificationDropdown({ className = '' }: NotificationDropdownPro
     <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white relative"
+        className="p-2 text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white relative"
         aria-label="Notifications"
       >
         <Bell className="w-6 h-6" />
@@ -140,8 +140,8 @@ export function NotificationDropdown({ className = '' }: NotificationDropdownPro
             {notifications.length === 0 ? (
               <div className="p-8 text-center">
                 <Bell className="w-10 h-10 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
-                <p className="text-charcoal/60 dark:text-white/60 font-medium">No notifications</p>
-                <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1">
+                <p className="text-text-muted dark:text-white/60 font-medium">No notifications</p>
+                <p className="text-sm text-text-muted dark:text-white/40 mt-1">
                   You&apos;re all caught up!
                 </p>
               </div>
@@ -176,11 +176,11 @@ export function NotificationDropdown({ className = '' }: NotificationDropdownPro
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60 mt-0.5 line-clamp-2">
+                          <p className="text-sm text-text-muted dark:text-white/60 mt-0.5 line-clamp-2">
                             {notification.message}
                           </p>
                           <div className="flex items-center gap-3 mt-2">
-                            <span className="text-xs text-charcoal/40 dark:text-white/40">
+                            <span className="text-xs text-text-muted dark:text-white/40">
                               {notification.time}
                             </span>
                             {!notification.read && (
@@ -206,7 +206,7 @@ export function NotificationDropdown({ className = '' }: NotificationDropdownPro
           <div className="px-4 py-3 border-t border-charcoal/10 dark:border-white/10 bg-charcoal/5 dark:bg-white/5">
             <Link
               href="/settings?tab=notifications"
-              className="text-sm text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white flex items-center justify-center gap-2"
+              className="text-sm text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white flex items-center justify-center gap-2"
               onClick={() => setIsOpen(false)}
             >
               <Settings className="w-4 h-4" />

@@ -400,7 +400,7 @@ export function HelpBot() {
         {/* Quick Questions */}
         {messages.length <= 2 && (
           <div className="px-4 pb-2">
-            <p className="text-xs text-charcoal/50 dark:text-white/50 mb-2">Quick questions:</p>
+            <p className="text-xs text-text-muted dark:text-white/50 mb-2">Quick questions:</p>
             <div className="flex flex-wrap gap-2">
               {quickQuestions.slice(0, 3).map((q) => (
                 <button
@@ -424,7 +424,7 @@ export function HelpBot() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask a question..."
-              className="flex-1 px-4 py-3 bg-charcoal/5 dark:bg-white/5 rounded-xl border-0 outline-none focus:ring-2 focus:ring-sage/20 text-sm text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+              className="flex-1 px-4 py-3 bg-charcoal/5 dark:bg-white/5 rounded-xl border-0 outline-none focus:ring-2 focus:ring-sage/20 text-sm text-charcoal dark:text-white placeholder:text-text-muted dark:placeholder:text-white/40"
             />
             <button
               onClick={handleSend}
