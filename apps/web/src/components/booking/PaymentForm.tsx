@@ -134,15 +134,15 @@ export function PaymentForm({ onSuccess, onError, primaryColor = '#7C9A82' }: Pa
       </div>
 
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 bg-rose/10 border border-rose/20 rounded-xl">
+          <AlertCircle className="w-5 h-5 text-rose-dark flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm text-red-700">{errorMessage}</p>
+            <p className="text-sm text-rose-dark">{errorMessage}</p>
             {canRetry && (
               <button
                 type="button"
                 onClick={handleRetry}
-                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700"
+                className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-rose-dark hover:text-rose"
               >
                 <RefreshCw className="w-4 h-4" />
                 Try again
