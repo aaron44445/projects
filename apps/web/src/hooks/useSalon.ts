@@ -27,6 +27,9 @@ export interface Salon {
   taxRate: number | null;
   taxName: string;
   taxIncluded: boolean;
+  // Branding settings
+  brand_primary_color: string;
+  brand_background_color: string;
   // Other settings
   logoUrl: string | null;
   website: string | null;
@@ -34,12 +37,35 @@ export interface Salon {
   subscriptionPlan: string;
   featuresEnabled: string;
   multiLocationEnabled: boolean;
+  // Staff policies
+  requireTimeOffApproval?: boolean;
+}
+
+export interface TimeOffRequestWithStaff {
+  id: string;
+  staffId: string;
+  startDate: string;
+  endDate: string;
+  type: string;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  createdAt: string;
+  staff: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 export function useSalon() {
   const [salon, setSalon] = useState<Salon | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequestWithStaff[]>([]);
+  const [timeOffLoading, setTimeOffLoading] = useState(false);
 
   const fetchSalon = useCallback(async () => {
     setLoading(true);
@@ -77,5 +103,40 @@ export function useSalon() {
     }
   }, []);
 
-  return { salon, loading, error, fetchSalon, updateSalon, setError };
+  const fetchTimeOffRequests = useCallback(async (status?: string) => {
+    setTimeOffLoading(true);
+    try {
+      const url = status ? `/salon/time-off-requests?status=${status}` : '/salon/time-off-requests';
+      const response = await api.get<TimeOffRequestWithStaff[]>(url);
+      if (response.success && response.data) {
+        setTimeOffRequests(response.data);
+      }
+    } finally {
+      setTimeOffLoading(false);
+    }
+  }, []);
+
+  const reviewTimeOff = useCallback(async (id: string, status: 'approved' | 'rejected', reviewNotes?: string) => {
+    const response = await api.patch<TimeOffRequestWithStaff>(`/salon/time-off-requests/${id}`, {
+      status,
+      reviewNotes,
+    });
+    if (response.success && response.data) {
+      setTimeOffRequests(prev => prev.map(r => r.id === id ? response.data! : r));
+    }
+    return response;
+  }, []);
+
+  return {
+    salon,
+    loading,
+    error,
+    fetchSalon,
+    updateSalon,
+    setError,
+    timeOffRequests,
+    timeOffLoading,
+    fetchTimeOffRequests,
+    reviewTimeOff,
+  };
 }
