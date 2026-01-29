@@ -42,7 +42,7 @@ export { useGiftCards } from './useGiftCards';
 export type { GiftCard } from './useGiftCards';
 
 export { useSalon } from './useSalon';
-export type { Salon } from './useSalon';
+export type { Salon, TimeOffRequestWithStaff } from './useSalon';
 
 export { useReports } from './useReports';
 export type {

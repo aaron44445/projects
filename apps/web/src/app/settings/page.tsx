@@ -47,7 +47,8 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { NotificationDropdown } from '@/components/NotificationDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
-import { useSalon, useLocationContext, type Salon, useAccount, useTeam, useOwnerNotifications } from '@/hooks';
+import { useSalon, useLocationContext, type Salon, useAccount, useTeam, useOwnerNotifications, type TimeOffRequestWithStaff } from '@/hooks';
+import { Modal } from '@peacase/ui';
 import { useServices, type Service } from '@/hooks/useServices';
 import { useStaff, type StaffMember } from '@/hooks/useStaff';
 import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions';
@@ -61,6 +62,7 @@ const settingsSections = [
   { id: 'account', name: 'My Account', icon: User, description: 'Profile, email, and account settings' },
   { id: 'business', name: 'Business Info', icon: Building2, description: 'Company details and address', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'team', name: 'Team Access', icon: UserPlus, description: 'Invite and manage team members', requiresPermission: PERMISSIONS.MANAGE_STAFF },
+  { id: 'staff-policies', name: 'Staff Policies', icon: Users, description: 'Time-off approval and schedule settings', requiresPermission: PERMISSIONS.MANAGE_STAFF },
   { id: 'locations', name: 'Locations', icon: MapPin, description: 'Multi-location settings', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'hours', name: 'Business Hours', icon: Clock, description: 'Operating hours and holidays', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
   { id: 'regional', name: 'Regional Settings', icon: Languages, description: 'Currency, date, and time formats', requiresPermission: PERMISSIONS.MANAGE_BUSINESS_SETTINGS },
@@ -134,6 +136,173 @@ function AddOnUpsellBanner({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Staff Policies Section Component
+function StaffPoliciesSection() {
+  const { salon, updateSalon, fetchTimeOffRequests, reviewTimeOff, timeOffRequests, timeOffLoading } = useSalon();
+  const [showReviewModal, setShowReviewModal] = useState<{ request: TimeOffRequestWithStaff; action: 'approve' | 'reject' } | null>(null);
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (salon?.requireTimeOffApproval) {
+      fetchTimeOffRequests('pending');
+    }
+  }, [salon?.requireTimeOffApproval, fetchTimeOffRequests]);
+
+  const handleToggleApproval = async (enabled: boolean) => {
+    await updateSalon({ requireTimeOffApproval: enabled });
+    if (enabled) {
+      fetchTimeOffRequests('pending');
+    }
+  };
+
+  const handleReview = async () => {
+    if (!showReviewModal) return;
+    setIsSubmitting(true);
+    try {
+      await reviewTimeOff(
+        showReviewModal.request.id,
+        showReviewModal.action === 'approve' ? 'approved' : 'rejected',
+        reviewNotes || undefined
+      );
+      setShowReviewModal(null);
+      setReviewNotes('');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const pendingRequests = timeOffRequests.filter(r => r.status === 'pending');
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Staff Policies</h2>
+        <p className="text-text-muted dark:text-white/60">
+          Configure time-off approval and scheduling rules for your staff.
+        </p>
+      </div>
+
+      {/* Approval Toggle */}
+      <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10 p-6">
+        <h3 className="font-semibold text-charcoal dark:text-white mb-4">Time-Off Approval</h3>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={salon?.requireTimeOffApproval ?? false}
+            onChange={(e) => handleToggleApproval(e.target.checked)}
+            className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage w-5 h-5"
+          />
+          <div>
+            <span className="text-charcoal dark:text-white font-medium">Require manager approval for time-off requests</span>
+            <p className="text-sm text-text-muted dark:text-white/60">When enabled, staff time-off requests will need your approval before taking effect</p>
+          </div>
+        </label>
+      </div>
+
+      {/* Pending Requests (only show if approval is required) */}
+      {salon?.requireTimeOffApproval && (
+        <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-charcoal dark:text-white">Pending Time-Off Requests</h3>
+            {pendingRequests.length > 0 && (
+              <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm">
+                {pendingRequests.length} pending
+              </span>
+            )}
+          </div>
+
+          {timeOffLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-sage" />
+            </div>
+          ) : pendingRequests.length === 0 ? (
+            <p className="text-text-muted dark:text-white/60 text-center py-8">No pending requests</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingRequests.map(request => (
+                <div key={request.id} className="flex items-center justify-between p-4 bg-charcoal/5 dark:bg-white/5 rounded-xl">
+                  <div>
+                    <p className="font-medium text-charcoal dark:text-white">
+                      {request.staff.firstName} {request.staff.lastName}
+                    </p>
+                    <p className="text-sm text-text-muted dark:text-white/60">
+                      {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                    </p>
+                    {request.reason && (
+                      <p className="text-sm text-charcoal/50 dark:text-white/50 mt-1">{request.reason}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowReviewModal({ request, action: 'approve' })}
+                      className="px-3 py-1.5 bg-sage text-white rounded-lg text-sm hover:bg-sage-dark transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => setShowReviewModal({ request, action: 'reject' })}
+                      className="px-3 py-1.5 border border-rose/30 text-rose rounded-lg text-sm hover:bg-rose/10 transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Review Modal */}
+      <Modal
+        isOpen={!!showReviewModal}
+        onClose={() => { setShowReviewModal(null); setReviewNotes(''); }}
+        title={showReviewModal?.action === 'approve' ? 'Approve Time Off' : 'Reject Time Off'}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-charcoal dark:text-white">
+            {showReviewModal?.action === 'approve' ? 'Approve' : 'Reject'} time off for{' '}
+            <strong>{showReviewModal?.request.staff.firstName} {showReviewModal?.request.staff.lastName}</strong>?
+          </p>
+          <p className="text-sm text-text-muted dark:text-white/60">
+            {showReviewModal?.request.startDate && new Date(showReviewModal.request.startDate).toLocaleDateString()} -{' '}
+            {showReviewModal?.request.endDate && new Date(showReviewModal.request.endDate).toLocaleDateString()}
+          </p>
+          <div>
+            <label className="block text-sm text-text-muted dark:text-white/60 mb-1">Note (optional)</label>
+            <textarea
+              value={reviewNotes}
+              onChange={(e) => setReviewNotes(e.target.value)}
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white resize-none focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+              placeholder="Add a note for the staff member..."
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => { setShowReviewModal(null); setReviewNotes(''); }}
+              className="flex-1 px-4 py-2 border border-charcoal/20 dark:border-white/10 text-charcoal dark:text-white rounded-lg hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReview}
+              disabled={isSubmitting}
+              className={`flex-1 px-4 py-2 rounded-lg text-white transition-colors ${
+                showReviewModal?.action === 'approve' ? 'bg-sage hover:bg-sage-dark' : 'bg-rose hover:bg-rose-dark'
+              } disabled:opacity-50`}
+            >
+              {isSubmitting ? 'Processing...' : showReviewModal?.action === 'approve' ? 'Approve' : 'Reject'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -3289,6 +3458,9 @@ function SettingsContent() {
             </div>
           </div>
         );
+
+      case 'staff-policies':
+        return <StaffPoliciesSection />;
 
       default:
         return null;
