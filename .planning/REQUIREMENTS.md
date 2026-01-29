@@ -16,17 +16,17 @@ Requirements for audit remediation. Each maps to roadmap phases.
 
 ### Performance
 
-- [ ] **PERF-01**: Email/SMS notifications are queued asynchronously (don't block API responses)
-- [ ] **PERF-02**: Dashboard stats endpoint uses 2-3 consolidated queries instead of 8
-- [ ] **PERF-03**: VIP client count uses database COUNT, not client-side filtering
-- [ ] **PERF-04**: Dashboard hook has refetchIntervalInBackground: false
+- [x] **PERF-01**: Email/SMS notifications are queued asynchronously (don't block API responses)
+- [x] **PERF-02**: Dashboard stats endpoint uses 2-3 consolidated queries instead of 8
+- [x] **PERF-03**: VIP client count uses database COUNT, not client-side filtering
+- [x] **PERF-04**: Dashboard hook has refetchIntervalInBackground: false
 
 ### SEO
 
-- [ ] **SEO-01**: sitemap.ts generates dynamic sitemap at /sitemap.xml
-- [ ] **SEO-02**: robots.txt allows public pages, blocks /dashboard and /admin
-- [ ] **SEO-03**: All public pages have canonical URLs in metadata
-- [ ] **SEO-04**: Landing page has Organization and SoftwareApplication JSON-LD schemas
+- [x] **SEO-01**: sitemap.ts generates dynamic sitemap at /sitemap.xml
+- [x] **SEO-02**: robots.txt allows public pages, blocks /dashboard and /admin
+- [x] **SEO-03**: All public pages have canonical URLs in metadata
+- [x] **SEO-04**: Landing page has Organization and SoftwareApplication JSON-LD schemas
 
 ### Accessibility
 
@@ -82,14 +82,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-02 | Phase 13: Security Hardening | Complete |
 | SEC-03 | Phase 13: Security Hardening | Complete |
 | SEC-04 | Phase 13: Security Hardening | Complete |
-| PERF-01 | Phase 14: Performance Optimization | Pending |
-| PERF-02 | Phase 14: Performance Optimization | Pending |
-| PERF-03 | Phase 14: Performance Optimization | Pending |
-| PERF-04 | Phase 14: Performance Optimization | Pending |
-| SEO-01 | Phase 15: SEO Fundamentals | Pending |
-| SEO-02 | Phase 15: SEO Fundamentals | Pending |
-| SEO-03 | Phase 15: SEO Fundamentals | Pending |
-| SEO-04 | Phase 15: SEO Fundamentals | Pending |
+| PERF-01 | Phase 14: Performance Optimization | Complete |
+| PERF-02 | Phase 14: Performance Optimization | Complete |
+| PERF-03 | Phase 14: Performance Optimization | Complete |
+| PERF-04 | Phase 14: Performance Optimization | Complete |
+| SEO-01 | Phase 15: SEO Fundamentals | Complete |
+| SEO-02 | Phase 15: SEO Fundamentals | Complete |
+| SEO-03 | Phase 15: SEO Fundamentals | Complete |
+| SEO-04 | Phase 15: SEO Fundamentals | Complete |
 | A11Y-01 | Phase 16: Accessibility Compliance | Pending |
 | A11Y-02 | Phase 16: Accessibility Compliance | Pending |
 | A11Y-03 | Phase 16: Accessibility Compliance | Pending |
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 13 requirements complete)*
+*Last updated: 2026-01-28 (Phase 15 requirements complete)*
