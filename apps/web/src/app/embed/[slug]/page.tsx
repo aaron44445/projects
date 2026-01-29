@@ -613,6 +613,8 @@ function DateTimeStep({
               <button
                 key={date}
                 onClick={() => onDateChange(date)}
+                aria-label={`${formatDateLabel(date)}, ${isSelected ? 'selected' : 'select this date'}`}
+                aria-pressed={isSelected}
                 className={`flex-shrink-0 px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                   isSelected
                     ? 'border-transparent text-white'
