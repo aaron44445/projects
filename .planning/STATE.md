@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 Phase: 20 of 24 (Staff Portal Core)
 Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-01-29 - Completed 20-02-PLAN.md (Staff Profile Locations)
+Last activity: 2026-01-29 - Completed 20-01-PLAN.md (Location-Aware Dashboard)
 
 Progress: v1.0 ████████████ v1.1 ████████████ v1.2 █████░░░░░░░
 
@@ -36,6 +36,8 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Portal-specific JWT tokens with portalType claim for staff/owner discrimination
 - 15-minute staff access tokens (vs 7-day owner tokens) for security
 - ownerPortalOnly middleware on all owner routes for cross-portal token rejection
+- Location filter applied only when staff has >0 location assignments (otherwise show all)
+- staffCanViewClientContact defaults to true if salon setting not found
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -98,9 +100,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 20-02-PLAN.md (Staff Profile Locations)
+Stopped at: Completed 20-01-PLAN.md (Location-Aware Dashboard)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (20-02 complete)*
+*Last updated: 2026-01-29 (20-01 complete, 20-02 complete)*
