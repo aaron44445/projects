@@ -560,6 +560,8 @@ function DateTimeStep({
   borderRadius: string;
   maxAdvanceDays?: number;
 }) {
+  const [announcement, setAnnouncement] = useState('');
+
   // Generate dates up to maxAdvanceDays
   const dates = Array.from({ length: maxAdvanceDays }, (_, i) => {
     const date = new Date();
@@ -588,6 +590,14 @@ function DateTimeStep({
 
   return (
     <div className="space-y-6">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
       <div className="text-center">
         <h2 className="text-xl font-bold text-gray-900">Pick a Date & Time</h2>
         <p className="text-sm text-gray-500 mt-1">Select when you&apos;d like to come in</p>
