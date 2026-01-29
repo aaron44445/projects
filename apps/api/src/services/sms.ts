@@ -90,11 +90,11 @@ export async function sendSms(options: SendSmsOptions): Promise<SendSmsResult> {
 
     logger.info({ to: options.to, messageSid: message.sid }, 'SMS sent successfully');
     return { success: true, messageSid: message.sid };
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({ err: error, to: options.to }, 'Twilio SMS error');
     return {
       success: false,
-      error: error?.message || 'Unknown error',
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

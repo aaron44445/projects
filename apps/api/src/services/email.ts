@@ -84,7 +84,7 @@ async function sendViaSendGrid(options: EmailOptions): Promise<boolean> {
     });
     logger.info({ to: options.to, provider: 'SendGrid' }, 'Email sent successfully');
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error({ err: error, to: options.to, provider: 'SendGrid' }, 'SendGrid email failed');
     return false;
   }

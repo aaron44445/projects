@@ -1,4 +1,4 @@
-import rateLimit, { RateLimitRequestHandler } from 'express-rate-limit';
+import rateLimit, { RateLimitRequestHandler, Options } from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
 // ============================================
@@ -28,7 +28,7 @@ function getKeyFromIpAndEmail(req: Request): string {
 // HELPER: Create error response with time remaining
 // ============================================
 function createRateLimitHandler(baseMessage: string) {
-  return (req: Request, res: Response, next: NextFunction, options: any) => {
+  return (req: Request, res: Response, next: NextFunction, _options: Options) => {
     const retryAfterHeader = res.getHeader('Retry-After');
     let seconds: number = 60; // Default to 60 seconds
 

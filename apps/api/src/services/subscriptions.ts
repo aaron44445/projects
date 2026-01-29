@@ -498,8 +498,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
 /**
  * Handle subscription updated webhook
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleSubscriptionUpdated(subscription: any) {
+export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const metadataSalonId = subscription.metadata?.salonId;
 
   // Always lookup existing subscription first for security
@@ -525,13 +524,22 @@ export async function handleSubscriptionUpdated(subscription: any) {
 
   logger.info({ salonId, stripeSubscriptionId: subscription.id, status: subscription.status }, 'Updating subscription');
 
+  // Get billing period from first subscription item (new Stripe API structure)
+  const firstItem = subscription.items?.data?.[0];
+  const currentPeriodStart = firstItem?.current_period_start
+    ? new Date(firstItem.current_period_start * 1000)
+    : undefined;
+  const currentPeriodEnd = firstItem?.current_period_end
+    ? new Date(firstItem.current_period_end * 1000)
+    : undefined;
+
   await prisma.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
     data: {
       plan: planId,
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      ...(currentPeriodStart && { currentPeriodStart }),
+      ...(currentPeriodEnd && { currentPeriodEnd }),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
       trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
@@ -555,7 +563,7 @@ export async function handleSubscriptionUpdated(subscription: any) {
 /**
  * Sync subscription add-ons from Stripe subscription items
  */
-async function syncSubscriptionAddons(subscriptionId: string, items: any[]) {
+async function syncSubscriptionAddons(subscriptionId: string, items: Stripe.SubscriptionItem[]) {
   // Get current addon records
   const currentAddons = await prisma.subscriptionAddon.findMany({
     where: { subscriptionId },
@@ -643,9 +651,12 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
 /**
  * Handle invoice payment failed webhook - set grace period
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleInvoicePaymentFailed(invoice: any) {
-  const subscriptionId = invoice.subscription as string;
+export async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+  // Get subscription ID from parent.subscription_details (new Stripe API structure)
+  const subscriptionRef = invoice.parent?.subscription_details?.subscription;
+  const subscriptionId = typeof subscriptionRef === 'string'
+    ? subscriptionRef
+    : subscriptionRef?.id;
 
   if (!subscriptionId) return;
 
@@ -682,8 +693,10 @@ export async function handleInvoicePaid(invoice: Stripe.Invoice) {
   }
 
   // Verify invoice subscription belongs to this customer (defense-in-depth)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const invoiceSubscriptionId = (invoice as any).subscription as string;
+  const subscriptionRef = invoice.parent?.subscription_details?.subscription;
+  const invoiceSubscriptionId = typeof subscriptionRef === 'string'
+    ? subscriptionRef
+    : subscriptionRef?.id;
   if (invoiceSubscriptionId && salon.subscription?.stripeSubscriptionId !== invoiceSubscriptionId) {
     logger.error({ salonId: salon.id, invoiceSubscriptionId, salonSubscriptionId: salon.subscription?.stripeSubscriptionId }, 'Invoice subscription mismatch');
     return;

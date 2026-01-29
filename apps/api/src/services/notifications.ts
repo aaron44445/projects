@@ -180,16 +180,17 @@ async function sendEmailNotification(
       });
       return { success: false, error: 'Email service returned false' };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     // Update log with error
     await prisma.notificationLog.update({
       where: { id: logId },
       data: {
         emailStatus: 'failed',
-        emailError: error?.message || String(error),
+        emailError: errorMessage,
       },
     });
-    return { success: false, error: error?.message || String(error) };
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -262,15 +263,16 @@ async function sendSmsNotification(
       });
       return { success: false, error: smsResult.error || 'Unknown error' };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     // Update log with error
     await prisma.notificationLog.update({
       where: { id: logId },
       data: {
         smsStatus: 'failed',
-        smsError: error?.message || String(error),
+        smsError: errorMessage,
       },
     });
-    return { success: false, error: error?.message || String(error) };
+    return { success: false, error: errorMessage };
   }
 }

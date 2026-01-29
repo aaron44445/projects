@@ -44,10 +44,11 @@ export async function checkAndMarkEventProcessed(
       },
     });
     return { alreadyProcessed: false };
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Unique constraint violation = already processed
     // Prisma error code P2002 indicates unique constraint failure
-    if (error.code === 'P2002') {
+    const prismaError = error as { code?: string };
+    if (prismaError.code === 'P2002') {
       logger.info({ stripeEventId, eventType }, 'Webhook event already processed, skipping');
       return { alreadyProcessed: true };
     }
