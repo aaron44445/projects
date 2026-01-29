@@ -92,15 +92,19 @@ Plans:
   2. Screen reader announces time slot information when navigating booking widget
   3. Pressing Tab as first action on any page focuses "Skip to main content" link
   4. All body text has minimum 4.5:1 contrast ratio (charcoal/80 or darker)
-**Plans**: 6 plans
+**Plans**: 10 plans (6 original + 4 gap closure)
 
 Plans:
-- [ ] 16-01-PLAN.md - Modal focus trap and ARIA compliance (A11Y-01)
-- [ ] 16-02-PLAN.md - Booking widget live regions and time slot labels (A11Y-02)
-- [ ] 16-03-PLAN.md - Booking widget date labels and sr-only class (A11Y-02)
-- [ ] 16-04-PLAN.md - Skip to main content navigation (A11Y-03)
-- [ ] 16-05-PLAN.md - Text contrast core components (A11Y-04)
-- [ ] 16-06-PLAN.md - Text contrast batch component updates (A11Y-04)
+- [x] 16-01-PLAN.md - Modal focus trap and ARIA compliance (A11Y-01)
+- [x] 16-02-PLAN.md - Booking widget live regions and time slot labels (A11Y-02)
+- [x] 16-03-PLAN.md - Booking widget date labels and sr-only class (A11Y-02)
+- [x] 16-04-PLAN.md - Skip to main content navigation (A11Y-03)
+- [x] 16-05-PLAN.md - Text contrast core components (A11Y-04)
+- [x] 16-06-PLAN.md - Text contrast batch component updates (A11Y-04)
+- [ ] 16-07-PLAN.md - Gap closure: Modal focus restoration fix (A11Y-01)
+- [ ] 16-08-PLAN.md - Gap closure: Add Staff modal ARIA fix (A11Y-01)
+- [ ] 16-09-PLAN.md - Gap closure: Booking widget radiogroup semantics (A11Y-02)
+- [ ] 16-10-PLAN.md - Gap closure: Skip link CSS fix (A11Y-03)
 
 ### Phase 17: Code Quality
 **Goal**: Codebase is strictly typed with no implicit any and uses structured logging
@@ -139,10 +143,10 @@ Plans:
 | 13. Security Hardening | v1.1 | 3/3 | Complete | 2026-01-28 |
 | 14. Performance Optimization | v1.1 | 4/4 | Complete | 2026-01-28 |
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
-| 16. Accessibility Compliance | v1.1 | 0/6 | In progress | - |
+| 16. Accessibility Compliance | v1.1 | 6/10 | Gap closure | - |
 | 17. Code Quality | v1.1 | 0/TBD | Not started | - |
 | 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 16 plans revised - checker feedback)*
+*Last updated: 2026-01-29 (Phase 16 gap closure plans added - UAT findings)*
