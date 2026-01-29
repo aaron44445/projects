@@ -23,6 +23,7 @@ interface TimeOffRequest {
   id: string;
   startDate: string;
   endDate: string;
+  type: 'vacation' | 'sick' | 'personal' | 'other';
   reason: string;
   status: 'pending' | 'approved' | 'denied';
   createdAt: string;
@@ -30,6 +31,13 @@ interface TimeOffRequest {
   reviewedAt?: string;
   reviewNotes?: string;
 }
+
+const TYPE_LABELS: Record<TimeOffRequest['type'], string> = {
+  vacation: 'PTO',
+  sick: 'Sick Leave',
+  personal: 'Personal',
+  other: 'Other',
+};
 
 function TimeOffContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,6 +52,7 @@ function TimeOffContent() {
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
+    type: 'vacation' as 'vacation' | 'sick' | 'personal' | 'other',
     reason: '',
   });
   const [formError, setFormError] = useState<string | null>(null);
@@ -93,7 +102,7 @@ function TimeOffContent() {
       if (response.success && response.data) {
         setRequests((prev) => [response.data!, ...prev]);
         setShowNewRequest(false);
-        setFormData({ startDate: '', endDate: '', reason: '' });
+        setFormData({ startDate: '', endDate: '', type: 'vacation', reason: '' });
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -266,6 +275,9 @@ function TimeOffContent() {
                           <div className="flex items-center gap-3 mb-3">
                             {getStatusBadge(request.status)}
                             <span className="text-sm text-charcoal/60">
+                              {TYPE_LABELS[request.type]}
+                            </span>
+                            <span className="text-sm text-charcoal/40">
                               {getDuration(request.startDate, request.endDate)}
                             </span>
                           </div>
@@ -320,7 +332,7 @@ function TimeOffContent() {
         isOpen={showNewRequest}
         onClose={() => {
           setShowNewRequest(false);
-          setFormData({ startDate: '', endDate: '', reason: '' });
+          setFormData({ startDate: '', endDate: '', type: 'vacation', reason: '' });
           setFormError(null);
         }}
         title="Request Time Off"
@@ -366,6 +378,24 @@ function TimeOffContent() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-charcoal mb-2">
+              Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, type: e.target.value as typeof formData.type }))
+              }
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+            >
+              <option value="vacation">Vacation / PTO</option>
+              <option value="sick">Sick Leave</option>
+              <option value="personal">Personal Day</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-charcoal mb-2">Reason</label>
             <textarea
               value={formData.reason}
@@ -382,7 +412,7 @@ function TimeOffContent() {
               type="button"
               onClick={() => {
                 setShowNewRequest(false);
-                setFormData({ startDate: '', endDate: '', reason: '' });
+                setFormData({ startDate: '', endDate: '', type: 'vacation', reason: '' });
                 setFormError(null);
               }}
               disabled={isSubmitting}
