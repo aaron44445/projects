@@ -1,5 +1,6 @@
 import { prisma } from '@peacase/database';
 import { sendNotification, NotificationPayload } from '../services/notifications.js';
+import logger from '../lib/logger.js';
 
 const POLL_INTERVAL_MS = 5000; // 5 seconds
 const BATCH_SIZE = 10;
@@ -40,13 +41,13 @@ async function processJobs(): Promise<void> {
       return; // No work to do
     }
 
-    console.log(`[WORKER] Processing ${jobs.length} notification job(s)`);
+    logger.info({ count: jobs.length }, 'Processing notification jobs');
 
     for (const job of jobs) {
       await processJob(job);
     }
   } catch (error) {
-    console.error('[WORKER] Error in processJobs:', error);
+    logger.error({ error }, 'Error in processJobs');
   }
 }
 
@@ -97,7 +98,7 @@ async function processJob(job: {
           processedAt: new Date(),
         },
       });
-      console.log(`[WORKER] Job ${job.id} completed successfully`);
+      logger.info({ jobId: job.id }, 'Notification job completed');
     } else {
       // Notification service returned failure
       const isFinalAttempt = job.attempts + 1 >= job.max_attempts;
@@ -108,10 +109,10 @@ async function processJob(job: {
           error: 'Notification service returned failed status',
         },
       });
-      console.log(`[WORKER] Job ${job.id} failed (attempt ${job.attempts + 1}/${job.max_attempts})`);
+      logger.warn({ jobId: job.id, attempt: job.attempts + 1, maxAttempts: job.max_attempts }, 'Notification job failed');
     }
   } catch (error: unknown) {
-    console.error(`[WORKER] Error processing job ${job.id}:`, error);
+    logger.error({ error, jobId: job.id }, 'Error processing notification job');
 
     const isFinalAttempt = job.attempts + 1 >= job.max_attempts;
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -143,7 +144,7 @@ async function recoverStaleJobs(): Promise<void> {
   });
 
   if (result.count > 0) {
-    console.log(`[WORKER] Recovered ${result.count} stale job(s)`);
+    logger.info({ count: result.count }, 'Recovered stale notification jobs');
   }
 }
 
@@ -152,7 +153,7 @@ async function recoverStaleJobs(): Promise<void> {
  * Should be called once when the server starts.
  */
 export function startNotificationWorker(): void {
-  console.log('[WORKER] Notification worker started (poll interval: 5s)');
+  logger.info({ pollIntervalMs: POLL_INTERVAL_MS }, 'Notification worker started');
 
   // Initial poll
   processJobs();
@@ -176,6 +177,6 @@ export async function cleanupOldJobs(daysToKeep = 7): Promise<number> {
     },
   });
 
-  console.log(`[WORKER] Cleaned up ${result.count} old completed job(s)`);
+  logger.info({ count: result.count, daysKept: daysToKeep }, 'Cleaned up old notification jobs');
   return result.count;
 }

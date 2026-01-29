@@ -9,6 +9,7 @@ import {
   appointmentReminderSms,
   appointmentReminder2hSms,
 } from '../services/sms.js';
+import logger from '../lib/logger.js';
 
 // Reminder types - now dynamic based on salon configuration
 export type ReminderType = string;  // e.g., 'REMINDER_24H', 'REMINDER_2H', 'REMINDER_48H'
@@ -247,7 +248,7 @@ async function sendAppointmentReminder(
     await logReminder(appointment.id, reminderType, channelUsed, success);
   } catch (error) {
     result.error = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`Error sending reminder for appointment ${appointment.id}:`, error);
+    logger.error({ error, appointmentId: appointment.id, reminderType }, 'Error sending reminder');
 
     // Log the failed attempt
     await logReminder(appointment.id, reminderType, channelUsed, false, result.error);
@@ -349,7 +350,7 @@ async function processRemindersForSalon(
  */
 export async function runAppointmentReminders(): Promise<void> {
   const startTime = new Date();
-  console.log(`\n[AppointmentReminders] Starting at ${startTime.toISOString()}`);
+  logger.info({ startTime: startTime.toISOString() }, 'Starting appointment reminders');
 
   try {
     // Get all active salons with their notification settings
@@ -393,14 +394,15 @@ export async function runAppointmentReminders(): Promise<void> {
     const endTime = new Date();
     const duration = endTime.getTime() - startTime.getTime();
 
-    console.log(`[AppointmentReminders] Completed in ${duration}ms`);
-    console.log(`[AppointmentReminders] Summary:`);
-    console.log(`  - Salons checked: ${salons.length}`);
-    console.log(`  - Total appointments processed: ${totalProcessed}`);
-    console.log(`  - Emails sent: ${totalEmailsSent}`);
-    console.log(`  - SMS sent: ${totalSmsSent}`);
+    logger.info({
+      durationMs: duration,
+      salonsChecked: salons.length,
+      appointmentsProcessed: totalProcessed,
+      emailsSent: totalEmailsSent,
+      smsSent: totalSmsSent,
+    }, 'Appointment reminders completed');
   } catch (error) {
-    console.error('[AppointmentReminders] Fatal error:', error);
+    logger.error({ error }, 'Fatal error in appointment reminders');
   }
 }
 
