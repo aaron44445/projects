@@ -1,13 +1,19 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '@peacase/database';
+import { prisma, Prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription, requireAddon } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { sendNotification, NotificationPayload } from '../services/notifications.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
+// All notification routes require active subscription
+router.use(authenticate, requireActiveSubscription());
+
 // GET /notifications - List notification history
-router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const {
     type,
@@ -24,16 +30,16 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
   const skip = (pageNum - 1) * limitNum;
 
   // Build where clause
-  const where: any = { salonId };
+  const where: Prisma.NotificationLogWhereInput = { ...withSalonId(salonId) };
 
-  if (type) where.type = type;
-  if (status) where.status = status;
-  if (clientId) where.clientId = clientId;
+  if (type) where.type = type as string;
+  if (status) where.status = status as string;
+  if (clientId) where.clientId = clientId as string;
 
   if (startDate || endDate) {
     where.createdAt = {};
-    if (startDate) where.createdAt.gte = new Date(startDate as string);
-    if (endDate) where.createdAt.lte = new Date(endDate as string);
+    if (startDate) (where.createdAt as Prisma.DateTimeFilter).gte = new Date(startDate as string);
+    if (endDate) (where.createdAt as Prisma.DateTimeFilter).lte = new Date(endDate as string);
   }
 
   const [notifications, total] = await Promise.all([
@@ -79,15 +85,15 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 }));
 
 // GET /notifications/stats - Get notification statistics
-router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { startDate, endDate } = req.query;
 
-  const where: any = { salonId };
+  const where: Prisma.NotificationLogWhereInput = { ...withSalonId(salonId) };
   if (startDate || endDate) {
     where.createdAt = {};
-    if (startDate) where.createdAt.gte = new Date(startDate as string);
-    if (endDate) where.createdAt.lte = new Date(endDate as string);
+    if (startDate) (where.createdAt as Prisma.DateTimeFilter).gte = new Date(startDate as string);
+    if (endDate) (where.createdAt as Prisma.DateTimeFilter).lte = new Date(endDate as string);
   }
 
   // Get counts by status
@@ -111,7 +117,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
 }));
 
 // GET /notifications/:id - Get single notification
-router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const notification = await prisma.notificationLog.findFirst({
     where: {
       id: req.params.id,
@@ -139,7 +145,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response
 }));
 
 // POST /notifications/:id/resend - Resend a failed notification
-router.post('/:id/resend', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:id/resend', asyncHandler(async (req: Request, res: Response) => {
   // Only owner/admin can resend
   if (!['owner', 'admin'].includes(req.user!.role)) {
     return res.status(403).json({

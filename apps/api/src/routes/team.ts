@@ -1,13 +1,19 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { z } from 'zod';
-import { prisma } from '@peacase/database';
+import { prisma, Prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { requireActiveSubscription, checkPlanLimits } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All team routes require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // Validation schemas
 const inviteSchema = z.object({
@@ -111,6 +117,7 @@ router.post(
   '/invite',
   authenticate,
   authorize('admin', 'manager'),
+  checkPlanLimits('staff'),
   asyncHandler(async (req: Request, res: Response) => {
     try {
       const salonId = req.user!.salonId;
@@ -189,7 +196,7 @@ router.post(
           `,
         });
       } catch (emailError) {
-        console.error('Failed to send invite email:', emailError);
+        logger.error({ err: emailError, email: data.email }, 'Failed to send invite email');
         // Don't fail the request - invite is created, email just didn't send
       }
 
@@ -279,7 +286,7 @@ router.post(
         `,
       });
     } catch (emailError) {
-      console.error('Failed to resend invite email:', emailError);
+      logger.error({ err: emailError, inviteId, email: invite.email }, 'Failed to resend invite email');
     }
 
     res.json({
@@ -452,6 +459,7 @@ router.post(
   '/:userId/reactivate',
   authenticate,
   authorize('admin'),
+  checkPlanLimits('staff'),
   asyncHandler(async (req: Request, res: Response) => {
     const salonId = req.user!.salonId;
     const targetUserId = req.params.userId;
