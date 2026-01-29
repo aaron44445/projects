@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1.1 Audit Remediation - Phase 18: UI/UX (complete)
+**Current focus:** v1.1 Audit Remediation - Phase 18: UI/UX (gap closure in progress)
 
 ## Current Position
 
 Phase: 18 of 18 (UI/UX Consistency)
-Plan: 4 of 4 complete
-Status: Phase complete
-Last activity: 2026-01-29 - Completed 18-04-PLAN.md (Empty State Migration)
+Plan: 12 of 12+ (gap closure plans)
+Status: Gap closure in progress
+Last activity: 2026-01-29 - Completed 18-12-PLAN.md (Error Token Migration: Schedule, Embed, PaymentForm)
 
 Progress: [████████████████████] 100%
 
@@ -143,6 +143,9 @@ From v1.1 Phase 18:
 - Use "No X yet" for initial empty state, "No X found" for search/filter results (18-04)
 - Only show action button for initial empty state, not search results (18-04)
 - EmptyState icon size prop accepts string | number for Lucide icon compatibility (18-04)
+- Use text-rose-dark for error icon and text colors (better contrast than text-rose) (18-12)
+- Use hover:text-rose for interactive error elements (lighter on hover) (18-12)
+- Error pattern: bg-rose/10 border-rose/20 text-rose-dark for all error states (18-12)
 
 ### Pending Todos
 
@@ -155,9 +158,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-04-PLAN.md (Empty State Migration) - Phase 18 complete
+Stopped at: Completed 18-12-PLAN.md (Error Token Migration: Schedule, Embed, PaymentForm)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 complete, v1.1 Audit Remediation COMPLETE)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 12 complete)*
