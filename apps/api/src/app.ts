@@ -33,6 +33,8 @@ import { ownerNotificationsRouter } from './routes/ownerNotifications.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { authenticate } from './middleware/auth.js';
+import { ownerPortalOnly } from './middleware/staffAuth.js';
 
 /**
  * Create Express application
@@ -79,33 +81,45 @@ export function createApp() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // API Routes
-  app.use('/api/v1/auth', authRouter);
-  app.use('/api/v1/salon', salonRouter);
-  app.use('/api/v1/users', usersRouter);
-  app.use('/api/v1/staff', staffRouter);
-  app.use('/api/v1/public', publicRouter);
-  app.use('/api/v1/clients', clientsRouter);
-  app.use('/api/v1/services', servicesRouter);
-  app.use('/api/v1/appointments', appointmentsRouter);
-  app.use('/api/v1/gift-cards', giftCardsRouter);
-  app.use('/api/v1/packages', packagesRouter);
-  app.use('/api/v1/dashboard', dashboardRouter);
-  app.use('/api/v1/reports', reportsRouter);
-  app.use('/api/v1/webhooks', webhooksRouter);
-  app.use('/api/v1/integrations', integrationsRouter);
-  app.use('/api/v1/staff-portal', staffPortalRouter);
-  app.use('/api/v1/client-auth', clientAuthRouter);
-  app.use('/api/v1/client-portal', clientPortalRouter);
-  app.use('/api/v1/demo', demoRouter);
-  app.use('/api/v1/uploads', uploadsRouter);
-  app.use('/api/v1/locations', locationsRouter);
-  app.use('/api/v1/onboarding', onboardingRouter);
-  app.use('/api/v1/gdpr', gdprRouter);
-  app.use('/api/v1/account', accountRouter);
-  app.use('/api/v1/team', teamRouter);
-  app.use('/api/v1/owner-notifications', ownerNotificationsRouter);
-  app.use('/api/v1/notifications', notificationsRouter);
+  // ============================================
+  // OWNER PORTAL ROUTES
+  // Protected by ownerPortalOnly - staff tokens rejected
+  // ============================================
+  // Note: Many routers have internal authenticate middleware, but ownerPortalOnly
+  // must run AFTER authentication. Adding authenticate here ensures req.user is
+  // set before ownerPortalOnly checks portalType. Routers with internal auth
+  // will see req.user already set (authenticate is idempotent in effect).
+  app.use('/api/v1/auth', authRouter);  // Owner auth - no ownerPortalOnly needed (creates tokens)
+  app.use('/api/v1/salon', authenticate, ownerPortalOnly, salonRouter);
+  app.use('/api/v1/users', authenticate, ownerPortalOnly, usersRouter);
+  app.use('/api/v1/staff', authenticate, ownerPortalOnly, staffRouter);
+  app.use('/api/v1/clients', authenticate, ownerPortalOnly, clientsRouter);
+  app.use('/api/v1/services', authenticate, ownerPortalOnly, servicesRouter);
+  app.use('/api/v1/appointments', authenticate, ownerPortalOnly, appointmentsRouter);
+  app.use('/api/v1/gift-cards', authenticate, ownerPortalOnly, giftCardsRouter);
+  app.use('/api/v1/packages', authenticate, ownerPortalOnly, packagesRouter);
+  app.use('/api/v1/dashboard', authenticate, ownerPortalOnly, dashboardRouter);
+  app.use('/api/v1/reports', authenticate, ownerPortalOnly, reportsRouter);
+  app.use('/api/v1/integrations', authenticate, ownerPortalOnly, integrationsRouter);
+  app.use('/api/v1/uploads', authenticate, ownerPortalOnly, uploadsRouter);
+  app.use('/api/v1/locations', authenticate, ownerPortalOnly, locationsRouter);
+  app.use('/api/v1/onboarding', authenticate, ownerPortalOnly, onboardingRouter);
+  app.use('/api/v1/gdpr', authenticate, ownerPortalOnly, gdprRouter);
+  app.use('/api/v1/account', authenticate, ownerPortalOnly, accountRouter);
+  app.use('/api/v1/team', authenticate, ownerPortalOnly, teamRouter);
+  app.use('/api/v1/owner-notifications', authenticate, ownerPortalOnly, ownerNotificationsRouter);
+  app.use('/api/v1/notifications', authenticate, ownerPortalOnly, notificationsRouter);
+
+  // ============================================
+  // PUBLIC & PORTAL ROUTES
+  // No ownerPortalOnly - these routes serve different portals/purposes
+  // ============================================
+  app.use('/api/v1/public', publicRouter);  // Public booking widget
+  app.use('/api/v1/webhooks', webhooksRouter);  // Stripe webhooks (no auth)
+  app.use('/api/v1/staff-portal', staffPortalRouter);  // Staff portal (uses staffPortalOnly internally)
+  app.use('/api/v1/client-auth', clientAuthRouter);  // Client authentication
+  app.use('/api/v1/client-portal', clientPortalRouter);  // Client portal
+  app.use('/api/v1/demo', demoRouter);  // Demo endpoints
 
   // ============================================
   // ERROR HANDLING
