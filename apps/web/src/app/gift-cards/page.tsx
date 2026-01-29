@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Bell,
   Menu,
   Gift,
   CreditCard,
@@ -12,17 +11,16 @@ import {
   Send,
   MoreHorizontal,
   Copy,
-  X,
   Check,
   Mail,
   Printer,
   Eye,
-  Ban,
   Search,
   Loader2,
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
+import { Modal } from '@peacase/ui';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -645,297 +643,281 @@ function GiftCardsContent() {
       </main>
 
       {/* Create Gift Card Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Create Gift Card</h2>
-              <button onClick={() => { setShowModal(false); resetForm(); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+      <Modal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); resetForm(); }}
+        title="Create Gift Card"
+        size="lg"
+        className="max-h-[90vh] overflow-y-auto dark:bg-sidebar"
+      >
+        <div className="space-y-6">
+          {/* Amount Selection */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Gift Card Amount</label>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {presetAmounts.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => { setFormData({ ...formData, amount, customAmount: '' }); }}
+                  className={`px-4 py-3 rounded-xl font-medium transition-all ${
+                    formData.amount === amount && !formData.customAmount
+                      ? 'bg-sage text-white'
+                      : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white hover:bg-charcoal/10 dark:hover:bg-white/10'
+                  }`}
+                >
+                  {currencySymbol}{amount}
+                </button>
+              ))}
+            </div>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">{currencySymbol}</span>
+              <input
+                type="number"
+                placeholder="Custom amount"
+                value={formData.customAmount}
+                onChange={(e) => setFormData({ ...formData, customAmount: e.target.value })}
+                className="w-full pl-8 pr-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+              />
+            </div>
+          </div>
+
+          {/* Purchaser Info */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Purchaser Email</label>
+            <input
+              type="email"
+              placeholder="Enter email"
+              value={formData.purchaserEmail}
+              onChange={(e) => setFormData({ ...formData, purchaserEmail: e.target.value })}
+              className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+            />
+          </div>
+
+          {/* Delivery Method */}
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Delivery Method</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setFormData({ ...formData, deliveryMethod: 'email' })}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                  formData.deliveryMethod === 'email'
+                    ? 'border-sage bg-sage/5'
+                    : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
+                }`}
+              >
+                <Mail className={`w-6 h-6 ${formData.deliveryMethod === 'email' ? 'text-sage' : 'text-charcoal/40 dark:text-white/40'}`} />
+                <span className="font-medium text-charcoal dark:text-white">Email</span>
+                <span className="text-xs text-charcoal/60 dark:text-white/60">Send digitally</span>
+              </button>
+              <button
+                onClick={() => setFormData({ ...formData, deliveryMethod: 'print' })}
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
+                  formData.deliveryMethod === 'print'
+                    ? 'border-sage bg-sage/5'
+                    : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
+                }`}
+              >
+                <Printer className={`w-6 h-6 ${formData.deliveryMethod === 'print' ? 'text-sage' : 'text-charcoal/40 dark:text-white/40'}`} />
+                <span className="font-medium text-charcoal dark:text-white">Print</span>
+                <span className="text-xs text-charcoal/60 dark:text-white/60">Physical card</span>
               </button>
             </div>
+          </div>
 
-            <div className="p-6 space-y-6">
-              {/* Amount Selection */}
+          {/* Recipient Info (for email) */}
+          {formData.deliveryMethod === 'email' && (
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Gift Card Amount</label>
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  {presetAmounts.map((amount) => (
-                    <button
-                      key={amount}
-                      onClick={() => { setFormData({ ...formData, amount, customAmount: '' }); }}
-                      className={`px-4 py-3 rounded-xl font-medium transition-all ${
-                        formData.amount === amount && !formData.customAmount
-                          ? 'bg-sage text-white'
-                          : 'bg-charcoal/5 dark:bg-white/5 text-charcoal dark:text-white hover:bg-charcoal/10 dark:hover:bg-white/10'
-                      }`}
-                    >
-                      {currencySymbol}{amount}
-                    </button>
-                  ))}
-                </div>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">{currencySymbol}</span>
-                  <input
-                    type="number"
-                    placeholder="Custom amount"
-                    value={formData.customAmount}
-                    onChange={(e) => setFormData({ ...formData, customAmount: e.target.value })}
-                    className="w-full pl-8 pr-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                  />
-                </div>
-              </div>
-
-              {/* Purchaser Info */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Purchaser Email</label>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Recipient Name</label>
                 <input
-                  type="email"
-                  placeholder="Enter email"
-                  value={formData.purchaserEmail}
-                  onChange={(e) => setFormData({ ...formData, purchaserEmail: e.target.value })}
+                  type="text"
+                  placeholder="Who is this gift for?"
+                  value={formData.recipientName}
+                  onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
                   className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
                 />
               </div>
-
-              {/* Delivery Method */}
               <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Delivery Method</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setFormData({ ...formData, deliveryMethod: 'email' })}
-                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                      formData.deliveryMethod === 'email'
-                        ? 'border-sage bg-sage/5'
-                        : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
-                    }`}
-                  >
-                    <Mail className={`w-6 h-6 ${formData.deliveryMethod === 'email' ? 'text-sage' : 'text-charcoal/40 dark:text-white/40'}`} />
-                    <span className="font-medium text-charcoal dark:text-white">Email</span>
-                    <span className="text-xs text-charcoal/60 dark:text-white/60">Send digitally</span>
-                  </button>
-                  <button
-                    onClick={() => setFormData({ ...formData, deliveryMethod: 'print' })}
-                    className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${
-                      formData.deliveryMethod === 'print'
-                        ? 'border-sage bg-sage/5'
-                        : 'border-charcoal/10 dark:border-white/10 hover:border-charcoal/20 dark:hover:border-white/20'
-                    }`}
-                  >
-                    <Printer className={`w-6 h-6 ${formData.deliveryMethod === 'print' ? 'text-sage' : 'text-charcoal/40 dark:text-white/40'}`} />
-                    <span className="font-medium text-charcoal dark:text-white">Print</span>
-                    <span className="text-xs text-charcoal/60 dark:text-white/60">Physical card</span>
-                  </button>
-                </div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Recipient Email</label>
+                <input
+                  type="email"
+                  placeholder="Email to send gift card to"
+                  value={formData.recipientEmail}
+                  onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
+                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                />
               </div>
-
-              {/* Recipient Info (for email) */}
-              {formData.deliveryMethod === 'email' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Recipient Name</label>
-                    <input
-                      type="text"
-                      placeholder="Who is this gift for?"
-                      value={formData.recipientName}
-                      onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                      className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Recipient Email</label>
-                    <input
-                      type="email"
-                      placeholder="Email to send gift card to"
-                      value={formData.recipientEmail}
-                      onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
-                      className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Personal Message (optional)</label>
-                    <textarea
-                      placeholder="Add a personal message..."
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage resize-none bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                    />
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Personal Message (optional)</label>
+                <textarea
+                  placeholder="Add a personal message..."
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage resize-none bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+                />
+              </div>
             </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
-              <button
-                onClick={() => { setShowModal(false); resetForm(); }}
-                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateGiftCard}
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Gift className="w-4 h-4" />
-                )}
-                Create {currencySymbol}{formData.customAmount || formData.amount} Gift Card
-              </button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+
+        <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end mt-6">
+          <button
+            onClick={() => { setShowModal(false); resetForm(); }}
+            className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreateGiftCard}
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Gift className="w-4 h-4" />
+            )}
+            Create {currencySymbol}{formData.customAmount || formData.amount} Gift Card
+          </button>
+        </div>
+      </Modal>
 
       {/* Check Balance Modal */}
-      {showBalanceModal && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Check Gift Card Balance</h2>
-              <button onClick={() => { setShowBalanceModal(false); resetBalanceModal(); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Gift Card Code</label>
-                <input
-                  type="text"
-                  placeholder="Enter gift card code"
-                  value={balanceCode}
-                  onChange={(e) => setBalanceCode(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage font-mono bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                />
-              </div>
-
-              {balanceError && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
-                  {balanceError}
-                </div>
-              )}
-
-              {balanceResult && (
-                <div className="p-4 bg-sage/10 border border-sage/20 rounded-xl">
-                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-1">Current Balance</p>
-                  <p className="text-3xl font-bold text-sage">{formatPrice(balanceResult.balance)}</p>
-                  {balanceResult.expiresAt && (
-                    <p className="text-sm text-charcoal/60 dark:text-white/60 mt-2">
-                      Expires: {new Date(balanceResult.expiresAt).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end">
-              <button
-                onClick={() => { setShowBalanceModal(false); resetBalanceModal(); }}
-                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
-              >
-                Close
-              </button>
-              <button
-                onClick={handleCheckBalance}
-                disabled={checkingBalance}
-                className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
-              >
-                {checkingBalance ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Search className="w-4 h-4" />
-                )}
-                Check Balance
-              </button>
-            </div>
+      <Modal
+        isOpen={showBalanceModal}
+        onClose={() => { setShowBalanceModal(false); resetBalanceModal(); }}
+        title="Check Gift Card Balance"
+        size="md"
+        className="dark:bg-sidebar"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Gift Card Code</label>
+            <input
+              type="text"
+              placeholder="Enter gift card code"
+              value={balanceCode}
+              onChange={(e) => setBalanceCode(e.target.value.toUpperCase())}
+              className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage font-mono bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+            />
           </div>
+
+          {balanceError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+              {balanceError}
+            </div>
+          )}
+
+          {balanceResult && (
+            <div className="p-4 bg-sage/10 border border-sage/20 rounded-xl">
+              <p className="text-sm text-charcoal/60 dark:text-white/60 mb-1">Current Balance</p>
+              <p className="text-3xl font-bold text-sage">{formatPrice(balanceResult.balance)}</p>
+              {balanceResult.expiresAt && (
+                <p className="text-sm text-charcoal/60 dark:text-white/60 mt-2">
+                  Expires: {new Date(balanceResult.expiresAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          )}
         </div>
-      )}
+
+        <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end mt-6">
+          <button
+            onClick={() => { setShowBalanceModal(false); resetBalanceModal(); }}
+            className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
+          >
+            Close
+          </button>
+          <button
+            onClick={handleCheckBalance}
+            disabled={checkingBalance}
+            className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
+          >
+            {checkingBalance ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4" />
+            )}
+            Check Balance
+          </button>
+        </div>
+      </Modal>
 
       {/* Redeem Gift Card Modal */}
-      {showRedeemModal && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-md shadow-2xl">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Redeem Gift Card</h2>
-              <button onClick={() => { setShowRedeemModal(false); resetRedeemModal(); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
+      <Modal
+        isOpen={showRedeemModal}
+        onClose={() => { setShowRedeemModal(false); resetRedeemModal(); }}
+        title="Redeem Gift Card"
+        size="md"
+        className="dark:bg-sidebar"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Gift Card Code</label>
+            <input
+              type="text"
+              placeholder="Enter gift card code"
+              value={redeemCode}
+              onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
+              className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage font-mono bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+            />
+          </div>
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Gift Card Code</label>
-                <input
-                  type="text"
-                  placeholder="Enter gift card code"
-                  value={redeemCode}
-                  onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
-                  className="w-full px-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage font-mono bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Amount to Redeem</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">{currencySymbol}</span>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={redeemAmount}
-                    onChange={(e) => setRedeemAmount(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
-                  />
-                </div>
-              </div>
-
-              {redeemError && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
-                  {redeemError}
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end">
-              <button
-                onClick={() => { setShowRedeemModal(false); resetRedeemModal(); }}
-                className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRedeemGiftCard}
-                disabled={isRedeeming}
-                className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
-              >
-                {isRedeeming ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CreditCard className="w-4 h-4" />
-                )}
-                Redeem
-              </button>
+          <div>
+            <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Amount to Redeem</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">{currencySymbol}</span>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={redeemAmount}
+                onChange={(e) => setRedeemAmount(e.target.value)}
+                className="w-full pl-8 pr-4 py-3 border border-charcoal/20 dark:border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/30 focus:border-sage bg-white dark:bg-charcoal text-charcoal dark:text-white placeholder:text-charcoal/40 dark:placeholder:text-white/40"
+              />
             </div>
           </div>
+
+          {redeemError && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+              {redeemError}
+            </div>
+          )}
         </div>
-      )}
+
+        <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end mt-6">
+          <button
+            onClick={() => { setShowRedeemModal(false); resetRedeemModal(); }}
+            className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleRedeemGiftCard}
+            disabled={isRedeeming}
+            className="px-6 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark flex items-center gap-2 disabled:opacity-50"
+          >
+            {isRedeeming ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <CreditCard className="w-4 h-4" />
+            )}
+            Redeem
+          </button>
+        </div>
+      </Modal>
 
       {/* View Details Modal */}
-      {showDetailsModal && selectedCard && (
-        <div className="fixed inset-0 bg-charcoal/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between sticky top-0 bg-white dark:bg-sidebar">
-              <h2 className="text-xl font-semibold text-charcoal dark:text-white">Gift Card Details</h2>
-              <button onClick={() => { setShowDetailsModal(false); setSelectedCard(null); }} className="p-2 hover:bg-charcoal/5 dark:hover:bg-white/5 rounded-lg">
-                <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={showDetailsModal && !!selectedCard}
+        onClose={() => { setShowDetailsModal(false); setSelectedCard(null); }}
+        title="Gift Card Details"
+        size="lg"
+        className="max-h-[90vh] overflow-y-auto dark:bg-sidebar"
+      >
+        {selectedCard && (
+          <>
+            <div className="space-y-6">
               {/* Card Preview */}
               <div className="bg-gradient-to-br from-sage/30 to-lavender/30 rounded-2xl p-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-white/50 dark:bg-white/30 flex items-center justify-center mx-auto mb-4">
@@ -1005,7 +987,7 @@ function GiftCardsContent() {
               )}
             </div>
 
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end sticky bottom-0 bg-white dark:bg-sidebar">
+            <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3 justify-end mt-6">
               <button
                 onClick={() => { setShowDetailsModal(false); setSelectedCard(null); }}
                 className="px-6 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white font-medium"
@@ -1026,9 +1008,9 @@ function GiftCardsContent() {
                 </button>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
 
       {/* Click outside to close action menu */}
       {actionMenu && (
