@@ -37,10 +37,10 @@ Requirements for audit remediation. Each maps to roadmap phases.
 
 ### Code Quality
 
-- [ ] **CODE-01**: All filter objects in routes use explicit Prisma types (no `any`)
-- [ ] **CODE-02**: API tsconfig.json has noImplicitAny: true
-- [ ] **CODE-03**: Common salonId filter patterns extracted to shared utility
-- [ ] **CODE-04**: Console.log/warn/error replaced with structured logger
+- [x] **CODE-01**: All filter objects in routes use explicit Prisma types (no `any`)
+- [x] **CODE-02**: API tsconfig.json has noImplicitAny: true
+- [x] **CODE-03**: Common salonId filter patterns extracted to shared utility
+- [x] **CODE-04**: Console.log/warn/error replaced with structured logger
 
 ### UI/UX
 
@@ -94,10 +94,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | A11Y-02 | Phase 16: Accessibility Compliance | Complete |
 | A11Y-03 | Phase 16: Accessibility Compliance | Complete |
 | A11Y-04 | Phase 16: Accessibility Compliance | Complete |
-| CODE-01 | Phase 17: Code Quality | Pending |
-| CODE-02 | Phase 17: Code Quality | Pending |
-| CODE-03 | Phase 17: Code Quality | Pending |
-| CODE-04 | Phase 17: Code Quality | Pending |
+| CODE-01 | Phase 17: Code Quality | Complete |
+| CODE-02 | Phase 17: Code Quality | Complete |
+| CODE-03 | Phase 17: Code Quality | Complete |
+| CODE-04 | Phase 17: Code Quality | Complete |
 | UI-01 | Phase 18: UI/UX Consistency | Pending |
 | UI-02 | Phase 18: UI/UX Consistency | Pending |
 | UI-03 | Phase 18: UI/UX Consistency | Pending |
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 16 requirements complete)*
+*Last updated: 2026-01-29 (Phase 17 requirements complete)*
