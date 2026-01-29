@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 22 - Time Tracking
+**Current focus:** Phase 23 - Earnings & Permissions
 
 ## Current Position
 
 Phase: 22 of 24 (Time Tracking)
-Plan: 2 of 3 complete (22-02)
-Status: In progress
-Last activity: 2026-01-29 - Completed 22-02-PLAN.md (Time Clock UI & History View)
+Plan: 2 of 2 complete (22-01, 22-02)
+Status: Phase complete
+Last activity: 2026-01-29 - Completed Phase 22 (Time Tracking)
 
 Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███████████░
 
@@ -77,7 +77,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Owner approval UI (21-02 complete)
 - Time-off approval notifications (21-03 complete)
 
-**Phase 22:** Time Tracking (TIME-01 to TIME-03) - IN PROGRESS
+**Phase 22:** Time Tracking (TIME-01 to TIME-03) - COMPLETE
 - TimeEntry model with timezone capture (22-01 complete)
 - Time clock API endpoints (22-01 complete)
 - Clock in/out UI (22-02 complete)
@@ -112,9 +112,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 22-02-PLAN.md (Time Clock UI & History View)
+Stopped at: Completed Phase 22 (Time Tracking)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 22 in progress: 22-01, 22-02 complete)*
+*Last updated: 2026-01-29 (Phase 22 complete: 22-01, 22-02)*

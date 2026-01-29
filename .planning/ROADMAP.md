@@ -33,7 +33,7 @@ Production hardening across security, performance, SEO, accessibility, code qual
 - [x] **Phase 19: Staff Authentication Foundation** - Secure staff login with portal-specific tokens
 - [x] **Phase 20: Staff Portal Core** - Schedule viewing and profile management
 - [x] **Phase 21: Availability & Time Off** - Self-service availability and time-off requests
-- [ ] **Phase 22: Time Tracking** - Clock in/out with history
+- [x] **Phase 22: Time Tracking** - Clock in/out with history
 - [ ] **Phase 23: Earnings & Permissions** - Earnings visibility and client info controls
 - [ ] **Phase 24: Technical Debt** - Cleanup deferred issues
 
@@ -125,8 +125,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 22-01-PLAN.md — TimeEntry model and time clock API endpoints
-- [ ] 22-02-PLAN.md — Time clock UI with clock button and history
+- [x] 22-01-PLAN.md — TimeEntry model and time clock API endpoints
+- [x] 22-02-PLAN.md — Time clock UI with clock button and history
 
 ### Phase 23: Earnings & Permissions
 
@@ -179,7 +179,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 | 19. Staff Authentication Foundation | 5/5 | Complete | 2026-01-29 |
 | 20. Staff Portal Core | 3/3 | Complete | 2026-01-29 |
 | 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
-| 22. Time Tracking | 0/2 | Not started | - |
+| 22. Time Tracking | 2/2 | Complete | 2026-01-29 |
 | 23. Earnings & Permissions | 0/TBD | Not started | - |
 | 24. Technical Debt | 0/TBD | Not started | - |
 

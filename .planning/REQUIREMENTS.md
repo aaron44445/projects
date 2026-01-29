@@ -30,9 +30,9 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Time Tracking
 
-- [ ] **TIME-01**: Staff can clock in when starting shift
-- [ ] **TIME-02**: Staff can clock out when ending shift
-- [ ] **TIME-03**: Staff can view their clock in/out history
+- [x] **TIME-01**: Staff can clock in when starting shift
+- [x] **TIME-02**: Staff can clock out when ending shift
+- [x] **TIME-03**: Staff can view their clock in/out history
 
 ### Earnings
 
@@ -98,9 +98,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AVAIL-01 | Phase 21 | Complete |
 | AVAIL-02 | Phase 21 | Complete |
 | AVAIL-03 | Phase 21 | Complete |
-| TIME-01 | Phase 22 | Pending |
-| TIME-02 | Phase 22 | Pending |
-| TIME-03 | Phase 22 | Pending |
+| TIME-01 | Phase 22 | Complete |
+| TIME-02 | Phase 22 | Complete |
+| TIME-03 | Phase 22 | Complete |
 | EARN-01 | Phase 23 | Pending |
 | EARN-02 | Phase 23 | Pending |
 | EARN-03 | Phase 23 | Pending |
