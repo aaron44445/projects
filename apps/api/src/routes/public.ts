@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '@peacase/database';
+import { Prisma, prisma } from '@peacase/database';
 import { sendEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { sendSms, appointmentConfirmationSms } from '../services/sms.js';
 import { sendNotification } from '../services/notifications.js';
@@ -8,6 +8,7 @@ import { createBookingWithLock, BookingConflictError } from '../services/booking
 import { calculateAvailableSlots, findAlternativeSlots } from '../services/availability.js';
 import { createDepositPaymentIntent } from '../services/payments.js';
 import { validateStaffBelongsToSalon, validateLocationBelongsToSalon } from '../utils/validation.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
 
@@ -247,7 +248,7 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Build base query for staff who can perform the service (if specified)
-  const baseWhere: any = {
+  const baseWhere: Prisma.UserWhereInput = {
     salonId: salon.id,
     isActive: true,
     onlineBookingEnabled: true,
@@ -263,7 +264,15 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
     };
   }
 
-  let staff: any[] = [];
+  type StaffWithServices = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+    staffServices: { serviceId: string }[];
+    staffLocations?: { isPrimary: boolean }[];
+  };
+  let staff: StaffWithServices[] = [];
 
   if (locationId) {
     // Get staff explicitly assigned to this location
@@ -339,7 +348,7 @@ router.get('/:slug/staff', asyncHandler(async (req: Request, res: Response) => {
       firstName: s.firstName,
       lastName: s.lastName,
       avatarUrl: s.avatarUrl,
-      serviceIds: s.staffServices.map((ss: any) => ss.serviceId),
+      serviceIds: s.staffServices.map((ss) => ss.serviceId),
       isPrimaryForLocation: locationId ? s.staffLocations?.[0]?.isPrimary : undefined,
     })),
   });
@@ -670,7 +679,7 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
     const end = new Date(start.getTime() + service.durationMinutes * 60000);
 
     // Build query for available staff (must be active, online-bookable, and can perform service)
-    const staffQuery: any = {
+    const staffQuery: Prisma.UserWhereInput = {
       salonId: salon.id,
       isActive: true,
       onlineBookingEnabled: true,
@@ -888,7 +897,7 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
   // Send booking confirmation email directly (bypasses NotificationLog which may not exist)
   if (client.email) {
     try {
-      console.log('[BOOKING] Sending confirmation email to:', client.email);
+      logger.info({ salonId: salon.id, clientEmail: client.email }, 'Sending booking confirmation email');
       await sendEmail({
         to: client.email,
         subject: `Appointment Confirmed - ${salon.name}`,
@@ -905,9 +914,9 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
           salonEmail: salon.email,
         }),
       });
-      console.log('[BOOKING] Confirmation email sent successfully');
+      logger.info({ salonId: salon.id, clientEmail: client.email }, 'Booking confirmation email sent');
     } catch (e) {
-      console.error('[BOOKING] Failed to send confirmation email:', e);
+      logger.error({ err: e, salonId: salon.id, clientEmail: client.email }, 'Failed to send booking confirmation email');
     }
   }
 
@@ -924,7 +933,7 @@ router.post('/:slug/book', asyncHandler(async (req: Request, res: Response) => {
         }),
       });
     } catch (e) {
-      console.error('[BOOKING] Failed to send confirmation SMS:', e);
+      logger.error({ err: e, salonId: salon.id, clientPhone: client.phone }, 'Failed to send booking confirmation SMS');
     }
   }
 
@@ -1056,8 +1065,8 @@ router.post('/:slug/create-payment-intent', asyncHandler(async (req: Request, re
         depositPercentage: salon.depositPercentage || 20,
       },
     });
-  } catch (error: any) {
-    console.error('[Payment] Error creating payment intent:', error);
+  } catch (error) {
+    logger.error({ err: error, salonId: salon.id }, 'Error creating payment intent');
     res.status(500).json({
       success: false,
       error: { code: 'PAYMENT_ERROR', message: 'Failed to initialize payment' },

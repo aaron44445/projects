@@ -15,6 +15,7 @@ import { prisma } from '@peacase/database';
 import { randomBytes } from 'crypto';
 import { env } from '../lib/env.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ function generateGiftCardCode(): string {
 router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(async (req: Request, res: Response) => {
   // Validate Twilio signature for security
   if (!env.TWILIO_AUTH_TOKEN) {
-    console.error('[SMS Webhook] TWILIO_AUTH_TOKEN not configured');
+    logger.error('TWILIO_AUTH_TOKEN not configured for SMS webhook');
     return res.status(500).json({ error: 'Webhook not configured' });
   }
 
@@ -46,12 +47,12 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
     );
 
     if (!isValid) {
-      console.warn('[SMS Webhook] Invalid Twilio signature');
+      logger.warn('Invalid Twilio signature on SMS webhook');
       return res.status(403).json({ error: 'Invalid signature' });
     }
   } else if (env.NODE_ENV === 'production') {
     // In production, require signature
-    console.warn('[SMS Webhook] Missing Twilio signature');
+    logger.warn('Missing Twilio signature on SMS webhook');
     return res.status(403).json({ error: 'Missing signature' });
   }
 
@@ -62,7 +63,7 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
   const { MessageSid, MessageStatus, ErrorCode, ErrorMessage } = req.body;
 
   if (!MessageSid || !MessageStatus) {
-    console.warn('[SMS Webhook] Missing MessageSid or MessageStatus');
+    logger.warn('Missing MessageSid or MessageStatus in SMS webhook');
     return;
   }
 
@@ -87,12 +88,12 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
     });
 
     if (!notification) {
-      console.warn(`[SMS Webhook] No notification found for MessageSid ${MessageSid}`);
+      logger.warn({ messageSid: MessageSid }, 'No notification found for MessageSid in SMS webhook');
       return;
     }
 
     // Log the update with salonId context for audit trail
-    console.log(`[SMS Webhook] Updating notification ${notification.id} for salon ${notification.salonId} to status: ${smsStatus}`);
+    logger.info({ notificationId: notification.id, salonId: notification.salonId, smsStatus }, 'Updating SMS notification status');
 
     // Update NotificationLog entry by ID (more precise than MessageSid)
     await prisma.notificationLog.update({
@@ -119,14 +120,14 @@ router.post('/sms-status', express.urlencoded({ extended: true }), asyncHandler(
         });
 
         if (notification) {
-          console.log(`[SMS Webhook] Marking client ${notification.clientId} phone as invalid`);
+          logger.info({ clientId: notification.clientId }, 'Marking client phone as invalid');
           // Note: We don't have a phoneBounced field yet - just log for now
           // Could add this field in a future update if needed
         }
       }
     }
   } catch (error) {
-    console.error('[SMS Webhook] Error processing status callback:', error);
+    logger.error({ err: error, messageSid: MessageSid }, 'Error processing SMS webhook status callback');
     // Don't throw - we already sent 200 OK
   }
 }));
@@ -141,7 +142,7 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
   let event;
   try {
     if (!env.STRIPE_WEBHOOK_SECRET) {
-      console.error('STRIPE_WEBHOOK_SECRET is not configured');
+      logger.error('STRIPE_WEBHOOK_SECRET is not configured');
       return res.status(500).json({ error: 'Webhook not configured' });
     }
     event = constructWebhookEvent(
@@ -150,7 +151,7 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
       env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    logger.error({ err }, 'Stripe webhook signature verification failed');
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
@@ -180,14 +181,14 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
           });
 
           if (!salon) {
-            console.error(`[GiftCard] Invalid salonId in metadata: ${metadata.salonId}`);
+            logger.error({ salonId: metadata.salonId }, 'Invalid salonId in gift card metadata');
             break;
           }
 
           const code = generateGiftCardCode();
           const amount = session.amount_total / 100;
 
-          console.log(`[GiftCard] Creating gift card for salon ${salon.id}`);
+          logger.info({ salonId: salon.id, amount }, 'Creating gift card');
 
           await prisma.giftCard.create({
             data: {
@@ -311,12 +312,12 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
               },
             });
 
-            console.log(`[Webhook] Deposit authorized for appointment ${appointment.id}`);
+            logger.info({ appointmentId: appointment.id }, 'Deposit authorized for appointment');
           } else {
             // Appointment not created yet - this is normal for booking flow
             // The booking endpoint will create the appointment with depositStatus: 'authorized'
             // after confirming the payment. Log for debugging but no action needed.
-            console.log(`[Webhook] Payment intent ${paymentIntent.id} succeeded, awaiting appointment creation`);
+            logger.info({ paymentIntentId: paymentIntent.id }, 'Payment intent succeeded, awaiting appointment creation');
           }
         } else {
           // Existing behavior for other payments (subscriptions, full payments, etc.)
@@ -345,11 +346,11 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
                 depositStatus: 'failed',
               },
             });
-            console.log(`[Webhook] Deposit failed for appointment ${appointment.id}`);
+            logger.info({ appointmentId: appointment.id }, 'Deposit failed for appointment');
           } else {
             // No appointment yet - payment failed before booking completed
             // User will see decline message in UI and can retry
-            console.log(`[Webhook] Payment intent ${paymentIntent.id} failed, no appointment to update`);
+            logger.info({ paymentIntentId: paymentIntent.id }, 'Payment intent failed, no appointment to update');
           }
         } else {
           await prisma.payment.updateMany({
@@ -381,13 +382,13 @@ router.post('/stripe', asyncHandler(async (req: Request, res: Response) => {
             },
           });
 
-          console.log(`[Webhook] Refund processed for payment intent ${paymentIntentId}`);
+          logger.info({ paymentIntentId }, 'Refund processed for payment intent');
         }
         break;
       }
     }
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    logger.error({ err: error, eventType: event?.type }, 'Error processing Stripe webhook');
     // Still return 200 to acknowledge receipt
   }
 
