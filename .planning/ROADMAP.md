@@ -77,10 +77,11 @@ Plans:
   2. /robots.txt allows crawling of public pages and blocks /dashboard, /admin
   3. All public pages have canonical URLs in HTML head
   4. Landing page passes Google Rich Results Test for Organization schema
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: TBD
+- [ ] 15-01-PLAN.md - Sitemap and robots.txt (SEO-01, SEO-02)
+- [ ] 15-02-PLAN.md - Canonical URLs and Organization schema (SEO-03, SEO-04)
 
 ### Phase 16: Accessibility Compliance
 **Goal**: Application meets WCAG 2.1 AA standards for keyboard and screen reader users
@@ -132,7 +133,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 13. Security Hardening | v1.1 | 3/3 | Complete | 2026-01-28 |
 | 14. Performance Optimization | v1.1 | 4/4 | Complete | 2026-01-28 |
-| 15. SEO Fundamentals | v1.1 | 0/TBD | Not started | - |
+| 15. SEO Fundamentals | v1.1 | 0/2 | Not started | - |
 | 16. Accessibility Compliance | v1.1 | 0/TBD | Not started | - |
 | 17. Code Quality | v1.1 | 0/TBD | Not started | - |
 | 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
