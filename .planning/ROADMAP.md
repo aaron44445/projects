@@ -32,7 +32,7 @@ Production hardening across security, performance, SEO, accessibility, code qual
 
 - [x] **Phase 19: Staff Authentication Foundation** - Secure staff login with portal-specific tokens
 - [x] **Phase 20: Staff Portal Core** - Schedule viewing and profile management
-- [ ] **Phase 21: Availability & Time Off** - Self-service availability and time-off requests
+- [x] **Phase 21: Availability & Time Off** - Self-service availability and time-off requests
 - [ ] **Phase 22: Time Tracking** - Clock in/out with history
 - [ ] **Phase 23: Earnings & Permissions** - Earnings visibility and client info controls
 - [ ] **Phase 24: Technical Debt** - Cleanup deferred issues
@@ -103,10 +103,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Add requireTimeOffApproval salon setting and auto-approve logic
-- [ ] 21-02-PLAN.md — Owner approval UI for time-off requests in settings
-- [ ] 21-03-PLAN.md — Staff notifications on status change and UI polish
-- [ ] 21-04-PLAN.md — Audit availability editor and add Copy to weekdays shortcut
+- [x] 21-01-PLAN.md — Add requireTimeOffApproval salon setting and auto-approve logic
+- [x] 21-02-PLAN.md — Owner approval UI for time-off requests in settings
+- [x] 21-03-PLAN.md — Staff notifications on status change and UI polish
+- [x] 21-04-PLAN.md — Audit availability editor and add Copy to weekdays shortcut
 
 ### Phase 22: Time Tracking
 
@@ -177,7 +177,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 |-------|----------------|--------|-----------|
 | 19. Staff Authentication Foundation | 5/5 | Complete | 2026-01-29 |
 | 20. Staff Portal Core | 3/3 | Complete | 2026-01-29 |
-| 21. Availability & Time Off | 0/4 | Ready | - |
+| 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
 | 22. Time Tracking | 0/TBD | Not started | - |
 | 23. Earnings & Permissions | 0/TBD | Not started | - |
 | 24. Technical Debt | 0/TBD | Not started | - |

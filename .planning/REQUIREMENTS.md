@@ -24,9 +24,9 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Availability Management
 
-- [ ] **AVAIL-01**: Staff can set recurring weekly availability
-- [ ] **AVAIL-02**: Staff can submit time-off requests with date range and reason
-- [ ] **AVAIL-03**: Staff can view time-off request status (pending/approved/rejected)
+- [x] **AVAIL-01**: Staff can set recurring weekly availability
+- [x] **AVAIL-02**: Staff can submit time-off requests with date range and reason
+- [x] **AVAIL-03**: Staff can view time-off request status (pending/approved/rejected)
 
 ### Time Tracking
 
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCHED-02 | Phase 20 | Complete |
 | SCHED-03 | Phase 20 | Complete |
 | SCHED-04 | Phase 20 | Complete |
-| AVAIL-01 | Phase 21 | Pending |
-| AVAIL-02 | Phase 21 | Pending |
-| AVAIL-03 | Phase 21 | Pending |
+| AVAIL-01 | Phase 21 | Complete |
+| AVAIL-02 | Phase 21 | Complete |
+| AVAIL-03 | Phase 21 | Complete |
 | TIME-01 | Phase 22 | Pending |
 | TIME-02 | Phase 22 | Pending |
 | TIME-03 | Phase 22 | Pending |
@@ -120,4 +120,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-29 after Phase 20 completion*
+*Last updated: 2026-01-29 after Phase 21 completion*

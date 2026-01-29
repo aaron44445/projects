@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 21 - Availability & Time Off
+**Current focus:** Phase 22 - Time Tracking
 
 ## Current Position
 
