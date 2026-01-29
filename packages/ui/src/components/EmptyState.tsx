@@ -7,8 +7,9 @@ export interface EmptyStateProps {
   /**
    * Lucide icon component to display.
    * Should accept size and className props.
+   * Uses string | number for size to be compatible with Lucide icons.
    */
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: string | number; className?: string }>;
   /**
    * Title text displayed below the icon.
    * Should describe what's empty (e.g., "No appointments yet").
@@ -27,8 +28,8 @@ export interface EmptyStateProps {
     label: string;
     /** Click handler */
     onClick: () => void;
-    /** Optional icon component for the button */
-    icon?: React.ComponentType<{ size?: number }>;
+    /** Optional icon component for the button. Uses string | number for size to be compatible with Lucide icons. */
+    icon?: React.ComponentType<{ size?: string | number }>;
   };
 }
 
