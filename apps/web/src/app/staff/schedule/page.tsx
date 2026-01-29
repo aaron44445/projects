@@ -184,7 +184,7 @@ function ScheduleContent() {
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-center gap-2">
+            <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
               {error}
             </div>
@@ -405,7 +405,7 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
   const statusColors: Record<string, string> = {
     pending: 'bg-amber-100 text-amber-700',
     approved: 'bg-green-100 text-green-700',
-    rejected: 'bg-red-100 text-red-700',
+    rejected: 'bg-rose/10 text-rose-dark',
   };
 
   const StatusIcon = {
@@ -419,7 +419,7 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
       <div className="flex items-center gap-3">
         <StatusIcon className={`w-5 h-5 ${
           request.status === 'approved' ? 'text-green-600' :
-          request.status === 'rejected' ? 'text-red-600' : 'text-amber-600'
+          request.status === 'rejected' ? 'text-rose-dark' : 'text-amber-600'
         }`} />
         <div>
           <p className="text-sm font-medium text-charcoal">
@@ -436,7 +436,7 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
         {request.status === 'pending' && (
           <button
             onClick={() => onCancel(request.id)}
-            className="text-xs text-red-600 hover:text-red-700"
+            className="text-xs text-rose-dark hover:text-rose"
           >
             Cancel
           </button>
