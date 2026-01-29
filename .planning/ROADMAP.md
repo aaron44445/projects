@@ -30,7 +30,7 @@ Production hardening across security, performance, SEO, accessibility, code qual
 
 **Milestone Goal:** Enable staff self-service with authentication, schedule viewing, time tracking, earnings visibility, and availability management.
 
-- [ ] **Phase 19: Staff Authentication Foundation** - Secure staff login with portal-specific tokens
+- [x] **Phase 19: Staff Authentication Foundation** - Secure staff login with portal-specific tokens
 - [ ] **Phase 20: Staff Portal Core** - Schedule viewing and profile management
 - [ ] **Phase 21: Availability & Time Off** - Self-service availability and time-off requests
 - [ ] **Phase 22: Time Tracking** - Clock in/out with history
@@ -57,11 +57,11 @@ Production hardening across security, performance, SEO, accessibility, code qual
 **Plans**: 5 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — Portal-specific JWT tokens with 15-min access, rememberMe support
-- [ ] 19-02-PLAN.md — Remember me checkbox on staff login page
-- [ ] 19-03-PLAN.md — Resend invite endpoint and invite status tracking
-- [ ] 19-04-PLAN.md — Apply ownerPortalOnly middleware to owner routes
-- [ ] 19-05-PLAN.md — Staff portal logout from header
+- [x] 19-01-PLAN.md — Portal-specific JWT tokens with 15-min access, rememberMe support
+- [x] 19-02-PLAN.md — Remember me checkbox on staff login page
+- [x] 19-03-PLAN.md — Resend invite endpoint and invite status tracking
+- [x] 19-04-PLAN.md — Apply ownerPortalOnly middleware to owner routes
+- [x] 19-05-PLAN.md — Staff portal logout from header
 
 ### Phase 20: Staff Portal Core
 
@@ -172,7 +172,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 19. Staff Authentication Foundation | 0/5 | Ready | - |
+| 19. Staff Authentication Foundation | 5/5 | Complete | 2026-01-29 |
 | 20. Staff Portal Core | 0/TBD | Not started | - |
 | 21. Availability & Time Off | 0/TBD | Not started | - |
 | 22. Time Tracking | 0/TBD | Not started | - |

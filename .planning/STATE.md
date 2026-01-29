@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 19 of 24 (Staff Authentication Foundation)
-Plan: 01 complete (19-01, 19-02, 19-03, 19-05 done; 19-04 pending)
-Status: In progress
-Last activity: 2026-01-29 — Completed 19-01-PLAN.md (Portal-specific JWT tokens)
+Plan: 5 of 5 complete (Phase 19 complete)
+Status: Phase complete
+Last activity: 2026-01-29 — Completed 19-04-PLAN.md (Apply ownerPortalOnly middleware)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███░░░░░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████░░░░░░░░
 
 ## Milestone History
 
@@ -35,6 +35,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Database-backed notification queue (not external broker)
 - Portal-specific JWT tokens with portalType claim for staff/owner discrimination
 - 15-minute staff access tokens (vs 7-day owner tokens) for security
+- ownerPortalOnly middleware on all owner routes for cross-portal token rejection
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -96,9 +97,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 19-01-PLAN.md
+Stopped at: Completed 19-04-PLAN.md (Phase 19 complete)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (19-01 complete)*
+*Last updated: 2026-01-29 (19-04 complete, Phase 19 complete)*
