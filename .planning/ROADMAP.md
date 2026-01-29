@@ -142,10 +142,13 @@ Plans:
   2. Status colors (pending, confirmed, cancelled, etc.) come from single constants file
   3. Error highlighting uses design tokens (error/10, error/20) not hex colors
   4. Empty states across the app use shared EmptyState component
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 18-01: TBD
+- [ ] 18-01-PLAN.md - Status colors utility and EmptyState component (UI-02, UI-04 foundation)
+- [ ] 18-02-PLAN.md - BookingModal migration to packages/ui Modal (UI-01, UI-03)
+- [ ] 18-03-PLAN.md - Calendar page status colors and error states (UI-02, UI-03)
+- [ ] 18-04-PLAN.md - Empty states migration across key pages (UI-04)
 
 ## Progress
 
@@ -158,8 +161,8 @@ Plans:
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
 | 16. Accessibility Compliance | v1.1 | 10/10 | Complete | 2026-01-29 |
 | 17. Code Quality | v1.1 | 14/14 | Complete | 2026-01-29 |
-| 18. UI/UX Consistency | v1.1 | 0/TBD | Not started | - |
+| 18. UI/UX Consistency | v1.1 | 0/4 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 17 complete - 14 plans, all CODE requirements met)*
+*Last updated: 2026-01-29 (Phase 18 planned - 4 plans in 2 waves)*
