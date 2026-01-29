@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@peacase/database';
 import { env } from '../lib/env.js';
+import logger from '../lib/logger.js';
 
 export interface ClientJwtPayload {
   clientId: string;
@@ -80,7 +81,7 @@ export const authenticateClient = async (
 
     next();
   } catch (error) {
-    console.error('Client auth middleware error:', error);
+    logger.error({ err: error }, 'Client auth middleware error');
     return res.status(500).json({
       success: false,
       error: { code: 'AUTH_ERROR', message: 'Something went wrong. Please try again.' }

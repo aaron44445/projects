@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '@peacase/database';
+import logger from '../lib/logger.js';
 
 // Extend Request type to include file metadata
 interface FileOwnershipRequest extends Request {
@@ -60,15 +61,14 @@ export async function validateFileOwnership(
     // Verify salon ownership (defense in depth)
     if (file.salonId !== salonId) {
       // Log suspicious attempt - this could indicate an attack
-      console.warn('File ownership violation attempt', {
-        timestamp: new Date().toISOString(),
+      logger.warn({
         userId,
         userSalonId: salonId,
         requestedFileId: publicId,
         actualFileSalonId: file.salonId,
         ipAddress: req.ip || req.headers['x-forwarded-for'],
         userAgent: req.get('user-agent'),
-      });
+      }, 'File ownership violation attempt');
 
       // Return 404 to prevent enumeration (don't reveal file exists)
       return res.status(404).json({
@@ -84,7 +84,7 @@ export async function validateFileOwnership(
     req.fileMetadata = file;
     next();
   } catch (error) {
-    console.error('File ownership validation error:', error);
+    logger.error({ err: error, publicId }, 'File ownership validation error');
     return res.status(500).json({
       success: false,
       error: {

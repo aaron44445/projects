@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { captureException } from '../lib/sentry.js';
+import logger from '../lib/logger.js';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -27,7 +28,7 @@ export function errorHandler(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) {
-  console.error('Error:', err);
+  logger.error({ err, path: req.path, method: req.method }, 'Unhandled request error');
 
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal server error';
