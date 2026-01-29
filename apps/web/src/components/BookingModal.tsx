@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { X, Search, Calendar, Clock, User, Scissors, Loader2 } from 'lucide-react';
+import FocusTrap from 'focus-trap-react';
 import { useAppointments, useStaff, useClients, useServices, useLocationContext } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 
@@ -46,6 +47,10 @@ export function BookingModal({
   const { services } = useServices();
   const { selectedLocationId } = useLocationContext();
   const { formatPrice } = useSalonSettings();
+
+  // ARIA labels
+  const titleId = useId();
+  const descriptionId = useId();
 
   // Initialize form with prefilled data when modal opens
   useEffect(() => {
@@ -120,27 +125,41 @@ export function BookingModal({
 
   return (
     <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-        {/* Header */}
-        <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sage/10 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-sage" />
+      <FocusTrap
+        active={true}
+        focusTrapOptions={{
+          escapeDeactivates: false,
+          returnFocusOnDeactivate: true,
+        }}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={prefilledClientName ? descriptionId : undefined}
+          className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto"
+        >
+          {/* Header */}
+          <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sage/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-sage" />
+              </div>
+              <div>
+                <h2 id={titleId} className="text-xl font-bold text-charcoal dark:text-white">Book Appointment</h2>
+                {prefilledClientName && (
+                  <p id={descriptionId} className="text-sm text-charcoal/60 dark:text-white/60">for {prefilledClientName}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">Book Appointment</h2>
-              {prefilledClientName && (
-                <p className="text-sm text-charcoal/60 dark:text-white/60">for {prefilledClientName}</p>
-              )}
-            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
         {/* Form */}
         <div className="p-6 space-y-5">
@@ -309,7 +328,8 @@ export function BookingModal({
             {submitSuccess ? 'Booked!' : 'Book Appointment'}
           </button>
         </div>
-      </div>
+        </div>
+      </FocusTrap>
     </div>
   );
 }
