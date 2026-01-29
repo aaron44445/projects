@@ -36,7 +36,7 @@ router.post('/campaigns', authenticate, authorize('admin', 'manager'), asyncHand
 
   const campaign = await prisma.marketingCampaign.create({
     data: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       name,
       type,
       subjectLine,

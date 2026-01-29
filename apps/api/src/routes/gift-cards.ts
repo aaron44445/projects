@@ -45,7 +45,7 @@ router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) 
 
   const giftCard = await prisma.giftCard.create({
     data: {
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
       code,
       initialAmount: amount,
       balance: amount,
