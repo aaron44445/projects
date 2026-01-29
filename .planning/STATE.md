@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 20 - Staff Portal Core
+**Current focus:** Phase 21 - Availability & Time Off
 
 ## Current Position
 
-Phase: 20 of 24 (Staff Portal Core)
-Plan: 3 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-29 - Completed 20-03-PLAN.md (Dashboard UX Enhancements)
+Phase: 21 of 24 (Availability & Time Off)
+Plan: 1 of 4 complete (21-04)
+Status: In progress
+Last activity: 2026-01-29 - Completed 21-04-PLAN.md (Availability Editor Shortcut)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ██████░░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███████░░░░░
 
 ## Milestone History
 
@@ -66,9 +66,9 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Location-filtered appointments
 - Past appointment dimming, EmptyState, detail modal
 
-**Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03)
-- Weekly availability management
-- Time-off requests with approval
+**Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03) - IN PROGRESS
+- Weekly availability management (21-04 complete)
+- Time-off requests with approval (21-01, 21-02, 21-03 pending)
 
 **Phase 22:** Time Tracking (TIME-01 to TIME-03)
 - Clock in/out
@@ -103,9 +103,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 20-03-PLAN.md (Dashboard UX Enhancements) - Phase 20 complete
+Stopped at: Completed 21-04-PLAN.md (Availability Editor Shortcut)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 20 complete: 20-01, 20-02, 20-03)*
+*Last updated: 2026-01-29 (Phase 21 in progress: 21-04 complete)*
