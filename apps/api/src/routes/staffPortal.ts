@@ -33,6 +33,7 @@ const setPasswordSchema = z.object({
 const staffLoginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 const timeOffRequestSchema = z.object({
@@ -51,23 +52,38 @@ const profileUpdateSchema = z.object({
   certifications: z.string().optional(),
 });
 
-// Token expiration constants
-const ACCESS_TOKEN_EXPIRY = '7d';  // 7 days - long-lived for better UX
-const REFRESH_TOKEN_EXPIRY = '30d'; // 30 days
-const REFRESH_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+// Token expiration constants for staff portal
+const STAFF_ACCESS_TOKEN_EXPIRY = '15m';  // 15 minutes - short-lived for security
+const STAFF_REFRESH_TOKEN_EXPIRY = '30d'; // 30 days (with rememberMe)
+const STAFF_SESSION_TOKEN_EXPIRY = '24h'; // 24 hours (without rememberMe)
+const STAFF_REFRESH_TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;  // 30 days
+const STAFF_SESSION_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;  // 24 hours
 
-// Generate tokens
-function generateTokens(userId: string, salonId: string, role: string) {
+// Generate staff-specific tokens with portalType claim
+function generateStaffTokens(userId: string, salonId: string, role: string, rememberMe: boolean = false) {
   const accessToken = jwt.sign(
-    { userId, salonId, role },
+    {
+      userId,
+      salonId,
+      role,
+      staffId: userId,  // Explicit staff identifier
+      portalType: 'staff'  // Portal discrimination claim
+    },
     env.JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY }
+    { expiresIn: STAFF_ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
-    { userId, salonId, role, type: 'refresh' },
+    {
+      userId,
+      salonId,
+      role,
+      staffId: userId,
+      portalType: 'staff',
+      type: 'refresh'
+    },
     env.JWT_REFRESH_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRY }
+    { expiresIn: rememberMe ? STAFF_REFRESH_TOKEN_EXPIRY : STAFF_SESSION_TOKEN_EXPIRY }
   );
 
   return { accessToken, refreshToken };
@@ -117,13 +133,18 @@ router.post('/auth/login', loginRateLimit, asyncHandler(async (req: Request, res
     data: { lastLogin: new Date() },
   });
 
-  const tokens = generateTokens(user.id, user.salonId, user.role);
+  const tokens = generateStaffTokens(user.id, user.salonId, user.role, data.rememberMe);
+
+  // Refresh token expiry based on rememberMe
+  const refreshExpiry = data.rememberMe
+    ? new Date(Date.now() + STAFF_REFRESH_TOKEN_EXPIRY_MS)  // 30 days
+    : new Date(Date.now() + STAFF_SESSION_TOKEN_EXPIRY_MS);  // 24 hours
 
   await prisma.refreshToken.create({
     data: {
       userId: user.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      expiresAt: refreshExpiry,
     },
   });
 
@@ -177,7 +198,7 @@ router.post('/auth/refresh', asyncHandler(async (req: Request, res: Response) =>
     const decoded = jwt.verify(
       refreshToken,
       env.JWT_REFRESH_SECRET
-    ) as { userId: string; salonId: string; role: string };
+    ) as { userId: string; salonId: string; role: string; portalType?: string };
 
     // Check if token exists in database
     const storedToken = await prisma.refreshToken.findFirst({
@@ -194,15 +215,24 @@ router.post('/auth/refresh', asyncHandler(async (req: Request, res: Response) =>
       });
     }
 
-    // Generate new tokens
-    const tokens = generateTokens(decoded.userId, decoded.salonId, decoded.role);
+    // Calculate remaining time to determine if rememberMe was used
+    const remainingMs = storedToken.expiresAt.getTime() - Date.now();
+    const wasRememberMe = remainingMs > STAFF_SESSION_TOKEN_EXPIRY_MS;
+
+    // Generate new tokens with same rememberMe setting
+    const tokens = generateStaffTokens(decoded.userId, decoded.salonId, decoded.role, wasRememberMe);
+
+    // Refresh token expiry based on original rememberMe setting
+    const refreshExpiry = wasRememberMe
+      ? new Date(Date.now() + STAFF_REFRESH_TOKEN_EXPIRY_MS)
+      : new Date(Date.now() + STAFF_SESSION_TOKEN_EXPIRY_MS);
 
     // Update refresh token
     await prisma.refreshToken.update({
       where: { id: storedToken.id },
       data: {
         token: tokens.refreshToken,
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+        expiresAt: refreshExpiry,
       },
     });
 
@@ -411,6 +441,94 @@ router.post('/invite', authenticate, asyncHandler(async (req: Request, res: Resp
 }));
 
 // ============================================
+// POST /api/v1/staff-portal/invite/resend/:staffId
+// Resend invite email to staff member
+// ============================================
+router.post('/invite/resend/:staffId', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'owner')) {
+    return res.status(403).json({
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'Only owners and admins can resend invites' },
+    });
+  }
+
+  const { staffId } = req.params;
+  const salonId = req.user.salonId;
+
+  // Find the staff member
+  const staff = await prisma.user.findFirst({
+    where: {
+      id: staffId,
+      salonId,
+      role: 'staff',
+    },
+  });
+
+  if (!staff) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Staff member not found' },
+    });
+  }
+
+  // Check if already activated
+  if (staff.passwordHash) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'ALREADY_ACTIVE', message: 'Staff member has already set their password' },
+    });
+  }
+
+  // Generate new token with 72-hour expiry (per CONTEXT.md)
+  const inviteToken = crypto.randomBytes(32).toString('hex');
+  const tokenExpiry = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
+
+  await prisma.user.update({
+    where: { id: staffId },
+    data: {
+      magicLinkToken: inviteToken,
+      magicLinkExpires: tokenExpiry,
+    },
+  });
+
+  // Get salon for email
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+  });
+
+  // Send invite email
+  const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
+  logger.info({ email: staff.email, staffId, salonId }, 'Resending staff invite email');
+
+  try {
+    await sendEmail({
+      to: staff.email,
+      subject: `Reminder: You're invited to join ${salon?.name || 'the team'} on Peacase`,
+      html: `
+        <h2>Your invitation is waiting!</h2>
+        <p>You've been invited to join <strong>${salon?.name || 'the team'}</strong> as a staff member.</p>
+        <p>Click the link below to set up your account and password:</p>
+        <p><a href="${inviteUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7C9A82; color: white; text-decoration: none; border-radius: 6px;">Set Up Your Account</a></p>
+        <p>This link will expire in 72 hours.</p>
+        <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+      `,
+    });
+    logger.info({ email: staff.email }, 'Staff invite resend email sent');
+  } catch (emailError) {
+    logger.error({ err: emailError, email: staff.email }, 'Failed to resend staff invite email');
+  }
+
+  res.json({
+    success: true,
+    data: {
+      message: 'Invite resent successfully',
+      staffId,
+      expiresAt: tokenExpiry.toISOString(),
+    },
+  });
+}));
+
+// ============================================
 // POST /api/v1/staff-portal/setup
 // Staff sets their password via invite token
 // ============================================
@@ -448,15 +566,15 @@ router.post('/setup', asyncHandler(async (req: Request, res: Response) => {
     include: { salon: true },
   });
 
-  // Generate tokens
-  const tokens = generateTokens(staff.id, staff.salonId, staff.role);
+  // Generate tokens (default rememberMe=false for new account setup)
+  const tokens = generateStaffTokens(staff.id, staff.salonId, staff.role, false);
 
-  // Store refresh token
+  // Store refresh token (24-hour expiry for new setup)
   await prisma.refreshToken.create({
     data: {
       userId: staff.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      expiresAt: new Date(Date.now() + STAFF_SESSION_TOKEN_EXPIRY_MS),
     },
   });
 
@@ -520,13 +638,18 @@ router.post('/login', loginRateLimit, asyncHandler(async (req: Request, res: Res
     data: { lastLogin: new Date() },
   });
 
-  const tokens = generateTokens(user.id, user.salonId, user.role);
+  const tokens = generateStaffTokens(user.id, user.salonId, user.role, data.rememberMe);
+
+  // Refresh token expiry based on rememberMe
+  const refreshExpiry = data.rememberMe
+    ? new Date(Date.now() + STAFF_REFRESH_TOKEN_EXPIRY_MS)  // 30 days
+    : new Date(Date.now() + STAFF_SESSION_TOKEN_EXPIRY_MS);  // 24 hours
 
   await prisma.refreshToken.create({
     data: {
       userId: user.id,
       token: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS),
+      expiresAt: refreshExpiry,
     },
   });
 
