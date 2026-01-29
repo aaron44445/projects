@@ -43,6 +43,7 @@ import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { EmptyState } from '@peacase/ui';
 
 const statusColors: Record<string, string> = {
   scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -834,13 +835,11 @@ function DashboardContent() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
-                    <p className="text-text-muted dark:text-white/60">No recent activity yet</p>
-                    <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1">
-                      Activity will appear here as you book appointments and add clients
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={Clock}
+                    title="No recent activity yet"
+                    description="Activity will appear here as you book appointments and add clients"
+                  />
                 )}
               </div>
               {!activityError && recentActivity && recentActivity.length > 0 && (
@@ -968,13 +967,11 @@ function DashboardContent() {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-12">
-                  <Clock className="w-16 h-16 text-charcoal/20 mx-auto mb-4" />
-                  <p className="text-lg text-text-muted">No activity yet</p>
-                  <p className="text-sm text-charcoal/40 mt-2">
-                    Your activity feed will show bookings, payments, and more
-                  </p>
-                </div>
+                <EmptyState
+                  icon={Clock}
+                  title="No activity yet"
+                  description="Your activity feed will show bookings, payments, and more"
+                />
               )}
             </div>
           </div>
