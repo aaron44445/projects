@@ -114,7 +114,7 @@ function AddOnUpsellBanner({
           <h3 className="font-semibold text-charcoal dark:text-white mb-1">
             Enable {info.name} to use this feature
           </h3>
-          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
+          <p className="text-sm text-text-muted dark:text-white/60 mb-3">
             {info.description}
           </p>
           <div className="flex items-center gap-3">
@@ -127,7 +127,7 @@ function AddOnUpsellBanner({
             </button>
             <Link
               href="/settings?section=subscription"
-              className="text-sm text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white"
+              className="text-sm text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white"
             >
               Learn more
             </Link>
@@ -161,7 +161,7 @@ function SettingsContent() {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const { activeAddOns, hasAddOn, setActiveAddOns, monthlyTotal, trialEndsAt, isTrialActive } = useSubscription();
+  const { activeAddOns, hasAddOn, addAddon, removeAddon, monthlyTotal, trialEndsAt, isTrialActive, plan } = useSubscription();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { can } = usePermissions();
 
@@ -605,21 +605,25 @@ function SettingsContent() {
     }
   };
 
-  const toggleAddOn = (addOnId: AddOnId) => {
-    if (hasAddOn(addOnId)) {
-      setActiveAddOns(activeAddOns.filter((id) => id !== addOnId));
-    } else {
-      setActiveAddOns([...activeAddOns, addOnId]);
+  const toggleAddOn = async (addOnId: AddOnId) => {
+    try {
+      if (hasAddOn(addOnId)) {
+        await removeAddon(addOnId);
+      } else {
+        await addAddon(addOnId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle add-on:', error);
+      // Could show a toast notification here
     }
   };
 
-  // All available add-ons for the subscription page
+  // All available add-ons for the subscription page (7 add-ons at $25/mo each)
   const allAddOns: { id: AddOnId; name: string; price: number; icon: typeof Globe; description: string }[] = [
     { id: 'online_booking', name: 'Online Booking', price: 25, icon: Globe, description: 'Let clients book 24/7 from your website' },
     { id: 'payment_processing', name: 'Payment Processing', price: 25, icon: CreditCard, description: 'Accept cards, Apple Pay, Google Pay' },
     { id: 'reminders', name: 'SMS/Email Reminders', price: 25, icon: Mail, description: 'Reduce no-shows with automated reminders' },
     { id: 'reports', name: 'Reports & Analytics', price: 25, icon: BarChart3, description: 'Revenue dashboards, staff performance' },
-    { id: 'reviews', name: 'Reviews & Ratings', price: 25, icon: Users, description: 'Collect and display client reviews' },
     { id: 'memberships', name: 'Packages & Memberships', price: 25, icon: Users, description: 'Sell packages and recurring memberships' },
     { id: 'gift_cards', name: 'Gift Cards', price: 25, icon: CreditCard, description: 'Sell and redeem digital gift cards' },
     { id: 'marketing', name: 'Marketing Automation', price: 25, icon: Sparkles, description: 'Automated campaigns and promotions' },
@@ -635,7 +639,7 @@ function SettingsContent() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-4" />
-            <p className="text-charcoal/60 dark:text-white/60">Loading settings...</p>
+            <p className="text-text-muted dark:text-white/60">Loading settings...</p>
           </div>
         </div>
       );
@@ -649,7 +653,7 @@ function SettingsContent() {
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
           <h3 className="text-xl font-bold text-charcoal dark:text-white mb-2">Failed to Load Settings</h3>
-          <p className="text-charcoal/60 dark:text-white/60 mb-6">{salonError}</p>
+          <p className="text-text-muted dark:text-white/60 mb-6">{salonError}</p>
           <button
             onClick={fetchSalon}
             className="px-6 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
@@ -666,7 +670,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">My Account</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Manage your personal profile and account settings.
               </p>
             </div>
@@ -705,9 +709,9 @@ function SettingsContent() {
                         type="email"
                         value={profile?.email || ''}
                         disabled
-                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-charcoal/5 dark:bg-white/5 text-charcoal/60 dark:text-white/60 cursor-not-allowed"
+                        className="w-full px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-charcoal/5 dark:bg-white/5 text-text-muted dark:text-white/60 cursor-not-allowed"
                       />
-                      <p className="text-xs text-charcoal/50 dark:text-white/50 mt-1">Contact support to change your email</p>
+                      <p className="text-xs text-text-muted dark:text-white/50 mt-1">Contact support to change your email</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Phone</label>
@@ -754,7 +758,7 @@ function SettingsContent() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-charcoal dark:text-white mb-1">Export Your Data</h3>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                      <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                         Download a copy of all your account data including profile, appointments, and activity history.
                       </p>
                       <button
@@ -811,7 +815,7 @@ function SettingsContent() {
                         </div>
                       ) : (
                         <div>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                          <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                             Permanently delete your account and all associated data. This cannot be undone.
                           </p>
                           <button
@@ -843,7 +847,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Business Information</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Update your business details. This information appears on invoices and your booking page.
               </p>
             </div>
@@ -961,7 +965,7 @@ function SettingsContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Team Access</h2>
-                <p className="text-charcoal/60 dark:text-white/60">
+                <p className="text-text-muted dark:text-white/60">
                   Invite and manage your team members.
                 </p>
               </div>
@@ -989,7 +993,7 @@ function SettingsContent() {
                         onClick={() => { setShowInviteForm(false); setInviteSuccess(false); }}
                         className="p-1 hover:bg-charcoal/10 dark:hover:bg-white/10 rounded"
                       >
-                        <X className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                        <X className="w-5 h-5 text-text-muted dark:text-white/60" />
                       </button>
                     </div>
                     {inviteSuccess ? (
@@ -1030,7 +1034,7 @@ function SettingsContent() {
                         <div className="flex justify-end gap-3 pt-2">
                           <button
                             onClick={() => setShowInviteForm(false)}
-                            className="px-4 py-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white"
+                            className="px-4 py-2 text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white"
                           >
                             Cancel
                           </button>
@@ -1067,21 +1071,21 @@ function SettingsContent() {
                         <div key={invite.id} className="flex items-center justify-between p-3 bg-charcoal/5 dark:bg-white/5 rounded-lg">
                           <div>
                             <p className="font-medium text-charcoal dark:text-white">{invite.email}</p>
-                            <p className="text-xs text-charcoal/60 dark:text-white/60">
+                            <p className="text-xs text-text-muted dark:text-white/60">
                               {invite.role.charAt(0).toUpperCase() + invite.role.slice(1)} - Expires {new Date(invite.expiresAt).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => resendInvite(invite.id)}
-                              className="p-2 text-charcoal/60 dark:text-white/60 hover:text-sage hover:bg-sage/10 rounded-lg"
+                              className="p-2 text-text-muted dark:text-white/60 hover:text-sage hover:bg-sage/10 rounded-lg"
                               title="Resend"
                             >
                               <RefreshCw className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => cancelInvite(invite.id)}
-                              className="p-2 text-charcoal/60 dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                              className="p-2 text-text-muted dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                               title="Cancel"
                             >
                               <X className="w-4 h-4" />
@@ -1107,7 +1111,7 @@ function SettingsContent() {
                             <p className="font-medium text-charcoal dark:text-white">
                               {member.firstName} {member.lastName}
                             </p>
-                            <p className="text-sm text-charcoal/60 dark:text-white/60">{member.email}</p>
+                            <p className="text-sm text-text-muted dark:text-white/60">{member.email}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -1126,7 +1130,7 @@ function SettingsContent() {
                                 removeMember(member.id);
                               }
                             }}
-                            className="p-2 text-charcoal/60 dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                            className="p-2 text-text-muted dark:text-white/60 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                             title="Remove"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1146,7 +1150,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Location Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Manage multiple locations for your business. Add locations, assign staff, and set location-specific pricing.
               </p>
             </div>
@@ -1164,12 +1168,12 @@ function SettingsContent() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                  <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                     Enable multi-location mode to manage multiple business locations. Each location can have its own staff, services, pricing, and operating hours.
                   </p>
 
                   {/* Features list */}
-                  <ul className="text-sm space-y-2 text-charcoal/70 dark:text-white/70">
+                  <ul className="text-sm space-y-2 text-text-secondary dark:text-white/70">
                     <li className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-sage" />
                       Assign staff to specific locations
@@ -1250,7 +1254,7 @@ function SettingsContent() {
                 ) : locations.length === 0 ? (
                   <div className="text-center py-8">
                     <MapPin className="w-10 h-10 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
-                    <p className="text-charcoal/60 dark:text-white/60 mb-4">No locations added yet</p>
+                    <p className="text-text-muted dark:text-white/60 mb-4">No locations added yet</p>
                     <Link
                       href="/locations"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
@@ -1266,7 +1270,7 @@ function SettingsContent() {
                         className="flex items-center justify-between p-4 bg-charcoal/5 dark:bg-white/5 rounded-xl"
                       >
                         <div className="flex items-center gap-3">
-                          <MapPin className={`w-5 h-5 ${location.isPrimary ? 'text-amber-500' : 'text-charcoal/40 dark:text-white/40'}`} />
+                          <MapPin className={`w-5 h-5 ${location.isPrimary ? 'text-amber-500' : 'text-text-muted dark:text-white/40'}`} />
                           <div>
                             <p className="font-medium text-charcoal dark:text-white flex items-center gap-2">
                               {location.name}
@@ -1277,19 +1281,19 @@ function SettingsContent() {
                               )}
                             </p>
                             {location.city && (
-                              <p className="text-sm text-charcoal/60 dark:text-white/60">{location.city}, {location.state}</p>
+                              <p className="text-sm text-text-muted dark:text-white/60">{location.city}, {location.state}</p>
                             )}
                           </div>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          location.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-charcoal/60'
+                          location.isActive ? 'bg-sage/20 text-sage-dark' : 'bg-charcoal/10 text-text-muted'
                         }`}>
                           {location.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
                     ))}
                     {locations.length > 5 && (
-                      <p className="text-sm text-charcoal/60 dark:text-white/60 text-center pt-2">
+                      <p className="text-sm text-text-muted dark:text-white/60 text-center pt-2">
                         + {locations.length - 5} more locations
                       </p>
                     )}
@@ -1302,7 +1306,7 @@ function SettingsContent() {
             <div className="p-4 bg-lavender/10 rounded-xl border border-lavender/30">
               <div className="flex items-start gap-3">
                 <DollarSign className="w-5 h-5 text-lavender flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-charcoal/70 dark:text-white/70">
+                <div className="text-sm text-text-secondary dark:text-white/70">
                   <p className="font-medium text-charcoal dark:text-white mb-1">Multi-Location Pricing</p>
                   <ul className="space-y-1">
                     <li>• First location: <span className="font-medium">Included in your plan</span></li>
@@ -1325,7 +1329,7 @@ function SettingsContent() {
           return (
             <div className="text-center py-12">
               <Clock className="w-12 h-12 mx-auto text-charcoal/20 dark:text-white/20 mb-4" />
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Select a location from the header to manage its business hours.
               </p>
             </div>
@@ -1337,7 +1341,7 @@ function SettingsContent() {
           return (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-sage" />
-              <span className="ml-2 text-charcoal/60 dark:text-white/60">Loading hours...</span>
+              <span className="ml-2 text-text-muted dark:text-white/60">Loading hours...</span>
             </div>
           );
         }
@@ -1346,7 +1350,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Business Hours</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Set your default operating hours. Staff schedules can override these settings.
               </p>
             </div>
@@ -1374,7 +1378,7 @@ function SettingsContent() {
                       }}
                       className="w-5 h-5 rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage"
                     />
-                    <span className="text-sm text-charcoal/60 dark:text-white/60">Open</span>
+                    <span className="text-sm text-text-muted dark:text-white/60">Open</span>
                   </label>
 
                   {day.isOpen && (
@@ -1389,7 +1393,7 @@ function SettingsContent() {
                         }}
                         className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm"
                       />
-                      <span className="text-charcoal/40 dark:text-white/40">to</span>
+                      <span className="text-text-muted dark:text-white/40">to</span>
                       <input
                         type="time"
                         value={day.close}
@@ -1404,14 +1408,14 @@ function SettingsContent() {
                   )}
 
                   {!day.isOpen && (
-                    <span className="ml-auto text-sm text-charcoal/40 dark:text-white/40">Closed</span>
+                    <span className="ml-auto text-sm text-text-muted dark:text-white/40">Closed</span>
                   )}
                 </div>
               ))}
             </div>
 
             <div className="p-4 bg-lavender/20 rounded-xl border border-lavender/30">
-              <p className="text-sm text-charcoal/70 dark:text-white/70">
+              <p className="text-sm text-text-secondary dark:text-white/70">
                 <strong>Note:</strong> To set up holiday closures or special hours, go to Calendar
                 and use the Block Time feature.
               </p>
@@ -1460,7 +1464,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Regional Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Configure currency, date format, time format, and timezone for your business.
               </p>
             </div>
@@ -1473,7 +1477,7 @@ function SettingsContent() {
               </h3>
               <div>
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Display Currency</label>
-                <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                   This currency will be used throughout the app for prices, invoices, and reports.
                 </p>
                 <select
@@ -1499,7 +1503,7 @@ function SettingsContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Date Format</label>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                  <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                     How dates are displayed (e.g., January 15, 2026)
                   </p>
                   <select
@@ -1515,7 +1519,7 @@ function SettingsContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Time Format</label>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                  <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                     How times are displayed (e.g., 2:30 PM vs 14:30)
                   </p>
                   <select
@@ -1530,7 +1534,7 @@ function SettingsContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Week Starts On</label>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                  <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                     First day of the week in calendar views
                   </p>
                   <select
@@ -1545,7 +1549,7 @@ function SettingsContent() {
 
                 <div>
                   <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Timezone</label>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                  <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                     Your business timezone for appointments
                   </p>
                   <select
@@ -1572,26 +1576,26 @@ function SettingsContent() {
               <h4 className="font-medium text-charcoal dark:text-white mb-3">Preview</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Currency</p>
+                  <p className="text-text-muted dark:text-white/60 mb-1">Currency</p>
                   <p className="font-medium text-charcoal dark:text-white">
                     {SUPPORTED_CURRENCIES[regionalForm.currency]?.symbol}125.00
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Date</p>
+                  <p className="text-text-muted dark:text-white/60 mb-1">Date</p>
                   <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.dateFormat === 'MDY' ? '01/15/2026' :
                      regionalForm.dateFormat === 'DMY' ? '15/01/2026' : '2026-01-15'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Time</p>
+                  <p className="text-text-muted dark:text-white/60 mb-1">Time</p>
                   <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.timeFormat === '12h' ? '2:30 PM' : '14:30'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-charcoal/60 dark:text-white/60 mb-1">Week Starts</p>
+                  <p className="text-text-muted dark:text-white/60 mb-1">Week Starts</p>
                   <p className="font-medium text-charcoal dark:text-white">
                     {regionalForm.weekStartsOn === 0 ? 'Sunday' : 'Monday'}
                   </p>
@@ -1638,7 +1642,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Tax / VAT Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Configure tax rates and VAT settings for your invoices and receipts.
               </p>
             </div>
@@ -1656,7 +1660,7 @@ function SettingsContent() {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60">
+                  <p className="text-sm text-text-muted dark:text-white/60">
                     When enabled, tax will be calculated and shown on invoices and receipts.
                   </p>
                 </div>
@@ -1683,7 +1687,7 @@ function SettingsContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Tax Name</label>
-                      <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                      <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                         The label shown on invoices (e.g., VAT, GST, Sales Tax)
                       </p>
                       <input
@@ -1697,7 +1701,7 @@ function SettingsContent() {
 
                     <div>
                       <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">Tax Rate (%)</label>
-                      <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                      <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                         The percentage rate applied to services
                       </p>
                       <div className="relative">
@@ -1711,7 +1715,7 @@ function SettingsContent() {
                           step="0.01"
                           className="w-full px-4 py-3 pr-10 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-charcoal/40 dark:text-white/40">%</span>
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted dark:text-white/40">%</span>
                       </div>
                     </div>
                   </div>
@@ -1731,10 +1735,10 @@ function SettingsContent() {
                       </div>
                       <div>
                         <p className="font-medium text-charcoal dark:text-white">Tax added at checkout (exclusive)</p>
-                        <p className="text-sm text-charcoal/60 dark:text-white/60">
+                        <p className="text-sm text-text-muted dark:text-white/60">
                           Service prices shown without tax. Tax is calculated and added separately.
                         </p>
-                        <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">
+                        <p className="text-xs text-text-muted dark:text-white/40 mt-1">
                           Example: $100 service + {taxForm.taxRate}% tax = ${(100 + (100 * taxForm.taxRate / 100)).toFixed(2)} total
                         </p>
                       </div>
@@ -1750,10 +1754,10 @@ function SettingsContent() {
                       </div>
                       <div>
                         <p className="font-medium text-charcoal dark:text-white">Tax included in price (inclusive)</p>
-                        <p className="text-sm text-charcoal/60 dark:text-white/60">
+                        <p className="text-sm text-text-muted dark:text-white/60">
                           Service prices already include tax. Tax amount shown as breakdown.
                         </p>
-                        <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">
+                        <p className="text-xs text-text-muted dark:text-white/40 mt-1">
                           Example: $100 service includes ${(100 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)} tax
                         </p>
                       </div>
@@ -1765,7 +1769,7 @@ function SettingsContent() {
                   <h3 className="font-semibold text-charcoal dark:text-white mb-4">VAT / Tax ID (Optional)</h3>
                   <div>
                     <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">VAT Number / Tax ID</label>
-                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                    <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                       Your business VAT or tax registration number. This will appear on invoices.
                     </p>
                     <input
@@ -1786,20 +1790,20 @@ function SettingsContent() {
                 <h4 className="font-medium text-charcoal dark:text-white mb-3">Invoice Preview</h4>
                 <div className="bg-white dark:bg-sidebar rounded-lg p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-charcoal/60 dark:text-white/60">Haircut</span>
+                    <span className="text-text-muted dark:text-white/60">Haircut</span>
                     <span className="text-charcoal dark:text-white">${taxForm.taxIncluded ? '50.00' : '50.00'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-charcoal/60 dark:text-white/60">Color Treatment</span>
+                    <span className="text-text-muted dark:text-white/60">Color Treatment</span>
                     <span className="text-charcoal dark:text-white">${taxForm.taxIncluded ? '100.00' : '100.00'}</span>
                   </div>
                   <div className="border-t border-charcoal/10 dark:border-white/10 pt-2 mt-2">
                     <div className="flex justify-between">
-                      <span className="text-charcoal/60 dark:text-white/60">Subtotal</span>
+                      <span className="text-text-muted dark:text-white/60">Subtotal</span>
                       <span className="text-charcoal dark:text-white">$150.00</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-charcoal/60 dark:text-white/60">{taxForm.taxName} ({taxForm.taxRate}%)</span>
+                      <span className="text-text-muted dark:text-white/60">{taxForm.taxName} ({taxForm.taxRate}%)</span>
                       <span className="text-charcoal dark:text-white">
                         ${taxForm.taxIncluded
                           ? (150 * taxForm.taxRate / (100 + taxForm.taxRate)).toFixed(2)
@@ -1816,7 +1820,7 @@ function SettingsContent() {
                     </div>
                   </div>
                   {taxForm.vatNumber && (
-                    <div className="text-xs text-charcoal/40 dark:text-white/40 pt-2 border-t border-charcoal/10 dark:border-white/10 mt-2">
+                    <div className="text-xs text-text-muted dark:text-white/40 pt-2 border-t border-charcoal/10 dark:border-white/10 mt-2">
                       VAT/Tax ID: {taxForm.vatNumber}
                     </div>
                   )}
@@ -1863,7 +1867,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Subscription & Add-ons</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Manage your plan and add or remove features as your business needs change.
               </p>
             </div>
@@ -1873,11 +1877,11 @@ function SettingsContent() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-charcoal dark:text-white">Current Plan</h3>
-                  <p className="text-charcoal/60 dark:text-white/60">Essentials + {activeAddOns.length} add-ons</p>
+                  <p className="text-text-muted dark:text-white/60">Essentials + {activeAddOns.length} add-ons</p>
                 </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold text-charcoal dark:text-white">${monthlyTotal}</p>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60">/month</p>
+                  <p className="text-sm text-text-muted dark:text-white/60">/month</p>
                 </div>
               </div>
 
@@ -1912,7 +1916,7 @@ function SettingsContent() {
                         </div>
                         <div className="flex-1">
                           <p className="font-medium text-charcoal dark:text-white">{addOn.name}</p>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60">{addOn.description}</p>
+                          <p className="text-sm text-text-muted dark:text-white/60">{addOn.description}</p>
                         </div>
                         <span className="text-sm font-semibold text-charcoal dark:text-white">$25/mo</span>
                         <button
@@ -1943,14 +1947,14 @@ function SettingsContent() {
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-lg bg-charcoal/5 dark:bg-white/5 flex items-center justify-center">
-                            <Icon className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                            <Icon className="w-5 h-5 text-text-muted dark:text-white/60" />
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <p className="font-medium text-charcoal dark:text-white">{addOn.name}</p>
                               <span className="text-sm font-semibold text-charcoal dark:text-white">+$25/mo</span>
                             </div>
-                            <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">{addOn.description}</p>
+                            <p className="text-sm text-text-muted dark:text-white/60 mb-3">{addOn.description}</p>
                             <button
                               onClick={() => toggleAddOn(addOn.id)}
                               className="px-4 py-2 text-sm bg-sage text-white rounded-lg font-medium hover:bg-sage-dark transition-colors"
@@ -1964,7 +1968,7 @@ function SettingsContent() {
                   })}
               </div>
               {allAddOns.filter((addOn) => !hasAddOn(addOn.id)).length === 0 && (
-                <p className="text-center text-charcoal/60 dark:text-white/60 py-8">
+                <p className="text-center text-text-muted dark:text-white/60 py-8">
                   You have all available add-ons!
                 </p>
               )}
@@ -1988,7 +1992,7 @@ function SettingsContent() {
 
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Payment Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Manage your payment methods and billing preferences.
               </p>
             </div>
@@ -2005,11 +2009,11 @@ function SettingsContent() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-charcoal dark:text-white">Stripe</h3>
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-text-muted dark:text-white/60">
                           Not connected
                         </span>
                       </div>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                      <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                         Accept credit cards, Apple Pay, and Google Pay
                       </p>
                       <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
@@ -2028,11 +2032,11 @@ function SettingsContent() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-charcoal dark:text-white">Square</h3>
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60">
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-charcoal/10 dark:bg-white/10 text-text-muted dark:text-white/60">
                           Not connected
                         </span>
                       </div>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                      <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                         In-person and online payments with Square
                       </p>
                       <button className="text-sm text-sage hover:text-sage-dark font-medium" disabled={paymentsLocked}>
@@ -2056,13 +2060,13 @@ function SettingsContent() {
                     />
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">Require deposit for online bookings</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">
+                      <p className="text-sm text-text-muted dark:text-white/60">
                         Reduce no-shows by collecting a deposit when clients book online
                       </p>
                     </div>
                   </label>
                   <div className="flex items-center gap-3 ml-8">
-                    <label className="text-sm text-charcoal/60 dark:text-white/60">Deposit amount:</label>
+                    <label className="text-sm text-text-muted dark:text-white/60">Deposit amount:</label>
                     <select
                       disabled={paymentsLocked}
                       className="px-3 py-2 rounded-lg border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none text-sm disabled:opacity-50"
@@ -2083,7 +2087,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Owner Notifications</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Control which email notifications you receive about your business.
               </p>
             </div>
@@ -2107,7 +2111,7 @@ function SettingsContent() {
                       <div key={item.key} className="flex items-center justify-between py-2">
                         <div>
                           <p className="font-medium text-charcoal dark:text-white">{item.label}</p>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60">{item.description}</p>
+                          <p className="text-sm text-text-muted dark:text-white/60">{item.description}</p>
                         </div>
                         <button
                           onClick={() => togglePreference(item.key)}
@@ -2137,7 +2141,7 @@ function SettingsContent() {
                       <div key={item.key} className="flex items-center justify-between py-2">
                         <div>
                           <p className="font-medium text-charcoal dark:text-white">{item.label}</p>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60">{item.description}</p>
+                          <p className="text-sm text-text-muted dark:text-white/60">{item.description}</p>
                         </div>
                         <button
                           onClick={() => togglePreference(item.key)}
@@ -2159,7 +2163,7 @@ function SettingsContent() {
                 {/* Notification Email */}
                 <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
                   <h3 className="font-semibold text-charcoal dark:text-white mb-4">Notification Email</h3>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                  <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                     Send owner notifications to a different email address.
                   </p>
                   <div className="flex gap-3">
@@ -2193,7 +2197,7 @@ function SettingsContent() {
 
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Notification Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Configure how you and your clients receive notifications.
               </p>
             </div>
@@ -2211,7 +2215,7 @@ function SettingsContent() {
             {notificationSettingsLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="w-6 h-6 animate-spin text-sage" />
-                <span className="ml-2 text-charcoal/60 dark:text-white/60">Loading settings...</span>
+                <span className="ml-2 text-text-muted dark:text-white/60">Loading settings...</span>
               </div>
             ) : (
             <div className={notificationsLocked ? 'opacity-50 pointer-events-none select-none' : ''}>
@@ -2223,7 +2227,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">Appointment Confirmation</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">Send when booking is confirmed</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">Send when booking is confirmed</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -2246,7 +2250,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">Appointment Reminder</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">Remind clients before their appointment</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">Remind clients before their appointment</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -2260,7 +2264,7 @@ function SettingsContent() {
                     </label>
                   </div>
                   <div className="flex items-center gap-3 mb-3">
-                    <label className="text-sm text-charcoal/60 dark:text-white/60">Send reminder:</label>
+                    <label className="text-sm text-text-muted dark:text-white/60">Send reminder:</label>
                     <select
                       value={notificationSettings?.reminders?.timings?.[0]?.hours || 24}
                       onChange={(e) => setReminderTiming(parseInt(e.target.value))}
@@ -2308,7 +2312,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">New Booking Alert</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">Notify staff when a new booking is made</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">Notify staff when a new booking is made</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -2321,7 +2325,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">Cancellation Alert</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">Notify staff when a booking is cancelled</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">Notify staff when a booking is cancelled</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked disabled={notificationsLocked} className="sr-only peer" />
@@ -2436,7 +2440,7 @@ function SettingsContent() {
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Online Booking Widget</h2>
-                <p className="text-charcoal/60 dark:text-white/60">
+                <p className="text-text-muted dark:text-white/60">
                   Customize and embed your booking widget on your website.
                 </p>
               </div>
@@ -2444,7 +2448,7 @@ function SettingsContent() {
               {!bookingLocked && (
                 <div className="flex items-center gap-2 text-sm">
                   {widgetSaveStatus === 'saving' && (
-                    <span className="flex items-center gap-2 text-charcoal/50 dark:text-white/50">
+                    <span className="flex items-center gap-2 text-text-muted dark:text-white/50">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Saving...
                     </span>
@@ -2479,7 +2483,7 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Primary Color
                     </label>
-                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                    <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                       Used for buttons, selected states, and progress indicators
                     </p>
                     <div className="flex items-center gap-3">
@@ -2512,7 +2516,7 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Accent Color
                     </label>
-                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                    <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                       Used for links and category headers
                     </p>
                     <div className="flex items-center gap-3">
@@ -2545,7 +2549,7 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Button Style
                     </label>
-                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                    <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                       Corner style for buttons and inputs
                     </p>
                     <select
@@ -2563,7 +2567,7 @@ function SettingsContent() {
                     <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                       Font Style
                     </label>
-                    <p className="text-xs text-charcoal/50 dark:text-white/50 mb-3">
+                    <p className="text-xs text-text-muted dark:text-white/50 mb-3">
                       Typography for all text in the widget
                     </p>
                     <div className="space-y-2">
@@ -2597,7 +2601,7 @@ function SettingsContent() {
                           </div>
                           <div>
                             <p className="font-medium text-charcoal dark:text-white text-sm">{font.label}</p>
-                            <p className="text-xs text-charcoal/50 dark:text-white/50">{font.desc}</p>
+                            <p className="text-xs text-text-muted dark:text-white/50">{font.desc}</p>
                           </div>
                         </label>
                       ))}
@@ -2626,7 +2630,7 @@ function SettingsContent() {
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
                           <Loader2 className="w-8 h-8 animate-spin text-sage mx-auto mb-3" />
-                          <p className="text-sm text-charcoal/60 dark:text-white/60">Loading preview...</p>
+                          <p className="text-sm text-text-muted dark:text-white/60">Loading preview...</p>
                         </div>
                       </div>
                     ) : (
@@ -2638,7 +2642,7 @@ function SettingsContent() {
                       />
                     )}
                   </div>
-                  <p className="text-xs text-charcoal/50 dark:text-white/50 mt-2 text-center">
+                  <p className="text-xs text-text-muted dark:text-white/50 mt-2 text-center">
                     {hasValidSlug ? 'This is exactly what customers will see on your website.' : 'Showing demo preview - set your business slug in Business Info to see your actual booking page.'}
                   </p>
                 </div>
@@ -2654,7 +2658,7 @@ function SettingsContent() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-charcoal dark:text-white">Embed Code</h3>
-                    <p className="text-sm text-charcoal/60 dark:text-white/60">Copy and paste this iframe into your website</p>
+                    <p className="text-sm text-text-muted dark:text-white/60">Copy and paste this iframe into your website</p>
                   </div>
                 </div>
               </div>
@@ -2673,7 +2677,7 @@ function SettingsContent() {
                   max="1200"
                   className="w-32 px-4 py-2 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all text-sm"
                 />
-                <span className="text-xs text-charcoal/50 dark:text-white/50 ml-2">Recommended: 600px</span>
+                <span className="text-xs text-text-muted dark:text-white/50 ml-2">Recommended: 600px</span>
               </div>
 
               <div className="relative">
@@ -2712,7 +2716,7 @@ function SettingsContent() {
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       activeInstallTab === key
                         ? 'bg-sage text-white'
-                        : 'bg-charcoal/5 dark:bg-white/5 text-charcoal/70 dark:text-white/70 hover:bg-charcoal/10 dark:hover:bg-white/10'
+                        : 'bg-charcoal/5 dark:bg-white/5 text-text-secondary dark:text-white/70 hover:bg-charcoal/10 dark:hover:bg-white/10'
                     }`}
                   >
                     {title}
@@ -2727,13 +2731,13 @@ function SettingsContent() {
                     <div className="w-6 h-6 rounded-full bg-sage/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold text-sage">{index + 1}</span>
                     </div>
-                    <p className="text-charcoal/70 dark:text-white/70">{step}</p>
+                    <p className="text-text-secondary dark:text-white/70">{step}</p>
                   </div>
                 ))}
               </div>
 
               <div className="mt-6 p-4 bg-lavender/10 rounded-xl border border-lavender/20">
-                <p className="text-sm text-charcoal/70 dark:text-white/70">
+                <p className="text-sm text-text-secondary dark:text-white/70">
                   <strong>Need help?</strong> Contact our support team and we will help you install the booking widget on your website.
                 </p>
               </div>
@@ -2742,7 +2746,7 @@ function SettingsContent() {
             {/* Service Online Booking Toggles */}
             <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
               <h3 className="font-semibold text-charcoal dark:text-white mb-2">Services Available for Online Booking</h3>
-              <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+              <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                 Choose which services clients can book online. Disabled services will only be bookable by staff.
               </p>
 
@@ -2752,7 +2756,7 @@ function SettingsContent() {
                 </div>
               ) : services.filter(s => s.isActive).length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-charcoal/60 dark:text-white/60">No active services found. Add services in the Services page.</p>
+                  <p className="text-text-muted dark:text-white/60">No active services found. Add services in the Services page.</p>
                   <Link href="/services" className="text-sage hover:underline text-sm mt-2 inline-block">
                     Go to Services →
                   </Link>
@@ -2771,7 +2775,7 @@ function SettingsContent() {
                         />
                         <div>
                           <p className="font-medium text-charcoal dark:text-white text-sm">{service.name}</p>
-                          <p className="text-xs text-charcoal/60 dark:text-white/60">
+                          <p className="text-xs text-text-muted dark:text-white/60">
                             {service.durationMinutes}min • ${service.price}
                           </p>
                         </div>
@@ -2801,7 +2805,7 @@ function SettingsContent() {
             {/* Staff Online Booking Toggles */}
             <div className="p-6 bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10">
               <h3 className="font-semibold text-charcoal dark:text-white mb-2">Staff Available for Online Booking</h3>
-              <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+              <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                 Choose which staff members can be booked online. Disabled staff will only be assignable by staff.
               </p>
 
@@ -2811,7 +2815,7 @@ function SettingsContent() {
                 </div>
               ) : staff.filter(s => s.isActive).length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-charcoal/60 dark:text-white/60">No active staff found. Add staff in the Staff page.</p>
+                  <p className="text-text-muted dark:text-white/60">No active staff found. Add staff in the Staff page.</p>
                   <Link href="/staff" className="text-sage hover:underline text-sm mt-2 inline-block">
                     Go to Staff →
                   </Link>
@@ -2841,7 +2845,7 @@ function SettingsContent() {
                           <p className="font-medium text-charcoal dark:text-white text-sm">
                             {member.firstName} {member.lastName}
                           </p>
-                          <p className="text-xs text-charcoal/60 dark:text-white/60 capitalize">{member.role}</p>
+                          <p className="text-xs text-text-muted dark:text-white/60 capitalize">{member.role}</p>
                         </div>
                       </div>
                       <button
@@ -2874,7 +2878,7 @@ function SettingsContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-charcoal dark:text-white">Accept Online Bookings</p>
-                    <p className="text-sm text-charcoal/60 dark:text-white/60">Allow clients to book through your booking widget</p>
+                    <p className="text-sm text-text-muted dark:text-white/60">Allow clients to book through your booking widget</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -2887,7 +2891,7 @@ function SettingsContent() {
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Booking Lead Time
                 </label>
-                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
+                <p className="text-sm text-text-muted dark:text-white/60 mb-3">
                   Minimum time before an appointment can be booked
                 </p>
                 <select className="px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none">
@@ -2902,7 +2906,7 @@ function SettingsContent() {
                 <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">
                   Cancellation Policy
                 </label>
-                <p className="text-sm text-charcoal/60 dark:text-white/60 mb-3">
+                <p className="text-sm text-text-muted dark:text-white/60 mb-3">
                   Time before appointment that clients can cancel
                 </p>
                 <select disabled={bookingLocked} className="px-4 py-3 rounded-xl border border-charcoal/20 dark:border-white/10 bg-white dark:bg-sidebar text-charcoal dark:text-white focus:border-sage outline-none disabled:opacity-50">
@@ -2921,7 +2925,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Branding</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Customize the look of your booking page and client communications.
               </p>
             </div>
@@ -2949,7 +2953,7 @@ function SettingsContent() {
                     <span className="text-sm font-medium dark:text-white">Upload Logo</span>
                     <input type="file" accept="image/*" className="hidden" />
                   </label>
-                  <p className="text-xs text-charcoal/40 dark:text-white/40 mt-2">PNG, JPG up to 5MB. Square works best.</p>
+                  <p className="text-xs text-text-muted dark:text-white/40 mt-2">PNG, JPG up to 5MB. Square works best.</p>
                 </div>
               </div>
             </div>
@@ -2959,7 +2963,7 @@ function SettingsContent() {
               <label className="block text-sm font-medium text-charcoal dark:text-white mb-3">Brand Colors</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-medium text-charcoal/60 dark:text-white/60 mb-2">
+                  <label className="block text-xs font-medium text-text-muted dark:text-white/60 mb-2">
                     Primary Color
                   </label>
                   <div className="flex items-center gap-3">
@@ -2978,7 +2982,7 @@ function SettingsContent() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-charcoal/60 dark:text-white/60 mb-2">
+                  <label className="block text-xs font-medium text-text-muted dark:text-white/60 mb-2">
                     Background Color
                   </label>
                   <div className="flex items-center gap-3">
@@ -3006,7 +3010,7 @@ function SettingsContent() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-charcoal dark:text-white mb-1">Security Settings</h2>
-              <p className="text-charcoal/60 dark:text-white/60">
+              <p className="text-text-muted dark:text-white/60">
                 Manage your account security and access settings.
               </p>
             </div>
@@ -3093,7 +3097,7 @@ function SettingsContent() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-charcoal dark:text-white mb-1">Two-Factor Authentication</h3>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60 mb-4">
+                  <p className="text-sm text-text-muted dark:text-white/60 mb-4">
                     Add an extra layer of security to your account by requiring a verification code.
                   </p>
                   <button className="px-4 py-2 border border-sage text-sage rounded-lg font-medium hover:bg-sage/10 transition-colors">
@@ -3125,7 +3129,7 @@ function SettingsContent() {
                   <Loader2 className="w-6 h-6 animate-spin text-sage" />
                 </div>
               ) : sessions.length === 0 ? (
-                <p className="text-charcoal/60 dark:text-white/60 text-sm">No active sessions found</p>
+                <p className="text-text-muted dark:text-white/60 text-sm">No active sessions found</p>
               ) : (
                 <div className="space-y-3">
                   {sessions.map((session, index) => (
@@ -3133,9 +3137,9 @@ function SettingsContent() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-white dark:bg-sidebar flex items-center justify-center">
                           {session.deviceInfo?.toLowerCase().includes('mobile') ? (
-                            <Smartphone className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                            <Smartphone className="w-5 h-5 text-text-muted dark:text-white/60" />
                           ) : (
-                            <Monitor className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                            <Monitor className="w-5 h-5 text-text-muted dark:text-white/60" />
                           )}
                         </div>
                         <div>
@@ -3143,7 +3147,7 @@ function SettingsContent() {
                             {session.deviceInfo ? session.deviceInfo.slice(0, 50) : 'Unknown device'}
                             {session.deviceInfo && session.deviceInfo.length > 50 && '...'}
                           </p>
-                          <p className="text-xs text-charcoal/60 dark:text-white/60">
+                          <p className="text-xs text-text-muted dark:text-white/60">
                             {session.ipAddress || 'Unknown IP'} - Last active {new Date(session.lastActive).toLocaleDateString()}
                           </p>
                         </div>
@@ -3171,7 +3175,7 @@ function SettingsContent() {
             {/* Login History */}
             <div className="p-6 bg-white dark:bg-sidebar rounded-xl border border-charcoal/10 dark:border-white/10">
               <div className="flex items-center gap-3 mb-4">
-                <History className="w-5 h-5 text-charcoal/60 dark:text-white/60" />
+                <History className="w-5 h-5 text-text-muted dark:text-white/60" />
                 <h3 className="font-semibold text-charcoal dark:text-white">Recent Login Activity</h3>
               </div>
               {accountLoading ? (
@@ -3179,7 +3183,7 @@ function SettingsContent() {
                   <Loader2 className="w-6 h-6 animate-spin text-sage" />
                 </div>
               ) : loginHistory.length === 0 ? (
-                <p className="text-charcoal/60 dark:text-white/60 text-sm">No login history available</p>
+                <p className="text-text-muted dark:text-white/60 text-sm">No login history available</p>
               ) : (
                 <div className="space-y-2">
                   {loginHistory.slice(0, 10).map((entry) => (
@@ -3190,12 +3194,12 @@ function SettingsContent() {
                           <p className="text-sm text-charcoal dark:text-white">
                             {entry.success ? 'Successful login' : `Failed login: ${entry.failReason || 'Unknown'}`}
                           </p>
-                          <p className="text-xs text-charcoal/60 dark:text-white/60">
+                          <p className="text-xs text-text-muted dark:text-white/60">
                             {entry.ipAddress || 'Unknown IP'}
                           </p>
                         </div>
                       </div>
-                      <p className="text-xs text-charcoal/60 dark:text-white/60">
+                      <p className="text-xs text-text-muted dark:text-white/60">
                         {new Date(entry.createdAt).toLocaleString()}
                       </p>
                     </div>
@@ -3223,7 +3227,7 @@ function SettingsContent() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
+                className="p-2 text-text-muted dark:text-white/60 hover:text-charcoal dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
@@ -3255,7 +3259,7 @@ function SettingsContent() {
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                       activeSection === section.id
                         ? 'bg-sage/10 text-sage'
-                        : 'text-charcoal/70 dark:text-white/70 hover:bg-charcoal/5 dark:hover:bg-white/5'
+                        : 'text-text-secondary dark:text-white/70 hover:bg-charcoal/5 dark:hover:bg-white/5'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -3317,7 +3321,7 @@ function SettingsContent() {
                       </span>
                     )}
                     {!saved && !saveError && (
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">Make sure to save your changes</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">Make sure to save your changes</p>
                     )}
                   </div>
                   <button
@@ -3351,3 +3355,4 @@ export default function SettingsPage() {
     </AuthGuard>
   );
 }
+

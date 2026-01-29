@@ -136,7 +136,7 @@ function HeroSection() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-charcoal/70 dark:text-gray-300 mb-10 max-w-2xl mx-auto animate-slide-up animation-delay-100 text-balance">
+          <p className="text-lg sm:text-xl text-text-secondary dark:text-gray-300 mb-10 max-w-2xl mx-auto animate-slide-up animation-delay-100 text-balance">
             Everything you need to run your salon. Nothing you dont.
             Start with essentials, add only what you need.
           </p>
@@ -159,7 +159,7 @@ function HeroSection() {
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-charcoal/60 dark:text-gray-400 animate-fade-in animation-delay-300">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-text-muted dark:text-gray-400 animate-fade-in animation-delay-300">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-success" />
               <span>No credit card required</span>
@@ -219,7 +219,7 @@ function HeroSection() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium ${
                           item.active
                             ? 'bg-sage text-white'
-                            : 'text-charcoal/60 dark:text-gray-400'
+                            : 'text-text-muted dark:text-gray-400'
                         }`}
                       >
                         {item.name}
@@ -234,7 +234,7 @@ function HeroSection() {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-lg font-bold text-charcoal dark:text-white">Dashboard</h2>
-                      <p className="text-xs text-charcoal/50 dark:text-gray-400">Welcome back, Sarah</p>
+                      <p className="text-xs text-text-muted dark:text-gray-400">Welcome back, Sarah</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center">
@@ -257,7 +257,7 @@ function HeroSection() {
                           <span className="text-xs font-medium text-success">{stat.change}</span>
                         </div>
                         <p className="text-xl font-bold text-charcoal dark:text-white">{stat.value}</p>
-                        <p className="text-xs text-charcoal/50 dark:text-gray-400">{stat.label}</p>
+                        <p className="text-xs text-text-muted dark:text-gray-400">{stat.label}</p>
                       </div>
                     ))}
                   </div>
@@ -277,10 +277,10 @@ function HeroSection() {
                           { time: '02:00 PM', client: 'David Brown', service: 'Swedish Massage', status: 'confirmed' },
                         ].map((apt, i) => (
                           <div key={i} className="px-4 py-3 flex items-center gap-3">
-                            <div className="text-xs text-charcoal/50 dark:text-gray-400 w-16">{apt.time}</div>
+                            <div className="text-xs text-text-muted dark:text-gray-400 w-16">{apt.time}</div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-charcoal dark:text-white truncate">{apt.client}</p>
-                              <p className="text-xs text-charcoal/50 dark:text-gray-400 truncate">{apt.service}</p>
+                              <p className="text-xs text-text-muted dark:text-gray-400 truncate">{apt.service}</p>
                             </div>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                               apt.status === 'in-progress'
@@ -310,7 +310,7 @@ function HeroSection() {
                             <div className="w-1.5 h-1.5 rounded-full bg-sage mt-1.5" />
                             <div>
                               <p className="text-xs font-medium text-charcoal dark:text-white">{activity.action}</p>
-                              <p className="text-xs text-charcoal/50 dark:text-gray-400">{activity.detail}</p>
+                              <p className="text-xs text-text-muted dark:text-gray-400">{activity.detail}</p>
                             </div>
                           </div>
                         ))}
@@ -397,7 +397,7 @@ function FeaturesSection() {
           <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Everything you need to run your salon
           </h2>
-          <p className="text-lg text-charcoal/60 dark:text-gray-400">
+          <p className="text-lg text-text-secondary dark:text-gray-400">
             From scheduling to payments, we have got you covered. Choose only the features you need.
           </p>
         </div>
@@ -419,7 +419,7 @@ function FeaturesSection() {
                 <feature.icon className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-3">{feature.title}</h3>
-              <p className="text-charcoal/60 dark:text-gray-400 leading-relaxed">{feature.description}</p>
+              <p className="text-text-secondary dark:text-gray-400 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -526,7 +526,7 @@ function PricingSection() {
           <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Pay only for what you need
           </h2>
-          <p className="text-lg text-charcoal/60 dark:text-gray-400">
+          <p className="text-lg text-text-secondary dark:text-gray-400">
             No hidden fees, no forced bundles. Start with essentials, add features as you grow.
           </p>
         </div>
@@ -554,9 +554,9 @@ function PricingSection() {
                 <h3 className="text-xl font-semibold text-charcoal dark:text-white mb-2">{plan.name}</h3>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-charcoal dark:text-white">{plan.price}</span>
-                  <span className="text-charcoal/60 dark:text-gray-400">{plan.period}</span>
+                  <span className="text-text-muted dark:text-gray-400">{plan.period}</span>
                 </div>
-                <p className="text-sm text-charcoal/60 dark:text-gray-400 mt-2">{plan.description}</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400 mt-2">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
@@ -584,7 +584,7 @@ function PricingSection() {
 
         {/* Pricing Calculator CTA */}
         <div className="mt-12 text-center">
-          <p className="text-charcoal/60 dark:text-gray-400 mb-2">
+          <p className="text-text-muted dark:text-gray-400 mb-2">
             Not sure which features you need?
           </p>
           <Link href="/pricing" className="text-sage font-medium hover:underline inline-flex items-center gap-1">
@@ -635,7 +635,7 @@ function TestimonialsSection() {
           <h2 className="text-3xl sm:text-4xl lg:text-display-sm font-display font-bold text-charcoal dark:text-white mb-4">
             Loved by salon owners everywhere
           </h2>
-          <p className="text-lg text-charcoal/60 dark:text-gray-400">
+          <p className="text-lg text-text-secondary dark:text-gray-400">
             Join thousands of salons who switched to Peacase
           </p>
         </div>
@@ -659,7 +659,7 @@ function TestimonialsSection() {
                 </div>
                 <div>
                   <p className="font-semibold text-charcoal dark:text-white text-sm">{testimonial.author}</p>
-                  <p className="text-charcoal/60 dark:text-gray-400 text-xs">{testimonial.role}</p>
+                  <p className="text-text-muted dark:text-gray-400 text-xs">{testimonial.role}</p>
                 </div>
               </div>
             </div>

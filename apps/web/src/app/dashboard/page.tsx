@@ -335,7 +335,7 @@ function DashboardContent() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-charcoal/60 hover:text-charcoal dark:text-white/60 dark:hover:text-white lg:hidden"
+                className="p-2 text-text-muted hover:text-charcoal dark:text-white/60 dark:hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
               </button>
@@ -343,7 +343,7 @@ function DashboardContent() {
                 <h1 className="text-2xl font-bold text-charcoal dark:text-white">
                   {salon?.name ? `Welcome to ${salon.name}` : 'Dashboard'}
                 </h1>
-                <p className="text-sm text-charcoal/60 dark:text-white/60">
+                <p className="text-sm text-text-muted dark:text-white/60">
                   {user?.firstName ? `Hi, ${user.firstName}!` : 'Manage your business'}
                 </p>
               </div>
@@ -363,7 +363,7 @@ function DashboardContent() {
 
               <button
                 onClick={() => refetch()}
-                className="p-2 text-charcoal/60 hover:text-charcoal dark:text-white/60 dark:hover:text-white"
+                className="p-2 text-text-muted hover:text-charcoal dark:text-white/60 dark:hover:text-white"
                 title="Refresh data"
               >
                 <RefreshCw className={`w-5 h-5 ${(statsLoading || appointmentsLoading || activityLoading) ? 'animate-spin' : ''}`} />
@@ -390,7 +390,7 @@ function DashboardContent() {
                   </div>
                   <div className="text-left">
                     <h3 className="font-semibold text-charcoal dark:text-white">Complete Your Setup</h3>
-                    <p className="text-sm text-charcoal/60 dark:text-white/60">
+                    <p className="text-sm text-text-muted dark:text-white/60">
                       {totalCompleted} of {visibleSetupItems.length} tasks complete
                     </p>
                   </div>
@@ -440,7 +440,7 @@ function DashboardContent() {
                         }`} />
                         <span className={`flex-1 ${
                           item.completed
-                            ? 'text-charcoal/60 dark:text-white/60 line-through'
+                            ? 'text-text-muted dark:text-white/60 line-through'
                             : 'text-charcoal dark:text-white font-medium'
                         }`}>
                           {item.label}
@@ -455,7 +455,7 @@ function DashboardContent() {
                             {item.optional && (
                               <button
                                 onClick={() => skipOptionalStep(item.id)}
-                                className="text-xs text-charcoal/40 dark:text-white/40 hover:text-charcoal/60 dark:hover:text-white/60 transition-colors"
+                                className="text-xs text-text-muted dark:text-white/40 hover:text-text-secondary dark:hover:text-white/60 transition-colors"
                               >
                                 Skip
                               </button>
@@ -486,7 +486,7 @@ function DashboardContent() {
                     <AlertCircle className="w-5 h-5 text-rose" />
                     <div>
                       <p className="font-medium text-charcoal dark:text-white">Could not load statistics</p>
-                      <p className="text-sm text-charcoal/60 dark:text-white/60">{statsError}</p>
+                      <p className="text-sm text-text-muted dark:text-white/60">{statsError}</p>
                     </div>
                   </div>
                   <button
@@ -538,7 +538,7 @@ function DashboardContent() {
                       </div>
                     </div>
                     <p className="text-3xl font-bold text-charcoal dark:text-white mb-1">{stat.value}</p>
-                    <p className="text-sm text-charcoal/60 dark:text-white/60 font-medium">{stat.label}</p>
+                    <p className="text-sm text-text-muted dark:text-white/60 font-medium">{stat.label}</p>
                   </div>
                 );
               })
@@ -556,7 +556,7 @@ function DashboardContent() {
                       <Sparkles className="w-5 h-5 text-sage" />
                       <div>
                         <p className="font-medium text-charcoal dark:text-white">14-Day Free Trial Active</p>
-                        <p className="text-sm text-charcoal/60 dark:text-white/60">
+                        <p className="text-sm text-text-muted dark:text-white/60">
                           Trial ends {trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - ${monthlyTotal}/month after
                         </p>
                       </div>
@@ -576,7 +576,7 @@ function DashboardContent() {
                 <div className="p-6 border-b border-border dark:border-white/10 flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-charcoal dark:text-white">Your Add-ons</h2>
-                    <p className="text-sm text-charcoal/60 dark:text-white/60">Set up your features to get the most out of Peacase</p>
+                    <p className="text-sm text-text-muted dark:text-white/60">Set up your features to get the most out of Peacase</p>
                   </div>
                   <Link
                     href="/settings?tab=subscription"
@@ -687,7 +687,7 @@ function DashboardContent() {
                         <AlertCircle className="w-5 h-5 text-rose" />
                         <div>
                           <p className="font-medium text-charcoal dark:text-white">Could not load today&apos;s appointments</p>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60">{appointmentsError}</p>
+                          <p className="text-sm text-text-muted dark:text-white/60">{appointmentsError}</p>
                         </div>
                       </div>
                       <button
@@ -721,13 +721,13 @@ function DashboardContent() {
                       <div className="flex items-center gap-4">
                         <div className="text-center min-w-[70px]">
                           <p className="text-sm font-bold text-charcoal dark:text-white">{formatTime(apt.startTime)}</p>
-                          <p className="text-xs text-charcoal/50 dark:text-white/50">{calculateDuration(apt.startTime, apt.endTime)}</p>
+                          <p className="text-xs text-text-muted dark:text-white/50">{calculateDuration(apt.startTime, apt.endTime)}</p>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-charcoal dark:text-white truncate">
                             {apt.client?.firstName} {apt.client?.lastName}
                           </p>
-                          <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">
+                          <p className="text-sm text-text-muted dark:text-white/60 truncate">
                             {apt.service?.name} with {apt.staff?.firstName} {apt.staff?.lastName}
                           </p>
                         </div>
@@ -781,7 +781,7 @@ function DashboardContent() {
                 ) : (
                   <div className="p-8 text-center">
                     <Calendar className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                    <p className="text-charcoal/60 dark:text-white/60">No appointments scheduled for today</p>
+                    <p className="text-text-muted dark:text-white/60">No appointments scheduled for today</p>
                     <Link
                       href="/calendar"
                       className="inline-block mt-4 text-sage hover:text-sage-dark font-medium"
@@ -803,7 +803,7 @@ function DashboardContent() {
                   // Activity error state
                   <div className="text-center py-6">
                     <AlertCircle className="w-8 h-8 text-charcoal/30 dark:text-white/30 mx-auto mb-2" />
-                    <p className="text-sm text-charcoal/60 dark:text-white/60">{activityError}</p>
+                    <p className="text-sm text-text-muted dark:text-white/60">{activityError}</p>
                     <button
                       onClick={() => refetchActivity()}
                       className="mt-2 text-sm text-sage hover:text-sage-dark font-medium"
@@ -828,7 +828,7 @@ function DashboardContent() {
                       <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-charcoal dark:text-white">{activity.action}</p>
-                        <p className="text-sm text-charcoal/60 dark:text-white/60 truncate">{activity.detail}</p>
+                        <p className="text-sm text-text-muted dark:text-white/60 truncate">{activity.detail}</p>
                         <p className="text-xs text-charcoal/40 dark:text-white/40 mt-1">{activity.time}</p>
                       </div>
                     </div>
@@ -836,7 +836,7 @@ function DashboardContent() {
                 ) : (
                   <div className="text-center py-8">
                     <Clock className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-3" />
-                    <p className="text-charcoal/60 dark:text-white/60">No recent activity yet</p>
+                    <p className="text-text-muted dark:text-white/60">No recent activity yet</p>
                     <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1">
                       Activity will appear here as you book appointments and add clients
                     </p>
@@ -866,7 +866,7 @@ function DashboardContent() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-medium text-charcoal">{loc.name}</h4>
-                        <p className="text-sm text-charcoal/60">
+                        <p className="text-sm text-text-muted">
                           {loc.isPrimary ? 'Primary Location' : 'Branch'}
                         </p>
                         {loc.city && (
@@ -895,7 +895,7 @@ function DashboardContent() {
             >
               <Calendar className="w-10 h-10 text-sage mb-3 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-charcoal dark:text-white">New Appointment</p>
-              <p className="text-sm text-charcoal/60 dark:text-white/60">Book a service</p>
+              <p className="text-sm text-text-muted dark:text-white/60">Book a service</p>
             </Link>
             <Link
               href="/clients"
@@ -903,7 +903,7 @@ function DashboardContent() {
             >
               <Users className="w-10 h-10 text-lavender mb-3 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-charcoal dark:text-white">Add Client</p>
-              <p className="text-sm text-charcoal/60 dark:text-white/60">Register new client</p>
+              <p className="text-sm text-text-muted dark:text-white/60">Register new client</p>
             </Link>
             <Link
               href="/services"
@@ -911,7 +911,7 @@ function DashboardContent() {
             >
               <Scissors className="w-10 h-10 text-peach mb-3 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-charcoal dark:text-white">Manage Services</p>
-              <p className="text-sm text-charcoal/60 dark:text-white/60">Edit service menu</p>
+              <p className="text-sm text-text-muted dark:text-white/60">Edit service menu</p>
             </Link>
             <Link
               href="/reports"
@@ -919,7 +919,7 @@ function DashboardContent() {
             >
               <BarChart3 className="w-10 h-10 text-mint mb-3 group-hover:scale-110 transition-transform" />
               <p className="font-semibold text-charcoal dark:text-white">View Reports</p>
-              <p className="text-sm text-charcoal/60 dark:text-white/60">Analytics & insights</p>
+              <p className="text-sm text-text-muted dark:text-white/60">Analytics & insights</p>
             </Link>
           </div>
         </div>
@@ -956,7 +956,7 @@ function DashboardContent() {
                       <div className="w-2.5 h-2.5 rounded-full bg-sage mt-1.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-charcoal">{activity.action}</p>
-                        <p className="text-charcoal/60">{activity.detail}</p>
+                        <p className="text-text-muted">{activity.detail}</p>
                         <p className="text-xs text-charcoal/40 mt-2">{activity.time}</p>
                       </div>
                     </div>
@@ -970,7 +970,7 @@ function DashboardContent() {
               ) : (
                 <div className="text-center py-12">
                   <Clock className="w-16 h-16 text-charcoal/20 mx-auto mb-4" />
-                  <p className="text-lg text-charcoal/60">No activity yet</p>
+                  <p className="text-lg text-text-muted">No activity yet</p>
                   <p className="text-sm text-charcoal/40 mt-2">
                     Your activity feed will show bookings, payments, and more
                   </p>
