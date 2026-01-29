@@ -14,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Briefcase,
+  MapPin,
 } from 'lucide-react';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
@@ -37,6 +38,12 @@ interface StaffProfile {
     id: string;
     name: string;
     category?: string;
+  }[];
+  assignedLocations: {
+    id: string;
+    name: string;
+    address?: string;
+    isPrimary: boolean;
   }[];
 }
 
@@ -473,6 +480,52 @@ function ProfileContent() {
                           <p className="font-medium text-charcoal">{service.name}</p>
                           {service.category && (
                             <p className="text-xs text-charcoal/60">{service.category}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Assigned Locations (Read-only) */}
+              <div className="bg-white rounded-2xl shadow-soft border border-charcoal/5 overflow-hidden">
+                <div className="p-5 border-b border-charcoal/10">
+                  <h3 className="text-lg font-semibold text-charcoal">
+                    <MapPin className="w-5 h-5 inline mr-2" />
+                    Assigned Locations
+                  </h3>
+                  <p className="text-sm text-charcoal/60">
+                    Locations where you are scheduled to work
+                  </p>
+                </div>
+
+                <div className="p-6">
+                  {profile.assignedLocations?.length === 0 ? (
+                    <p className="text-charcoal/60 text-center py-4">
+                      No locations assigned yet. Contact your manager.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {profile.assignedLocations?.map((location) => (
+                        <div
+                          key={location.id}
+                          className={`px-4 py-2 rounded-xl ${
+                            location.isPrimary
+                              ? 'bg-sage/20 border border-sage/30'
+                              : 'bg-charcoal/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-charcoal">{location.name}</p>
+                            {location.isPrimary && (
+                              <span className="px-2 py-0.5 bg-sage/30 text-sage-dark rounded text-xs font-medium">
+                                Primary
+                              </span>
+                            )}
+                          </div>
+                          {location.address && (
+                            <p className="text-xs text-charcoal/60">{location.address}</p>
                           )}
                         </div>
                       ))}
