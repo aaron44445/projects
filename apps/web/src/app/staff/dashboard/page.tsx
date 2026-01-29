@@ -16,6 +16,7 @@ import {
   TrendingUp,
   MapPin,
 } from 'lucide-react';
+import { EmptyState, Modal } from '@peacase/ui';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
 import { useStaffAuth } from '@/contexts/StaffAuthContext';
@@ -129,6 +130,10 @@ function DashboardContent() {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  };
+
+  const isPastAppointment = (startTime: string) => {
+    return new Date(startTime) < new Date();
   };
 
   return (
@@ -278,17 +283,21 @@ function DashboardContent() {
 
                   <div className="divide-y divide-charcoal/10">
                     {dashboardData.todayAppointments.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <Calendar className="w-12 h-12 text-charcoal/20 mx-auto mb-3" />
-                        <p className="text-charcoal/60">No appointments scheduled for today</p>
-                        <p className="text-sm text-charcoal/40 mt-1">Enjoy your free time!</p>
-                      </div>
+                      <EmptyState
+                        icon={Calendar}
+                        title="No appointments scheduled for today"
+                        description="Enjoy your free time!"
+                      />
                     ) : (
-                      dashboardData.todayAppointments.map((appointment) => (
-                        <div
-                          key={appointment.id}
-                          className="p-4 hover:bg-charcoal/5 transition-colors"
-                        >
+                      dashboardData.todayAppointments.map((appointment) => {
+                        const isPast = isPastAppointment(appointment.startTime);
+                        return (
+                          <div
+                            key={appointment.id}
+                            className={`p-4 hover:bg-charcoal/5 transition-colors cursor-pointer ${
+                              isPast ? 'opacity-50' : ''
+                            }`}
+                          >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-xl bg-sage/10 flex items-center justify-center">
@@ -326,7 +335,8 @@ function DashboardContent() {
                             </div>
                           </div>
                         </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>
