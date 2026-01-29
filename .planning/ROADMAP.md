@@ -79,11 +79,12 @@ Plans:
   5. Staff can view their profile info and assigned services/locations
   6. Staff can edit their phone number and avatar
 
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 20-01: TBD during phase planning
-- [ ] 20-02: TBD during phase planning
+- [ ] 20-01-PLAN.md — Location filtering and client visibility in dashboard API
+- [ ] 20-02-PLAN.md — Assigned locations display in profile page
+- [ ] 20-03-PLAN.md — Past appointment dimming, EmptyState, and detail modal
 
 ### Phase 21: Availability & Time Off
 
