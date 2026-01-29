@@ -13,6 +13,7 @@ export default function StaffLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,7 @@ export default function StaffLoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       router.push('/staff/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
@@ -131,6 +132,21 @@ export default function StaffLoginPage() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center">
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-charcoal/30 text-sage focus:ring-sage/20"
+                  disabled={isSubmitting}
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-charcoal/70">
+                  Stay logged in on this device
+                </label>
               </div>
 
               {/* Submit Button */}
