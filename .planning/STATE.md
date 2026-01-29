@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 18 of 18 (UI/UX Consistency)
-Plan: 08 of 12+ (gap closure plans)
+Plan: 06 of 12+ (gap closure plans)
 Status: Gap closure in progress
-Last activity: 2026-01-29 - Completed 18-08-PLAN.md (Packages and Services Modal Migration)
+Last activity: 2026-01-29 - Completed 18-06-PLAN.md (Clients, Dashboard, Calendar Modal Migration)
 
 Progress: [████████████████████] 100%
 
@@ -148,6 +148,8 @@ From v1.1 Phase 18:
 - Error pattern: bg-rose/10 border-rose/20 text-rose-dark for all error states (18-12)
 - Use size=lg for complex form modals, size=md for standard dialogs, size=sm for confirmations (18-08)
 - Conditional rendering inside Modal for null-safe dynamic titles (18-08)
+- Drawers (inset-y-0 right-0) remain as slide-out panels, only centered modals migrated (18-06)
+- Modal migration: import Modal from @peacase/ui, use isOpen/onClose/title props (18-06)
 
 ### Pending Todos
 
@@ -160,9 +162,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-08-PLAN.md (Packages and Services Modal Migration)
+Stopped at: Completed 18-06-PLAN.md (Clients, Dashboard, Calendar Modal Migration)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 gap closure: plan 08 complete)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 06 complete)*
