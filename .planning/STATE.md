@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 16 of 18 (Accessibility Compliance)
-Plan: 10 of 10 complete (Gap Closure complete)
-Status: Gap closure complete
-Last activity: 2026-01-29 - Completed 16-07-PLAN.md (Modal Focus Trap fix)
+Plan: 12 (gap closure) complete
+Status: Gap closure in progress
+Last activity: 2026-01-29 - Completed 16-09-PLAN.md (booking widget accessibility)
 
 Progress: [███████████░░░░░░░░░] 55%
 
@@ -101,6 +101,7 @@ From v1.1 Phase 16:
 - Use clip-path technique instead of transform for skip-link visibility (16-10)
 - Use hidden class instead of conditional rendering for modal focus restoration (16-07)
 - Use single escape handler with priority stacking for multiple modal states (16-08)
+- Use role="radio" with aria-checked instead of aria-pressed for selection groups (16-09)
 
 ### Pending Todos
 
@@ -113,9 +114,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 16-08-PLAN.md (gap closure)
+Stopped at: Completed 16-09-PLAN.md (gap closure)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Completed plan 16-08: Staff Page Modal Accessibility - Gap Closure)*
+*Last updated: 2026-01-29 (Completed plan 16-09: Booking Widget Accessibility - Gap Closure)*
