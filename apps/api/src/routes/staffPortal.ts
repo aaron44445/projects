@@ -968,10 +968,10 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
   const staffId = req.user.userId;
   const salonId = req.user.salonId;
 
-  // Check if staff can request time off
+  // Check if staff can request time off and if approval is required
   const salon = await prisma.salon.findUnique({
     where: { id: salonId },
-    select: { staffCanRequestTimeOff: true },
+    select: { staffCanRequestTimeOff: true, requireTimeOffApproval: true },
   });
 
   if (!salon?.staffCanRequestTimeOff) {
@@ -998,6 +998,10 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
     });
   }
 
+  // Determine initial status based on salon setting
+  // If requireTimeOffApproval is false (default), auto-approve
+  const initialStatus = salon.requireTimeOffApproval ? 'pending' : 'approved';
+
   const timeOff = await prisma.timeOff.create({
     data: {
       staffId,
@@ -1006,7 +1010,12 @@ router.post('/time-off', authenticate, staffOnly, asyncHandler(async (req: Reque
       type: data.type,
       reason: data.reason,
       notes: data.notes,
-      status: 'pending',
+      status: initialStatus,
+      // If auto-approved, set reviewed fields
+      ...(initialStatus === 'approved' && {
+        reviewedAt: new Date(),
+        reviewNotes: 'Auto-approved',
+      }),
     },
   });
 
