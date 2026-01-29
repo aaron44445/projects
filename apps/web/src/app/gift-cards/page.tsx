@@ -20,7 +20,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
-import { Modal } from '@peacase/ui';
+import { Modal, EmptyState } from '@peacase/ui';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -539,16 +539,15 @@ function GiftCardsContent() {
               </div>
 
               {giftCards.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Gift className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                  <p className="text-charcoal/60 dark:text-white/60 mb-4">No gift cards yet</p>
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
-                  >
-                    Create Your First Gift Card
-                  </button>
-                </div>
+                <EmptyState
+                  icon={Gift}
+                  title="No gift cards yet"
+                  description="Create your first gift card to start offering this perk to your clients."
+                  action={{
+                    label: "Create Gift Card",
+                    onClick: () => setShowModal(true),
+                  }}
+                />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">

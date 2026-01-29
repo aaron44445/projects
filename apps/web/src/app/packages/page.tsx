@@ -31,7 +31,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { usePackages, Package as PackageType, PackageMember } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
-import { Modal } from '@peacase/ui';
+import { Modal, EmptyState } from '@peacase/ui';
 
 const services = [
   'Haircut & Style',
@@ -388,15 +388,16 @@ function PackagesContent() {
               {activeTab === 'packages' && (
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {packageItems.length === 0 ? (
-                    <div className="col-span-full p-12 text-center">
-                      <Package className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60 dark:text-white/60 mb-4">No packages yet</p>
-                      <button
-                        onClick={() => setShowModal('package')}
-                        className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
-                      >
-                        Create Your First Package
-                      </button>
+                    <div className="col-span-full">
+                      <EmptyState
+                        icon={Package}
+                        title="No packages yet"
+                        description="Create service packages to offer bundled deals to your clients."
+                        action={{
+                          label: "Create Package",
+                          onClick: () => setShowModal('package'),
+                        }}
+                      />
                     </div>
                   ) : (
                     packageItems.map((pkg) => (
@@ -482,15 +483,16 @@ function PackagesContent() {
               {activeTab === 'memberships' && (
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {membershipItems.length === 0 ? (
-                    <div className="col-span-full p-12 text-center">
-                      <RefreshCw className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60 dark:text-white/60 mb-4">No memberships yet</p>
-                      <button
-                        onClick={() => setShowModal('membership')}
-                        className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
-                      >
-                        Create Your First Membership
-                      </button>
+                    <div className="col-span-full">
+                      <EmptyState
+                        icon={RefreshCw}
+                        title="No memberships yet"
+                        description="Create recurring memberships to build loyal client relationships."
+                        action={{
+                          label: "Create Membership",
+                          onClick: () => setShowModal('membership'),
+                        }}
+                      />
                     </div>
                   ) : (
                     membershipItems.map((pkg) => (
@@ -575,11 +577,11 @@ function PackagesContent() {
               {activeTab === 'members' && (
                 <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                   {members.length === 0 ? (
-                    <div className="p-12 text-center">
-                      <Users className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                      <p className="text-charcoal/60 dark:text-white/60">No members yet</p>
-                      <p className="text-sm text-charcoal/40 dark:text-white/40 mt-2">Members will appear here when clients purchase packages or memberships</p>
-                    </div>
+                    <EmptyState
+                      icon={Users}
+                      title="No members yet"
+                      description="Members will appear here when clients purchase packages or memberships."
+                    />
                   ) : (
                     members.map((member) => (
                       <div key={member.id} className="p-4 flex items-center gap-4 hover:bg-cream/50 dark:hover:bg-white/5 transition-colors relative">

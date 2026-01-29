@@ -21,7 +21,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { Modal } from '@peacase/ui';
+import { Modal, EmptyState } from '@peacase/ui';
 import { FeatureGate } from '@/components/FeatureGate';
 import { AppSidebar } from '@/components/AppSidebar';
 import { AuthGuard } from '@/components/AuthGuard';
@@ -836,16 +836,15 @@ function MarketingContent() {
                   <p className="text-charcoal/60 dark:text-white/60">Loading campaigns...</p>
                 </div>
               ) : campaigns.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Send className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                  <p className="text-charcoal/60 dark:text-white/60 mb-4">No campaigns yet</p>
-                  <button
-                    onClick={() => openModal('email')}
-                    className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark"
-                  >
-                    Create your first campaign
-                  </button>
-                </div>
+                <EmptyState
+                  icon={Send}
+                  title="No campaigns yet"
+                  description="Create your first campaign to start reaching out to your clients."
+                  action={{
+                    label: "Create Campaign",
+                    onClick: () => openModal('email'),
+                  }}
+                />
               ) : (
                 <div className="divide-y divide-charcoal/10 dark:divide-white/10">
                   {campaigns.map((campaign) => (
