@@ -399,7 +399,7 @@ function GiftCardsContent() {
         <AppSidebar currentPage="gift-cards" sidebarOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center bg-white dark:bg-sidebar p-8 rounded-2xl shadow-soft max-w-md">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <AlertCircle className="w-12 h-12 text-rose-dark mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-charcoal dark:text-white mb-2">Failed to load gift cards</h2>
             <p className="text-charcoal/60 dark:text-white/60 mb-4">{error}</p>
             <button
@@ -585,7 +585,7 @@ function GiftCardsContent() {
                               <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
                                 status === 'active' ? 'bg-sage/20 text-sage-dark' :
                                 status === 'redeemed' ? 'bg-lavender/20 text-lavender-dark' :
-                                status === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                status === 'cancelled' ? 'bg-rose/10 text-rose-dark dark:bg-rose/20' :
                                 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                               }`}>
                                 {status}
@@ -804,7 +804,7 @@ function GiftCardsContent() {
           </div>
 
           {balanceError && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+            <div className="p-3 bg-rose/10 dark:bg-rose/20 border border-rose/20 dark:border-rose/30 rounded-xl text-rose-dark text-sm">
               {balanceError}
             </div>
           )}
@@ -879,7 +879,7 @@ function GiftCardsContent() {
           </div>
 
           {redeemError && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm">
+            <div className="p-3 bg-rose/10 dark:bg-rose/20 border border-rose/20 dark:border-rose/30 rounded-xl text-rose-dark text-sm">
               {redeemError}
             </div>
           )}
@@ -939,7 +939,7 @@ function GiftCardsContent() {
                   <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${
                     mapStatus(selectedCard.status) === 'active' ? 'bg-sage/20 text-sage-dark' :
                     mapStatus(selectedCard.status) === 'redeemed' ? 'bg-lavender/20 text-lavender-dark' :
-                    mapStatus(selectedCard.status) === 'cancelled' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                    mapStatus(selectedCard.status) === 'cancelled' ? 'bg-rose/10 text-rose-dark dark:bg-rose/20' :
                     'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60'
                   }`}>
                     {mapStatus(selectedCard.status)}
