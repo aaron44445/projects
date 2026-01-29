@@ -1,9 +1,16 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All reports routes require the reports add-on
+router.use(authenticate, requireAddon('reports'));
 
 // Helper to parse date range from query params
 function getDateRange(startDate?: string, endDate?: string) {
@@ -200,7 +207,7 @@ router.get('/revenue', authenticate, asyncHandler(async (req: Request, res: Resp
       },
     });
   } catch (error) {
-    console.error('Revenue report error:', error);
+    logger.error({ err: error, salonId, reportType: 'revenue' }, 'Revenue report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate revenue report' },
@@ -331,7 +338,7 @@ router.get('/services', authenticate, asyncHandler(async (req: Request, res: Res
       },
     });
   } catch (error) {
-    console.error('Services report error:', error);
+    logger.error({ err: error, salonId, reportType: 'services' }, 'Services report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate services report' },
@@ -404,18 +411,6 @@ router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Respon
           0
         );
 
-        // Get average rating
-        const reviews = await prisma.review.aggregate({
-          where: {
-            salonId,
-            staffId: s.id,
-            isApproved: true,
-            submittedAt: { gte: start, lte: end },
-          },
-          _avg: { rating: true },
-          _count: { rating: true },
-        });
-
         return {
           id: s.id,
           name: `${s.firstName} ${s.lastName}`,
@@ -427,8 +422,6 @@ router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Respon
           tips: totalTips,
           commissionRate: s.commissionRate || 0,
           commission: totalRevenue * ((s.commissionRate || 0) / 100),
-          rating: reviews._avg.rating ? Math.round(reviews._avg.rating * 10) / 10 : null,
-          reviewCount: reviews._count.rating,
         };
       })
     );
@@ -455,7 +448,7 @@ router.get('/staff', authenticate, asyncHandler(async (req: Request, res: Respon
       },
     });
   } catch (error) {
-    console.error('Staff report error:', error);
+    logger.error({ err: error, salonId, reportType: 'staff' }, 'Staff report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate staff report' },
@@ -644,7 +637,7 @@ router.get('/clients', authenticate, asyncHandler(async (req: Request, res: Resp
       },
     });
   } catch (error) {
-    console.error('Clients report error:', error);
+    logger.error({ err: error, salonId, reportType: 'clients' }, 'Clients report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate clients report' },
@@ -777,7 +770,7 @@ router.get('/overview', authenticate, asyncHandler(async (req: Request, res: Res
       },
     });
   } catch (error) {
-    console.error('Overview report error:', error);
+    logger.error({ err: error, salonId, reportType: 'overview' }, 'Overview report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate overview report' },
@@ -857,7 +850,7 @@ router.get('/by-location', authenticate, asyncHandler(async (req: Request, res: 
       },
     });
   } catch (error) {
-    console.error('By-location report error:', error);
+    logger.error({ err: error, salonId, reportType: 'by-location' }, 'By-location report generation failed');
     res.status(500).json({
       success: false,
       error: { code: 'REPORT_ERROR', message: 'Failed to generate by-location report' },
