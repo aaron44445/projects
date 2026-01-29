@@ -17,6 +17,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://peacase.com'),
+  alternates: {
+    canonical: './',
+  },
   title: {
     default: 'Peacase - Premium Spa & Salon Management',
     template: '%s | Peacase',
