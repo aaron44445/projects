@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1.1 Audit Remediation - Phase 16: Accessibility Compliance
+**Current focus:** v1.1 Audit Remediation - Phase 17: Code Quality
 
 ## Current Position
 
-Phase: 16 of 18 (Accessibility Compliance)
-Plan: 10 of 10 complete (all gap closures)
-Status: Phase complete - verified
-Last activity: 2026-01-29 - Phase 16 verified
+Phase: 17 of 18 (Code Quality)
+Plan: 1 of 9 complete
+Status: Executing wave 1
+Last activity: 2026-01-29 - Completed 17-01-PLAN.md
 
-Progress: [████████████░░░░░░░░] 60%
+Progress: [████████████░░░░░░░░] 62%
 
 ## Milestone Context
 
@@ -26,15 +26,15 @@ Progress: [████████████░░░░░░░░] 60%
 | 14 | Performance | PERF-01 to PERF-04 | Complete |
 | 15 | SEO | SEO-01 to SEO-04 | Complete |
 | 16 | Accessibility | A11Y-01 to A11Y-04 | Complete |
-| 17 | Code Quality | CODE-01 to CODE-04 | Pending |
+| 17 | Code Quality | CODE-01 to CODE-04 | In Progress |
 | 18 | UI/UX | UI-01 to UI-04 | Pending |
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19 (v1.1)
-- Average duration: 3.6 minutes
-- Total execution time: 72 minutes
+- Total plans completed: 20 (v1.1)
+- Average duration: 3.75 minutes
+- Total execution time: 75 minutes
 
 **By Phase:**
 
@@ -44,6 +44,7 @@ Progress: [████████████░░░░░░░░] 60%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
+| 17 | 1/9 | 3 min | 3 min |
 
 *Updated after each plan completion*
 
@@ -103,6 +104,12 @@ From v1.1 Phase 16:
 - Use single escape handler with priority stacking for multiple modal states (16-08)
 - Use role="radio" with aria-checked instead of aria-pressed for selection groups (16-09)
 
+From v1.1 Phase 17:
+- JSON format in production, pino-pretty in development (17-01)
+- LOG_LEVEL env var for runtime log level control (17-01)
+- ISO timestamp format for consistency (17-01)
+- withSalonId returns simple typed object, not Prisma-dependent (17-01)
+
 ### Pending Todos
 
 None yet.
@@ -114,9 +121,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Phase 16 complete
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 16 complete - Accessibility Compliance verified)*
+*Last updated: 2026-01-29 (17-01 complete - Foundation utilities)*
