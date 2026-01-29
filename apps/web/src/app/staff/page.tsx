@@ -33,6 +33,7 @@ import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStaff, useServices, useLocationContext, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
+import { EmptyState } from '@peacase/ui';
 
 const statusColors: Record<string, string> = {
   active: 'bg-sage/20 text-sage-dark border border-sage/30',
@@ -734,22 +735,17 @@ function StaffContent() {
         {!isLoading && !error && (
           <div className="flex-1 p-6 overflow-auto">
             {filteredStaff.length === 0 ? (
-              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-12 text-center">
-                <Users className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                <p className="text-charcoal/60 dark:text-white/60">
-                  {searchQuery ? 'No staff members found' : 'No staff members yet'}
-                </p>
-                <p className="text-sm text-charcoal/40 dark:text-white/40 mt-1 mb-4">
-                  {searchQuery ? 'Try adjusting your search' : 'Add your first team member to get started'}
-                </p>
-                {!searchQuery && (
-                  <button
-                    onClick={openNewStaffModal}
-                    className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
-                  >
-                    Add Staff Member
-                  </button>
-                )}
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5">
+                <EmptyState
+                  icon={Users}
+                  title={searchQuery ? "No staff members found" : "No staff members yet"}
+                  description={searchQuery ? "Try adjusting your search" : "Add your first team member to start scheduling"}
+                  action={!searchQuery ? {
+                    label: "Add Staff",
+                    onClick: openNewStaffModal,
+                    icon: Plus
+                  } : undefined}
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

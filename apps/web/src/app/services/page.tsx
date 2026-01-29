@@ -26,6 +26,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useServices, useStaff, type Service, type ServiceCategory, type CreateServiceInput, type UpdateServiceInput, type CreateCategoryInput } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { SUPPORTED_CURRENCIES, CurrencyCode } from '@/lib/i18n';
+import { EmptyState } from '@peacase/ui';
 
 interface CategoryWithUI extends ServiceCategory {
   expanded: boolean;
@@ -521,20 +522,17 @@ function ServicesContent() {
         {!isLoading && !error && (
           <div className="flex-1 p-6 overflow-auto">
             {categoriesWithServices.length === 0 ? (
-              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5 p-12 text-center">
-                <Clock className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
-                <p className="text-charcoal/60 dark:text-white/60 mb-2">No services found</p>
-                <p className="text-sm text-charcoal/40 dark:text-white/40 mb-4">
-                  {searchQuery ? 'Try adjusting your search' : 'Add your first service to get started'}
-                </p>
-                {!searchQuery && (
-                  <button
-                    onClick={openNewServiceModal}
-                    className="px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors"
-                  >
-                    Add Service
-                  </button>
-                )}
+              <div className="bg-white dark:bg-sidebar rounded-2xl shadow-soft border border-charcoal/5 dark:border-white/5">
+                <EmptyState
+                  icon={Clock}
+                  title={searchQuery ? "No services found" : "No services yet"}
+                  description={searchQuery ? "Try adjusting your search" : "Add your first service to start booking appointments"}
+                  action={!searchQuery ? {
+                    label: "Add Service",
+                    onClick: openNewServiceModal,
+                    icon: Plus
+                  } : undefined}
+                />
               </div>
             ) : (
               <div className="space-y-4">
