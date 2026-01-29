@@ -3,7 +3,7 @@
 ## Milestones
 
 - [x] **v1.0 Stabilization** - Phases 2-12 (shipped 2026-01-28)
-- [ ] **v1.1 Audit Remediation** - Phases 13-18 (in progress)
+- [x] **v1.1 Audit Remediation** - Phases 13-18 (complete 2026-01-29)
 
 ## Overview
 
@@ -22,7 +22,7 @@ See MILESTONES.md for v1.0 details.
 
 </details>
 
-### v1.1 Audit Remediation (In Progress)
+### v1.1 Audit Remediation (Complete)
 
 **Milestone Goal:** Fix all audit findings to production standards across security, performance, SEO, accessibility, code quality, and UI/UX.
 
@@ -31,7 +31,7 @@ See MILESTONES.md for v1.0 details.
 - [x] **Phase 15: SEO Fundamentals** - Sitemap, robots.txt, canonical URLs, structured data
 - [x] **Phase 16: Accessibility Compliance** - Focus traps, ARIA labels, skip navigation, contrast
 - [x] **Phase 17: Code Quality** - TypeScript strictness, structured logging, DRY utilities
-- [ ] **Phase 18: UI/UX Consistency** - Modal standardization, design tokens, component reuse
+- [x] **Phase 18: UI/UX Consistency** - Modal standardization, design tokens, component reuse
 
 ## Phase Details
 
@@ -127,11 +127,11 @@ Plans:
 - [x] 17-07-PLAN.md - Services and middleware logging (CODE-04)
 - [x] 17-08-PLAN.md - Lib, cron, and worker logging (CODE-04)
 - [x] 17-09-PLAN.md - Enable noImplicitAny and verify (CODE-02)
-- [ ] 17-10-PLAN.md - Gap closure: withSalonId in appointments.ts (CODE-03)
-- [ ] 17-11-PLAN.md - Gap closure: withSalonId in services.ts and staff.ts (CODE-03)
-- [ ] 17-12-PLAN.md - Gap closure: withSalonId in users.ts (CODE-03)
-- [ ] 17-13-PLAN.md - Gap closure: withSalonId in clients, notifications, packages (CODE-03)
-- [ ] 17-14-PLAN.md - Gap closure: withSalonId in onboarding, marketing, gift-cards (CODE-03)
+- [x] 17-10-PLAN.md - Gap closure: withSalonId in appointments.ts (CODE-03)
+- [x] 17-11-PLAN.md - Gap closure: withSalonId in services.ts and staff.ts (CODE-03)
+- [x] 17-12-PLAN.md - Gap closure: withSalonId in users.ts (CODE-03)
+- [x] 17-13-PLAN.md - Gap closure: withSalonId in clients, notifications, packages (CODE-03)
+- [x] 17-14-PLAN.md - Gap closure: withSalonId in onboarding, marketing, gift-cards (CODE-03)
 
 ### Phase 18: UI/UX Consistency
 **Goal**: UI components follow consistent patterns with shared design tokens
@@ -149,15 +149,15 @@ Plans:
 - [x] 18-02-PLAN.md - BookingModal migration to packages/ui Modal (UI-01, UI-03)
 - [x] 18-03-PLAN.md - Calendar page status colors and error states (UI-02, UI-03)
 - [x] 18-04-PLAN.md - Empty states migration across key pages (UI-04)
-- [ ] 18-05-PLAN.md - Gap closure: Status colors migration (4 files) (UI-02)
-- [ ] 18-06-PLAN.md - Gap closure: Modal migration part 1 - clients, dashboard, calendar (UI-01)
-- [ ] 18-07-PLAN.md - Gap closure: Modal migration part 2 - gift-cards, locations, marketing (UI-01)
-- [ ] 18-08-PLAN.md - Gap closure: Modal migration part 3 - packages, services (UI-01)
-- [ ] 18-09-PLAN.md - Gap closure: Modal migration part 4 - staff, schedule, time-off, portal (UI-01)
-- [ ] 18-10-PLAN.md - Gap closure: Error tokens - settings page (UI-03)
-- [ ] 18-11-PLAN.md - Gap closure: Error tokens - marketing, gift-cards, notifications, packages (UI-03)
-- [ ] 18-12-PLAN.md - Gap closure: Error tokens - schedule, embed, PaymentForm (UI-03)
-- [ ] 18-13-PLAN.md - Gap closure: Empty states audit (6 pages) (UI-04)
+- [x] 18-05-PLAN.md - Gap closure: Status colors migration (4 files) (UI-02)
+- [x] 18-06-PLAN.md - Gap closure: Modal migration part 1 - clients, dashboard, calendar (UI-01)
+- [x] 18-07-PLAN.md - Gap closure: Modal migration part 2 - gift-cards, locations, marketing (UI-01)
+- [x] 18-08-PLAN.md - Gap closure: Modal migration part 3 - packages, services (UI-01)
+- [x] 18-09-PLAN.md - Gap closure: Modal migration part 4 - staff, schedule, time-off, portal (UI-01)
+- [x] 18-10-PLAN.md - Gap closure: Error tokens - settings page (UI-03)
+- [x] 18-11-PLAN.md - Gap closure: Error tokens - marketing, gift-cards, notifications, packages (UI-03)
+- [x] 18-12-PLAN.md - Gap closure: Error tokens - schedule, embed, PaymentForm (UI-03)
+- [x] 18-13-PLAN.md - Gap closure: Empty states audit (6 pages) (UI-04)
 
 ## Progress
 
@@ -170,8 +170,8 @@ Plans:
 | 15. SEO Fundamentals | v1.1 | 2/2 | Complete | 2026-01-28 |
 | 16. Accessibility Compliance | v1.1 | 10/10 | Complete | 2026-01-29 |
 | 17. Code Quality | v1.1 | 14/14 | Complete | 2026-01-29 |
-| 18. UI/UX Consistency | v1.1 | 4/13 | In progress (gap closure) | - |
+| 18. UI/UX Consistency | v1.1 | 13/13 | Complete | 2026-01-29 |
 
 ---
 *Roadmap created: 2026-01-28*
-*Last updated: 2026-01-29 (Phase 18 gap closure - 9 additional plans for full migration)*
+*Last updated: 2026-01-29 (v1.1 Audit Remediation complete - all 6 phases verified)*
