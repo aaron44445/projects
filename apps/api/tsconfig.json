@@ -9,7 +9,7 @@
     "allowImportingTsExtensions": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
