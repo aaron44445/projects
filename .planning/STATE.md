@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-28)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** v1.1 Audit Remediation - Phase 17: Code Quality
+**Current focus:** v1.1 Audit Remediation - Phase 18: UI/UX (next)
 
 ## Current Position
 
-Phase: 17 of 18 (Code Quality)
-Plan: 8 of 9 complete
-Status: Executing wave 2
-Last activity: 2026-01-29 - Completed 17-06-PLAN.md (remaining routes migration)
+Phase: 17 of 18 (Code Quality) - COMPLETE
+Plan: 9 of 9 complete
+Status: Phase complete
+Last activity: 2026-01-29 - Completed 17-09-PLAN.md (enable noImplicitAny)
 
-Progress: [██████████████░░░░░░] 74%
+Progress: [████████████████░░░░] 83%
 
 ## Milestone Context
 
@@ -26,15 +26,15 @@ Progress: [██████████████░░░░░░] 74%
 | 14 | Performance | PERF-01 to PERF-04 | Complete |
 | 15 | SEO | SEO-01 to SEO-04 | Complete |
 | 16 | Accessibility | A11Y-01 to A11Y-04 | Complete |
-| 17 | Code Quality | CODE-01 to CODE-04 | In Progress |
+| 17 | Code Quality | CODE-01 to CODE-04 | Complete |
 | 18 | UI/UX | UI-01 to UI-04 | Pending |
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20 (v1.1)
-- Average duration: 3.75 minutes
-- Total execution time: 75 minutes
+- Total plans completed: 28 (v1.1)
+- Average duration: 7.3 minutes
+- Total execution time: 204 minutes
 
 **By Phase:**
 
@@ -44,7 +44,7 @@ Progress: [██████████████░░░░░░] 74%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 8/9 | 129 min | 16.1 min |
+| 17 | 9/9 | 138 min | 15.3 min |
 
 *Updated after each plan completion*
 
@@ -121,6 +121,10 @@ From v1.1 Phase 17:
 - Production startup errors still use stderr for fail-fast behavior (17-08)
 - Use unknown + type assertion instead of : any for error parameters (17-06)
 - Include salonId context in all log messages for multi-tenant tracing (17-06)
+- noImplicitAny: true as baseline TypeScript strictness (17-09)
+- Use Options type from express-rate-limit for handler callback (17-09)
+- Access subscription billing period from subscription items (new Stripe API) (17-09)
+- Extract subscription ID from invoice.parent.subscription_details (new Stripe API) (17-09)
 
 ### Pending Todos
 
@@ -128,14 +132,14 @@ None yet.
 
 ### Blockers/Concerns
 
-- Pre-existing TypeScript build errors in subscription-related files (unrelated to phase 13 work)
+None - Phase 17 subscription TypeScript issues resolved by updating to new Stripe API patterns.
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-06-PLAN.md
+Stopped at: Completed 17-09-PLAN.md (Phase 17 complete)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-06 complete - Remaining route files migration)*
+*Last updated: 2026-01-29 (17-09 complete - Enable noImplicitAny, Phase 17 complete)*
