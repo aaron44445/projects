@@ -17,6 +17,7 @@ import {
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
 import { api, ApiError } from '@/lib/api';
+import { Modal } from '@peacase/ui';
 
 interface TimeOffRequest {
   id: string;
@@ -315,134 +316,125 @@ function TimeOffContent() {
       </main>
 
       {/* New Request Modal */}
-      {showNewRequest && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
-            <div className="p-6 border-b border-charcoal/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal">Request Time Off</h2>
-              <button
-                onClick={() => {
-                  setShowNewRequest(false);
-                  setFormData({ startDate: '', endDate: '', reason: '' });
-                  setFormError(null);
-                }}
-                className="p-2 text-charcoal/40 hover:text-charcoal transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={showNewRequest}
+        onClose={() => {
+          setShowNewRequest(false);
+          setFormData({ startDate: '', endDate: '', reason: '' });
+          setFormError(null);
+        }}
+        title="Request Time Off"
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {formError && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-rose-700">{formError}</p>
             </div>
+          )}
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {formError && (
-                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-rose-700">{formError}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, startDate: e.target.value }))
-                    }
-                    min={getMinDate()}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-2">End Date</label>
-                  <input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, endDate: e.target.value }))
-                    }
-                    min={formData.startDate || getMinDate()}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Reason</label>
-                <textarea
-                  value={formData.reason}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, reason: e.target.value }))}
-                  placeholder="e.g., Family vacation, Medical appointment, Personal day..."
-                  required
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowNewRequest(false);
-                    setFormData({ startDate: '', endDate: '', reason: '' });
-                    setFormError(null);
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Submit Request
-                </button>
-              </div>
-            </form>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, startDate: e.target.value }))
+                }
+                min={getMinDate()}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-charcoal mb-2">End Date</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, endDate: e.target.value }))
+                }
+                min={formData.startDate || getMinDate()}
+                required
+                className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-charcoal mb-2">Reason</label>
+            <textarea
+              value={formData.reason}
+              onChange={(e) => setFormData((prev) => ({ ...prev, reason: e.target.value }))}
+              placeholder="e.g., Family vacation, Medical appointment, Personal day..."
+              required
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border border-charcoal/20 focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none transition-all resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowNewRequest(false);
+                setFormData({ startDate: '', endDate: '', reason: '' });
+                setFormError(null);
+              }}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Submit Request
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-6 h-6 text-rose-500" />
-              </div>
-              <h2 className="text-lg font-bold text-charcoal mb-2">Cancel Request?</h2>
-              <p className="text-charcoal/60 mb-6">
-                Are you sure you want to cancel this time-off request? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
-                >
-                  Keep Request
-                </button>
-                <button
-                  onClick={() => handleCancelRequest(deleteConfirm)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Cancel Request
-                </button>
-              </div>
-            </div>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Cancel Request?"
+        size="sm"
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-6 h-6 text-rose-500" />
+          </div>
+          <p className="text-charcoal/60 mb-6">
+            Are you sure you want to cancel this time-off request? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors disabled:opacity-50"
+            >
+              Keep Request
+            </button>
+            <button
+              onClick={() => deleteConfirm && handleCancelRequest(deleteConfirm)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Cancel Request
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
