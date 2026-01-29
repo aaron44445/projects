@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useId } from 'react';
+import FocusTrap from 'focus-trap-react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -59,6 +60,11 @@ function StaffContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [showNewStaff, setShowNewStaff] = useState(false);
+
+  // ARIA IDs for modal accessibility
+  const staffModalTitleId = useId();
+  const locationModalTitleId = useId();
+  const deleteModalTitleId = useId();
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
@@ -174,6 +180,29 @@ function StaffContent() {
   useEffect(() => {
     loadAllStaffLocationAssignments();
   }, [loadAllStaffLocationAssignments]);
+
+  // Escape key handler for all modals
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (deleteConfirm) {
+          setDeleteConfirm(null);
+        } else if (showLocationModal) {
+          closeLocationModal();
+        } else if (showNewStaff) {
+          closeStaffModal();
+        }
+      }
+    };
+
+    if (showNewStaff || showLocationModal || deleteConfirm) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showNewStaff, showLocationModal, deleteConfirm]);
 
   const filteredStaff = useMemo(() => {
     let result = staff;
@@ -1122,21 +1151,34 @@ function StaffContent() {
       {/* Location Assignment Modal */}
       {showLocationModal && locationModalStaff && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-charcoal dark:text-white">Assign Locations</h2>
-                <p className="text-sm text-charcoal/60 dark:text-white/60 mt-1">
-                  {locationModalStaff.firstName} {locationModalStaff.lastName}
-                </p>
+          <FocusTrap
+            active={true}
+            focusTrapOptions={{
+              escapeDeactivates: false,
+              returnFocusOnDeactivate: true,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={locationModalTitleId}
+              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto"
+            >
+              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+                <div>
+                  <h2 id={locationModalTitleId} className="text-xl font-bold text-charcoal dark:text-white">Assign Locations</h2>
+                  <p className="text-sm text-charcoal/60 dark:text-white/60 mt-1">
+                    {locationModalStaff.firstName} {locationModalStaff.lastName}
+                  </p>
+                </div>
+                <button
+                  onClick={closeLocationModal}
+                  aria-label="Close"
+                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={closeLocationModal}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
             <div className="p-6 space-y-4">
               {locations.length === 0 ? (
@@ -1245,24 +1287,38 @@ function StaffContent() {
               </button>
             </div>
           </div>
+          </FocusTrap>
         </div>
       )}
 
       {/* New/Edit Staff Modal */}
       {showNewStaff && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto">
-            <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-charcoal dark:text-white">
-                {editingStaff ? 'Edit Staff Member' : 'Add New Staff Member'}
-              </h2>
-              <button
-                onClick={closeStaffModal}
-                className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+          <FocusTrap
+            active={true}
+            focusTrapOptions={{
+              escapeDeactivates: false,
+              returnFocusOnDeactivate: true,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={staffModalTitleId}
+              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto"
+            >
+              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
+                <h2 id={staffModalTitleId} className="text-xl font-bold text-charcoal dark:text-white">
+                  {editingStaff ? 'Edit Staff Member' : 'Add New Staff Member'}
+                </h2>
+                <button
+                  onClick={closeStaffModal}
+                  aria-label="Close"
+                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -1404,18 +1460,31 @@ function StaffContent() {
               </button>
             </div>
           </div>
+          </FocusTrap>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="w-6 h-6 text-rose-500" />
-              </div>
-              <h2 className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Staff Member?</h2>
+          <FocusTrap
+            active={true}
+            focusTrapOptions={{
+              escapeDeactivates: false,
+              returnFocusOnDeactivate: true,
+            }}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={deleteModalTitleId}
+              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full"
+            >
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="w-6 h-6 text-rose-500" />
+                </div>
+                <h2 id={deleteModalTitleId} className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Staff Member?</h2>
               <p className="text-charcoal/60 dark:text-white/60 mb-6">
                 Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
               </p>
@@ -1438,6 +1507,7 @@ function StaffContent() {
               </div>
             </div>
           </div>
+          </FocusTrap>
         </div>
       )}
     </div>
