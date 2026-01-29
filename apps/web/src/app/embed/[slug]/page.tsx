@@ -1448,7 +1448,7 @@ export default function EmbedBookingPage() {
       <div className="min-h-[400px] flex items-center justify-center bg-gray-50 p-6">
         <div className="text-center max-w-sm">
           {errorInfo.icon === 'error' ? (
-            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+            <AlertCircle className="w-12 h-12 text-rose-dark mx-auto mb-4" />
           ) : (
             <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-6 h-6 text-amber-600" />
@@ -1619,7 +1619,7 @@ export default function EmbedBookingPage() {
 
         {/* Error */}
         {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+          <div className="mt-4 p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
             {error}
           </div>
         )}
