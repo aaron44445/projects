@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 Phase: 16 of 18 (Accessibility Compliance)
 Plan: 10 of 10 complete (Gap Closure complete)
 Status: Gap closure complete
-Last activity: 2026-01-29 - Completed 16-10-PLAN.md
+Last activity: 2026-01-29 - Completed 16-07-PLAN.md (Modal Focus Trap fix)
 
 Progress: [███████████░░░░░░░░░] 55%
 
@@ -99,6 +99,7 @@ From v1.1 Phase 16:
 - Use manual edits for small files, PowerShell bulk replacement for large files (16-06)
 - Replace text-charcoal/50, /60, /70 with semantic text-text-muted/text-text-secondary (16-06)
 - Use clip-path technique instead of transform for skip-link visibility (16-10)
+- Use hidden class instead of conditional rendering for modal focus restoration (16-07)
 
 ### Pending Todos
 
@@ -111,9 +112,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 16-10-PLAN.md
+Stopped at: Completed 16-07-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Completed plan 16-10: Fix Skip Link Navigation - Gap Closure)*
+*Last updated: 2026-01-29 (Completed plan 16-07: Fix Modal Focus Trap - Gap Closure)*
