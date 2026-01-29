@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@peacase/database';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import {
@@ -50,7 +50,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
     req.user!.role
   );
 
-  let staffFilter: any = {
+  const staffFilter: Prisma.UserWhereInput = {
     salonId: req.user!.salonId,
     isActive: true,
   };
