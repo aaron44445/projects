@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality) - COMPLETE
-Plan: 12 of 12 complete (9 requirements + 3 gap closures)
+Plan: 14 of 14 complete (9 requirements + 5 gap closures)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed 17-12-PLAN.md (adopt withSalonId in users.ts)
+Last activity: 2026-01-29 - Completed 17-14-PLAN.md (adopt withSalonId in onboarding, marketing, gift-cards)
 
-Progress: [████████████████░░░░] 86%
+Progress: [████████████████░░░░] 88%
 
 ## Milestone Context
 
@@ -32,9 +32,9 @@ Progress: [████████████████░░░░] 86%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31 (v1.1)
-- Average duration: 7.0 minutes
-- Total execution time: 214 minutes
+- Total plans completed: 33 (v1.1)
+- Average duration: 6.7 minutes
+- Total execution time: 220 minutes
 
 **By Phase:**
 
@@ -44,7 +44,7 @@ Progress: [████████████████░░░░] 86%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 12/12 | 148 min | 12.3 min |
+| 17 | 14/14 | 154 min | 11.0 min |
 
 *Updated after each plan completion*
 
@@ -126,6 +126,7 @@ From v1.1 Phase 17:
 - Access subscription billing period from subscription items (new Stripe API) (17-09)
 - Extract subscription ID from invoice.parent.subscription_details (new Stripe API) (17-09)
 - Use spread operator pattern for withSalonId in all Prisma where/data clauses (17-10)
+- Logger context patterns should NOT use withSalonId - it's for database filters only (17-14)
 
 ### Pending Todos
 
@@ -138,9 +139,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-12-PLAN.md (Gap closure - adopt withSalonId in users.ts)
+Stopped at: Completed 17-14-PLAN.md (Gap closure - adopt withSalonId in onboarding, marketing, gift-cards)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-12 complete - Gap closure withSalonId adoption)*
+*Last updated: 2026-01-29 (17-14 complete - Gap closure withSalonId adoption batch 4)*
