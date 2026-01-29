@@ -1,9 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '@peacase/database';
+import { prisma, Prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// Dashboard requires active subscription
+router.use(authenticate, requireActiveSubscription());
 
 /**
  * Get start and end of today in the salon's timezone, as UTC Date objects.
@@ -57,7 +63,7 @@ function getTodayBoundariesInTimezone(timezone: string): { startOfToday: Date; e
 // Revenue stats, appointment counts, new clients with comparisons
 // PERF-02: Consolidated to single Promise.all (was 8+ sequential queries)
 // ============================================
-router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/stats', asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { locationId } = req.query;
   const locationFilter = locationId ? { locationId: locationId as string } : {};
@@ -78,7 +84,6 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
     thisMonthClients,
     lastMonthClients,
     totalClients,
-    avgRating,
     salon,
     vipClients,
   ] = await Promise.all([
@@ -145,13 +150,6 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
       where: { salonId, isActive: true },
     }),
 
-    // Average rating from approved reviews
-    prisma.review.aggregate({
-      where: { salonId, isApproved: true },
-      _avg: { rating: true },
-      _count: { rating: true },
-    }),
-
     // Salon timezone
     prisma.salon.findUnique({
       where: { id: salonId },
@@ -211,11 +209,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
         change: clientChange,
       },
       totalClients,
-      vipClients, // PERF-03: Database COUNT of clients with 'VIP' tag
-      rating: {
-        average: avgRating._avg.rating ? Math.round(avgRating._avg.rating * 10) / 10 : null,
-        count: avgRating._count.rating,
-      },
+      vipClients,
       timezone: salonTz,
     },
   });
@@ -225,7 +219,7 @@ router.get('/stats', authenticate, asyncHandler(async (req: Request, res: Respon
 // GET /api/v1/dashboard/today
 // Today's appointments
 // ============================================
-router.get('/today', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/today', asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const { locationId } = req.query;
   const locationFilter = locationId ? { locationId: locationId as string } : {};

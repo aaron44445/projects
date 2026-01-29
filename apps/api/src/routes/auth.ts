@@ -10,6 +10,7 @@ import { env } from '../lib/env.js';
 import { csrfTokenHandler, clearCsrfToken } from '../middleware/csrf.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { passwordSchema } from '../lib/passwordValidation.js';
+import logger from '../lib/logger.js';
 
 const router = Router();
 
@@ -563,7 +564,7 @@ router.post('/resend-verification', emailVerificationRateLimit, asyncHandler(asy
     try {
       await createAndSendVerificationEmail(user.id, user.email, user.salon.name);
     } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
+      logger.error({ err: emailError, userId: user.id, email: user.email }, 'Failed to send verification email');
     }
 
     res.json({
