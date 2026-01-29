@@ -28,15 +28,19 @@ The platform has been hardened across all dimensions:
 - Integrations: Stripe, SendGrid, Twilio, Cloudinary
 - Hosting: Vercel (web), Render (API), Supabase (database)
 
-## Next Milestone Goals
+## Current Milestone: v1.2 Staff Portal
 
-**v1.2 - Staff Portal and Settings Polish**
+**Goal:** Enable staff self-service with authentication, schedule viewing, time tracking, earnings visibility, and availability management.
 
-Potential focus areas (to be defined in /gsd:new-milestone):
-- Staff Portal: login, clock in/out, earnings view
-- Subscription add-on persistence
-- Multi-location CRUD UI completion
-- Any remaining technical debt cleanup
+**Target features:**
+- Staff authentication (separate login, magic link invites, portal-specific tokens)
+- Schedule & appointments (today's view, week view, location-filtered)
+- Time tracking (clock in/out, history)
+- Earnings (summary, breakdown, history, CSV export)
+- Availability management (weekly availability, time-off requests)
+- Profile management (view/edit basics)
+- Owner controls (configure staff's client info visibility)
+- Technical debt cleanup (booking widget, contrast, cron logging, api client)
 
 ## Requirements
 
@@ -82,7 +86,16 @@ Features shipped across v1.0 and v1.1:
 
 ### Active
 
-(To be defined in v1.2 milestone)
+For v1.2 Staff Portal:
+
+- [ ] Staff authentication (invite, login, portal-specific tokens)
+- [ ] Schedule viewing (today's appointments, week view, location-filtered)
+- [ ] Time tracking (clock in/out, history)
+- [ ] Earnings visibility (summary, breakdown, history, CSV export)
+- [ ] Availability management (weekly availability, time-off requests)
+- [ ] Profile management (view info, edit basics)
+- [ ] Client info visibility settings (owner configures per-salon)
+- [ ] Technical debt cleanup (booking widget, contrast, cron, api client)
 
 ### Out of Scope
 
@@ -133,4 +146,4 @@ Features shipped across v1.0 and v1.1:
 | pino structured logging | JSON in production, pretty in dev, LOG_LEVEL configurable | Good |
 
 ---
-*Last updated: 2026-01-29 after v1.1 milestone completion*
+*Last updated: 2026-01-29 after v1.2 milestone initialization*

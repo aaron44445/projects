@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 ## Current Position
 
-Phase: Ready for v1.2 planning
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-01-29 — v1.1 Audit Remediation shipped
+Phase: Not started (creating roadmap)
+Plan: —
+Status: Defining roadmap
+Last activity: 2026-01-29 — v1.2 requirements defined (26 requirements)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 [planning]
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ░░░░░░░░░░░░
 
 ## Milestone History
 
@@ -22,7 +22,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 |-----------|--------|-------|--------|---------|
 | v1.0 Stabilization | 2-12 | 40 | Complete | 2026-01-28 |
 | v1.1 Audit Remediation | 13-18 | 46 | Complete | 2026-01-29 |
-| v1.2 TBD | 19+ | TBD | Planning | — |
+| v1.2 Staff Portal | 19+ | TBD | Defining | — |
 
 ## Accumulated Context
 
