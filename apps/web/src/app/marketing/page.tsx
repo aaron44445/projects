@@ -427,9 +427,9 @@ function MarketingContent() {
                 )}
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
+                  <div className="p-4 bg-rose/10 dark:bg-rose/20 rounded-xl border border-rose/20 dark:border-rose/30 flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-rose-dark" />
+                    <p className="text-sm text-rose-dark">{submitError}</p>
                   </div>
                 )}
 
@@ -614,9 +614,9 @@ function MarketingContent() {
                 )}
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
+                  <div className="p-4 bg-rose/10 dark:bg-rose/20 rounded-xl border border-rose/20 dark:border-rose/30 flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-rose-dark" />
+                    <p className="text-sm text-rose-dark">{submitError}</p>
                   </div>
                 )}
               </div>
@@ -713,9 +713,9 @@ function MarketingContent() {
                 </div>
 
                 {submitError && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
-                    <p className="text-sm text-red-700 dark:text-red-400">{submitError}</p>
+                  <div className="p-4 bg-rose/10 dark:bg-rose/20 rounded-xl border border-rose/20 dark:border-rose/30 flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-rose-dark" />
+                    <p className="text-sm text-rose-dark">{submitError}</p>
                   </div>
                 )}
 
@@ -793,12 +793,12 @@ function MarketingContent() {
           <FeatureGate feature="marketing">
             {/* Error State */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500" />
-                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+              <div className="mb-6 p-4 bg-rose/10 dark:bg-rose/20 rounded-xl border border-rose/20 dark:border-rose/30 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-rose-dark" />
+                <p className="text-sm text-rose-dark">{error}</p>
                 <button
                   onClick={() => fetchCampaigns()}
-                  className="ml-auto px-4 py-2 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 rounded-lg text-sm font-medium hover:bg-red-200 dark:hover:bg-red-700"
+                  className="ml-auto px-4 py-2 bg-rose/20 dark:bg-rose/30 text-rose-dark rounded-lg text-sm font-medium hover:bg-rose/30 dark:hover:bg-rose/40"
                 >
                   Retry
                 </button>
