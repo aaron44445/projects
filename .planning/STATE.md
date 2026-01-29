@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 21 of 24 (Availability & Time Off)
-Plan: 3 of 4 complete (21-01, 21-02, 21-04)
-Status: In progress
-Last activity: 2026-01-29 - Completed 21-02-PLAN.md (Owner Approval UI)
+Plan: 4 of 4 complete (21-01, 21-02, 21-03, 21-04)
+Status: Phase complete
+Last activity: 2026-01-29 - Completed 21-03-PLAN.md (Staff Notifications & UI Polish)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████████░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 █████████░░░
 
 ## Milestone History
 
@@ -40,6 +40,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - staffCanViewClientContact defaults to true if salon setting not found
 - Time-off auto-approve: when requireTimeOffApproval=false, requests auto-approve with reviewNotes='Auto-approved'
 - Owner approval UI: Staff Policies settings section with pending requests list, approve/reject modal with optional notes
+- NotificationJob clientId optional with staffId field for staff-targeted notifications (time_off_approved, time_off_rejected)
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -68,11 +69,11 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Location-filtered appointments
 - Past appointment dimming, EmptyState, detail modal
 
-**Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03) - IN PROGRESS
+**Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03) - COMPLETE
 - Weekly availability management (21-04 complete)
 - Time-off auto-approve setting (21-01 complete)
 - Owner approval UI (21-02 complete)
-- Time-off approval notifications (21-03 pending)
+- Time-off approval notifications (21-03 complete)
 
 **Phase 22:** Time Tracking (TIME-01 to TIME-03)
 - Clock in/out
@@ -107,9 +108,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 21-02-PLAN.md (Owner Approval UI)
+Stopped at: Completed 21-03-PLAN.md (Staff Notifications & UI Polish)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 21 in progress: 21-01, 21-02, 21-04 complete)*
+*Last updated: 2026-01-29 (Phase 21 complete: 21-01, 21-02, 21-03, 21-04)*
