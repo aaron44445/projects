@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Every workflow a spa owner needs must work reliably, end-to-end, every time.
-**Current focus:** Phase 19 - Staff Authentication Foundation
+**Current focus:** Phase 20 - Staff Portal Core
 
 ## Current Position
 
-Phase: 19 of 24 (Staff Authentication Foundation)
-Plan: 5 of 5 complete (Phase 19 complete)
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 19-04-PLAN.md (Apply ownerPortalOnly middleware)
+Phase: 20 of 24 (Staff Portal Core)
+Plan: 2 of 3 complete
+Status: In progress
+Last activity: 2026-01-29 - Completed 20-02-PLAN.md (Staff Profile Locations)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████░░░░░░░░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 █████░░░░░░░
 
 ## Milestone History
 
@@ -22,7 +22,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 |-----------|--------|-------|--------|---------|
 | v1.0 Stabilization | 2-12 | 40 | Complete | 2026-01-28 |
 | v1.1 Audit Remediation | 13-18 | 46 | Complete | 2026-01-29 |
-| v1.2 Staff Portal | 19-24 | TBD | Planning | — |
+| v1.2 Staff Portal | 19-24 | TBD | In Progress | - |
 
 ## Accumulated Context
 
@@ -47,17 +47,18 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - STATUS_COLORS with as const for TypeScript inference
 - rose-* design tokens for error states
 - EmptyState for all empty views
+- Primary location badge: sage/20 background with sage/30 border plus 'Primary' badge
 
 ### v1.2 Roadmap Structure
 
-**Phase 19:** Staff Authentication Foundation (AUTH-01 to AUTH-05)
+**Phase 19:** Staff Authentication Foundation (AUTH-01 to AUTH-05) - COMPLETE
 - Portal-specific JWT tokens
 - Magic link invites
 - Remember device functionality
 
-**Phase 20:** Staff Portal Core (SCHED-01 to SCHED-04, PROF-01, PROF-02)
+**Phase 20:** Staff Portal Core (SCHED-01 to SCHED-04, PROF-01, PROF-02) - IN PROGRESS
 - Schedule viewing (today + week)
-- Profile management
+- Profile management with assigned locations
 - Location-filtered appointments
 
 **Phase 21:** Availability & Time Off (AVAIL-01 to AVAIL-03)
@@ -88,7 +89,7 @@ Progress: v1.0 ████████████ v1.1 ███████�
 
 ### Pending Todos
 
-None — fresh slate for v1.2.
+None - fresh slate for v1.2.
 
 ### Blockers/Concerns
 
@@ -97,9 +98,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 19-04-PLAN.md (Phase 19 complete)
+Stopped at: Completed 20-02-PLAN.md (Staff Profile Locations)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (19-04 complete, Phase 19 complete)*
+*Last updated: 2026-01-29 (20-02 complete)*
