@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 18 of 18 (UI/UX Consistency)
-Plan: 06 of 12+ (gap closure plans)
+Plan: 10 of 13 (gap closure plans)
 Status: Gap closure in progress
-Last activity: 2026-01-29 - Completed 18-06-PLAN.md (Clients, Dashboard, Calendar Modal Migration)
+Last activity: 2026-01-29 - Completed 18-10-PLAN.md (Settings Page Error Token Migration)
 
 Progress: [████████████████████] 100%
 
@@ -150,6 +150,9 @@ From v1.1 Phase 18:
 - Conditional rendering inside Modal for null-safe dynamic titles (18-08)
 - Drawers (inset-y-0 right-0) remain as slide-out panels, only centered modals migrated (18-06)
 - Modal migration: import Modal from @peacase/ui, use isOpen/onClose/title props (18-06)
+- text-red-500/600 -> text-rose-dark for accessible error text contrast (18-10)
+- dark:text-red-400 -> dark:text-rose for dark mode error visibility (18-10)
+- hover:bg-red-50 -> hover:bg-rose/10 for opacity-based hover tokens (18-10)
 
 ### Pending Todos
 
@@ -162,9 +165,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 18-06-PLAN.md (Clients, Dashboard, Calendar Modal Migration)
+Stopped at: Completed 18-10-PLAN.md (Settings Page Error Token Migration)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 18 gap closure: plan 06 complete)*
+*Last updated: 2026-01-29 (Phase 18 gap closure: plan 10 complete)*
