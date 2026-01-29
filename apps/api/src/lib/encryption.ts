@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { getEncryptionKey } from './env.js';
+import logger from './logger.js';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
@@ -98,7 +99,7 @@ export function safeEncrypt(plaintext: string | null | undefined): string | null
   try {
     return encrypt(plaintext);
   } catch (error) {
-    console.error('Encryption failed:', error);
+    logger.error({ error }, 'Encryption failed');
     return null;
   }
 }
@@ -114,7 +115,7 @@ export function safeDecrypt(encryptedText: string | null | undefined): string | 
   try {
     return decrypt(encryptedText);
   } catch (error) {
-    console.error('Decryption failed:', error);
+    logger.error({ error }, 'Decryption failed');
     return null;
   }
 }

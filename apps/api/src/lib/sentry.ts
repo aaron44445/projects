@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { env } from './env.js';
+import logger from './logger.js';
 
 // ============================================
 // SENTRY CONFIGURATION
@@ -30,7 +31,7 @@ const PROFILES_SAMPLE_RATE: Record<string, number> = {
  */
 export function initSentry(): void {
   if (!SENTRY_DSN) {
-    console.warn('[Sentry] No DSN configured - error tracking disabled');
+    logger.warn('No Sentry DSN configured - error tracking disabled');
     return;
   }
 
@@ -96,7 +97,7 @@ export function initSentry(): void {
     },
   });
 
-  console.log(`[Sentry] Initialized for ${ENVIRONMENT} environment`);
+  logger.info({ environment: ENVIRONMENT }, 'Sentry initialized');
 }
 
 /**

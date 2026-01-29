@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { Prisma } from '@peacase/database';
+import logger from './logger.js';
 
 /**
  * Custom error class for API errors with status codes
@@ -39,7 +40,7 @@ export function asyncHandler(
  */
 export function handleDatabaseError(error: unknown): AppError {
   // Log the original error for debugging
-  console.error('[Database Error]', error);
+  logger.error({ error }, 'Database error');
 
   // Handle Prisma-specific errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -88,7 +89,7 @@ export function handleDatabaseError(error: unknown): AppError {
   }
 
   if (error instanceof Prisma.PrismaClientInitializationError) {
-    console.error('[Critical] Database connection failed:', error.message);
+    logger.error({ message: error.message }, 'Database connection failed');
     return new AppError(
       'Service temporarily unavailable',
       503,
@@ -97,7 +98,7 @@ export function handleDatabaseError(error: unknown): AppError {
   }
 
   if (error instanceof Prisma.PrismaClientRustPanicError) {
-    console.error('[Critical] Prisma client panic:', error.message);
+    logger.error({ message: error.message }, 'Prisma client panic');
     return new AppError(
       'Internal server error',
       500,
@@ -186,7 +187,7 @@ export async function withDatabaseRetry<T>(
         if (onRetry) {
           onRetry(attempt, lastError);
         }
-        console.log(`[Database] Retry attempt ${attempt}/${maxRetries} after ${delay}ms`);
+        logger.info({ attempt, maxRetries, delay }, 'Database retry attempt');
         await sleep(delay);
         delay = Math.min(delay * 2, maxDelay);
       }

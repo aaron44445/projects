@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import crypto from 'crypto';
+import logger from './logger.js';
 
 // ============================================
 // ENVIRONMENT VARIABLE SCHEMA
@@ -126,11 +127,7 @@ function validateEnv(): Env {
       throw new Error('Production validation failed');
     } else {
       // Development/Test: Log warnings but don't exit - let the app start
-      console.warn('\n⚠️  Some environment variables are missing or invalid:');
-      for (const issue of result.error.issues) {
-        console.warn(`   - ${issue.path.join('.')}: ${issue.message}`);
-      }
-      console.warn('   App will start with defaults. Some features may not work.\n');
+      logger.warn({ issues: result.error.issues.map(i => ({ path: i.path.join('.'), message: i.message })) }, 'Some environment variables are missing or invalid - app will start with defaults');
 
       // Return defaults anyway
       return envSchema.parse({});
@@ -156,10 +153,7 @@ function validateEnv(): Env {
   if (result.data.ENCRYPTION_KEY) configured.push('Encryption');
   else missing.push('Encryption');
 
-  console.log(`\n✅ Configured: ${configured.join(', ') || 'None'}`);
-  if (missing.length > 0) {
-    console.log(`⚠️  Not configured (features disabled): ${missing.join(', ')}\n`);
-  }
+  logger.info({ configured, missing: missing.length > 0 ? missing : undefined }, 'Environment configuration');
 
   return result.data;
 }
@@ -177,7 +171,7 @@ export function getEncryptionKey(): Buffer {
   } else {
     // Generate a random key for this session (won't persist across restarts)
     // Note: This only happens in development - production requires ENCRYPTION_KEY
-    console.warn('⚠️  No ENCRYPTION_KEY set - using temporary key (development only). Encrypted data will not persist across restarts.');
+    logger.warn('No ENCRYPTION_KEY set - using temporary key (development only). Encrypted data will not persist across restarts.');
     _encryptionKey = crypto.randomBytes(32);
   }
 
