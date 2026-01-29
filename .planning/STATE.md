@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality) - COMPLETE
-Plan: 9 of 9 complete
+Plan: 10 of 10 complete (9 requirements + 1 gap closure)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed 17-09-PLAN.md (enable noImplicitAny)
+Last activity: 2026-01-29 - Completed 17-10-PLAN.md (adopt withSalonId in appointments.ts)
 
-Progress: [████████████████░░░░] 83%
+Progress: [████████████████░░░░] 84%
 
 ## Milestone Context
 
@@ -32,9 +32,9 @@ Progress: [████████████████░░░░] 83%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28 (v1.1)
-- Average duration: 7.3 minutes
-- Total execution time: 204 minutes
+- Total plans completed: 29 (v1.1)
+- Average duration: 7.2 minutes
+- Total execution time: 208 minutes
 
 **By Phase:**
 
@@ -44,7 +44,7 @@ Progress: [████████████████░░░░] 83%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 9/9 | 138 min | 15.3 min |
+| 17 | 10/10 | 142 min | 14.2 min |
 
 *Updated after each plan completion*
 
@@ -125,6 +125,7 @@ From v1.1 Phase 17:
 - Use Options type from express-rate-limit for handler callback (17-09)
 - Access subscription billing period from subscription items (new Stripe API) (17-09)
 - Extract subscription ID from invoice.parent.subscription_details (new Stripe API) (17-09)
+- Use spread operator pattern for withSalonId in all Prisma where/data clauses (17-10)
 
 ### Pending Todos
 
@@ -137,9 +138,9 @@ None - Phase 17 subscription TypeScript issues resolved by updating to new Strip
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-09-PLAN.md (Phase 17 complete)
+Stopped at: Completed 17-10-PLAN.md (Gap closure - adopt withSalonId in appointments.ts)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-09 complete - Enable noImplicitAny, Phase 17 complete)*
+*Last updated: 2026-01-29 (17-10 complete - Gap closure withSalonId adoption)*
