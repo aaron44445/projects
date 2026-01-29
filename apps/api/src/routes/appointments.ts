@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription } from '../middleware/subscription.js';
 import {
   PERMISSIONS,
   ROLES,
@@ -12,18 +14,23 @@ import {
 import { asyncHandler } from '../lib/errorUtils.js';
 import { processAppointmentRefund, RefundResult } from '../lib/refundHelper.js';
 import { capturePaymentIntent } from '../services/payments.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All appointment routes require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // ============================================
 // GET /api/v1/appointments
 // List appointments with filters
 // ============================================
-router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { dateFrom, dateTo, staffId, status, locationId, page = '1', pageSize = '50' } = req.query;
 
   // Build base filter
-  const startTimeFilter: any = {};
+  const startTimeFilter: Prisma.DateTimeFilter = {};
   if (dateFrom) {
     startTimeFilter.gte = new Date(dateFrom as string);
   }
@@ -31,8 +38,8 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
     startTimeFilter.lte = new Date(dateTo as string);
   }
 
-  const where: any = {
-    salonId: req.user!.salonId,
+  const where: Prisma.AppointmentWhereInput = {
+    ...withSalonId(req.user!.salonId),
     ...(Object.keys(startTimeFilter).length > 0 && { startTime: startTimeFilter }),
     ...(status && { status: status as string }),
   };
@@ -130,7 +137,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 // GET /api/v1/appointments/availability
 // Get available time slots
 // ============================================
-router.get('/availability', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/availability', asyncHandler(async (req: Request, res: Response) => {
   const { date, serviceId, staffId, locationId } = req.query;
 
   if (!date || !serviceId) {
@@ -209,7 +216,7 @@ router.get('/availability', authenticate, asyncHandler(async (req: Request, res:
 // GET /api/v1/appointments/:id
 // Get appointment details
 // ============================================
-router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const appointment = await prisma.appointment.findFirst({
     where: {
       id: req.params.id,
@@ -262,7 +269,6 @@ router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response
 // ============================================
 router.post(
   '/',
-  authenticate,
   requirePermission(PERMISSIONS.BOOK_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const {
@@ -447,7 +453,6 @@ router.post(
 // ============================================
 router.patch(
   '/:id',
-  authenticate,
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
@@ -522,7 +527,6 @@ router.patch(
 // ============================================
 router.post(
   '/:id/cancel',
-  authenticate,
   requirePermission(PERMISSIONS.CANCEL_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
@@ -562,8 +566,8 @@ router.post(
           reason: cancellationReason,
           requestedByUserId: req.user!.userId,
         });
-      } catch (error: any) {
-        console.error('[Cancel] Refund processing error:', error);
+      } catch (error: unknown) {
+        logger.error(error, '[Cancel] Refund processing error');
         // Don't block cancellation on refund failure - log and continue
       }
     }
@@ -594,7 +598,6 @@ router.post(
 // ============================================
 router.post(
   '/:id/complete',
-  authenticate,
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
@@ -629,7 +632,6 @@ router.post(
 // ============================================
 router.post(
   '/:id/no-show',
-  authenticate,
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
@@ -664,7 +666,6 @@ router.post(
 // ============================================
 router.post(
   '/:id/capture-payment',
-  authenticate,
   requirePermission(PERMISSIONS.EDIT_APPOINTMENTS),
   asyncHandler(async (req: Request, res: Response) => {
     const appointment = await prisma.appointment.findFirst({
@@ -728,13 +729,13 @@ router.post(
           amount: paymentIntent.amount / 100,
         },
       });
-    } catch (error: any) {
-      console.error('[Capture] Error capturing payment:', error);
+    } catch (error: unknown) {
+      logger.error(error, '[Capture] Error capturing payment');
       res.status(500).json({
         success: false,
         error: {
           code: 'CAPTURE_FAILED',
-          message: error.message || 'Failed to capture payment',
+          message: error instanceof Error ? error.message : 'Failed to capture payment',
         },
       });
     }
