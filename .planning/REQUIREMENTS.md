@@ -30,10 +30,10 @@ Requirements for audit remediation. Each maps to roadmap phases.
 
 ### Accessibility
 
-- [ ] **A11Y-01**: All modals have role="dialog", aria-modal="true", and focus trap
-- [ ] **A11Y-02**: Time slot buttons in booking widget have aria-label attributes
-- [ ] **A11Y-03**: Root layout has "Skip to main content" link for keyboard users
-- [ ] **A11Y-04**: Text using charcoal/70 opacity increased to charcoal/80 for contrast
+- [x] **A11Y-01**: All modals have role="dialog", aria-modal="true", and focus trap
+- [x] **A11Y-02**: Time slot buttons in booking widget have aria-label attributes
+- [x] **A11Y-03**: Root layout has "Skip to main content" link for keyboard users
+- [x] **A11Y-04**: Text using charcoal/70 opacity increased to charcoal/80 for contrast
 
 ### Code Quality
 
@@ -90,10 +90,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEO-02 | Phase 15: SEO Fundamentals | Complete |
 | SEO-03 | Phase 15: SEO Fundamentals | Complete |
 | SEO-04 | Phase 15: SEO Fundamentals | Complete |
-| A11Y-01 | Phase 16: Accessibility Compliance | Pending |
-| A11Y-02 | Phase 16: Accessibility Compliance | Pending |
-| A11Y-03 | Phase 16: Accessibility Compliance | Pending |
-| A11Y-04 | Phase 16: Accessibility Compliance | Pending |
+| A11Y-01 | Phase 16: Accessibility Compliance | Complete |
+| A11Y-02 | Phase 16: Accessibility Compliance | Complete |
+| A11Y-03 | Phase 16: Accessibility Compliance | Complete |
+| A11Y-04 | Phase 16: Accessibility Compliance | Complete |
 | CODE-01 | Phase 17: Code Quality | Pending |
 | CODE-02 | Phase 17: Code Quality | Pending |
 | CODE-03 | Phase 17: Code Quality | Pending |
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-28*
-*Last updated: 2026-01-28 (Phase 15 requirements complete)*
+*Last updated: 2026-01-29 (Phase 16 requirements complete)*
