@@ -34,12 +34,25 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStaff, useServices, useLocationContext, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
 import { EmptyState } from '@peacase/ui';
+import { STATUS_COLORS } from '@/lib/statusColors';
 
-const statusColors: Record<string, string> = {
-  active: 'bg-sage/20 text-sage-dark border border-sage/30',
-  inactive: 'bg-charcoal/10 dark:bg-white/10 text-charcoal/60 dark:text-white/60 border border-charcoal/20 dark:border-white/20',
-  'on-leave': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700',
-};
+// Staff status colors - maps staff-specific statuses to centralized design tokens
+// active: uses 'confirmed' styling (sage - success)
+// inactive: uses 'draft' styling (charcoal muted)
+// on-leave: uses amber (unique to staff - not in appointment statuses)
+function getStaffStatusClasses(isActive: boolean, isOnLeave = false): string {
+  if (isOnLeave) {
+    // On-leave uses amber - unique to staff status
+    return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700';
+  }
+  if (isActive) {
+    const colors = STATUS_COLORS['confirmed'];
+    return `${colors.bg} ${colors.text} border ${colors.border}`;
+  }
+  // Inactive uses draft styling
+  const colors = STATUS_COLORS['draft'];
+  return `${colors.bg} ${colors.text} border ${colors.border}`;
+}
 
 const roleLabels: Record<string, string> = {
   owner: 'Owner',
@@ -783,7 +796,7 @@ function StaffContent() {
                         </div>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                            statusColors[member.isActive ? 'active' : 'inactive']
+                            getStaffStatusClasses(member.isActive)
                           }`}
                         >
                           {member.isActive ? 'Active' : 'Inactive'}
@@ -913,7 +926,7 @@ function StaffContent() {
                   <p className="text-charcoal/60 dark:text-white/60">{roleLabels[selectedStaff.role] || selectedStaff.role}</p>
                   <span
                     className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium capitalize ${
-                      statusColors[selectedStaff.isActive ? 'active' : 'inactive']
+                      getStaffStatusClasses(selectedStaff.isActive)
                     }`}
                   >
                     {selectedStaff.isActive ? 'Active' : 'Inactive'}

@@ -22,6 +22,22 @@ import {
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
 import { useStaffSchedule, useTimeOff, useStaffAppointments, TimeOffRequest } from '@/hooks/useStaffPortal';
+import { Modal } from '@peacase/ui';
+import { STATUS_COLORS } from '@/lib/statusColors';
+
+// Time off status colors - maps time off statuses to centralized design tokens
+// pending: uses lavender (waiting state)
+// approved: uses confirmed/sage (success state)
+// rejected: uses cancelled/rose (negative state)
+function getTimeOffStatusClasses(status: 'pending' | 'approved' | 'rejected'): string {
+  const statusMap: Record<string, keyof typeof STATUS_COLORS> = {
+    pending: 'pending',
+    approved: 'confirmed',
+    rejected: 'cancelled',
+  };
+  const colors = STATUS_COLORS[statusMap[status]];
+  return `${colors.bg} ${colors.text}`;
+}
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TIME_OPTIONS = Array.from({ length: 28 }, (_, i) => {
@@ -382,16 +398,15 @@ function ScheduleContent() {
       </main>
 
       {/* Time Off Request Modal */}
-      {showTimeOffModal && (
-        <TimeOffRequestModal
-          onClose={() => setShowTimeOffModal(false)}
-          onSubmit={async (data) => {
-            await createTimeOff(data);
-            setShowTimeOffModal(false);
-          }}
-          loading={timeOffLoading}
-        />
-      )}
+      <TimeOffRequestModal
+        isOpen={showTimeOffModal}
+        onClose={() => setShowTimeOffModal(false)}
+        onSubmit={async (data) => {
+          await createTimeOff(data);
+          setShowTimeOffModal(false);
+        }}
+        loading={timeOffLoading}
+      />
     </div>
   );
 }
@@ -402,25 +417,25 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
     month: 'short', day: 'numeric'
   });
 
-  const statusColors: Record<string, string> = {
-    pending: 'bg-amber-100 text-amber-700',
-    approved: 'bg-green-100 text-green-700',
-    rejected: 'bg-rose/10 text-rose-dark',
-  };
-
   const StatusIcon = {
     pending: AlertCircle,
     approved: CheckCircle2,
     rejected: XCircle,
   }[request.status] || AlertCircle;
 
+  // Get status icon color based on status
+  const getStatusIconColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'text-sage-dark';
+      case 'rejected': return 'text-rose-dark';
+      default: return 'text-lavender-dark';
+    }
+  };
+
   return (
     <div className="flex items-center justify-between p-3 bg-charcoal/5 rounded-lg">
       <div className="flex items-center gap-3">
-        <StatusIcon className={`w-5 h-5 ${
-          request.status === 'approved' ? 'text-green-600' :
-          request.status === 'rejected' ? 'text-rose-dark' : 'text-amber-600'
-        }`} />
+        <StatusIcon className={`w-5 h-5 ${getStatusIconColor(request.status)}`} />
         <div>
           <p className="text-sm font-medium text-charcoal">
             {formatDate(request.startDate)}
@@ -430,7 +445,7 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <span className={`px-2 py-1 text-xs rounded-full ${statusColors[request.status] || statusColors.pending}`}>
+        <span className={`px-2 py-1 text-xs rounded-full ${getTimeOffStatusClasses(request.status as 'pending' | 'approved' | 'rejected')}`}>
           {request.status}
         </span>
         {request.status === 'pending' && (
@@ -448,10 +463,12 @@ function TimeOffRow({ request, onCancel }: { request: TimeOffRequest; onCancel: 
 
 // Time Off Request Modal Component
 function TimeOffRequestModal({
+  isOpen,
   onClose,
   onSubmit,
   loading
 }: {
+  isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: { startDate: string; endDate: string; type: 'vacation' | 'sick' | 'personal' | 'other'; reason?: string }) => Promise<void>;
   loading: boolean;
@@ -471,82 +488,75 @@ function TimeOffRequestModal({
   };
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl w-full max-w-md p-6">
-          <h2 className="text-lg font-semibold text-charcoal mb-4">Request Time Off</h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm text-charcoal/60 mb-1">Start Date</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  min={minDate}
-                  required
-                  className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-charcoal/60 mb-1">End Date</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate || minDate}
-                  className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-charcoal/60 mb-1">Type</label>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as 'vacation' | 'sick' | 'personal' | 'other')}
-                className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
-              >
-                <option value="vacation">Vacation</option>
-                <option value="sick">Sick</option>
-                <option value="personal">Personal</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-charcoal/60 mb-1">Reason (optional)</label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 rounded-lg border border-charcoal/20 resize-none"
-                placeholder="Add a note for your manager..."
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-charcoal/60 hover:bg-charcoal/5 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !startDate}
-                className="px-4 py-2 bg-sage text-white rounded-lg hover:bg-sage-dark disabled:opacity-50"
-              >
-                {loading ? 'Submitting...' : 'Submit Request'}
-              </button>
-            </div>
-          </form>
+    <Modal isOpen={isOpen} onClose={onClose} title="Request Time Off" size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-charcoal/60 mb-1">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              min={minDate}
+              required
+              className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-charcoal/60 mb-1">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              min={startDate || minDate}
+              className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
+            />
+          </div>
         </div>
-      </div>
-    </>
+
+        <div>
+          <label className="block text-sm text-charcoal/60 mb-1">Type</label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as 'vacation' | 'sick' | 'personal' | 'other')}
+            className="w-full px-3 py-2 rounded-lg border border-charcoal/20"
+          >
+            <option value="vacation">Vacation</option>
+            <option value="sick">Sick</option>
+            <option value="personal">Personal</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm text-charcoal/60 mb-1">Reason (optional)</label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2 rounded-lg border border-charcoal/20 resize-none"
+            placeholder="Add a note for your manager..."
+          />
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-charcoal/60 hover:bg-charcoal/5 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !startDate}
+            className="px-4 py-2 bg-sage text-white rounded-lg hover:bg-sage-dark disabled:opacity-50"
+          >
+            {loading ? 'Submitting...' : 'Submit Request'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
