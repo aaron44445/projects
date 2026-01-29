@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { Prisma, prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 import {
   PERMISSIONS,
   ROLES,
