@@ -1,15 +1,22 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { requireActiveSubscription } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All services routes require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // ============================================
 // GET /api/v1/services
 // List all services
 // ============================================
-router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const services = await prisma.service.findMany({
     where: {
       salonId: req.user!.salonId,
@@ -31,7 +38,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 // GET /api/v1/services/categories
 // List service categories
 // ============================================
-router.get('/categories', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/categories', asyncHandler(async (req: Request, res: Response) => {
   const categories = await prisma.serviceCategory.findMany({
     where: { salonId: req.user!.salonId },
     include: {
@@ -55,7 +62,6 @@ router.get('/categories', authenticate, asyncHandler(async (req: Request, res: R
 // ============================================
 router.post(
   '/categories',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const { name, description, displayOrder } = req.body;
@@ -93,7 +99,6 @@ router.post(
 // ============================================
 router.patch(
   '/categories/:id',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const category = await prisma.serviceCategory.findFirst({
@@ -131,7 +136,6 @@ router.patch(
 // ============================================
 router.delete(
   '/categories/:id',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const category = await prisma.serviceCategory.findFirst({
@@ -167,7 +171,7 @@ router.delete(
 // GET /api/v1/services/:id
 // Get service details
 // ============================================
-router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const service = await prisma.service.findFirst({
     where: {
       id: req.params.id,
@@ -207,7 +211,6 @@ router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response
 // ============================================
 router.post(
   '/',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const {
@@ -248,7 +251,6 @@ router.post(
 // ============================================
 router.patch(
   '/:id',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const service = await prisma.service.findFirst({
@@ -283,7 +285,6 @@ router.patch(
 // ============================================
 router.delete(
   '/:id',
-  authenticate,
   authorize('admin', 'owner'),
   asyncHandler(async (req: Request, res: Response) => {
     const service = await prisma.service.findFirst({

@@ -1,10 +1,13 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import { sendEmail } from '../services/email.js';
 import { env } from '../lib/env.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
 
@@ -222,7 +225,7 @@ router.post(
 
     // Send invitation email
     const inviteUrl = `${env.FRONTEND_URL}/staff/setup?token=${inviteToken}`;
-    console.log(`[STAFF CREATE] Sending invite email to ${email}, inviteUrl: ${inviteUrl}`);
+    logger.info({ email, inviteUrl }, '[STAFF CREATE] Sending invite email');
 
     try {
       const emailSent = await sendEmail({
@@ -278,9 +281,9 @@ router.post(
         `,
       });
 
-      console.log(`Staff invite email ${emailSent ? 'sent' : 'failed'} for ${email}`);
+      logger.info({ email, emailSent }, 'Staff invite email result');
     } catch (emailError) {
-      console.error('Failed to send staff invite email:', emailError);
+      logger.error(emailError, 'Failed to send staff invite email');
       // Don't fail the request if email fails - staff is still created
     }
 
@@ -592,7 +595,7 @@ router.post('/test-email', authenticate, authorize('owner'), asyncHandler(async 
     });
   }
 
-  console.log(`[TEST EMAIL] Attempting to send test email to: ${email}`);
+  logger.info({ email }, '[TEST EMAIL] Attempting to send test email');
 
   const salon = await prisma.salon.findUnique({
     where: { id: req.user!.salonId },
@@ -610,7 +613,7 @@ router.post('/test-email', authenticate, authorize('owner'), asyncHandler(async 
       `,
     });
 
-    console.log(`[TEST EMAIL] Result: ${emailSent ? 'SUCCESS' : 'FAILED'}`);
+    logger.info({ emailSent }, '[TEST EMAIL] Result');
 
     res.json({
       success: true,
@@ -620,11 +623,11 @@ router.post('/test-email', authenticate, authorize('owner'), asyncHandler(async 
         message: emailSent ? 'Test email sent successfully' : 'Email sending failed - check server logs',
       },
     });
-  } catch (error: any) {
-    console.error('[TEST EMAIL] Error:', error);
+  } catch (error: unknown) {
+    logger.error(error, '[TEST EMAIL] Error');
     res.status(500).json({
       success: false,
-      error: { code: 'EMAIL_ERROR', message: error.message || 'Failed to send test email' },
+      error: { code: 'EMAIL_ERROR', message: error instanceof Error ? error.message : 'Failed to send test email' },
     });
   }
 }));
