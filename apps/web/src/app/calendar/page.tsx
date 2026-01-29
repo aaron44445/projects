@@ -43,6 +43,7 @@ import {
   type Service,
 } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { STATUS_COLORS, type StatusKey } from '@/lib/statusColors';
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 7 PM
 
@@ -304,7 +305,7 @@ function WeekView({
                             setAppointmentMenuOpen(null);
                             onCompleteAppointment(apt.id);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-green-600 hover:bg-green-50"
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-sage-dark hover:bg-sage/10"
                         >
                           <CheckCircle className="w-3 h-3" />
                           Complete
@@ -315,7 +316,7 @@ function WeekView({
                             setAppointmentMenuOpen(null);
                             onMarkNoShow(apt.id);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-orange-600 hover:bg-orange-50"
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-peach-dark hover:bg-peach/10"
                         >
                           <XCircle className="w-3 h-3" />
                           No Show
@@ -326,7 +327,7 @@ function WeekView({
                             setAppointmentMenuOpen(null);
                             onCancelAppointment(apt.id);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50"
+                          className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-rose-dark hover:bg-rose/10"
                         >
                           <Trash2 className="w-3 h-3" />
                           Cancel
@@ -680,22 +681,12 @@ function CalendarContent() {
     setSubmitError(null);
   };
 
-  // Get status badge color
+  // Get status badge color using design system tokens
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-700';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled':
-        return 'bg-red-100 text-red-700';
-      case 'completed':
-        return 'bg-blue-100 text-blue-700';
-      case 'no_show':
-        return 'bg-gray-100 text-gray-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
+    // Map status to StatusKey (handle underscore variants like no_show -> no-show)
+    const normalizedStatus = status.replace('_', '-') as StatusKey;
+    const colors = STATUS_COLORS[normalizedStatus] || STATUS_COLORS.pending;
+    return `${colors.bg} ${colors.text}`;
   };
 
   const isLoading = appointmentsLoading || staffLoading || servicesLoading;
@@ -813,8 +804,8 @@ function CalendarContent() {
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border-b border-red-200 px-6 py-4">
-            <div className="flex items-center gap-2 text-red-700">
+          <div className="bg-rose/10 border-b border-rose/20 px-6 py-4">
+            <div className="flex items-center gap-2 text-rose-dark">
               <AlertCircle className="w-5 h-5" />
               <span>{error}</span>
               <button
@@ -995,7 +986,7 @@ function CalendarContent() {
                                             e.stopPropagation();
                                             handleCompleteAppointment(apt.id);
                                           }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:bg-green-50"
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-sage-dark hover:bg-sage/10"
                                         >
                                           <CheckCircle className="w-4 h-4" />
                                           Complete
@@ -1005,7 +996,7 @@ function CalendarContent() {
                                             e.stopPropagation();
                                             handleMarkNoShow(apt.id);
                                           }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50"
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-peach-dark hover:bg-peach/10"
                                         >
                                           <XCircle className="w-4 h-4" />
                                           No Show
@@ -1015,7 +1006,7 @@ function CalendarContent() {
                                             e.stopPropagation();
                                             handleCancelAppointment(apt.id);
                                           }}
-                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-dark hover:bg-rose/10"
                                         >
                                           <Trash2 className="w-4 h-4" />
                                           Cancel
@@ -1082,7 +1073,7 @@ function CalendarContent() {
             </div>
             <div className="p-6 space-y-6">
               {submitError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
                   {submitError}
                 </div>
               )}
@@ -1269,7 +1260,7 @@ function CalendarContent() {
             </div>
             <div className="p-6 space-y-6">
               {submitError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <div className="p-4 bg-rose/10 border border-rose/20 rounded-xl text-rose-dark text-sm">
                   {submitError}
                 </div>
               )}
