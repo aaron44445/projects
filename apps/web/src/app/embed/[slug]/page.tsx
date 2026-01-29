@@ -605,16 +605,24 @@ function DateTimeStep({
 
       {/* Date Selector */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+        <label id="date-label" className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+        <div
+          role="radiogroup"
+          aria-labelledby="date-label"
+          className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1"
+        >
           {dates.map((date) => {
             const isSelected = date === selectedDate;
             return (
               <button
                 key={date}
-                onClick={() => onDateChange(date)}
+                onClick={() => {
+                  setAnnouncement(`${formatDateLabel(date)} selected`);
+                  onDateChange(date);
+                }}
+                role="radio"
+                aria-checked={isSelected}
                 aria-label={`${formatDateLabel(date)}, ${isSelected ? 'selected' : 'select this date'}`}
-                aria-pressed={isSelected}
                 className={`flex-shrink-0 px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                   isSelected
                     ? 'border-transparent text-white'
@@ -631,7 +639,7 @@ function DateTimeStep({
 
       {/* Time Slots */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Available Times</label>
+        <label id="time-label" className="block text-sm font-medium text-gray-700 mb-2">Available Times</label>
         {isLoadingSlots ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
@@ -643,7 +651,11 @@ function DateTimeStep({
             <p className="text-sm">Try selecting a different date</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto">
+          <div
+            role="radiogroup"
+            aria-labelledby="time-label"
+            className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[200px] overflow-y-auto"
+          >
             {slots.map((slot) => {
               const isSelected = slot.time === selectedTime;
               return (
@@ -653,12 +665,16 @@ function DateTimeStep({
                     setAnnouncement(`${formatTime(slot.time)} selected`);
                     onTimeSelect(slot.time);
                   }}
+                  role="radio"
+                  aria-checked={isSelected}
                   aria-label={`${formatTime(slot.time)}, ${slot.available !== false ? 'available' : 'unavailable'}`}
                   disabled={slot.available === false}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     isSelected
                       ? 'text-white'
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      : slot.available === false
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                   }`}
                   style={isSelected ? { backgroundColor: primaryColor } : {}}
                 >
