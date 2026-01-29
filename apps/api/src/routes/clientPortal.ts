@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { Prisma } from '@prisma/client';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticateClient, AuthenticatedClientRequest } from '../middleware/clientAuth.js';
-import { prisma } from '@peacase/database';
 import { sendEmail, appointmentCancellationEmail, appointmentConfirmationEmail } from '../services/email.js';
 import { asyncHandler } from '../lib/errorUtils.js';
 import logger from '../lib/logger.js';

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
-import { Prisma } from '@prisma/client';
+import { Prisma, prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
 import { requireActiveSubscription } from '../middleware/subscription.js';
 import { validateFileOwnership } from '../middleware/validateFileOwnership.js';
@@ -17,7 +17,6 @@ import {
   UPLOAD_PRESETS,
 } from '../services/upload.js';
 import { asyncHandler } from '../lib/errorUtils.js';
-import { prisma } from '@peacase/database';
 import logger from '../lib/logger.js';
 import { withSalonId } from '../lib/prismaUtils.js';
 
