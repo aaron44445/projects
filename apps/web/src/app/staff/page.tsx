@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useId } from 'react';
-import FocusTrap from 'focus-trap-react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -33,7 +32,7 @@ import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStaff, useServices, useLocationContext, type StaffMember, type CreateStaffInput, type UpdateStaffInput, type Location, type StaffAtLocation } from '@/hooks';
-import { EmptyState } from '@peacase/ui';
+import { EmptyState, Modal } from '@peacase/ui';
 import { STATUS_COLORS } from '@/lib/statusColors';
 
 // Staff status colors - maps staff-specific statuses to centralized design tokens
@@ -75,10 +74,6 @@ function StaffContent() {
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [showNewStaff, setShowNewStaff] = useState(false);
 
-  // ARIA IDs for modal accessibility
-  const staffModalTitleId = useId();
-  const locationModalTitleId = useId();
-  const deleteModalTitleId = useId();
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
@@ -195,28 +190,6 @@ function StaffContent() {
     loadAllStaffLocationAssignments();
   }, [loadAllStaffLocationAssignments]);
 
-  // Escape key handler for all modals
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (deleteConfirm) {
-          setDeleteConfirm(null);
-        } else if (showLocationModal) {
-          closeLocationModal();
-        } else if (showNewStaff) {
-          closeStaffModal();
-        }
-      }
-    };
-
-    if (showNewStaff || showLocationModal || deleteConfirm) {
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showNewStaff, showLocationModal, deleteConfirm]);
 
   const filteredStaff = useMemo(() => {
     let result = staff;
@@ -1158,38 +1131,15 @@ function StaffContent() {
       )}
 
       {/* Location Assignment Modal */}
-      {showLocationModal && locationModalStaff && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <FocusTrap
-            active={true}
-            focusTrapOptions={{
-              escapeDeactivates: false,
-              returnFocusOnDeactivate: true,
-            }}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={locationModalTitleId}
-              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto"
-            >
-              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-                <div>
-                  <h2 id={locationModalTitleId} className="text-xl font-bold text-charcoal dark:text-white">Assign Locations</h2>
-                  <p className="text-sm text-charcoal/60 dark:text-white/60 mt-1">
-                    {locationModalStaff.firstName} {locationModalStaff.lastName}
-                  </p>
-                </div>
-                <button
-                  onClick={closeLocationModal}
-                  aria-label="Close"
-                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-            <div className="p-6 space-y-4">
+      {locationModalStaff && (
+        <Modal
+          isOpen={showLocationModal}
+          onClose={closeLocationModal}
+          title="Assign Locations"
+          description={`${locationModalStaff.firstName} ${locationModalStaff.lastName}`}
+          size="md"
+        >
+          <div className="space-y-4">
               {locations.length === 0 ? (
                 <div className="text-center py-8">
                   <MapPin className="w-12 h-12 text-charcoal/20 dark:text-white/20 mx-auto mb-4" />
@@ -1276,59 +1226,36 @@ function StaffContent() {
                   </div>
                 </>
               )}
-            </div>
-
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={closeLocationModal}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveLocationAssignments}
-                disabled={isSubmitting || locations.length === 0}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                Save Assignments
-              </button>
-            </div>
           </div>
-          </FocusTrap>
-        </div>
+
+          <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
+            <button
+              onClick={closeLocationModal}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveLocationAssignments}
+              disabled={isSubmitting || locations.length === 0}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Assignments
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* New/Edit Staff Modal */}
-      {showNewStaff && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4">
-          <FocusTrap
-            active={true}
-            focusTrapOptions={{
-              escapeDeactivates: false,
-              returnFocusOnDeactivate: true,
-            }}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={staffModalTitleId}
-              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto"
-            >
-              <div className="p-6 border-b border-charcoal/10 dark:border-white/10 flex items-center justify-between">
-                <h2 id={staffModalTitleId} className="text-xl font-bold text-charcoal dark:text-white">
-                  {editingStaff ? 'Edit Staff Member' : 'Add New Staff Member'}
-                </h2>
-                <button
-                  onClick={closeStaffModal}
-                  aria-label="Close"
-                  className="p-2 text-charcoal/40 dark:text-white/40 hover:text-charcoal dark:hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            <div className="p-6 space-y-6">
+      <Modal
+        isOpen={showNewStaff}
+        onClose={closeStaffModal}
+        title={editingStaff ? 'Edit Staff Member' : 'Add New Staff Member'}
+        size="lg"
+      >
+        <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-charcoal dark:text-white mb-2">First Name</label>
@@ -1449,76 +1376,61 @@ function StaffContent() {
                     </label>
                   ))}
                 </div>
-              </div>
-            </div>
-            <div className="p-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
-              <button
-                onClick={closeStaffModal}
-                disabled={isSubmitting}
-                className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveStaff}
-                disabled={isSubmitting || !staffForm.firstName || !staffForm.lastName || !staffForm.email}
-                className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                {editingStaff ? 'Save Changes' : 'Add Staff Member'}
-              </button>
-            </div>
           </div>
-          </FocusTrap>
+
+          <div className="pt-6 border-t border-charcoal/10 dark:border-white/10 flex gap-3">
+            <button
+              onClick={closeStaffModal}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveStaff}
+              disabled={isSubmitting || !staffForm.firstName || !staffForm.lastName || !staffForm.email}
+              className="flex-1 px-4 py-3 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {editingStaff ? 'Save Changes' : 'Add Staff Member'}
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-[60] p-4">
-          <FocusTrap
-            active={true}
-            focusTrapOptions={{
-              escapeDeactivates: false,
-              returnFocusOnDeactivate: true,
-            }}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={deleteModalTitleId}
-              className="bg-white dark:bg-sidebar rounded-2xl shadow-2xl max-w-sm w-full"
-            >
-              <div className="p-6 text-center">
-                <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-6 h-6 text-rose-500" />
-                </div>
-                <h2 id={deleteModalTitleId} className="text-lg font-bold text-charcoal dark:text-white mb-2">Delete Staff Member?</h2>
-              <p className="text-charcoal/60 dark:text-white/60 mb-6">
-                Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDeleteStaff(deleteConfirm.id)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
-                </button>
-              </div>
-            </div>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title="Delete Staff Member?"
+        size="sm"
+      >
+        <div className="text-center">
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-6 h-6 text-rose-500" />
           </div>
-          </FocusTrap>
+          <p className="text-charcoal/60 dark:text-white/60 mb-6">
+            Are you sure you want to delete &quot;{deleteConfirm?.name}&quot;? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 border border-charcoal/20 dark:border-white/20 text-charcoal dark:text-white rounded-xl font-medium hover:bg-charcoal/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteConfirm && handleDeleteStaff(deleteConfirm.id)}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-3 bg-rose-500 text-white rounded-xl font-medium hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Delete
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
