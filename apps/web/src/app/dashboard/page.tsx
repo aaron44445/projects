@@ -44,15 +44,20 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useDashboard, useAppointments, useLocationContext, useServices, useClients, useStaff } from '@/hooks';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
 import { EmptyState } from '@peacase/ui';
+import { STATUS_COLORS, type StatusKey } from '@/lib/statusColors';
 
-const statusColors: Record<string, string> = {
-  scheduled: 'bg-sage/20 text-sage-dark border border-sage/30',
-  confirmed: 'bg-sage/20 text-sage-dark border border-sage/30',
-  'in-progress': 'bg-lavender/20 text-lavender-dark border border-lavender/30',
-  completed: 'bg-mint/20 text-mint-dark border border-mint/30',
-  cancelled: 'bg-rose/20 text-rose-dark border border-rose/30',
-  'no-show': 'bg-rose/20 text-rose-dark border border-rose/30',
-};
+// Helper to get status classes with underscore-to-hyphen normalization
+function getStatusClasses(status: string): string {
+  // Normalize underscore variants (e.g., 'no_show' -> 'no-show')
+  const normalizedStatus = status.replace(/_/g, '-') as StatusKey;
+  const colors = STATUS_COLORS[normalizedStatus];
+  if (colors) {
+    return `${colors.bg} ${colors.text} border ${colors.border}`;
+  }
+  // Default to scheduled styling for unknown statuses
+  const defaultColors = STATUS_COLORS['scheduled'];
+  return `${defaultColors.bg} ${defaultColors.text} border ${defaultColors.border}`;
+}
 
 // Fallback static data for when API is not available
 const fallbackStats = [
@@ -734,7 +739,7 @@ function DashboardContent() {
                         </div>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                            statusColors[apt.status] || statusColors.scheduled
+                            getStatusClasses(apt.status)
                           }`}
                         >
                           {apt.status.replace('-', ' ')}
