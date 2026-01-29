@@ -1,35 +1,40 @@
 import { Router, Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@peacase/database';
 import { authenticate } from '../middleware/auth.js';
+import { requireActiveSubscription, checkPlanLimits } from '../middleware/subscription.js';
 import { asyncHandler } from '../lib/errorUtils.js';
+import logger from '../lib/logger.js';
+import { withSalonId } from '../lib/prismaUtils.js';
 
 const router = Router();
+
+// All client routes require active subscription
+router.use(authenticate, requireActiveSubscription());
 
 // ============================================
 // GET /api/v1/clients
 // List clients with search and pagination
 // ============================================
-router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { search, page = '1', pageSize = '25' } = req.query;
 
   const parsedPage = parseInt(page as string);
   const parsedPageSize = parseInt(pageSize as string);
   const skip = (parsedPage - 1) * parsedPageSize;
 
-  let where: any = {
-    salonId: req.user!.salonId,
+  const where: Prisma.ClientWhereInput = {
+    ...withSalonId(req.user!.salonId),
     isActive: true,
+    ...(search && {
+      OR: [
+        { firstName: { contains: search as string, mode: 'insensitive' } },
+        { lastName: { contains: search as string, mode: 'insensitive' } },
+        { email: { contains: search as string, mode: 'insensitive' } },
+        { phone: { contains: search as string } },
+      ],
+    }),
   };
-
-  // Add search filter using Prisma's case-insensitive search
-  if (search) {
-    where.OR = [
-      { firstName: { contains: search as string, mode: 'insensitive' } },
-      { lastName: { contains: search as string, mode: 'insensitive' } },
-      { email: { contains: search as string, mode: 'insensitive' } },
-      { phone: { contains: search as string } },
-    ];
-  }
 
   const [clients, total] = await Promise.all([
     prisma.client.findMany({
@@ -57,7 +62,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
 // GET /api/v1/clients/:id
 // Get client details with history
 // ============================================
-router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
     where: {
       id: req.params.id,
@@ -105,7 +110,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response
 // POST /api/v1/clients
 // Create new client
 // ============================================
-router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/', checkPlanLimits('clients'), asyncHandler(async (req: Request, res: Response) => {
   const {
     firstName,
     lastName,
@@ -124,8 +129,8 @@ router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) 
   // Check for duplicate by phone or email
   if (phone || email) {
     // Build where clause based on what fields are provided
-    const whereClause: any = {
-      salonId: req.user!.salonId,
+    const whereClause: Prisma.ClientWhereInput = {
+      ...withSalonId(req.user!.salonId),
       isActive: true,
     };
 
@@ -186,7 +191,7 @@ router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) 
 // PATCH /api/v1/clients/:id
 // Update client
 // ============================================
-router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.patch('/:id', asyncHandler(async (req: Request, res: Response) => {
   const client = await prisma.client.findFirst({
     where: { id: req.params.id, salonId: req.user!.salonId },
   });
@@ -216,7 +221,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Respon
 // POST /api/v1/clients/:id/notes
 // Add note to client
 // ============================================
-router.post('/:id/notes', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:id/notes', asyncHandler(async (req: Request, res: Response) => {
   const { content } = req.body;
 
   const client = await prisma.client.findFirst({
@@ -256,7 +261,7 @@ router.post('/:id/notes', authenticate, asyncHandler(async (req: Request, res: R
 // GET /api/v1/clients/segments/counts
 // Get client counts by segment for marketing
 // ============================================
-router.get('/segments/counts', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.get('/segments/counts', asyncHandler(async (req: Request, res: Response) => {
   const salonId = req.user!.salonId;
   const now = new Date();
   const thirtyDaysAgo = new Date(now);
