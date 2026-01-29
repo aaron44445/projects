@@ -52,7 +52,7 @@ router.get('/', authenticate, asyncHandler(async (req: Request, res: Response) =
   );
 
   const staffFilter: Prisma.UserWhereInput = {
-    salonId: req.user!.salonId,
+    ...withSalonId(req.user!.salonId),
     isActive: true,
   };
 
@@ -161,7 +161,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: Request, res: Response
   const user = await prisma.user.findFirst({
     where: {
       id: req.params.id,
-      salonId: req.user!.salonId,
+      ...withSalonId(req.user!.salonId),
     },
     include: {
       staffAvailability: true,
@@ -230,7 +230,7 @@ router.post(
 
     // Check if email exists in this salon (only check active staff)
     const existing = await prisma.user.findFirst({
-      where: { salonId: req.user!.salonId, email, isActive: true },
+      where: { ...withSalonId(req.user!.salonId), email, isActive: true },
     });
 
     if (existing) {
@@ -245,7 +245,7 @@ router.post(
 
     // If there's a deactivated user with this email, anonymize it to free up the address
     const deactivatedUser = await prisma.user.findFirst({
-      where: { salonId: req.user!.salonId, email, isActive: false },
+      where: { ...withSalonId(req.user!.salonId), email, isActive: false },
     });
 
     if (deactivatedUser) {
@@ -258,7 +258,7 @@ router.post(
     // Create user
     const user = await prisma.user.create({
       data: {
-        salonId: req.user!.salonId,
+        ...withSalonId(req.user!.salonId),
         email,
         firstName,
         lastName,
@@ -319,7 +319,7 @@ router.patch('/:id', authenticate, asyncHandler(async (req: Request, res: Respon
   } = req.body;
 
   const targetUser = await prisma.user.findFirst({
-    where: { id: req.params.id, salonId: req.user!.salonId },
+    where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
   });
 
   if (!targetUser) {
@@ -443,7 +443,7 @@ router.delete(
   requirePermission(PERMISSIONS.DELETE_STAFF),
   asyncHandler(async (req: Request, res: Response) => {
     const targetUser = await prisma.user.findFirst({
-      where: { id: req.params.id, salonId: req.user!.salonId },
+      where: { id: req.params.id, ...withSalonId(req.user!.salonId) },
     });
 
     if (!targetUser) {
@@ -519,7 +519,7 @@ router.get('/:id/availability', authenticate, asyncHandler(async (req: Request, 
 
   // Verify staff member exists and belongs to this salon
   const staff = await prisma.user.findFirst({
-    where: { id, salonId: req.user!.salonId },
+    where: { id, ...withSalonId(req.user!.salonId) },
   });
 
   if (!staff) {
@@ -595,7 +595,7 @@ router.put('/:id/availability', authenticate, asyncHandler(async (req: Request, 
 
   // Verify staff member exists and belongs to this salon
   const staff = await prisma.user.findFirst({
-    where: { id, salonId: req.user!.salonId },
+    where: { id, ...withSalonId(req.user!.salonId) },
   });
 
   if (!staff) {
