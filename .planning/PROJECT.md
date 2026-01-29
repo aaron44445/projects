@@ -4,40 +4,23 @@
 
 Peacase is a multi-tenant SaaS platform for spas and salons. Business owners use it to manage appointments, clients, staff, services, and payments. Clients can book online through an embeddable widget. The platform supports multiple locations per business.
 
-**v1 shipped:** The platform is now production-ready with verified reliability for all owner-facing workflows.
+**v1.1 shipped:** Production-hardened with security, performance, SEO, accessibility, code quality, and UI/UX improvements.
 
 ## Core Value
 
 **Every workflow a spa owner needs must work reliably, end-to-end, every time.** If booking fails randomly or settings don't save, the software is unusable regardless of what features exist.
 
-## Current Milestone: v1.1 Audit Remediation
-
-**Goal:** Fix all issues identified in comprehensive audit across security, performance, SEO, accessibility, code quality, and UI/UX.
-
-**Target areas:**
-- Security hardening (env vars, CSRF, file validation)
-- Performance optimization (async notifications, query consolidation, caching)
-- SEO fundamentals (sitemap, robots.txt, canonical URLs, JSON-LD)
-- Accessibility compliance (focus traps, ARIA labels, skip navigation)
-- Code quality (TypeScript strictness, DRY violations)
-- UI/UX consistency (component standardization, design tokens)
-
 ## Current State
 
-**v1 Stabilization shipped:** 2026-01-28
+**v1.1 Audit Remediation shipped:** 2026-01-29
 
-The platform has been audited and stabilized:
-- Multi-tenant isolation verified (defense-in-depth salonId filtering)
-- Online booking reliable with transactional guarantees (no double-bookings)
-- Payment processing working end-to-end with Stripe
-- Notification system with delivery tracking and configurable reminders
-- Dashboard with accurate timezone-aware metrics
-- Settings persistence verified across all configuration types
-
-**Comprehensive audit completed:** 2026-01-28
-- ~50 issues identified across 6 categories
-- CRITICAL: ENCRYPTION_KEY persistence, sync email/SMS blocking
-- HIGH: N+1 queries, missing SEO files, modal accessibility
+The platform has been hardened across all dimensions:
+- **Security:** Environment validation, file ownership verification, password complexity
+- **Performance:** Async notification queue, consolidated dashboard queries
+- **SEO:** Sitemap, robots.txt, canonical URLs, Organization JSON-LD
+- **Accessibility:** WCAG 2.1 AA - focus traps, ARIA, skip nav, contrast
+- **Code Quality:** noImplicitAny, structured logging, withSalonId utility
+- **UI/UX:** Unified Modal, EmptyState, STATUS_COLORS, design tokens
 
 **Tech Stack:**
 - Frontend: Next.js 14, React 18, TailwindCSS, shadcn/ui, Zustand, TanStack Query
@@ -45,12 +28,23 @@ The platform has been audited and stabilized:
 - Integrations: Stripe, SendGrid, Twilio, Cloudinary
 - Hosting: Vercel (web), Render (API), Supabase (database)
 
+## Next Milestone Goals
+
+**v1.2 - Staff Portal and Settings Polish**
+
+Potential focus areas (to be defined in /gsd:new-milestone):
+- Staff Portal: login, clock in/out, earnings view
+- Subscription add-on persistence
+- Multi-location CRUD UI completion
+- Any remaining technical debt cleanup
+
 ## Requirements
 
 ### Validated
 
-Features shipped in v1:
+Features shipped across v1.0 and v1.1:
 
+**v1.0 - Core Platform:**
 - Multi-tenant security with complete isolation — v1.0
 - Transactional booking with pessimistic locking — v1.0
 - Double-booking prevention under concurrent load — v1.0
@@ -66,21 +60,29 @@ Features shipped in v1:
 - Staff RBAC (role-based access control) — v1.0
 - Dark mode for public pages — v1.0
 
+**v1.1 - Audit Remediation:**
+- Environment variable enforcement (ENCRYPTION_KEY, JWT_SECRET) — v1.1
+- File ownership validation via database lookup — v1.1
+- Password complexity requirements — v1.1
+- Async notification queue — v1.1
+- Dashboard query consolidation — v1.1
+- VIP client database COUNT — v1.1
+- Background refetch disabled — v1.1
+- Sitemap and robots.txt — v1.1
+- Canonical URLs and JSON-LD — v1.1
+- Modal focus traps and ARIA — v1.1
+- Skip navigation and contrast — v1.1
+- TypeScript noImplicitAny — v1.1
+- Structured logging (pino) — v1.1
+- withSalonId utility — v1.1
+- Unified Modal component — v1.1
+- STATUS_COLORS constants — v1.1
+- Error design tokens (rose-*) — v1.1
+- EmptyState component — v1.1
+
 ### Active
 
-For v1.1 Audit Remediation:
-
-- [ ] Security: Environment variable enforcement, CSRF Redis store, file ownership validation
-- [ ] Performance: Async email/SMS, query consolidation, background refetch fix
-- [ ] SEO: sitemap.ts, robots.txt, canonical URLs, JSON-LD schemas
-- [ ] Accessibility: Modal focus traps, ARIA labels, skip navigation, color contrast
-- [ ] Code Quality: Replace `any` types, enable noImplicitAny, extract filter utilities
-- [ ] UI/UX: Standardize modals, buttons, status colors, error states
-
-**Deferred to v1.2:**
-- Staff Portal (login, clock in/out, earnings view)
-- Subscription add-on persistence
-- Multi-location CRUD UI completion
+(To be defined in v1.2 milestone)
 
 ### Out of Scope
 
@@ -88,25 +90,29 @@ For v1.1 Audit Remediation:
 - Real-time chat — high complexity, not core value
 - Additional payment providers — Stripe sufficient
 - Offline mode — real-time booking is core value
+- Redis for CSRF tokens — in-memory acceptable for single instance
+- Full WCAG 2.2 compliance — 2.1 AA is the legal requirement
 
 ## Context
 
-**Shipped v1.0:**
+**Shipped v1.0:** 2026-01-28
 - 40 plans executed across 12 phases
 - 130 commits in 4 days
-- 24/24 requirements satisfied
-- All 7 CRITICAL security findings resolved
-- 5/5 E2E flows verified
 
-**Known Technical Debt (v1.1 backlog):**
+**Shipped v1.1:** 2026-01-29
+- 46 plans executed across 6 phases
+- 198 commits in 2 days
+- 24/24 audit requirements satisfied
+
+**Known Technical Debt:**
+- 327 low-contrast text patterns in secondary UI elements
 - Booking widget input fields styling (white on white)
 - Cron reminders bypass NotificationLog
 - Some direct fetch calls instead of api client
-- Different token key names per context
 
 ## Constraints
 
-- **Multi-tenant safety**: All queries must filter by salonId (verified in v1)
+- **Multi-tenant safety**: All queries must filter by salonId (verified via withSalonId utility)
 - **Budget**: Using existing infrastructure (Vercel, Render, Supabase free tiers)
 - **No breaking changes**: Existing data and users must continue working
 
@@ -120,7 +126,11 @@ For v1.1 Audit Remediation:
 | Insert-or-conflict idempotency | Race-safe webhook deduplication | Good |
 | Defense-in-depth salonId | All queries include salonId even when unique constraints exist | Good |
 | SMS-to-email fallback | Higher notification delivery rates | Good |
-| Lazy state initialization | Eliminates LocationContext race condition | Good |
+| Database-backed notification queue | Simpler than external message broker, fits scale | Good |
+| focus-trap-react for modals | Proven library, better than custom focus management | Good |
+| withSalonId utility | DRY pattern, type-safe, consistent tenant isolation | Good |
+| rose-* design tokens | Consistent error states, better than hardcoded colors | Good |
+| pino structured logging | JSON in production, pretty in dev, LOG_LEVEL configurable | Good |
 
 ---
-*Last updated: 2026-01-28 after v1.1 milestone initialization*
+*Last updated: 2026-01-29 after v1.1 milestone completion*
