@@ -26,6 +26,24 @@ import { useReports } from '@/hooks/useReports';
 import { useLocationContext } from '@/hooks/useLocations';
 import { LocationSwitcher } from '@/components/LocationSwitcher';
 import { useSalonSettings } from '@/contexts/SalonSettingsContext';
+import { STATUS_COLORS, type StatusKey } from '@/lib/statusColors';
+
+// Helper to get status classes for transaction statuses
+function getTransactionStatusClasses(status: string): string {
+  // Map transaction statuses to centralized STATUS_COLORS
+  const statusMap: Record<string, StatusKey> = {
+    completed: 'completed',
+    pending: 'pending',
+    refunded: 'cancelled', // Refunded uses same styling as cancelled (rose)
+  };
+  const mappedStatus = statusMap[status];
+  if (mappedStatus) {
+    const colors = STATUS_COLORS[mappedStatus];
+    return `${colors.bg} ${colors.text}`;
+  }
+  // Fallback
+  return 'bg-gray-100 text-gray-600';
+}
 
 // Date range presets
 const dateRangePresets = [
@@ -62,12 +80,6 @@ const dateRangePresets = [
     return { start: startOfYear.toISOString().split('T')[0], end: today.toISOString().split('T')[0] };
   }},
 ];
-
-const statusColors: Record<string, string> = {
-  completed: 'bg-sage/20 text-sage-dark',
-  pending: 'bg-amber-100 text-amber-700',
-  refunded: 'bg-rose/20 text-rose-dark',
-};
 
 // Color palette for service categories
 const categoryColors = ['bg-sage', 'bg-lavender', 'bg-peach', 'bg-mint', 'bg-rose'];
@@ -680,7 +692,7 @@ function ReportsContent() {
                             <span className="text-xs text-charcoal/50 dark:text-white/50">{tx.date}</span>
                             <span
                               className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${
-                                statusColors[tx.status] || 'bg-gray-100 text-gray-600'
+                                getTransactionStatusClasses(tx.status)
                               }`}
                             >
                               {tx.status}
