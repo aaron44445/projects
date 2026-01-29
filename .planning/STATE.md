@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-28)
 ## Current Position
 
 Phase: 17 of 18 (Code Quality)
-Plan: 7 of 9 complete
+Plan: 8 of 9 complete
 Status: Executing wave 2
-Last activity: 2026-01-29 - Completed 17-08-PLAN.md
+Last activity: 2026-01-29 - Completed 17-06-PLAN.md (remaining routes migration)
 
-Progress: [██████████████░░░░░░] 72%
+Progress: [██████████████░░░░░░] 74%
 
 ## Milestone Context
 
@@ -44,7 +44,7 @@ Progress: [██████████████░░░░░░] 72%
 | 14 | 4/4 | 12 min | 3 min |
 | 15 | 2/2 | 11 min | 5.5 min |
 | 16 | 10/10 | 31 min | 3.1 min |
-| 17 | 7/9 | 97 min | 13.9 min |
+| 17 | 8/9 | 129 min | 16.1 min |
 
 *Updated after each plan completion*
 
@@ -119,6 +119,8 @@ From v1.1 Phase 17:
 - Consolidate multi-line startup logs into single structured log call (17-08)
 - Use context objects for job tracking (jobId, attempt, maxAttempts) (17-08)
 - Production startup errors still use stderr for fail-fast behavior (17-08)
+- Use unknown + type assertion instead of : any for error parameters (17-06)
+- Include salonId context in all log messages for multi-tenant tracing (17-06)
 
 ### Pending Todos
 
@@ -131,9 +133,9 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 17-08-PLAN.md
+Stopped at: Completed 17-06-PLAN.md
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (17-08 complete - Lib, cron, and worker logging migration)*
+*Last updated: 2026-01-29 (17-06 complete - Remaining route files migration)*
