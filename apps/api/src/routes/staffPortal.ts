@@ -949,6 +949,12 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
   // Determine if this is the current period
   const isCurrent = startDate.getTime() === defaultStart.getTime() && endDate.getTime() === defaultEnd.getTime();
 
+  // Fetch salon settings for client visibility
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { staffCanViewClientContact: true },
+  });
+
   const records = await prisma.commissionRecord.findMany({
     where: {
       staffId,
@@ -990,6 +996,7 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
       summary,
       period,
       dateRange: { start: startDate.toISOString(), end: endDate.toISOString() },
+      staffCanViewClientContact: salon?.staffCanViewClientContact ?? true,
     },
   });
 }));
