@@ -844,6 +844,12 @@ router.get('/schedule', authenticate, staffOnly, asyncHandler(async (req: Reques
   const staffId = req.user.userId;
   const salonId = req.user.salonId;
 
+  // Fetch salon's staffCanViewClientContact setting
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { staffCanViewClientContact: true },
+  });
+
   // Parse date range from query
   const startDate = req.query.start ? new Date(req.query.start as string) : new Date();
   const endDate = req.query.end ? new Date(req.query.end as string) : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -886,6 +892,7 @@ router.get('/schedule', authenticate, staffOnly, asyncHandler(async (req: Reques
       timeOff,
       availability,
       dateRange: { start: startDate.toISOString(), end: endDate.toISOString() },
+      staffCanViewClientContact: salon?.staffCanViewClientContact ?? true,
     },
   });
 }));
