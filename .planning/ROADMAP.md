@@ -144,11 +144,13 @@ Plans:
   5. Owner can configure what client info staff can see (full/limited/none)
   6. Staff portal respects client visibility settings on all pages
 
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 23-01: TBD during phase planning
-- [ ] 23-02: TBD during phase planning
+- [ ] 23-01-PLAN.md — Weekly pay period support for earnings view
+- [ ] 23-02-PLAN.md — CSV export endpoint with client name masking
+- [ ] 23-03-PLAN.md — Export button and client name masking in earnings UI
+- [ ] 23-04-PLAN.md — Client visibility toggle in Staff Policies settings
 
 ### Phase 24: Technical Debt
 
@@ -180,7 +182,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 | 20. Staff Portal Core | 3/3 | Complete | 2026-01-29 |
 | 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
 | 22. Time Tracking | 2/2 | Complete | 2026-01-29 |
-| 23. Earnings & Permissions | 0/TBD | Not started | - |
+| 23. Earnings & Permissions | 0/4 | Not started | - |
 | 24. Technical Debt | 0/TBD | Not started | - |
 
 ---
