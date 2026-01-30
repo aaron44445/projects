@@ -162,15 +162,18 @@ Plans:
 **Requirements**: DEBT-01, DEBT-02, DEBT-03, DEBT-04
 
 **Success Criteria** (what must be TRUE):
-  1. Booking widget inputs have readable text (no white on white)
+  1. Booking widget inputs have readable text (no white on white) - ALREADY COMPLETE
   2. All low-contrast text patterns (charcoal/50, /60, /70) meet WCAG 2.1 AA
   3. Cron reminder notifications route through NotificationLog for delivery tracking
   4. All API calls use centralized api client (no direct fetch)
 
-**Plans**: TBD
+**Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 24-01: TBD during phase planning
+- [ ] 24-01-PLAN.md — DEBT-02: Migrate owner page contrast to semantic tokens (Wave 1)
+- [ ] 24-02-PLAN.md — DEBT-02: Migrate staff portal contrast to semantic tokens (Wave 1)
+- [ ] 24-03-PLAN.md — DEBT-03: Route cron reminders through NotificationLog (Wave 2)
+- [ ] 24-04-PLAN.md — DEBT-04: Consolidate direct fetch calls to api client (Wave 2)
 
 ## Progress
 
@@ -184,7 +187,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 | 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
 | 22. Time Tracking | 2/2 | Complete | 2026-01-29 |
 | 23. Earnings & Permissions | 5/5 | Complete | 2026-01-29 |
-| 24. Technical Debt | 0/TBD | Not started | - |
+| 24. Technical Debt | 0/4 | Not started | - |
 
 ---
 *Created: 2026-01-29*
