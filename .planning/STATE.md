@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 23 of 24 (Earnings & Permissions)
-Plan: 4 of 4 complete (23-01, 23-02, 23-03, 23-04)
+Plan: 5 of 5 complete (23-01, 23-02, 23-03, 23-04, 23-05)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed 23-03-PLAN.md (Export Button and Client Masking)
+Last activity: 2026-01-29 - Completed 23-05-PLAN.md (Schedule Client Visibility Gap Closure)
 
 Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████████████░
 
@@ -89,11 +89,12 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Clock in/out UI (22-02 complete)
 - Timezone-aware history view (22-02 complete)
 
-**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01) - COMPLETE
+**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01, GAP-01) - COMPLETE
 - Weekly pay periods (23-01 complete)
 - CSV export (23-02 complete)
 - Export button and client masking (23-03 complete)
 - Client visibility control toggle (23-04 complete)
+- Schedule client visibility gap closure (23-05 complete)
 
 **Phase 24:** Technical Debt (DEBT-01 to DEBT-04)
 - Booking widget styling
@@ -119,9 +120,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 23-03-PLAN.md (Export Button and Client Masking)
+Stopped at: Completed 23-05-PLAN.md (Schedule Client Visibility Gap Closure)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (23-03 complete: Export Button and Client Masking)*
+*Last updated: 2026-01-29 (23-05 complete: Schedule Client Visibility Gap Closure)*
