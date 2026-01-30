@@ -17,7 +17,7 @@ export type UpdateNotificationPreferences = Partial<OwnerNotificationPreferences
 
 export function useOwnerNotifications() {
   const [preferences, setPreferences] = useState<OwnerNotificationPreferences | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start true to show loading until data is fetched
   const [error, setError] = useState<string | null>(null);
 
   // Fetch preferences
@@ -55,15 +55,30 @@ export function useOwnerNotifications() {
     }
   }, []);
 
-  // Toggle a single preference
+  // Toggle a single preference with optimistic update
   const togglePreference = useCallback(async (key: keyof Omit<OwnerNotificationPreferences, 'notificationEmail'>): Promise<boolean> => {
-    if (!preferences) return false;
+    if (!preferences) {
+      console.warn('[OwnerNotifications] Cannot toggle - preferences not loaded');
+      return false;
+    }
 
     const currentValue = preferences[key];
+    const newValue = !currentValue;
+
+    // Optimistic update - immediately show the change
+    setPreferences(prev => prev ? { ...prev, [key]: newValue } : prev);
+
     try {
-      await updatePreferences({ [key]: !currentValue });
+      const result = await updatePreferences({ [key]: newValue });
+      if (!result) {
+        // Revert optimistic update if API failed
+        setPreferences(prev => prev ? { ...prev, [key]: currentValue } : prev);
+        return false;
+      }
       return true;
     } catch {
+      // Revert optimistic update on error
+      setPreferences(prev => prev ? { ...prev, [key]: currentValue } : prev);
       return false;
     }
   }, [preferences, updatePreferences]);
