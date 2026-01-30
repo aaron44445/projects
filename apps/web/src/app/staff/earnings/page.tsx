@@ -6,10 +6,8 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Filter,
   Loader2,
   AlertCircle,
-  ChevronDown,
 } from 'lucide-react';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
@@ -38,6 +36,20 @@ interface EarningsSummary {
 interface EarningsData {
   records: EarningsRecord[];
   summary: EarningsSummary;
+  period: {
+    start: string;
+    end: string;
+    label: string;
+    isCurrent: boolean;
+  };
+}
+
+interface PayPeriod {
+  index: number;
+  start: string;
+  end: string;
+  label: string;
+  isCurrent: boolean;
 }
 
 function EarningsContent() {
@@ -45,30 +57,42 @@ function EarningsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [earningsData, setEarningsData] = useState<EarningsData | null>(null);
-  const [showDateFilter, setShowDateFilter] = useState(false);
 
-  // Date range filter
-  const [dateRange, setDateRange] = useState<{
-    start: string;
-    end: string;
-  }>(() => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return {
-      start: startOfMonth.toISOString().split('T')[0],
-      end: endOfMonth.toISOString().split('T')[0],
+  // Pay period state
+  const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([]);
+  const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(0);
+  const [periodsLoaded, setPeriodsLoaded] = useState(false);
+
+  // Fetch pay periods on mount
+  useEffect(() => {
+    const fetchPeriods = async () => {
+      try {
+        const response = await api.get<PayPeriod[]>('/staff-portal/earnings/periods');
+        if (response.success && response.data) {
+          setPayPeriods(response.data);
+          setPeriodsLoaded(true);
+        }
+      } catch (err) {
+        console.error('Failed to load pay periods:', err);
+        setPeriodsLoaded(true); // Still allow fetching earnings with defaults
+      }
     };
-  });
+    fetchPeriods();
+  }, []);
 
   const fetchEarnings = useCallback(async () => {
+    if (!periodsLoaded) return;
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await api.get<EarningsData>(
-        `/staff-portal/earnings?start=${dateRange.start}&end=${dateRange.end}`
-      );
+      const selectedPeriod = payPeriods[selectedPeriodIndex];
+      const url = selectedPeriod
+        ? `/staff-portal/earnings?start=${selectedPeriod.start}&end=${selectedPeriod.end}`
+        : '/staff-portal/earnings';
+
+      const response = await api.get<EarningsData>(url);
       if (response.success && response.data) {
         setEarningsData(response.data);
       }
@@ -81,7 +105,7 @@ function EarningsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [dateRange]);
+  }, [payPeriods, selectedPeriodIndex, periodsLoaded]);
 
   useEffect(() => {
     fetchEarnings();
@@ -102,50 +126,8 @@ function EarningsContent() {
     });
   };
 
-  const getDateRangeLabel = () => {
-    const start = new Date(dateRange.start);
-    const end = new Date(dateRange.end);
-    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
-
-    if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-      return `${startMonth} ${start.getDate()} - ${end.getDate()}, ${start.getFullYear()}`;
-    }
-    return `${startMonth} ${start.getDate()} - ${endMonth} ${end.getDate()}, ${end.getFullYear()}`;
-  };
-
-  const setQuickDateRange = (range: 'thisWeek' | 'thisMonth' | 'lastMonth' | 'thisYear') => {
-    const now = new Date();
-    let start: Date;
-    let end: Date;
-
-    switch (range) {
-      case 'thisWeek':
-        start = new Date(now);
-        start.setDate(now.getDate() - now.getDay());
-        end = new Date(start);
-        end.setDate(start.getDate() + 6);
-        break;
-      case 'thisMonth':
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        break;
-      case 'lastMonth':
-        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        end = new Date(now.getFullYear(), now.getMonth(), 0);
-        break;
-      case 'thisYear':
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear(), 11, 31);
-        break;
-    }
-
-    setDateRange({
-      start: start.toISOString().split('T')[0],
-      end: end.toISOString().split('T')[0],
-    });
-    setShowDateFilter(false);
-  };
+  const selectedPeriod = payPeriods[selectedPeriodIndex];
+  const periodLabel = selectedPeriod?.label || earningsData?.period?.label || 'Current Period';
 
   return (
     <div className="min-h-screen bg-cream flex">
@@ -165,94 +147,22 @@ function EarningsContent() {
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-charcoal">Earnings</h1>
-                <p className="text-sm text-charcoal/60">{getDateRangeLabel()}</p>
+                <p className="text-sm text-charcoal/60">{periodLabel}</p>
               </div>
             </div>
 
-            <div className="relative">
-              <button
-                onClick={() => setShowDateFilter(!showDateFilter)}
-                className="flex items-center gap-2 px-4 py-2 border border-charcoal/20 text-charcoal rounded-xl font-medium hover:bg-charcoal/5 transition-colors"
-              >
-                <Filter className="w-4 h-4" />
-                <span className="hidden sm:inline">Date Range</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-
-              {/* Date Filter Dropdown */}
-              {showDateFilter && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setShowDateFilter(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-lg border border-charcoal/10 z-40 overflow-hidden">
-                    <div className="p-4 border-b border-charcoal/10">
-                      <p className="font-medium text-charcoal">Quick Select</p>
-                    </div>
-                    <div className="p-2">
-                      <button
-                        onClick={() => setQuickDateRange('thisWeek')}
-                        className="w-full text-left px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5 rounded-lg transition-colors"
-                      >
-                        This Week
-                      </button>
-                      <button
-                        onClick={() => setQuickDateRange('thisMonth')}
-                        className="w-full text-left px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5 rounded-lg transition-colors"
-                      >
-                        This Month
-                      </button>
-                      <button
-                        onClick={() => setQuickDateRange('lastMonth')}
-                        className="w-full text-left px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5 rounded-lg transition-colors"
-                      >
-                        Last Month
-                      </button>
-                      <button
-                        onClick={() => setQuickDateRange('thisYear')}
-                        className="w-full text-left px-3 py-2 text-sm text-charcoal hover:bg-charcoal/5 rounded-lg transition-colors"
-                      >
-                        This Year
-                      </button>
-                    </div>
-                    <div className="p-4 border-t border-charcoal/10 space-y-3">
-                      <p className="font-medium text-charcoal text-sm">Custom Range</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-xs text-charcoal/60 mb-1">Start</label>
-                          <input
-                            type="date"
-                            value={dateRange.start}
-                            onChange={(e) =>
-                              setDateRange((prev) => ({ ...prev, start: e.target.value }))
-                            }
-                            className="w-full px-2 py-1.5 text-sm rounded-lg border border-charcoal/20 focus:border-sage focus:ring-1 focus:ring-sage/20 outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-charcoal/60 mb-1">End</label>
-                          <input
-                            type="date"
-                            value={dateRange.end}
-                            onChange={(e) =>
-                              setDateRange((prev) => ({ ...prev, end: e.target.value }))
-                            }
-                            className="w-full px-2 py-1.5 text-sm rounded-lg border border-charcoal/20 focus:border-sage focus:ring-1 focus:ring-sage/20 outline-none"
-                          />
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowDateFilter(false)}
-                        className="w-full py-2 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage-dark transition-colors"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+            {/* Pay Period Selector */}
+            <select
+              value={selectedPeriodIndex}
+              onChange={(e) => setSelectedPeriodIndex(Number(e.target.value))}
+              className="px-4 py-2 border border-charcoal/20 rounded-xl text-charcoal bg-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+            >
+              {payPeriods.map((period) => (
+                <option key={period.index} value={period.index}>
+                  {period.label} {period.isCurrent ? '(Current)' : ''}
+                </option>
+              ))}
+            </select>
           </div>
         </header>
 
