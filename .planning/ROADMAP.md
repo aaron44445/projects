@@ -139,18 +139,19 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Staff can view earnings summary for current period (tips + commissions)
   2. Staff can see service-level earnings breakdown
-  3. Staff can view pay period history for all past periods
+  3. Staff can view pay period history (last 12 weeks)
   4. Staff can export earnings to CSV for personal records
   5. Owner can configure what client info staff can see (full/limited/none)
   6. Staff portal respects client visibility settings on all pages
 
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
-- [ ] 23-01-PLAN.md — Weekly pay period support for earnings view
-- [ ] 23-02-PLAN.md — CSV export endpoint with client name masking
-- [ ] 23-03-PLAN.md — Export button and client name masking in earnings UI
-- [ ] 23-04-PLAN.md — Client visibility toggle in Staff Policies settings
+- [x] 23-01-PLAN.md — Weekly pay period support for earnings view
+- [x] 23-02-PLAN.md — CSV export endpoint with client name masking
+- [x] 23-03-PLAN.md — Export button and client name masking in earnings UI
+- [x] 23-04-PLAN.md — Client visibility toggle in Staff Policies settings
+- [ ] 23-05-PLAN.md — Gap closure: Schedule page client visibility (from verification)
 
 ### Phase 24: Technical Debt
 
@@ -182,7 +183,7 @@ Phases execute in numeric order: 19 → 20 → 21 → 22 → 23 → 24
 | 20. Staff Portal Core | 3/3 | Complete | 2026-01-29 |
 | 21. Availability & Time Off | 4/4 | Complete | 2026-01-29 |
 | 22. Time Tracking | 2/2 | Complete | 2026-01-29 |
-| 23. Earnings & Permissions | 0/4 | Not started | - |
+| 23. Earnings & Permissions | 4/5 | Gap closure | - |
 | 24. Technical Debt | 0/TBD | Not started | - |
 
 ---
