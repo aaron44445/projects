@@ -39,6 +39,7 @@ export interface Salon {
   multiLocationEnabled: boolean;
   // Staff policies
   requireTimeOffApproval?: boolean;
+  staffCanViewClientContact?: boolean;
 }
 
 export interface TimeOffRequestWithStaff {
