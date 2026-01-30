@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 ## Current Position
 
-Phase: 22 of 24 (Time Tracking)
-Plan: 2 of 2 complete (22-01, 22-02)
+Phase: 23 of 24 (Earnings & Permissions)
+Plan: 4 of 4 complete (23-01, 23-02, 23-03, 23-04)
 Status: Phase complete
-Last activity: 2026-01-29 - Completed Phase 22 (Time Tracking)
+Last activity: 2026-01-30 - Completed 23-04-PLAN.md (Client Visibility Control)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ███████████░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████████████░
 
 ## Milestone History
 
@@ -83,10 +83,11 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Clock in/out UI (22-02 complete)
 - Timezone-aware history view (22-02 complete)
 
-**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01)
-- Earnings transparency
-- CSV export
-- Client info visibility controls
+**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01) - COMPLETE
+- Earnings transparency (23-01 complete)
+- CSV export (23-02 complete)
+- Client masking in staff dashboard (23-03 complete)
+- Client visibility control toggle (23-04 complete)
 
 **Phase 24:** Technical Debt (DEBT-01 to DEBT-04)
 - Booking widget styling
@@ -111,10 +112,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Completed Phase 22 (Time Tracking)
+Last session: 2026-01-30
+Stopped at: Completed 23-04-PLAN.md (Client Visibility Control)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 22 complete: 22-01, 22-02)*
+*Last updated: 2026-01-30 (23-04 complete: Client Visibility Control)*
