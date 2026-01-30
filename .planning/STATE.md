@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 23 of 24 (Earnings & Permissions)
-Plan: 4 of 4 complete (23-01, 23-02, 23-03, 23-04)
-Status: Phase complete
-Last activity: 2026-01-30 - Completed 23-04-PLAN.md (Client Visibility Control)
+Plan: 2 of 4 complete (23-02, 23-04)
+Status: In progress
+Last activity: 2026-01-29 - Completed 23-02-PLAN.md (CSV Export)
 
-Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ████████████░
+Progress: v1.0 ████████████ v1.1 ████████████ v1.2 ██████████░░░
 
 ## Milestone History
 
@@ -43,6 +43,8 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - NotificationJob clientId optional with staffId field for staff-targeted notifications (time_off_approved, time_off_rejected)
 - Timezone capture at clock-in: TimeEntry stores location timezone at clock-in time for immutable audit trail
 - Application-level concurrency for time clock: Check for active entry before clock-in to prevent double clock-in
+- CSV export uses fast-csv library for RFC 4180 compliance and streaming response
+- Client name masking shows "FirstName L." format when staffCanViewClientContact is false
 
 **Code Quality:**
 - noImplicitAny: true baseline TypeScript strictness
@@ -83,10 +85,10 @@ Progress: v1.0 ████████████ v1.1 ███████�
 - Clock in/out UI (22-02 complete)
 - Timezone-aware history view (22-02 complete)
 
-**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01) - COMPLETE
-- Earnings transparency (23-01 complete)
+**Phase 23:** Earnings & Permissions (EARN-01 to EARN-04, PERM-01) - IN PROGRESS
+- Earnings transparency (23-01 pending)
 - CSV export (23-02 complete)
-- Client masking in staff dashboard (23-03 complete)
+- Client masking in staff dashboard (23-03 pending)
 - Client visibility control toggle (23-04 complete)
 
 **Phase 24:** Technical Debt (DEBT-01 to DEBT-04)
@@ -112,10 +114,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-30
-Stopped at: Completed 23-04-PLAN.md (Client Visibility Control)
+Last session: 2026-01-29
+Stopped at: Completed 23-02-PLAN.md (CSV Export)
 Resume file: None
 
 ---
 *State initialized: 2026-01-25*
-*Last updated: 2026-01-30 (23-04 complete: Client Visibility Control)*
+*Last updated: 2026-01-29 (23-02 complete: CSV Export)*
