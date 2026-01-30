@@ -21,9 +21,23 @@ import {
 } from 'lucide-react';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
-import { useStaffSchedule, useTimeOff, useStaffAppointments, TimeOffRequest } from '@/hooks/useStaffPortal';
+import { useStaffSchedule, useTimeOff, useStaffAppointments, TimeOffRequest, StaffAppointment } from '@/hooks/useStaffPortal';
 import { Modal } from '@peacase/ui';
 import { STATUS_COLORS } from '@/lib/statusColors';
+import { api } from '@/lib/api';
+
+// Helper function for client name formatting based on visibility settings
+function formatClientName(
+  firstName: string,
+  lastName: string,
+  canViewContact: boolean
+): string {
+  if (canViewContact) {
+    return `${firstName} ${lastName}`;
+  }
+  // Show first name + last initial only (e.g., "Sarah M.")
+  return `${firstName} ${lastName.charAt(0)}.`;
+}
 
 // Time off status colors - maps time off statuses to centralized design tokens
 // pending: uses lavender (waiting state)
@@ -604,13 +618,41 @@ function AppointmentsCalendar() {
     return new Date(today.setDate(diff));
   });
 
-  const { appointments, isLoading, fetchAppointments } = useStaffAppointments();
+  const [appointments, setAppointments] = useState<StaffAppointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [staffCanViewClientContact, setStaffCanViewClientContact] = useState(true);
 
+  // Fetch from /schedule endpoint to get both appointments and staffCanViewClientContact
   useEffect(() => {
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-    fetchAppointments(weekStart.toISOString().split('T')[0], weekEnd.toISOString().split('T')[0]);
-  }, [weekStart, fetchAppointments]);
+    const fetchScheduleData = async () => {
+      setIsLoading(true);
+      try {
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        const params = new URLSearchParams({
+          start: weekStart.toISOString(),
+          end: weekEnd.toISOString(),
+        });
+
+        const response = await api.get<{
+          appointments: StaffAppointment[];
+          staffCanViewClientContact: boolean;
+        }>(`/staff-portal/schedule?${params.toString()}`);
+
+        if (response.success && response.data) {
+          setAppointments(response.data.appointments || []);
+          setStaffCanViewClientContact(response.data.staffCanViewClientContact ?? true);
+        }
+      } catch (error) {
+        console.error('Failed to fetch schedule data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchScheduleData();
+  }, [weekStart]);
 
   const prevWeek = () => {
     const newStart = new Date(weekStart);
@@ -700,7 +742,11 @@ function AppointmentsCalendar() {
                     className="p-2 rounded-lg text-xs bg-lavender/20"
                   >
                     <p className="font-medium truncate text-charcoal">
-                      {apt.client?.firstName || 'Client'}
+                      {apt.client ? formatClientName(
+                        apt.client.firstName,
+                        apt.client.lastName || '',
+                        staffCanViewClientContact
+                      ) : 'Client'}
                     </p>
                     <p className="text-charcoal/60">
                       {new Date(apt.startTime).toLocaleTimeString('en-US', {
