@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Loader2,
   AlertCircle,
+  Download,
 } from 'lucide-react';
 import { StaffAuthGuard } from '@/components/StaffAuthGuard';
 import { StaffPortalSidebar } from '@/components/StaffPortalSidebar';
@@ -16,7 +17,8 @@ import { api, ApiError } from '@/lib/api';
 interface EarningsRecord {
   id: string;
   date: string;
-  clientName: string;
+  clientFirstName: string;
+  clientLastName: string;
   serviceName: string;
   servicePrice: number;
   commission: number;
@@ -42,6 +44,7 @@ interface EarningsData {
     label: string;
     isCurrent: boolean;
   };
+  staffCanViewClientContact: boolean;
 }
 
 interface PayPeriod {
@@ -62,6 +65,54 @@ function EarningsContent() {
   const [payPeriods, setPayPeriods] = useState<PayPeriod[]>([]);
   const [selectedPeriodIndex, setSelectedPeriodIndex] = useState(0);
   const [periodsLoaded, setPeriodsLoaded] = useState(false);
+
+  // Helper function for client name formatting based on visibility settings
+  const formatClientName = (
+    firstName: string,
+    lastName: string,
+    canViewContact: boolean
+  ): string => {
+    if (canViewContact) {
+      return `${firstName} ${lastName}`;
+    }
+    // Show first name + last initial only (e.g., "Sarah M.")
+    return `${firstName} ${lastName.charAt(0)}.`;
+  };
+
+  // Handle CSV export
+  const handleExport = useCallback(async () => {
+    if (payPeriods.length === 0) return;
+    const period = payPeriods[selectedPeriodIndex];
+    if (!period) return;
+
+    // Get auth token for the request
+    const token = localStorage.getItem('staffAccessToken');
+    if (!token) return;
+
+    try {
+      const exportUrl = `${process.env.NEXT_PUBLIC_API_URL}/staff-portal/earnings/export?start=${period.start}&end=${period.end}`;
+
+      const response = await fetch(exportUrl, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `earnings_${period.start.split('T')[0]}_to_${period.end.split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+  }, [payPeriods, selectedPeriodIndex]);
 
   // Fetch pay periods on mount
   useEffect(() => {
@@ -151,18 +202,28 @@ function EarningsContent() {
               </div>
             </div>
 
-            {/* Pay Period Selector */}
-            <select
-              value={selectedPeriodIndex}
-              onChange={(e) => setSelectedPeriodIndex(Number(e.target.value))}
-              className="px-4 py-2 border border-charcoal/20 rounded-xl text-charcoal bg-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
-            >
-              {payPeriods.map((period) => (
-                <option key={period.index} value={period.index}>
-                  {period.label} {period.isCurrent ? '(Current)' : ''}
-                </option>
-              ))}
-            </select>
+            {/* Pay Period Selector and Export */}
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedPeriodIndex}
+                onChange={(e) => setSelectedPeriodIndex(Number(e.target.value))}
+                className="px-4 py-2 border border-charcoal/20 rounded-xl text-charcoal bg-white focus:border-sage focus:ring-2 focus:ring-sage/20 outline-none"
+              >
+                {payPeriods.map((period) => (
+                  <option key={period.index} value={period.index}>
+                    {period.label} {period.isCurrent ? '(Current)' : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleExport}
+                disabled={!earningsData || earningsData.records.length === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-sage text-white rounded-xl font-medium hover:bg-sage-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -299,7 +360,11 @@ function EarningsContent() {
                               {formatDate(record.date)}
                             </td>
                             <td className="px-5 py-4 text-sm text-charcoal font-medium">
-                              {record.clientName}
+                              {formatClientName(
+                                record.clientFirstName,
+                                record.clientLastName,
+                                earningsData.staffCanViewClientContact
+                              )}
                             </td>
                             <td className="px-5 py-4 text-sm text-charcoal/70">
                               {record.serviceName}

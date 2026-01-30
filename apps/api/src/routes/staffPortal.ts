@@ -979,6 +979,10 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
     appointmentCount: records.length,
     paidOut: records.filter(r => r.isPaid).reduce((sum, r) => sum + r.commissionAmount + r.tipAmount, 0),
     pending: records.filter(r => !r.isPaid).reduce((sum, r) => sum + r.commissionAmount + r.tipAmount, 0),
+    totalEarnings: records.reduce((sum, r) => sum + r.commissionAmount + r.tipAmount, 0),
+    averagePerAppointment: records.length > 0
+      ? records.reduce((sum, r) => sum + r.commissionAmount + r.tipAmount, 0) / records.length
+      : 0,
   };
 
   // Period metadata
@@ -989,10 +993,24 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
     isCurrent,
   };
 
+  // Transform records to flattened shape for frontend
+  const transformedRecords = records.map(r => ({
+    id: r.id,
+    date: r.createdAt.toISOString(),
+    clientFirstName: r.appointment.client.firstName,
+    clientLastName: r.appointment.client.lastName,
+    serviceName: r.appointment.service.name,
+    servicePrice: r.serviceAmount,
+    commission: r.commissionAmount,
+    commissionRate: r.commissionRate,
+    tip: r.tipAmount,
+    total: r.commissionAmount + r.tipAmount,
+  }));
+
   res.json({
     success: true,
     data: {
-      records,
+      records: transformedRecords,
       summary,
       period,
       dateRange: { start: startDate.toISOString(), end: endDate.toISOString() },
