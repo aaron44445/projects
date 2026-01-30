@@ -12,9 +12,22 @@ import { asyncHandler } from '../lib/errorUtils.js';
 import { loginRateLimit } from '../middleware/rateLimit.js';
 import logger from '../lib/logger.js';
 import { withSalonId } from '../lib/prismaUtils.js';
-import { differenceInMinutes, subDays, startOfDay, endOfDay } from 'date-fns';
+import { differenceInMinutes, subDays, subWeeks, startOfDay, endOfDay, startOfWeek, endOfWeek, format } from 'date-fns';
+import { format as csvFormat } from 'fast-csv';
 
 const router = Router();
+
+// Helper function for client name formatting based on visibility settings
+function formatClientName(
+  client: { firstName: string; lastName: string },
+  canViewContact: boolean
+): string {
+  if (canViewContact) {
+    return `${client.firstName} ${client.lastName}`;
+  }
+  // Show first name + last initial only (e.g., "Sarah M.")
+  return `${client.firstName} ${client.lastName.charAt(0)}.`;
+}
 
 // Validation schemas
 const inviteStaffSchema = z.object({
@@ -925,9 +938,16 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
   const staffId = req.user.userId;
   const salonId = req.user.salonId;
 
-  // Parse date range
-  const startDate = req.query.start ? new Date(req.query.start as string) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const endDate = req.query.end ? new Date(req.query.end as string) : new Date();
+  // Parse date range - default to current weekly pay period (Sunday-Saturday)
+  const now = new Date();
+  const defaultStart = startOfWeek(now, { weekStartsOn: 0 }); // Sunday
+  const defaultEnd = endOfWeek(now, { weekStartsOn: 0 }); // Saturday
+
+  const startDate = req.query.start ? new Date(req.query.start as string) : defaultStart;
+  const endDate = req.query.end ? new Date(req.query.end as string) : defaultEnd;
+
+  // Determine if this is the current period
+  const isCurrent = startDate.getTime() === defaultStart.getTime() && endDate.getTime() === defaultEnd.getTime();
 
   const records = await prisma.commissionRecord.findMany({
     where: {
@@ -955,14 +975,132 @@ router.get('/earnings', authenticate, staffOnly, asyncHandler(async (req: Reques
     pending: records.filter(r => !r.isPaid).reduce((sum, r) => sum + r.commissionAmount + r.tipAmount, 0),
   };
 
+  // Period metadata
+  const period = {
+    start: startDate.toISOString(),
+    end: endDate.toISOString(),
+    label: `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`,
+    isCurrent,
+  };
+
   res.json({
     success: true,
     data: {
       records,
       summary,
+      period,
       dateRange: { start: startDate.toISOString(), end: endDate.toISOString() },
     },
   });
+}));
+
+// ============================================
+// GET /api/v1/staff-portal/earnings/periods
+// Get last 12 weekly pay periods for dropdown
+// ============================================
+router.get('/earnings/periods', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  const now = new Date();
+  const periods = Array.from({ length: 12 }, (_, i) => {
+    const weekDate = subWeeks(now, i);
+    const start = startOfWeek(weekDate, { weekStartsOn: 0 });
+    const end = endOfWeek(weekDate, { weekStartsOn: 0 });
+    return {
+      index: i,
+      start: start.toISOString(),
+      end: end.toISOString(),
+      label: `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`,
+      isCurrent: i === 0
+    };
+  });
+  res.json({ success: true, data: periods });
+}));
+
+// ============================================
+// GET /api/v1/staff-portal/earnings/export
+// Export earnings to CSV
+// ============================================
+router.get('/earnings/export', authenticate, staffOnly, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+  }
+
+  const staffId = req.user.userId;
+  const salonId = req.user.salonId;
+
+  // Parse date range (required for export)
+  const startDate = req.query.start ? new Date(req.query.start as string) : null;
+  const endDate = req.query.end ? new Date(req.query.end as string) : null;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'start and end date parameters are required' }
+    });
+  }
+
+  // Get salon settings for client visibility
+  const salon = await prisma.salon.findUnique({
+    where: { id: salonId },
+    select: { staffCanViewClientContact: true }
+  });
+  const canViewClientContact = salon?.staffCanViewClientContact ?? true;
+
+  // Get staff info for filename
+  const staff = await prisma.user.findUnique({
+    where: { id: staffId },
+    select: { firstName: true, lastName: true }
+  });
+
+  // Fetch records
+  const records = await prisma.commissionRecord.findMany({
+    where: {
+      staffId,
+      salonId,
+      createdAt: { gte: startDate, lte: endDate },
+    },
+    include: {
+      appointment: {
+        include: {
+          service: { select: { name: true } },
+          client: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  // Generate filename
+  const staffName = staff ? `${staff.firstName}_${staff.lastName}`.replace(/\s+/g, '_') : 'staff';
+  const startStr = format(startDate, 'yyyy-MM-dd');
+  const endStr = format(endDate, 'yyyy-MM-dd');
+  const filename = `earnings_${staffName}_${startStr}_to_${endStr}.csv`;
+
+  // Set CSV headers
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+  // Stream CSV
+  const csvStream = csvFormat({ headers: true });
+  csvStream.pipe(res);
+
+  for (const record of records) {
+    const clientName = formatClientName(
+      record.appointment.client,
+      canViewClientContact
+    );
+
+    csvStream.write({
+      Date: format(record.createdAt, 'MMM d, yyyy'),
+      Service: record.appointment.service.name,
+      'Client Name': clientName,
+      'Service Price': record.serviceAmount.toFixed(2),
+      Tip: record.tipAmount.toFixed(2),
+      Commission: record.commissionAmount.toFixed(2),
+      Total: (record.commissionAmount + record.tipAmount).toFixed(2)
+    });
+  }
+
+  csvStream.end();
 }));
 
 // ============================================
