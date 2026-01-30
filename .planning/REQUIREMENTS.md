@@ -36,10 +36,10 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Earnings
 
-- [ ] **EARN-01**: Staff can view earnings summary (tips, commissions) for current period
-- [ ] **EARN-02**: Staff can see service-level earnings breakdown
-- [ ] **EARN-03**: Staff can view pay period history
-- [ ] **EARN-04**: Staff can export earnings to CSV
+- [x] **EARN-01**: Staff can view earnings summary (tips, commissions) for current period
+- [x] **EARN-02**: Staff can see service-level earnings breakdown
+- [x] **EARN-03**: Staff can view pay period history
+- [x] **EARN-04**: Staff can export earnings to CSV
 
 ### Profile
 
@@ -48,7 +48,7 @@ Requirements for Staff Portal milestone. Each maps to roadmap phases.
 
 ### Permissions & Settings
 
-- [ ] **PERM-01**: Owner can configure what client info staff can see (full/limited/none)
+- [x] **PERM-01**: Owner can configure what client info staff can see (full/limited/none)
 
 ### Technical Debt
 
@@ -101,13 +101,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TIME-01 | Phase 22 | Complete |
 | TIME-02 | Phase 22 | Complete |
 | TIME-03 | Phase 22 | Complete |
-| EARN-01 | Phase 23 | Pending |
-| EARN-02 | Phase 23 | Pending |
-| EARN-03 | Phase 23 | Pending |
-| EARN-04 | Phase 23 | Pending |
+| EARN-01 | Phase 23 | Complete |
+| EARN-02 | Phase 23 | Complete |
+| EARN-03 | Phase 23 | Complete |
+| EARN-04 | Phase 23 | Complete |
 | PROF-01 | Phase 20 | Complete |
 | PROF-02 | Phase 20 | Complete |
-| PERM-01 | Phase 23 | Pending |
+| PERM-01 | Phase 23 | Complete |
 | DEBT-01 | Phase 24 | Pending |
 | DEBT-02 | Phase 24 | Pending |
 | DEBT-03 | Phase 24 | Pending |
@@ -120,4 +120,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-29 after Phase 21 completion*
+*Last updated: 2026-01-29 after Phase 23 completion*
