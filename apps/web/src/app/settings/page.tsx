@@ -160,6 +160,10 @@ function StaffPoliciesSection() {
     }
   };
 
+  const handleToggleClientVisibility = async (enabled: boolean) => {
+    await updateSalon({ staffCanViewClientContact: enabled });
+  };
+
   const handleReview = async () => {
     if (!showReviewModal) return;
     setIsSubmitting(true);
@@ -200,6 +204,25 @@ function StaffPoliciesSection() {
           <div>
             <span className="text-charcoal dark:text-white font-medium">Require manager approval for time-off requests</span>
             <p className="text-sm text-text-muted dark:text-white/60">When enabled, staff time-off requests will need your approval before taking effect</p>
+          </div>
+        </label>
+      </div>
+
+      {/* Client Information Visibility */}
+      <div className="bg-white dark:bg-sidebar rounded-2xl border border-charcoal/10 dark:border-white/10 p-6">
+        <h3 className="font-semibold text-charcoal dark:text-white mb-4">Client Information Visibility</h3>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={salon?.staffCanViewClientContact ?? true}
+            onChange={(e) => handleToggleClientVisibility(e.target.checked)}
+            className="rounded border-charcoal/20 dark:border-white/20 text-sage focus:ring-sage w-5 h-5"
+          />
+          <div>
+            <span className="text-charcoal dark:text-white font-medium">Allow staff to view full client contact info</span>
+            <p className="text-text-muted dark:text-white/60 text-sm">
+              When disabled, staff will only see first name and last initial (e.g., "Sarah M.") instead of full names, and contact details will be hidden.
+            </p>
           </div>
         </label>
       </div>
