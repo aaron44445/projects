@@ -13,6 +13,7 @@ import { bookingsRouter } from "./routes/bookings";
 import { customersRouter } from "./routes/customers";
 import { stripeRouter } from "./routes/stripe";
 import { techJobsRouter } from "./routes/tech-jobs";
+import { photosRouter } from "./routes/photos";
 import { errorHandler } from "./middleware/errorHandler";
 import { resolveTenant } from "./middleware/tenant";
 
@@ -38,6 +39,7 @@ app.use("/api/bookings", resolveTenant, bookingsRouter);
 app.use("/api/customers", resolveTenant, customersRouter);
 app.use("/api/stripe", express.raw({ type: "application/json" }), stripeRouter);
 app.use("/api/tech/jobs", techJobsRouter);
+app.use("/api/photos", photosRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);
