@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, Camera, UserCircle } from "lucide-react";
+import { ClipboardList, Camera, UserCircle, WifiOff } from "lucide-react";
 
 const navItems = [
   { href: "/jobs", label: "Jobs", icon: ClipboardList },
@@ -12,6 +13,34 @@ const navItems = [
 
 export default function TechLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [isOnline, setIsOnline] = useState(true);
+
+  // Register service worker
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => {
+          console.log("SW registered:", registration.scope);
+        })
+        .catch((error) => {
+          console.error("SW registration failed:", error);
+        });
+    }
+  }, []);
+
+  // Track online/offline status
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -33,6 +62,16 @@ export default function TechLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </header>
+
+      {/* Offline banner */}
+      {!isOnline && (
+        <div className="bg-amber-500 px-4 py-2 text-center text-sm font-medium text-white">
+          <span className="inline-flex items-center gap-1.5">
+            <WifiOff className="h-4 w-4" />
+            You&apos;re offline &mdash; changes will sync when you reconnect
+          </span>
+        </div>
+      )}
 
       {/* Main content area */}
       <main className="mx-auto w-full max-w-lg flex-1 px-4 py-4 pb-24">
