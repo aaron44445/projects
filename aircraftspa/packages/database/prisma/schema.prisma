@@ -7,9 +7,448 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder model for initial client generation
-// Will be replaced with full schema in subsequent tasks
-model Placeholder {
-  id        String   @id @default(cuid())
+// ============ TENANT & AUTH ============
+
+model Business {
+  id        String  @id @default(cuid())
+  name      String
+  subdomain String  @unique
+  email     String
+  phone     String?
+  logo      String?
+  timezone  String  @default("America/New_York")
+  currency  String  @default("USD")
+
+  // Stripe Connect
+  stripeAccountId    String?
+  stripeOnboarded    Boolean @default(false)
+  platformFeePercent Float   @default(1.0)
+
+  // Settings (JSON blob for flexible config)
+  bookingSettings      Json?
+  notificationSettings Json?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users              User[]
+  customers          Customer[]
+  services           Service[]
+  addOns             AddOn[]
+  serviceAreas       ServiceArea[]
+  bookings           Booking[]
+  pricingRules       PricingRule[]
+  crewSchedules      CrewSchedule[]
+  checklistTemplates ChecklistTemplate[]
+  notificationLogs   NotificationLog[]
+}
+
+model User {
+  id         String  @id @default(cuid())
+  businessId String
+  email      String
+  name       String
+  phone      String?
+  role       String  @default("technician")
+  active     Boolean @default(true)
+
+  emailVerified Boolean @default(false)
+  image         String?
+
+  homeBaseAirportId String?
+  skills            String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business         Business       @relation(fields: [businessId], references: [id])
+  homeBaseAirport  Airport?       @relation(fields: [homeBaseAirportId], references: [id])
+  crewSchedules    CrewSchedule[]
+  assignedBookings Booking[]      @relation("AssignedTechnician")
+  sessions         Session[]
+  accounts         Account[]
+
+  @@unique([businessId, email])
+  @@index([businessId])
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  businessId String
+  email      String
+  name       String
+  phone      String?
+  notes      String?
+  tags       String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business  @relation(fields: [businessId], references: [id])
+  bookings Booking[]
+
+  @@unique([businessId, email])
+  @@index([businessId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ============ AIRCRAFT, SERVICES & PRICING ============
+
+model AircraftClass {
+  id             String  @id @default(cuid())
+  name           String  @unique
+  displayName    String
+  sizeMultiplier Float   @default(1.0)
+  sortOrder      Int     @default(0)
+  icon           String?
+
+  pricingRules PricingRule[]
+  bookings     Booking[]
+}
+
+model Service {
+  id                  String  @id @default(cuid())
+  businessId          String
+  name                String
+  type                String
+  description         String?
+  baseDurationMinutes Int     @default(120)
+  active              Boolean @default(true)
+  sortOrder           Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business           Business            @relation(fields: [businessId], references: [id])
+  pricingRules       PricingRule[]
+  bookings           Booking[]
+  checklistTemplates ChecklistTemplate[]
+
+  @@index([businessId])
+}
+
+model AddOn {
+  id                    String   @id @default(cuid())
+  businessId            String
+  name                  String
+  description           String?
+  price                 Float
+  useAircraftMultiplier Boolean  @default(false)
+  applicableTo          String[] @default([])
+  durationMinutes       Int      @default(30)
+  active                Boolean  @default(true)
+  sortOrder             Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business      Business       @relation(fields: [businessId], references: [id])
+  bookingAddOns BookingAddOn[]
+
+  @@index([businessId])
+}
+
+model PricingRule {
+  id              String @id @default(cuid())
+  businessId      String
+  aircraftClassId String
+  serviceId       String
+  basePrice       Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business      Business      @relation(fields: [businessId], references: [id])
+  aircraftClass AircraftClass @relation(fields: [aircraftClassId], references: [id])
+  service       Service       @relation(fields: [serviceId], references: [id])
+
+  @@unique([businessId, aircraftClassId, serviceId])
+  @@index([businessId])
+}
+
+// ============ AIRPORT & LOCATION ============
+
+model Airport {
+  id        String  @id @default(cuid())
+  icaoCode  String? @unique
+  iataCode  String?
+  name      String
+  city      String?
+  state     String?
+  country   String
+  latitude  Float
+  longitude Float
+  elevation Float?
+  type      String?
+
+  serviceAreas     ServiceArea[]
+  bookingLocations BookingLocation[]
+  users            User[]
+
+  @@index([iataCode])
+  @@index([name])
+  @@index([city, state])
+}
+
+model ServiceArea {
+  id               String @id @default(cuid())
+  businessId       String
+  airportId        String
+  radiusMiles      Float  @default(50)
+  travelFeePerMile Float  @default(2.0)
+  minimumTravelFee Float  @default(0)
+  maximumTravelFee Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id])
+  airport  Airport  @relation(fields: [airportId], references: [id])
+
+  @@index([businessId])
+}
+
+// ============ BOOKING & SCHEDULING ============
+
+model Booking {
+  id         String @id @default(cuid())
+  businessId String
+  customerId String
+
+  aircraftClassId String
+  tailNumber      String?
+
+  serviceId String
+
+  scheduledAt     DateTime
+  durationMinutes Int
+
+  technicianId String?
+
+  status String @default("pending")
+
+  totalPrice    Float
+  depositAmount Float
+  depositPaid   Boolean @default(false)
+  balancePaid   Boolean @default(false)
+  rushSurcharge Float   @default(0)
+
+  customerNotes String?
+  techNotes     String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  business         Business               @relation(fields: [businessId], references: [id])
+  customer         Customer               @relation(fields: [customerId], references: [id])
+  aircraftClass    AircraftClass          @relation(fields: [aircraftClassId], references: [id])
+  service          Service                @relation(fields: [serviceId], references: [id])
+  technician       User?                  @relation("AssignedTechnician", fields: [technicianId], references: [id])
+  location         BookingLocation?
+  addOns           BookingAddOn[]
+  pricingBreakdown PricingBreakdown?
+  payments         Payment[]
+  photos           JobPhoto[]
+  checklistItems   BookingChecklistItem[]
+  notificationLogs NotificationLog[]
+
+  @@index([businessId])
+  @@index([businessId, status])
+  @@index([businessId, scheduledAt])
+  @@index([technicianId, scheduledAt])
+  @@index([customerId])
+}
+
+model BookingLocation {
+  id                  String  @id @default(cuid())
+  bookingId           String  @unique
+  airportId           String
+  locationType        String  @default("hangar")
+  locationNotes       String?
+  travelDistanceMiles Float?
+  travelFee           Float   @default(0)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  airport Airport @relation(fields: [airportId], references: [id])
+}
+
+model BookingAddOn {
+  id        String @id @default(cuid())
+  bookingId String
+  addOnId   String
+  price     Float
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn   AddOn   @relation(fields: [addOnId], references: [id])
+
+  @@index([bookingId])
+}
+
+model PricingBreakdown {
+  id             String @id @default(cuid())
+  bookingId      String @unique
+  basePrice      Float
+  addOnsTotal    Float  @default(0)
+  travelFee      Float  @default(0)
+  rushSurcharge  Float  @default(0)
+  subtotal       Float
+  depositPercent Float  @default(25)
+  depositAmount  Float
+  totalPrice     Float
+
+  details Json?
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model CrewSchedule {
+  id         String    @id @default(cuid())
+  businessId String
+  userId     String
+  dayOfWeek  Int?
+  date       DateTime?
+  startTime  String
+  endTime    String
+  available  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@index([businessId, userId])
+  @@index([userId, date])
+}
+
+model Payment {
+  id        String @id @default(cuid())
+  bookingId String
+  type      String
+  amount    Float
+  currency  String @default("usd")
+
+  stripePaymentIntentId String? @unique
+  stripeChargeId        String?
+  stripeRefundId        String?
+  status                String  @default("pending")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([stripePaymentIntentId])
+}
+
+model JobPhoto {
+  id        String  @id @default(cuid())
+  bookingId String
+  url       String
+  publicId  String
+  type      String
+  caption   String?
+
+  createdAt DateTime @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model ChecklistTemplate {
+  id         String @id @default(cuid())
+  businessId String
+  serviceId  String
+  name       String
+  items      Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id])
+  service  Service  @relation(fields: [serviceId], references: [id])
+
+  @@index([businessId, serviceId])
+}
+
+model BookingChecklistItem {
+  id          String    @id @default(cuid())
+  bookingId   String
+  text        String
+  required    Boolean   @default(true)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  sortOrder   Int       @default(0)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model NotificationLog {
+  id         String  @id @default(cuid())
+  businessId String
+  bookingId  String?
+  channel    String
+  type       String
+  recipient  String
+  subject    String?
+  body       String?
+  status     String  @default("pending")
+  externalId String?
+  error      String?
+
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  business Business @relation(fields: [businessId], references: [id])
+  booking  Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([businessId])
+  @@index([bookingId])
 }
