@@ -5,7 +5,15 @@ import helmet from "helmet";
 import { auth } from "./lib/auth";
 import { toNodeHandler } from "better-auth/node";
 import { healthRouter } from "./routes/health";
+import { airportRouter } from "./routes/airports";
+import { servicesRouter } from "./routes/services";
+import { pricingRouter } from "./routes/pricing";
+import { availabilityRouter } from "./routes/availability";
+import { bookingsRouter } from "./routes/bookings";
+import { customersRouter } from "./routes/customers";
+import { stripeRouter } from "./routes/stripe";
 import { errorHandler } from "./middleware/errorHandler";
+import { resolveTenant } from "./middleware/tenant";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -19,6 +27,15 @@ app.all("/api/auth/*", toNodeHandler(auth));
 
 // Routes
 app.use("/api/health", healthRouter);
+
+// Tenant-scoped routes
+app.use("/api/airports", airportRouter);
+app.use("/api/services", resolveTenant, servicesRouter);
+app.use("/api/pricing", resolveTenant, pricingRouter);
+app.use("/api/availability", resolveTenant, availabilityRouter);
+app.use("/api/bookings", resolveTenant, bookingsRouter);
+app.use("/api/customers", resolveTenant, customersRouter);
+app.use("/api/stripe", express.raw({ type: "application/json" }), stripeRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);
