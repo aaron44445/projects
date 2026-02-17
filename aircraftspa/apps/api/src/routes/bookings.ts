@@ -6,6 +6,7 @@ import { resolveTenant } from "../middleware/tenant";
 import { calculatePrice } from "../services/pricing";
 import { calculateDistanceMiles } from "../services/distance";
 import { z } from "zod";
+import { generateBookingCalendarInvite } from "../services/calendar";
 
 export const bookingsRouter = Router();
 
@@ -275,4 +276,45 @@ bookingsRouter.patch("/:id/assign", requireAuth, requireRole("manager"), async (
   });
 
   res.json({ success: true, data: updated });
+});
+
+// GET /api/bookings/:id/calendar — download .ics file
+bookingsRouter.get("/:id/calendar", async (req, res) => {
+  const businessId = (req as any).businessId;
+  const booking = await prisma.booking.findFirst({
+    where: { id: req.params.id, businessId },
+    include: {
+      service: true,
+      aircraftClass: true,
+      customer: true,
+      location: { include: { airport: true } },
+      technician: true,
+    },
+  });
+
+  if (!booking)
+    return res
+      .status(404)
+      .json({ success: false, error: "Booking not found" });
+
+  // Get business name
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { name: true },
+  });
+
+  const icsContent = generateBookingCalendarInvite({
+    ...booking,
+    technician: booking.technician
+      ? { name: booking.technician.name, email: booking.technician.email }
+      : null,
+    businessName: business?.name,
+  });
+
+  res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="booking-${booking.id}.ics"`
+  );
+  res.send(icsContent);
 });
