@@ -2,6 +2,9 @@
   "name": "@aircraftspa/database",
   "version": "0.0.1",
   "private": true,
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
