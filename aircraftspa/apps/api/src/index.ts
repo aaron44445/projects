@@ -14,8 +14,10 @@ import { customersRouter } from "./routes/customers";
 import { stripeRouter } from "./routes/stripe";
 import { techJobsRouter } from "./routes/tech-jobs";
 import { photosRouter } from "./routes/photos";
+import { onboardingRouter } from "./routes/onboarding";
 import { errorHandler } from "./middleware/errorHandler";
 import { resolveTenant } from "./middleware/tenant";
+import { startReminderCron } from "./cron/reminders";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -40,12 +42,14 @@ app.use("/api/customers", resolveTenant, customersRouter);
 app.use("/api/stripe", express.raw({ type: "application/json" }), stripeRouter);
 app.use("/api/tech/jobs", techJobsRouter);
 app.use("/api/photos", photosRouter);
+app.use("/api/onboarding", onboardingRouter);
 
 // Error handler (must be last)
 app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
+  startReminderCron();
 });
 
 export default app;
