@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@mail-whale/types": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
