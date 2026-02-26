@@ -4,6 +4,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { healthRoutes } from "./routes/health.js";
 import { authRoutes } from "./routes/auth.js";
+import { generateRoutes } from "./routes/generate.js";
+import { profileRoutes } from "./routes/profile.js";
 
 const app = new Hono();
 
@@ -22,6 +24,8 @@ app.use(
 
 app.route("/", healthRoutes);
 app.route("/", authRoutes);
+app.route("/", generateRoutes);
+app.route("/", profileRoutes);
 
 const port = Number(process.env.PORT) || 3001;
 console.log(`Mail Whale API running on port ${port}`);
