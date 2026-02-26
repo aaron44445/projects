@@ -1,4 +1,5 @@
 import { authenticateGmail, signOutGmail } from "../lib/auth/gmail";
+import { authenticateOutlook } from "../lib/auth/outlook";
 
 export default defineBackground(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -9,6 +10,12 @@ export default defineBackground(() => {
         sendResponse({ error: err.message })
       );
       return true; // async response
+    }
+    if (message.type === "OUTLOOK_AUTH") {
+      authenticateOutlook().then(sendResponse).catch((err) =>
+        sendResponse({ error: err.message })
+      );
+      return true;
     }
     if (message.type === "SIGN_OUT") {
       signOutGmail().then(() => sendResponse({ ok: true }));
