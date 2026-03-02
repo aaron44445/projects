@@ -48,7 +48,7 @@ const caseStudies: CaseStudy[] = [
   },
 ];
 
-function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
+function TrafficChart({ type, id }: { type: CaseStudy["chartType"]; id: string }) {
   const paths: Record<string, string> = {
     growth: "M 0 70 L 40 68 L 80 65 L 120 60 L 160 45 L 200 25 L 240 10",
     spike: "M 0 70 L 40 68 L 80 62 L 120 50 L 160 30 L 200 15 L 240 8",
@@ -56,6 +56,7 @@ function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
   };
 
   const beforePath = "M 0 70 L 40 72 L 80 68 L 120 71 L 160 69 L 200 70";
+  const gradientId = `chartGradient-${id}`;
 
   return (
     <svg viewBox="0 0 240 80" className="w-full h-20" fill="none">
@@ -73,11 +74,11 @@ function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
       />
       <path
         d={`${paths[type]} L 240 80 L 0 80 Z`}
-        fill="url(#chartGradient)"
+        fill={`url(#${gradientId})`}
         opacity="0.15"
       />
       <defs>
-        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#00FF8F" />
           <stop offset="100%" stopColor="transparent" />
         </linearGradient>
@@ -90,31 +91,31 @@ function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
 
 function CaseStudyCard({ study }: { study: CaseStudy }) {
   return (
-    <div className="shrink-0 w-[350px] md:w-[420px]">
+    <div className="shrink-0 w-[85vw] sm:w-[350px] md:w-[420px] snap-center">
       <BorderBeamCard className="h-full">
-        <div className="p-6 md:p-8 space-y-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(0,255,143,0.08)]">
-          <span className="font-mono text-5xl font-bold text-white/10">
+        <div className="p-5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+          <span className="font-mono text-4xl sm:text-5xl font-bold text-white/10">
             {study.number}
           </span>
           <div>
-            <h3 className="font-heading text-xl font-bold text-white">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-white">
               {study.name}
             </h3>
             <p className="font-mono text-xs text-white/40 mt-1">
               {study.location}
             </p>
           </div>
-          <TrafficChart type={study.chartType} />
+          <TrafficChart type={study.chartType} id={study.number} />
           <div className="space-y-3">
             {study.metrics.map((metric) => (
               <div
                 key={metric.label}
-                className="flex items-baseline justify-between gap-4"
+                className="flex items-baseline justify-between gap-3"
               >
-                <span className="font-mono text-xs text-white/40">
+                <span className="font-mono text-[11px] sm:text-xs text-white/40">
                   {metric.label}
                 </span>
-                <span className="font-mono text-sm text-lume font-medium">
+                <span className="font-mono text-xs sm:text-sm text-lume font-medium text-right">
                   {metric.value}
                 </span>
               </div>
@@ -130,14 +131,21 @@ export function CaseStudies() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [headerVisible, setHeaderVisible] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    function checkWidth() {
+      setIsDesktop(window.innerWidth >= 768);
+    }
+    checkWidth();
+    window.addEventListener("resize", checkWidth);
+    return () => window.removeEventListener("resize", checkWidth);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
     const track = trackRef.current;
     if (!container || !track) return;
-
-    let rafId: number;
-    let ticking = false;
 
     // Observe the header for fade-in
     const headerEl = container.querySelector("[data-header]");
@@ -154,6 +162,12 @@ export function CaseStudies() {
       obs.observe(headerEl);
     }
 
+    // Only run scroll-driven animation on desktop
+    if (!isDesktop) return;
+
+    let rafId: number;
+    let ticking = false;
+
     function onScroll() {
       if (ticking) return;
       ticking = true;
@@ -169,31 +183,38 @@ export function CaseStudies() {
           return;
         }
 
-        // How far through the sticky section are we (0 to 1)
         const progress = Math.min(
           Math.max(-rect.top / scrollableDistance, 0),
           1
         );
 
-        // Move the track horizontally (same as the old -55%)
         track!.style.transform = `translate3d(${-progress * 55}%, 0, 0)`;
         ticking = false;
       });
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    // Initial call
     onScroll();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [isDesktop]);
 
   return (
-    <section id="work" ref={containerRef} className="relative h-[200vh]">
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+    <section
+      id="work"
+      ref={containerRef}
+      className={isDesktop ? "relative h-[200vh]" : "relative py-16"}
+    >
+      <div
+        className={
+          isDesktop
+            ? "sticky top-0 h-screen flex flex-col justify-center overflow-hidden"
+            : "flex flex-col justify-center"
+        }
+      >
         {/* Section heading */}
         <div className="px-6 mb-8">
           <div
@@ -210,7 +231,7 @@ export function CaseStudies() {
               <span className="font-mono text-xs text-lume/60 uppercase tracking-widest">
                 Case Studies
               </span>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mt-2">
+              <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-white mt-2">
                 Our Work
               </h2>
             </div>
@@ -229,16 +250,30 @@ export function CaseStudies() {
           </div>
         </div>
 
-        {/* Horizontal scrolling cards */}
+        {/* Cards - swipeable on mobile, scroll-driven on desktop */}
         <div
           ref={trackRef}
-          className="flex gap-8 px-6 md:px-[calc(50vw-600px)]"
-          style={{ willChange: "transform" }}
+          className={
+            isDesktop
+              ? "flex gap-8 px-[calc(50vw-600px)]"
+              : "flex gap-4 px-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-0"
+          }
+          style={isDesktop ? { willChange: "transform" } : undefined}
         >
           {caseStudies.map((study) => (
             <CaseStudyCard key={study.number} study={study} />
           ))}
-          <div className="shrink-0 w-[100px]" />
+          {isDesktop && <div className="shrink-0 w-[100px]" />}
+        </div>
+
+        {/* Mobile CTA below cards */}
+        <div className="md:hidden px-6 mt-6">
+          <Link
+            href="/book"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-mono font-semibold text-[#0A0A0B] bg-lume rounded-lg transition-all active:scale-[0.98]"
+          >
+            Get Results Like These
+          </Link>
         </div>
       </div>
     </section>

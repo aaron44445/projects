@@ -20,11 +20,18 @@ export function FloatingCTA() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (!visible) return null;
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden animate-slide-up">
-      <div className="bg-[#0A0A0B]/95 backdrop-blur-md border-t border-white/10 px-4 py-3">
+    <div
+      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-all duration-300 ${
+        visible
+          ? "translate-y-0 opacity-100"
+          : "translate-y-full opacity-0"
+      }`}
+    >
+      <div
+        className="bg-[#0A0A0B]/95 backdrop-blur-md border-t border-white/10 px-4 py-3"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
+      >
         <Link
           href="/book"
           className="flex items-center justify-center gap-2 w-full py-3 text-sm font-mono font-semibold text-[#0A0A0B] bg-lume rounded-lg transition-all active:scale-[0.98]"

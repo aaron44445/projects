@@ -193,11 +193,11 @@ function MetricCard({
 function SocialProof() {
   return (
     <div
-      className="flex items-center gap-6 text-white/25 font-mono text-xs animate-fade-in"
+      className="flex flex-wrap items-center gap-x-6 gap-y-2 text-white/25 font-mono text-xs animate-fade-in"
       style={{ animationDelay: "0.8s" }}
     >
       <span>12+ Med Spas Served</span>
-      <span className="w-1 h-1 rounded-full bg-white/15" />
+      <span className="hidden sm:block w-1 h-1 rounded-full bg-white/15" />
       <span>Avg. +320% Traffic Growth</span>
     </div>
   );
@@ -207,7 +207,7 @@ function SocialProof() {
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center px-6 pt-20 pb-8">
-      <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+      <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         {/* Left side - copy */}
         <div className="space-y-6">
           <h1
@@ -262,9 +262,9 @@ export function Hero() {
           <SocialProof />
         </div>
 
-        {/* Right side - SEO Dashboard mockup */}
+        {/* Right side - SEO Dashboard mockup (visible md+) */}
         <div
-          className="hidden lg:block animate-fade-scale-in"
+          className="hidden md:block animate-fade-scale-in"
           style={{ animationDelay: "0.3s" }}
         >
           <SEODashboard />

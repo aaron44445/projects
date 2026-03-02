@@ -185,14 +185,14 @@ function RevenueCounter() {
   return (
     <div ref={ref} className="space-y-4">
       <div className="text-center">
-        <span className="font-mono text-6xl md:text-7xl font-bold text-lume">
+        <span className="font-mono text-4xl sm:text-6xl md:text-7xl font-bold text-lume">
           ${count.toLocaleString()}
         </span>
         <p className="font-mono text-sm text-white/40 mt-2">
           monthly revenue increase
         </p>
       </div>
-      <div className="flex justify-center gap-8">
+      <div className="flex justify-center gap-6 sm:gap-8">
         <div className="text-center">
           <span className="font-mono text-2xl font-bold text-white">
             +340%
@@ -229,7 +229,7 @@ function Step({ number, title, description, children, isLast }: StepProps) {
   const { ref, inView } = useInView({ margin: "-80px" });
 
   return (
-    <div className="relative flex gap-8">
+    <div className="relative flex gap-4 sm:gap-8">
       <div className="flex flex-col items-center shrink-0">
         <div className="w-10 h-10 rounded-full border border-lume/30 bg-[#0A0A0B] flex items-center justify-center z-10">
           <span className="font-mono text-sm text-lume font-bold">
