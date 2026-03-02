@@ -45,3 +45,5 @@ prisma/generated
 .vscode
 *.swp
 *.swo
+
+/src/generated/prisma

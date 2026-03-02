@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -10,6 +12,11 @@ export default function Home() {
         </p>
         <div className="inline-block px-6 py-3 border border-lume/30 rounded-lg text-lume font-mono text-sm">
           InjectSEO — Coming Soon
+        </div>
+        <div>
+          <Button variant="outline" className="border-lume/30 text-lume hover:bg-lume/10">
+            Test Button
+          </Button>
         </div>
       </div>
     </main>
