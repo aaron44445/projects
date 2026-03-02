@@ -5,6 +5,9 @@ import { CursorFollower } from "@/components/cursor-follower";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://injectseo.com"
+  ),
   title: {
     default: "InjectSEO | Med Spa SEO Agency",
     template: "%s | InjectSEO",
