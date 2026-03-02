@@ -10,6 +10,8 @@ import {
   FileSearch,
   FileText,
   Users,
+  ClipboardList,
+  ScrollText,
   LogOut,
 } from "lucide-react";
 
@@ -20,6 +22,8 @@ const navItems = [
   { label: "SEO Audit", href: "/dashboard/audit", icon: FileSearch },
   { label: "Proposals", href: "/dashboard/proposals", icon: FileText },
   { label: "Leads", href: "/dashboard/leads", icon: Users },
+  { label: "Onboarding", href: "/dashboard/onboarding", icon: ClipboardList },
+  { label: "Contracts", href: "/dashboard/contracts", icon: ScrollText },
 ];
 
 export function Sidebar() {
