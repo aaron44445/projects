@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LeadStatus {
+  NEW
+  DMED
+  REPLIED
+  CALL_BOOKED
+  PROPOSAL_SENT
+  CLOSED
+  LOST
+}
+
+enum LeadPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model Lead {
+  id              String       @id @default(cuid())
+  businessName    String
+  website         String?
+  instagram       String?
+  phone           String?
+  email           String?
+  address         String?
+  city            String?
+  state           String?
+  googleRating    Float?
+  reviewCount     Int?
+  seoScore        Int?
+  priority        LeadPriority @default(MEDIUM)
+  status          LeadStatus   @default(NEW)
+  notes           String?
+  followUpDate    DateTime?
+  lastContactDate DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  audits    AuditReport[]
+  proposals Proposal[]
+  messages  DmMessage[]
+}
+
+model AuditReport {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  url       String
+  findings  Json
+  summary   String?
+  createdAt DateTime @default(now())
+}
+
+model Proposal {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  clientName   String
+  services     String[]
+  monthlyPrice Int
+  callNotes    String?
+  content      Json
+  createdAt    DateTime @default(now())
+}
+
+model DmMessage {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      String
+  content   String
+  createdAt DateTime @default(now())
+}
