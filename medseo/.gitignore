@@ -47,3 +47,5 @@ prisma/generated
 *.swo
 
 /src/generated/prisma
+
+.vercel

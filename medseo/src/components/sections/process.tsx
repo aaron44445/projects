@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "@/hooks/use-in-view";
 
 /* ─── Terminal Typing Effect ─── */
 
@@ -17,8 +17,7 @@ const terminalLines = [
 ];
 
 function TerminalWindow() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { ref, inView: isInView } = useInView({ margin: "-100px" });
   const [visibleLines, setVisibleLines] = useState<number>(0);
   const [currentText, setCurrentText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -33,13 +32,11 @@ function TerminalWindow() {
         if (cancelled) return;
         const line = terminalLines[i];
 
-        // Wait for the delay between lines
         if (i > 0) {
           await new Promise((r) => setTimeout(r, line.delay - terminalLines[i - 1].delay));
         }
         if (cancelled) return;
 
-        // Type each character
         setIsTyping(true);
         const text = line.text;
         for (let j = 0; j <= text.length; j++) {
@@ -59,7 +56,6 @@ function TerminalWindow() {
 
   return (
     <div ref={ref} className="rounded-lg border border-white/10 bg-[#0A0A0B] overflow-hidden">
-      {/* Title bar */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
         <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
@@ -68,14 +64,12 @@ function TerminalWindow() {
           seo-audit.sh
         </span>
       </div>
-      {/* Terminal content */}
-      <div className="p-4 space-y-1.5 min-h-[240px]">
+      <div className="p-4 space-y-1.5 min-h-[220px]">
         {terminalLines.slice(0, visibleLines).map((line, i) => (
           <div key={i} className={`font-mono text-sm ${line.color}`}>
             {line.text}
           </div>
         ))}
-        {/* Currently typing line */}
         {isTyping && visibleLines < terminalLines.length && (
           <div
             className={`font-mono text-sm ${terminalLines[visibleLines]?.color || "text-white/60"}`}
@@ -84,7 +78,6 @@ function TerminalWindow() {
             <span className="inline-block w-2 h-4 bg-lume/60 animate-pulse ml-0.5 align-text-bottom" />
           </div>
         )}
-        {/* Cursor when idle and not done */}
         {!isTyping && visibleLines < terminalLines.length && isInView && (
           <div className="font-mono text-sm text-white/60">
             <span className="inline-block w-2 h-4 bg-lume/60 animate-pulse align-text-bottom" />
@@ -105,44 +98,57 @@ const contentPieces = [
 
 function ContentInjection() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {contentPieces.map((piece, i) => (
-        <motion.div
-          key={piece.title}
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: i * 0.2, ease: "easeOut" }}
-          viewport={{ once: true, margin: "-50px" }}
-          className="flex items-center gap-4 p-4 rounded-lg border border-white/10 bg-[#0A0A0B]/80"
-        >
-          <div className="shrink-0 w-10 h-10 rounded-md bg-lume/10 border border-lume/20 flex items-center justify-center">
-            {piece.icon === "doc" && (
-              <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-              </svg>
-            )}
-            {piece.icon === "page" && (
-              <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-              </svg>
-            )}
-            {piece.icon === "map" && (
-              <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-              </svg>
-            )}
-          </div>
-          <div>
-            <span className="font-mono text-[10px] text-lume/60 uppercase tracking-wider">
-              {piece.label}
-            </span>
-            <p className="font-heading text-sm text-white font-medium">
-              {piece.title}
-            </p>
-          </div>
-        </motion.div>
+        <ContentPiece key={piece.title} piece={piece} index={i} />
       ))}
+    </div>
+  );
+}
+
+function ContentPiece({
+  piece,
+  index,
+}: {
+  piece: (typeof contentPieces)[number];
+  index: number;
+}) {
+  const { ref, inView } = useInView({ margin: "-50px" });
+
+  return (
+    <div
+      ref={ref}
+      className={`flex items-center gap-4 p-4 rounded-lg border border-white/10 bg-[#0A0A0B]/80 transition-all duration-500 ${
+        inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
+      }`}
+      style={{ transitionDelay: `${index * 200}ms` }}
+    >
+      <div className="shrink-0 w-10 h-10 rounded-md bg-lume/10 border border-lume/20 flex items-center justify-center">
+        {piece.icon === "doc" && (
+          <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        )}
+        {piece.icon === "page" && (
+          <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+          </svg>
+        )}
+        {piece.icon === "map" && (
+          <svg className="w-5 h-5 text-lume" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+          </svg>
+        )}
+      </div>
+      <div>
+        <span className="font-mono text-[10px] text-lume/60 uppercase tracking-wider">
+          {piece.label}
+        </span>
+        <p className="font-heading text-sm text-white font-medium">
+          {piece.title}
+        </p>
+      </div>
     </div>
   );
 }
@@ -150,8 +156,7 @@ function ContentInjection() {
 /* ─── Revenue Counter ─── */
 
 function RevenueCounter() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { ref, inView: isInView } = useInView({ margin: "-100px" });
   const [count, setCount] = useState(0);
 
   const animateCount = useCallback(() => {
@@ -162,7 +167,6 @@ function RevenueCounter() {
     function tick() {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.floor(eased * target));
       if (progress < 1) {
@@ -179,7 +183,7 @@ function RevenueCounter() {
   }, [isInView, animateCount]);
 
   return (
-    <div ref={ref} className="space-y-6">
+    <div ref={ref} className="space-y-4">
       <div className="text-center">
         <span className="font-mono text-6xl md:text-7xl font-bold text-lume">
           ${count.toLocaleString()}
@@ -222,9 +226,10 @@ interface StepProps {
 }
 
 function Step({ number, title, description, children, isLast }: StepProps) {
+  const { ref, inView } = useInView({ margin: "-80px" });
+
   return (
     <div className="relative flex gap-8">
-      {/* Dotted line connector */}
       <div className="flex flex-col items-center shrink-0">
         <div className="w-10 h-10 rounded-full border border-lume/30 bg-[#0A0A0B] flex items-center justify-center z-10">
           <span className="font-mono text-sm text-lume font-bold">
@@ -236,22 +241,20 @@ function Step({ number, title, description, children, isLast }: StepProps) {
         )}
       </div>
 
-      {/* Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        viewport={{ once: true, margin: "-80px" }}
-        className="pb-16 flex-1"
+      <div
+        ref={ref}
+        className={`pb-10 flex-1 transition-all duration-600 ${
+          inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
       >
         <h3 className="font-heading text-2xl font-bold text-white mb-2">
           {title}
         </h3>
-        <p className="font-mono text-sm text-white/40 mb-6 max-w-md">
+        <p className="font-mono text-sm text-white/40 mb-5 max-w-md">
           {description}
         </p>
         {children}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -259,16 +262,16 @@ function Step({ number, title, description, children, isLast }: StepProps) {
 /* ─── Main Process Section ─── */
 
 export function Process() {
+  const { ref: headerRef, inView: headerInView } = useInView();
+
   return (
-    <section id="method" className="relative py-32 px-6">
+    <section id="method" className="relative py-16 px-6">
       <div className="max-w-4xl mx-auto">
-        {/* Section heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="mb-20"
+        <div
+          ref={headerRef}
+          className={`mb-12 transition-all duration-500 ${
+            headerInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+          }`}
         >
           <span className="font-mono text-xs text-lume/60 uppercase tracking-widest">
             Our Process
@@ -276,9 +279,8 @@ export function Process() {
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mt-2">
             The Method
           </h2>
-        </motion.div>
+        </div>
 
-        {/* Steps */}
         <div>
           <Step
             number="01"

@@ -1,54 +1,79 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 export function CursorFollower() {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    setPosition({ x: e.clientX, y: e.clientY });
-    setIsVisible(true);
-
-    const target = e.target as HTMLElement;
-    const isInteractive = target.closest('a, button, [role="button"], input, textarea, select, [tabindex]');
-    setIsHovering(!!isInteractive);
-  }, []);
+  const dotRef = useRef<HTMLDivElement>(null);
+  const pos = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+  const hovering = useRef(false);
+  const raf = useRef<number>(0);
 
   useEffect(() => {
-    // Only show on desktop (no touch)
-    const isTouchDevice = "ontouchstart" in window;
-    if (isTouchDevice) return;
+    // Skip on touch devices
+    if ("ontouchstart" in window) return;
 
-    const handleMouseLeave = () => setIsVisible(false);
+    const el = dotRef.current;
+    if (!el) return;
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
+    function lerp(a: number, b: number, t: number) {
+      return a + (b - a) * t;
+    }
+
+    function tick() {
+      // Smooth spring-like follow using lerp
+      current.current.x = lerp(current.current.x, pos.current.x, 0.15);
+      current.current.y = lerp(current.current.y, pos.current.y, 0.15);
+
+      const size = hovering.current ? 40 : 15;
+      const half = size / 2;
+      const opacity = hovering.current ? 0.4 : 0.2;
+
+      el!.style.transform = `translate3d(${current.current.x - half}px, ${current.current.y - half}px, 0)`;
+      el!.style.width = `${size}px`;
+      el!.style.height = `${size}px`;
+      el!.style.opacity = `${opacity}`;
+
+      raf.current = requestAnimationFrame(tick);
+    }
+
+    function onMove(e: MouseEvent) {
+      pos.current.x = e.clientX;
+      pos.current.y = e.clientY;
+      el!.style.display = "block";
+
+      const target = e.target as HTMLElement;
+      hovering.current = !!target.closest(
+        'a, button, [role="button"], input, textarea, select, [tabindex]'
+      );
+    }
+
+    function onLeave() {
+      el!.style.display = "none";
+    }
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mouseleave", onLeave);
+    raf.current = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseleave", onLeave);
+      cancelAnimationFrame(raf.current);
     };
-  }, [handleMouseMove]);
-
-  if (!isVisible) return null;
+  }, []);
 
   return (
-    <motion.div
+    <div
+      ref={dotRef}
       className="fixed pointer-events-none z-50"
-      animate={{
-        x: position.x - (isHovering ? 20 : 7.5),
-        y: position.y - (isHovering ? 20 : 7.5),
-        width: isHovering ? 40 : 15,
-        height: isHovering ? 40 : 15,
-        opacity: isHovering ? 0.4 : 0.2,
-      }}
-      transition={{ type: "spring", stiffness: 500, damping: 28 }}
       style={{
-        background: "radial-gradient(circle, rgba(0,255,143,0.4), transparent)",
+        display: "none",
+        willChange: "transform",
+        background:
+          "radial-gradient(circle, rgba(0,255,143,0.4), transparent)",
         borderRadius: "50%",
+        transition: "width 0.2s, height 0.2s, opacity 0.2s",
       }}
     />
   );

@@ -12,9 +12,9 @@ interface BorderBeamCardProps {
 export function BorderBeamCard({ children, className, duration = 3 }: BorderBeamCardProps) {
   return (
     <div className={cn("relative rounded-lg overflow-hidden", className)}>
-      {/* Beam effect - rotating gradient */}
+      {/* Beam effect - rotating gradient (GPU-accelerated) */}
       <div
-        className="absolute inset-[-1px] rounded-lg z-0"
+        className="absolute inset-[-1px] rounded-lg z-0 border-beam-layer"
         style={{
           background: `conic-gradient(from 0deg, transparent, transparent 340deg, #00FF8F 360deg)`,
           animation: `border-beam ${duration}s linear infinite`,

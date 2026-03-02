@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
+import Link from "next/link";
 import { BorderBeamCard } from "@/components/border-beam";
 
 interface CaseStudy {
@@ -59,21 +59,18 @@ function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
 
   return (
     <svg viewBox="0 0 240 80" className="w-full h-20" fill="none">
-      {/* Before line - flat */}
       <path
         d={beforePath}
         stroke="rgba(255,255,255,0.15)"
         strokeWidth="1.5"
         strokeDasharray="4 4"
       />
-      {/* After line - growth */}
       <path
         d={paths[type]}
         stroke="#00FF8F"
         strokeWidth="2"
         strokeLinecap="round"
       />
-      {/* Glow under curve */}
       <path
         d={`${paths[type]} L 240 80 L 0 80 Z`}
         fill="url(#chartGradient)"
@@ -85,30 +82,20 @@ function TrafficChart({ type }: { type: CaseStudy["chartType"] }) {
           <stop offset="100%" stopColor="transparent" />
         </linearGradient>
       </defs>
-      {/* Labels */}
       <text x="0" y="78" className="fill-white/30 text-[8px]" fontFamily="monospace">Before</text>
       <text x="200" y="78" className="fill-lume text-[8px]" fontFamily="monospace">After</text>
     </svg>
   );
 }
 
-function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
+function CaseStudyCard({ study }: { study: CaseStudy }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="shrink-0 w-[350px] md:w-[420px]"
-    >
+    <div className="shrink-0 w-[350px] md:w-[420px]">
       <BorderBeamCard className="h-full">
         <div className="p-6 md:p-8 space-y-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(0,255,143,0.08)]">
-          {/* Number */}
           <span className="font-mono text-5xl font-bold text-white/10">
             {study.number}
           </span>
-
-          {/* Name */}
           <div>
             <h3 className="font-heading text-xl font-bold text-white">
               {study.name}
@@ -117,11 +104,7 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
               {study.location}
             </p>
           </div>
-
-          {/* Chart */}
           <TrafficChart type={study.chartType} />
-
-          {/* Metrics */}
           <div className="space-y-3">
             {study.metrics.map((metric) => (
               <div
@@ -139,30 +122,90 @@ function CaseStudyCard({ study, index }: { study: CaseStudy; index: number }) {
           </div>
         </div>
       </BorderBeamCard>
-    </motion.div>
+    </div>
   );
 }
 
 export function CaseStudies() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [headerVisible, setHeaderVisible] = useState(false);
 
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-55%"]);
+  useEffect(() => {
+    const container = containerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+
+    let rafId: number;
+    let ticking = false;
+
+    // Observe the header for fade-in
+    const headerEl = container.querySelector("[data-header]");
+    if (headerEl) {
+      const obs = new IntersectionObserver(
+        ([e]) => {
+          if (e.isIntersecting) {
+            setHeaderVisible(true);
+            obs.disconnect();
+          }
+        },
+        { once: true } as IntersectionObserverInit
+      );
+      obs.observe(headerEl);
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+
+      rafId = requestAnimationFrame(() => {
+        const rect = container!.getBoundingClientRect();
+        const containerHeight = container!.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const scrollableDistance = containerHeight - viewportHeight;
+
+        if (scrollableDistance <= 0) {
+          ticking = false;
+          return;
+        }
+
+        // How far through the sticky section are we (0 to 1)
+        const progress = Math.min(
+          Math.max(-rect.top / scrollableDistance, 0),
+          1
+        );
+
+        // Move the track horizontally (same as the old -55%)
+        track!.style.transform = `translate3d(${-progress * 55}%, 0, 0)`;
+        ticking = false;
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    // Initial call
+    onScroll();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
-    <section id="work" ref={containerRef} className="relative h-[300vh]">
+    <section id="work" ref={containerRef} className="relative h-[200vh]">
       <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
         {/* Section heading */}
-        <div className="px-6 mb-12">
-          <div className="max-w-7xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
+        <div className="px-6 mb-8">
+          <div
+            className="max-w-7xl mx-auto flex items-end justify-between"
+            data-header
+          >
+            <div
+              className={`transition-all duration-500 ${
+                headerVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-5"
+              }`}
             >
               <span className="font-mono text-xs text-lume/60 uppercase tracking-widest">
                 Case Studies
@@ -170,21 +213,33 @@ export function CaseStudies() {
               <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mt-2">
                 Our Work
               </h2>
-            </motion.div>
+            </div>
+            <div
+              className={`hidden md:block transition-all duration-500 delay-200 ${
+                headerVisible ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <Link
+                href="/book"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-mono font-semibold text-[#0A0A0B] bg-lume rounded-lg transition-all hover:bg-lume/90 hover:shadow-[0_0_30px_rgba(0,255,143,0.2)]"
+              >
+                Get Results Like These
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Horizontal scrolling cards */}
-        <motion.div
-          style={{ x }}
+        <div
+          ref={trackRef}
           className="flex gap-8 px-6 md:px-[calc(50vw-600px)]"
+          style={{ willChange: "transform" }}
         >
-          {caseStudies.map((study, i) => (
-            <CaseStudyCard key={study.number} study={study} index={i} />
+          {caseStudies.map((study) => (
+            <CaseStudyCard key={study.number} study={study} />
           ))}
-          {/* Trailing spacer */}
           <div className="shrink-0 w-[100px]" />
-        </motion.div>
+        </div>
       </div>
     </section>
   );

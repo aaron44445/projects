@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nav } from "@/components/nav";
 import { DottedGrid } from "@/components/dotted-grid";
 import { CursorFollower } from "@/components/cursor-follower";
+import { FloatingCTA } from "@/components/floating-cta";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function PublicLayout({
       <Nav />
       <main className="relative z-10">{children}</main>
       <Footer />
+      <FloatingCTA />
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { useInView } from "@/hooks/use-in-view";
 import {
   Accordion,
   AccordionContent,
@@ -42,16 +43,18 @@ const faqs = [
 ];
 
 export function FAQ() {
+  const { ref: headerRef, inView: headerInView } = useInView();
+  const { ref: bodyRef, inView: bodyInView } = useInView();
+  const { ref: ctaRef, inView: ctaInView } = useInView();
+
   return (
-    <section className="relative py-32 px-6">
+    <section className="relative py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        {/* Section heading */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          className="mb-16"
+        <div
+          ref={headerRef}
+          className={`mb-10 transition-all duration-500 ${
+            headerInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+          }`}
         >
           <span className="font-mono text-xs text-lume/60 uppercase tracking-widest">
             FAQ
@@ -59,23 +62,22 @@ export function FAQ() {
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mt-2">
             Questions
           </h2>
-        </motion.div>
+        </div>
 
-        {/* Accordion */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          viewport={{ once: true }}
+        <div
+          ref={bodyRef}
+          className={`transition-all duration-500 delay-100 ${
+            bodyInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+          }`}
         >
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((faq, i) => (
               <AccordionItem
                 key={i}
                 value={`item-${i}`}
                 className="border border-white/10 rounded-lg px-6 bg-[#0A0A0B]/60 data-[state=open]:border-teal-clinical/30 transition-colors"
               >
-                <AccordionTrigger className="font-heading text-base text-white hover:no-underline py-5 [&[data-state=open]]:text-teal-clinical">
+                <AccordionTrigger className="font-heading text-base text-white hover:no-underline py-4 [&[data-state=open]]:text-teal-clinical">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="font-mono text-sm text-white/50 leading-relaxed">
@@ -84,7 +86,25 @@ export function FAQ() {
               </AccordionItem>
             ))}
           </Accordion>
-        </motion.div>
+        </div>
+
+        {/* CTA after FAQ */}
+        <div
+          ref={ctaRef}
+          className={`mt-10 text-center transition-all duration-500 delay-200 ${
+            ctaInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          <p className="font-mono text-sm text-white/30 mb-4">
+            Still have questions?
+          </p>
+          <Link
+            href="/book"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-mono font-semibold text-[#0A0A0B] bg-lume rounded-lg transition-all hover:bg-lume/90 hover:shadow-[0_0_30px_rgba(0,255,143,0.2)]"
+          >
+            Book a Free Call
+          </Link>
+        </div>
       </div>
     </section>
   );
