@@ -198,11 +198,27 @@ h1 span{color:var(--text3)}
 .habit-type-toggle{background:none;border:1px solid var(--border);border-radius:3px;color:var(--text3);font-size:9px;padding:2px 5px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
 .habit-type-toggle:hover{color:var(--gold);border-color:var(--gold)}
 
-/* JOURNAL */
-.journal-textarea{width:100%;min-height:200px;background:var(--surface);border:none;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;line-height:1.8;padding:20px;resize:vertical}
-.journal-textarea:focus{outline:none}
-.journal-textarea::placeholder{color:var(--text3)}
-.journal-past-card:hover{border-color:rgba(200,169,81,.15)}
+/* CHECK-IN */
+.checkin-step{margin-bottom:24px}
+.checkin-step-label{font-size:10px;letter-spacing:2px;font-weight:500;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.checkin-step-num{width:20px;height:20px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)}
+.checkin-step-num.done{background:var(--gold);color:#0A0A0A;border-color:var(--gold)}
+.rating-row{display:flex;gap:6px;flex-wrap:wrap}
+.rating-btn{width:40px;height:40px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:14px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s}
+.rating-btn:hover{border-color:var(--gold);color:var(--gold)}
+.rating-btn.active{background:var(--gold);color:#0A0A0A;border-color:var(--gold);font-weight:700}
+.checkin-textarea{width:100%;min-height:120px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;line-height:1.8;padding:16px;resize:vertical}
+.checkin-textarea:focus{outline:none;border-color:rgba(200,169,81,.3)}
+.checkin-textarea::placeholder{color:var(--text3)}
+.pulse-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:6px;margin-bottom:2px;background:var(--surface)}
+.pulse-goal-name{flex:1;font-size:13px;color:var(--text)}
+.pulse-select{background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:10px;padding:5px 8px;font-family:'DM Mono',monospace;cursor:pointer;color:var(--text)}
+.checkin-save{width:100%;background:var(--gold);color:#0A0A0A;border:none;border-radius:6px;padding:14px;font-size:12px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;margin-top:8px}
+.checkin-save:disabled{opacity:.3;cursor:default}
+.checkin-save:not(:disabled):hover{filter:brightness(1.1)}
+.past-checkin{cursor:pointer;margin-top:8px}
+.past-checkin:hover{border-color:rgba(200,169,81,.15)}
+.past-rating{font-size:24px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold)}
 
 /* VIEW TRANSITIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -248,7 +264,7 @@ h1 span{color:var(--text3)}
   <button class="nav-btn active" data-view="dashboard">DASHBOARD</button>
   <button class="nav-btn" data-view="tracker">TRACKER</button>
   <button class="nav-btn" data-view="goals">GOALS</button>
-  <button class="nav-btn" data-view="journal">JOURNAL</button>
+  <button class="nav-btn" data-view="journal">CHECK-IN</button>
   <button class="nav-btn" data-view="finances">FINANCES</button>
   <button id="sign-out-btn" class="nav-btn" style="display:none" onclick="signOut()">SIGN OUT</button>
 </nav>
@@ -327,6 +343,17 @@ var QUOTES = [
   "Success is the sum of small efforts repeated day in and day out.",
   "Your future is created by what you do today, not tomorrow.",
   "Champions keep playing until they get it right."
+];
+
+var CHECKIN_PROMPTS = [
+  "What moved you closer to your goals today?",
+  "What's one thing you'd do differently about today?",
+  "What are you most grateful for right now?",
+  "What challenged you today and how did you handle it?",
+  "What's one small win you had today?",
+  "How did your habits serve your goals today?",
+  "What would make tomorrow even better?",
+  "What did you learn about yourself today?"
 ];
 
 // === STATE ===
@@ -537,6 +564,7 @@ async function signOut() {
   document.getElementById("v-goals").innerHTML = "";
   document.getElementById("v-journal").innerHTML = "";
   document.getElementById("v-finances").innerHTML = "";
+  checkinDraft = { rating: 0, reflection: "", goalPulse: {} };
 
   document.getElementById("auth-name").value = "";
   document.getElementById("auth-email-up").value = "";
@@ -678,7 +706,7 @@ function switchView(id) {
   if (id === "dashboard") renderDashboard();
   if (id === "tracker") renderTracker();
   if (id === "goals") renderGoals();
-  if (id === "journal") renderJournal();
+  if (id === "journal") renderCheckin();
   if (id === "finances") renderFinances();
 }
 
@@ -1115,36 +1143,88 @@ function updGoalStatus(si, gi, v) { state.goals[si].items[gi].s = v; save(); ren
 function addGoal(si) { state.goals[si].items.push({ t: "", d: "Q2", s: "Not Started" }); save(); renderGoals(); }
 function delGoal(si, gi) { state.goals[si].items.splice(gi, 1); save(); renderGoals(); }
 
-// === JOURNAL ===
-function renderJournal() {
-  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
-  var todayEntry = state.journal[todayKey] || "";
+// === CHECK-IN ===
+var checkinDraft = { rating: 0, reflection: "", goalPulse: {} };
 
-  var pastKeys = Object.keys(state.journal)
-    .filter(function(k) { return k !== todayKey && state.journal[k].trim(); })
+function renderCheckin() {
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  var existing = state.checkins[todayKey];
+  var alreadySaved = existing && existing.saved;
+
+  if (alreadySaved) {
+    checkinDraft = { rating: existing.rating, reflection: existing.reflection, goalPulse: existing.goalPulse || {} };
+  }
+
+  var promptIndex = Math.floor((NOW.getTime() / 86400000)) % CHECKIN_PROMPTS.length;
+
+  var activeGoals = [];
+  state.goals.forEach(function(sec, si) {
+    sec.items.forEach(function(g, gi) {
+      if (g.t.trim() && g.s !== "Done") {
+        activeGoals.push({ key: si + "-" + gi, name: g.t, cat: sec.cat });
+      }
+    });
+  });
+
+  var html = '<h1 style="margin-bottom:24px">Check-in <span>' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>';
+
+  if (alreadySaved) {
+    html += '<div class="card" style="text-align:center;padding:32px">' +
+      '<div class="past-rating" style="font-size:48px;margin-bottom:8px">' + existing.rating + '/10</div>' +
+      '<div style="color:var(--text2);font-size:12px;margin-bottom:16px">Today\'s check-in saved</div>' +
+      '<p style="color:var(--text);font-size:13px;line-height:1.6;text-align:left">' + esc(existing.reflection) + '</p></div>';
+  } else {
+    html += '<div class="checkin-step"><div class="checkin-step-label">' +
+      '<span class="checkin-step-num' + (checkinDraft.rating > 0 ? ' done' : '') + '">1</span> RATE YOUR DAY</div>' +
+      '<div class="rating-row">';
+    for (var r = 1; r <= 10; r++) {
+      html += '<button class="rating-btn' + (checkinDraft.rating === r ? ' active' : '') + '" onclick="checkinDraft.rating=' + r + ';renderCheckin()">' + r + '</button>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="checkin-step"><div class="checkin-step-label">' +
+      '<span class="checkin-step-num' + (checkinDraft.reflection.trim() ? ' done' : '') + '">2</span> REFLECT</div>' +
+      '<textarea class="checkin-textarea" placeholder="' + CHECKIN_PROMPTS[promptIndex] + '" oninput="checkinDraft.reflection=this.value;updateCheckinBtn()">' + esc(checkinDraft.reflection) + '</textarea></div>';
+
+    if (activeGoals.length > 0) {
+      html += '<div class="checkin-step"><div class="checkin-step-label">' +
+        '<span class="checkin-step-num' + (Object.keys(checkinDraft.goalPulse).length >= activeGoals.length ? ' done' : '') + '">3</span> GOAL PULSE</div>';
+      activeGoals.forEach(function(g) {
+        var val = checkinDraft.goalPulse[g.key] || "";
+        html += '<div class="pulse-row">' +
+          '<span class="pulse-goal-name">' + esc(g.name).substring(0, 40) + '</span>' +
+          '<select class="pulse-select" onchange="checkinDraft.goalPulse[\'' + g.key + '\']=this.value;updateCheckinBtn()">' +
+          '<option value=""' + (!val ? ' selected' : '') + '>--</option>' +
+          '<option value="Crushing it"' + (val === "Crushing it" ? ' selected' : '') + '>Crushing it</option>' +
+          '<option value="On track"' + (val === "On track" ? ' selected' : '') + '>On track</option>' +
+          '<option value="Struggling"' + (val === "Struggling" ? ' selected' : '') + '>Struggling</option>' +
+          '<option value="Stalled"' + (val === "Stalled" ? ' selected' : '') + '>Stalled</option>' +
+          '</select></div>';
+      });
+      html += '</div>';
+    }
+
+    var canSave = checkinDraft.rating > 0 && checkinDraft.reflection.trim();
+    html += '<button id="checkin-save-btn" class="checkin-save"' + (canSave ? '' : ' disabled') + ' onclick="saveCheckin()">SAVE CHECK-IN</button>';
+  }
+
+  var pastKeys = Object.keys(state.checkins)
+    .filter(function(k) { return k !== todayKey && state.checkins[k].saved; })
     .sort(function(a, b) { return b.localeCompare(a); });
 
-  var html = '<h1 style="margin-bottom:24px">Journal <span>' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
-    '<div class="card" style="padding:0;overflow:hidden">' +
-    '<textarea id="journal-today" class="journal-textarea" placeholder="What\'s on your mind today..." oninput="saveJournal(this.value)">' + esc(todayEntry) + '</textarea>' +
-    '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between">' +
-    '<span class="mono" style="font-size:10px;color:var(--text3)">' + todayKey + '</span>' +
-    '<span class="mono" style="font-size:10px;color:var(--text3)">' + todayEntry.length + ' chars</span>' +
-    '</div></div>';
-
   if (pastKeys.length > 0) {
-    html += '<div style="margin-top:32px"><span class="section-label">PAST ENTRIES</span></div>';
+    html += '<div style="margin-top:32px"><span class="section-label">PAST CHECK-INS</span></div>';
     pastKeys.forEach(function(key) {
-      var text = state.journal[key];
+      var ci = state.checkins[key];
       var dt = new Date(key + "T00:00:00");
       var dayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()];
-      var preview = text.length > 120 ? text.substring(0, 120) + "..." : text;
-
-      html += '<div class="card journal-past-card" onclick="expandJournal(\'' + key + '\')" style="cursor:pointer;margin-top:8px">' +
-        '<div style="display:flex;justify-content:space-between;margin-bottom:8px">' +
+      var preview = ci.reflection ? (ci.reflection.length > 100 ? ci.reflection.substring(0, 100) + "..." : ci.reflection) : "";
+      html += '<div class="card past-checkin" onclick="expandCheckin(\'' + key + '\')">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
+        '<span class="past-rating">' + (ci.rating || "?") + '</span>' +
         '<span class="mono" style="font-size:10px;color:var(--gold)">' + dayName + ' ' + key + '</span>' +
         '</div>' +
-        '<p style="font-size:13px;color:var(--text2);line-height:1.6" id="journal-text-' + key + '">' + esc(preview) + '</p>' +
+        '<p style="font-size:13px;color:var(--text2);line-height:1.6" id="checkin-text-' + key + '">' + esc(preview) + '</p>' +
         '</div>';
     });
   }
@@ -1152,15 +1232,26 @@ function renderJournal() {
   document.getElementById("v-journal").innerHTML = html;
 }
 
-function saveJournal(text) {
-  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
-  state.journal[todayKey] = text;
-  save();
+function updateCheckinBtn() {
+  var btn = document.getElementById("checkin-save-btn");
+  if (btn) btn.disabled = !(checkinDraft.rating > 0 && checkinDraft.reflection.trim());
 }
 
-function expandJournal(key) {
-  var el = document.getElementById("journal-text-" + key);
-  if (el) el.textContent = state.journal[key];
+function saveCheckin() {
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  state.checkins[todayKey] = {
+    rating: checkinDraft.rating,
+    reflection: checkinDraft.reflection,
+    goalPulse: checkinDraft.goalPulse,
+    saved: true
+  };
+  save();
+  renderCheckin();
+}
+
+function expandCheckin(key) {
+  var el = document.getElementById("checkin-text-" + key);
+  if (el && state.checkins[key]) el.textContent = state.checkins[key].reflection;
 }
 
 // === FINANCES ===
