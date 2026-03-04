@@ -395,6 +395,25 @@ function ensureDefaults() {
   if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
   if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
   if (!state.journal) state.journal = {};
+  state.habits.forEach(function(h) { if (h.goalLink === undefined) h.goalLink = ""; });
+  if (!state.checkins) state.checkins = {};
+  if (state.journal) {
+    Object.keys(state.journal).forEach(function(k) {
+      if (typeof state.journal[k] === "string" && state.journal[k].trim() && !state.checkins[k]) {
+        state.checkins[k] = { rating: 0, reflection: state.journal[k], goalPulse: {}, saved: true };
+      }
+    });
+  }
+}
+
+function getGoalList() {
+  var list = [];
+  state.goals.forEach(function(sec, si) {
+    sec.items.forEach(function(g, gi) {
+      if (g.t.trim()) list.push({ key: si + "-" + gi, label: g.t, cat: sec.cat, si: si, gi: gi });
+    });
+  });
+  return list;
 }
 
 async function handleSignUp() {
@@ -909,8 +928,14 @@ function renderTracker() {
       html += '<div class="cat-header-row"><div class="cat-header-dot" style="background:' + cat.color + '"></div>' +
         '<span class="cat-header-text" style="color:' + cat.color + '">' + cat.name + '</span></div>';
       state.habits.filter(function(h) { return h.cat === cat.id; }).forEach(function(hab) {
+        var goals = getGoalList();
+        var goalOpts = '<option value="">No goal</option>';
+        goals.forEach(function(g) {
+          goalOpts += '<option value="' + g.key + '"' + (hab.goalLink === g.key ? ' selected' : '') + '>' + esc(g.label).substring(0, 25) + '</option>';
+        });
         html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:2px;background:var(--surface);border-radius:4px">' +
           '<input class="habit-name-input" value="' + esc(hab.name) + '" oninput="renameHabit(' + hab.id + ',this.value)">' +
+          '<select class="goal-select" style="min-width:70px;font-size:9px;padding:3px 4px" onchange="linkHabitGoal(' + hab.id + ',this.value)">' + goalOpts + '</select>' +
           '<button class="habit-type-toggle" onclick="toggleHabitType(' + hab.id + ')">' + hab.type + '</button>' +
           '<button class="habit-del" onclick="removeHabit(' + hab.id + ')">&times;</button>' +
           '</div>';
@@ -997,7 +1022,7 @@ function toggleHabitEdit() {
 
 function addHabit(catId) {
   var maxId = state.habits.reduce(function(m, h) { return Math.max(m, h.id); }, 0);
-  state.habits.push({ id: maxId + 1, cat: catId, name: "New Habit", type: "check" });
+  state.habits.push({ id: maxId + 1, cat: catId, name: "New Habit", type: "check", goalLink: "" });
   save();
   renderTracker();
 }
@@ -1019,6 +1044,11 @@ function renameHabit(habitId, newName) {
 function toggleHabitType(habitId) {
   var hab = state.habits.find(function(h) { return h.id === habitId; });
   if (hab) { hab.type = hab.type === "check" ? "number" : "check"; save(); renderTracker(); }
+}
+
+function linkHabitGoal(habitId, goalKey) {
+  var hab = state.habits.find(function(h) { return h.id === habitId; });
+  if (hab) { hab.goalLink = goalKey; save(); }
 }
 
 // === GOALS ===
@@ -1043,6 +1073,22 @@ function renderGoals() {
     }
 
     sec.items.forEach(function(g, gi) {
+      var goalKey = si + "-" + gi;
+      var linked = state.habits.filter(function(h) { return h.goalLink === goalKey && h.type === "check"; });
+      var habitPct = 0;
+      if (linked.length > 0) {
+        var totalDone = 0;
+        linked.forEach(function(h) {
+          var done = 0;
+          for (var d = 1; d <= Math.min(TODAY_D, daysInMonth(TODAY_M)); d++) {
+            if (getEntry(TODAY_M, d, h.id) === "\u2713") done++;
+          }
+          totalDone += (TODAY_D > 0 ? done / TODAY_D : 0);
+        });
+        habitPct = Math.round((totalDone / linked.length) * 100);
+      }
+      var habitBadge = linked.length > 0 ?
+        '<span class="mono" style="font-size:9px;color:var(--gold);min-width:35px;text-align:center">' + habitPct + '%</span>' : '';
       var sc = g.s === "Done" ? "var(--greenT)" : (g.s === "In Progress" ? "var(--gold)" : "var(--text3)");
       html += '<div class="goal-row">' +
         '<input class="goal-text-input" value="' + esc(g.t) + '" placeholder="Enter a goal..." oninput="updGoalText(' + si + ',' + gi + ',this.value)">' +
@@ -1052,6 +1098,7 @@ function renderGoals() {
         '<option' + (g.s === "In Progress" ? " selected" : "") + '>In Progress</option>' +
         '<option' + (g.s === "Done" ? " selected" : "") + '>Done</option>' +
         '</select>' +
+        habitBadge +
         '<button class="goal-del" onclick="delGoal(' + si + ',' + gi + ')" title="Remove">\u00D7</button>' +
         '</div>';
     });
