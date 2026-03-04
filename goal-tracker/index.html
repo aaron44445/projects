@@ -388,6 +388,9 @@ function ensureDefaults() {
   if (!state.finances.streams || !state.finances.streams.length) {
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
   }
+  if (!state.finances.incomeItems) state.finances.incomeItems = {};
+  if (!state.finances.expenseItems) state.finances.expenseItems = {};
+  if (state.finMonth === undefined) state.finMonth = TODAY_M;
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
   if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
   if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
@@ -429,7 +432,7 @@ async function handleSignUp() {
     state.userName = name;
     state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
-    state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [] };
+    state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {} };
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
     await saveRemote();
     hideAuth();
@@ -1114,21 +1117,117 @@ function expandJournal(key) {
 }
 
 // === FINANCES ===
+function calcMonthTotal(items, monthIndex) {
+  var monthItems = items[monthIndex] || [];
+  return monthItems.reduce(function(sum, item) {
+    return sum + (parseFloat(item.amount) || 0);
+  }, 0);
+}
+
+function recalcFinances() {
+  for (var m = 0; m < 12; m++) {
+    state.finances.income[m] = calcMonthTotal(state.finances.incomeItems, m);
+    state.finances.expenses[m] = calcMonthTotal(state.finances.expenseItems, m);
+  }
+}
+
+function addFinItem(type) {
+  var fm = state.finMonth;
+  var items = type === "income" ? state.finances.incomeItems : state.finances.expenseItems;
+  if (!items[fm]) items[fm] = [];
+  items[fm].push({ name: "", amount: 0 });
+  recalcFinances();
+  save();
+  renderFinances();
+}
+
+function updateFinItem(type, idx, field, val) {
+  var fm = state.finMonth;
+  var items = type === "income" ? state.finances.incomeItems : state.finances.expenseItems;
+  if (!items[fm] || !items[fm][idx]) return;
+  items[fm][idx][field] = field === "amount" ? (parseFloat(val) || 0) : val;
+  recalcFinances();
+  save();
+}
+
+function removeFinItem(type, idx) {
+  var fm = state.finMonth;
+  var items = type === "income" ? state.finances.incomeItems : state.finances.expenseItems;
+  if (!items[fm]) return;
+  items[fm].splice(idx, 1);
+  recalcFinances();
+  save();
+  renderFinances();
+}
+
 function renderFinances() {
   var fin = state.finances;
-  var thisMonthIncome = fin.income[TODAY_M] || 0;
-  var thisMonthExpense = fin.expenses[TODAY_M] || 0;
-  var net = thisMonthIncome - thisMonthExpense;
-  var savingsPct = fin.savingsGoal ? Math.min(100, Math.round((fin.savingsCurrent / fin.savingsGoal) * 100)) : 0;
-  var totalStreams = fin.streams.reduce(function(s, st) { return s + (parseFloat(st.amount) || 0); }, 0);
+  var fm = state.finMonth;
+  recalcFinances();
 
-  var html = '<h1 style="margin-bottom:24px">Finances <span>' + MONTHS[TODAY_M] + ' ' + YEAR + '</span></h1>' +
-    '<div class="fin-summary">' +
-    '<div class="fin-stat"><div class="fin-stat-value" style="color:var(--greenT)">$' + thisMonthIncome.toLocaleString() + '</div><div class="fin-stat-label">INCOME</div></div>' +
-    '<div class="fin-stat"><div class="fin-stat-value" style="color:var(--redT)">$' + thisMonthExpense.toLocaleString() + '</div><div class="fin-stat-label">EXPENSES</div></div>' +
+  var monthIncome = fin.income[fm] || 0;
+  var monthExpense = fin.expenses[fm] || 0;
+  var net = monthIncome - monthExpense;
+  var savingsPct = fin.savingsGoal ? Math.min(100, Math.round((fin.savingsCurrent / fin.savingsGoal) * 100)) : 0;
+
+  var incItems = fin.incomeItems[fm] || [];
+  var expItems = fin.expenseItems[fm] || [];
+
+  // Header + month pills
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">' +
+    '<h1>Finances <span>' + YEAR + '</span></h1><div class="month-pills">';
+
+  MONTHS.forEach(function(mn, i) {
+    var active = i === fm ? " active" : "";
+    var past = i < TODAY_M ? " archived" : "";
+    html += '<button class="month-pill' + active + past + '" onclick="state.finMonth=' + i + ';save();renderFinances()">' + mn + '</button>';
+  });
+
+  html += '</div></div>';
+
+  // Summary cards
+  html += '<div class="fin-summary">' +
+    '<div class="fin-stat"><div class="fin-stat-value" style="color:var(--greenT)">$' + monthIncome.toLocaleString() + '</div><div class="fin-stat-label">INCOME</div></div>' +
+    '<div class="fin-stat"><div class="fin-stat-value" style="color:var(--redT)">$' + monthExpense.toLocaleString() + '</div><div class="fin-stat-label">EXPENSES</div></div>' +
     '<div class="fin-stat"><div class="fin-stat-value" style="color:' + (net >= 0 ? "var(--greenT)" : "var(--redT)") + '">$' + Math.abs(net).toLocaleString() + '</div><div class="fin-stat-label">' + (net >= 0 ? "SURPLUS" : "DEFICIT") + '</div></div>' +
-    '</div>' +
-    '<div class="card"><span class="section-label">SAVINGS GOAL</span>' +
+    '</div>';
+
+  // Income items
+  html += '<div class="card"><span class="section-label">INCOME &#183; ' + MONTHS[fm] + '</span><div style="margin-top:14px">';
+  incItems.forEach(function(item, i) {
+    html += '<div class="stream-row">' +
+      '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateFinItem(\'income\',' + i + ',\'name\',this.value)">' +
+      '<span style="color:var(--text3);font-size:12px">$</span>' +
+      '<input type="number" class="stream-amount" value="' + (item.amount || "") + '" placeholder="0" oninput="updateFinItem(\'income\',' + i + ',\'amount\',this.value)">' +
+      '<button class="habit-del" onclick="removeFinItem(\'income\',' + i + ')">&times;</button>' +
+      '</div>';
+  });
+  html += '</div>' +
+    '<button class="habit-add-btn" style="margin-top:8px" onclick="addFinItem(\'income\')">+ Add income</button>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+    '<span style="color:var(--text2);font-size:12px">Total</span>' +
+    '<span class="mono" style="color:var(--greenT);font-size:14px">$' + monthIncome.toLocaleString() + '</span>' +
+    '</div></div>';
+
+  // Expense items
+  html += '<div class="card"><span class="section-label">EXPENSES &#183; ' + MONTHS[fm] + '</span><div style="margin-top:14px">';
+  expItems.forEach(function(item, i) {
+    html += '<div class="stream-row">' +
+      '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateFinItem(\'expense\',' + i + ',\'name\',this.value)">' +
+      '<span style="color:var(--text3);font-size:12px">$</span>' +
+      '<input type="number" class="stream-amount" style="color:var(--redT)" value="' + (item.amount || "") + '" placeholder="0" oninput="updateFinItem(\'expense\',' + i + ',\'amount\',this.value)">' +
+      '<button class="habit-del" onclick="removeFinItem(\'expense\',' + i + ')">&times;</button>' +
+      '</div>';
+  });
+  html += '</div>' +
+    '<button class="habit-add-btn" style="margin-top:8px" onclick="addFinItem(\'expense\')">+ Add expense</button>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+    '<span style="color:var(--text2);font-size:12px">Total</span>' +
+    '<span class="mono" style="color:var(--redT);font-size:14px">$' + monthExpense.toLocaleString() + '</span>' +
+    '</div></div>';
+
+  // Savings goal
+  html += '<div class="card"><span class="section-label">SAVINGS GOAL</span>' +
     '<div style="display:flex;align-items:baseline;gap:12px;margin-top:12px">' +
     '<span style="color:var(--text2);font-size:12px">$</span>' +
     '<input type="number" class="fin-month-input networth" style="width:100px;font-size:16px;padding:8px" value="' + (fin.savingsCurrent || "") + '" placeholder="0" oninput="state.finances.savingsCurrent=parseFloat(this.value)||0;save();renderFinances()">' +
@@ -1139,44 +1238,35 @@ function renderFinances() {
     '<div style="display:flex;gap:8px;align-items:center;margin-top:8px">' +
     '<span style="color:var(--text3);font-size:11px">Goal: $</span>' +
     '<input type="number" class="fin-month-input networth" style="width:80px" value="' + (fin.savingsGoal || "") + '" placeholder="5000" oninput="state.finances.savingsGoal=parseFloat(this.value)||0;save();renderFinances()">' +
-    '</div></div>' +
-    '<div class="card"><span class="section-label">INCOME STREAMS</span><div style="margin-top:14px">';
+    '</div></div>';
 
-  fin.streams.forEach(function(s, i) {
-    html += '<div class="stream-row">' +
-      '<span class="mono" style="color:var(--text3);font-size:11px;width:20px">' + String(i + 1).padStart(2, "0") + '</span>' +
-      '<input class="stream-name" value="' + esc(s.name) + '" placeholder="Income source..." oninput="state.finances.streams[' + i + '].name=this.value;save()">' +
-      '<span style="color:var(--text3);font-size:12px">$</span>' +
-      '<input type="number" class="stream-amount" value="' + (s.amount || "") + '" placeholder="0" oninput="state.finances.streams[' + i + '].amount=parseFloat(this.value)||0;save()">' +
+  // Year overview bar chart
+  html += '<div class="card"><span class="section-label">YEAR OVERVIEW</span>' +
+    '<div style="display:flex;gap:4px;align-items:flex-end;height:80px;margin-top:16px">';
+  var maxVal = 1;
+  for (var yi = 0; yi < 12; yi++) {
+    maxVal = Math.max(maxVal, fin.income[yi] || 0, fin.expenses[yi] || 0);
+  }
+  MONTHS.forEach(function(mn, i) {
+    var incH = maxVal ? Math.max(1, ((fin.income[i] || 0) / maxVal) * 60) : 1;
+    var expH = maxVal ? Math.max(1, ((fin.expenses[i] || 0) / maxVal) * 60) : 1;
+    var isActive = i === fm;
+    html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;opacity:' + (isActive ? '1' : '.5') + '" onclick="state.finMonth=' + i + ';save();renderFinances()">' +
+      '<div style="display:flex;gap:1px;align-items:flex-end;height:60px">' +
+      '<div style="width:4px;height:' + incH + 'px;background:var(--greenT);border-radius:1px"></div>' +
+      '<div style="width:4px;height:' + expH + 'px;background:var(--redT);border-radius:1px"></div>' +
+      '</div>' +
+      '<span style="font-size:8px;font-family:\'DM Mono\',monospace;color:' + (isActive ? 'var(--gold)' : 'var(--text3)') + '">' + mn + '</span>' +
       '</div>';
   });
+  html += '</div></div>';
 
-  html += '</div>' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
-    '<span style="color:var(--text2);font-size:12px">Total monthly</span>' +
-    '<span class="mono" style="color:var(--gold);font-size:16px">$' + totalStreams.toLocaleString() + '</span>' +
-    '</div></div>' +
-    '<div class="card"><span class="section-label">MONTHLY INCOME</span><div class="fin-month-grid">';
-
-  MONTHS.forEach(function(mn, i) {
-    html += '<div class="fin-month-cell"><div class="fin-month-label">' + mn + '</div>' +
-      '<input type="number" class="fin-month-input income" value="' + (fin.income[i] || "") + '" placeholder="\u2014" oninput="state.finances.income[' + i + ']=parseFloat(this.value)||0;save()"></div>';
-  });
-
-  html += '</div></div><div class="card"><span class="section-label">MONTHLY EXPENSES</span><div class="fin-month-grid">';
-
-  MONTHS.forEach(function(mn, i) {
-    html += '<div class="fin-month-cell"><div class="fin-month-label">' + mn + '</div>' +
-      '<input type="number" class="fin-month-input expense" value="' + (fin.expenses[i] || "") + '" placeholder="\u2014" oninput="state.finances.expenses[' + i + ']=parseFloat(this.value)||0;save()"></div>';
-  });
-
-  html += '</div></div><div class="card"><span class="section-label">NET WORTH</span><div class="fin-month-grid">';
-
+  // Net worth
+  html += '<div class="card"><span class="section-label">NET WORTH</span><div class="fin-month-grid">';
   MONTHS.forEach(function(mn, i) {
     html += '<div class="fin-month-cell"><div class="fin-month-label">' + mn + '</div>' +
       '<input type="number" class="fin-month-input networth" value="' + (fin.netWorth[i] || "") + '" placeholder="\u2014" oninput="state.finances.netWorth[' + i + ']=parseFloat(this.value)||0;save()"></div>';
   });
-
   html += '</div></div>';
 
   document.getElementById("v-finances").innerHTML = html;
