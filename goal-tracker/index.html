@@ -382,6 +382,7 @@ function ensureDefaults() {
   }
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
   if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
+  if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
 }
 
 async function handleSignUp() {
@@ -751,7 +752,16 @@ function renderDashboard() {
     '<span class="streak-fire" style="color:' + (streak > 0 ? 'var(--gold)' : 'var(--text3)') + '">' + (streak > 0 ? '//' : '--') + '</span>' +
     '<div><div class="streak-num">' + streak + '</div>' +
     '<div class="streak-text">' + (streak === 1 ? 'day' : 'days') + ' streak (80%+ completion)</div></div>' +
-    '</div></div>';
+    '</div></div>' +
+    '<div class="card"><span class="section-label">LIFE TRAJECTORY</span>' +
+    '<canvas id="life-chart" style="width:100%;height:200px;margin-top:16px"></canvas></div>';
+
+  // Record today's life score
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  if (state.lifeScoreHistory[todayKey] !== lifeScore) {
+    state.lifeScoreHistory[todayKey] = lifeScore;
+    save();
+  }
 
   document.getElementById("v-dashboard").innerHTML = html;
 
@@ -768,6 +778,97 @@ function renderDashboard() {
       if (current >= target) clearInterval(iv);
     }, 20);
   }, 100);
+
+  setTimeout(drawLifeChart, 50);
+}
+
+function drawLifeChart() {
+  var canvas = document.getElementById("life-chart");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width;
+  var H = rect.height;
+
+  var points = [];
+  for (var i = 29; i >= 0; i--) {
+    var dt = new Date(YEAR, TODAY_M, TODAY_D - i);
+    var key = dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+    var val = state.lifeScoreHistory[key];
+    if (val !== undefined) points.push({ x: 29 - i, val: val, date: key });
+  }
+
+  if (points.length < 2) {
+    ctx.fillStyle = "#333";
+    ctx.font = "12px 'DM Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Track for 2+ days to see your trajectory", W / 2, H / 2);
+    return;
+  }
+
+  var padL = 36, padR = 16, padT = 16, padB = 24;
+  var chartW = W - padL - padR;
+  var chartH = H - padT - padB;
+
+  ctx.strokeStyle = "rgba(255,255,255,.04)";
+  ctx.lineWidth = 1;
+  [25, 50, 75].forEach(function(v) {
+    var y = padT + chartH - (v / 100) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.fillStyle = "#333";
+    ctx.font = "9px 'DM Mono', monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(v, padL - 6, y + 3);
+  });
+
+  var coords = points.map(function(p) {
+    return {
+      x: padL + (p.x / 29) * chartW,
+      y: padT + chartH - (p.val / 100) * chartH,
+      val: p.val
+    };
+  });
+
+  var grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
+  grad.addColorStop(0, "rgba(200,169,81,.15)");
+  grad.addColorStop(1, "rgba(200,169,81,0)");
+  ctx.beginPath();
+  ctx.moveTo(coords[0].x, padT + chartH);
+  coords.forEach(function(c) { ctx.lineTo(c.x, c.y); });
+  ctx.lineTo(coords[coords.length - 1].x, padT + chartH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#C8A951";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  coords.forEach(function(c, i) {
+    if (i === 0) ctx.moveTo(c.x, c.y);
+    else ctx.lineTo(c.x, c.y);
+  });
+  ctx.stroke();
+
+  coords.forEach(function(c) {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#C8A951";
+    ctx.fill();
+  });
+
+  var last = coords[coords.length - 1];
+  ctx.fillStyle = "#C8A951";
+  ctx.font = "bold 11px 'DM Mono', monospace";
+  ctx.textAlign = "right";
+  ctx.fillText(last.val + "%", last.x - 8, last.y - 8);
 }
 
 // === TRACKER ===
