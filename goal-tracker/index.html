@@ -478,6 +478,7 @@ async function handleSignUp() {
     state.userName = name;
     state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
+    state.checkins = {};
     state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {} };
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
     await saveRemote();
