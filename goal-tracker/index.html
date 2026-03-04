@@ -186,6 +186,18 @@ h1 span{color:var(--text3)}
 .savings-bar-track{background:#1A1A1A;border-radius:6px;height:10px;overflow:hidden;margin:12px 0}
 .savings-bar-fill{background:linear-gradient(90deg,var(--gold),var(--greenT));height:100%;border-radius:6px;transition:width .5s}
 
+/* HABIT MANAGEMENT */
+.habit-add-btn{background:transparent;border:1px dashed var(--border);border-radius:4px;padding:6px;color:var(--text3);font-size:11px;cursor:pointer;width:100%;margin-top:4px;transition:all .2s;font-family:'DM Sans',sans-serif}
+.habit-add-btn:hover{border-color:var(--gold);color:var(--gold)}
+.edit-toggle{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text3);font-size:10px;letter-spacing:1px;padding:6px 12px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
+.edit-toggle:hover,.edit-toggle.active{color:var(--gold);border-color:var(--gold)}
+.habit-name-input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;width:80px;padding:2px 0}
+.habit-name-input:focus{outline:none;border-bottom-color:var(--gold)}
+.habit-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 4px;opacity:.4;transition:opacity .2s;font-family:'DM Mono',monospace}
+.habit-del:hover{opacity:1;color:var(--redT)}
+.habit-type-toggle{background:none;border:1px solid var(--border);border-radius:3px;color:var(--text3);font-size:9px;padding:2px 5px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
+.habit-type-toggle:hover{color:var(--gold);border-color:var(--gold)}
+
 /* VIEW TRANSITIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .view-active{animation:fadeIn .3s ease}
@@ -263,7 +275,7 @@ var CATEGORIES = [
   { id: "spirit", name: "SPIRIT", color: "#C77DBA" }
 ];
 
-var HABITS = [
+var DEFAULT_HABITS = [
   { id: 1, cat: "money", name: "Side Hustle Work", type: "check" },
   { id: 2, cat: "money", name: "Learning / Skill", type: "check" },
   { id: 3, cat: "money", name: "Networking", type: "check" },
@@ -369,6 +381,7 @@ function ensureDefaults() {
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
   }
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
+  if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
 }
 
 async function handleSignUp() {
@@ -404,6 +417,7 @@ async function handleSignUp() {
 
     currentUser = result.data.user;
     state.userName = name;
+    state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
     state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [] };
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
@@ -642,7 +656,7 @@ document.querySelectorAll(".nav-btn").forEach(function(btn) {
 
 // === DASHBOARD ===
 function renderDashboard() {
-  var checkHabits = HABITS.filter(function(h) { return h.type === "check"; });
+  var checkHabits = state.habits.filter(function(h) { return h.type === "check"; });
   var m = TODAY_M;
   var daysThisMonth = daysInMonth(m);
   var totalPct = 0;
@@ -657,7 +671,7 @@ function renderDashboard() {
   var lifeScore = checkHabits.length ? Math.round((totalPct / checkHabits.length) * 100) : 0;
 
   function catPct(catId) {
-    var habits = HABITS.filter(function(h) { return h.cat === catId && h.type === "check"; });
+    var habits = state.habits.filter(function(h) { return h.cat === catId && h.type === "check"; });
     if (!habits.length) return 0;
     var total = 0;
     habits.forEach(function(h) {
@@ -714,7 +728,7 @@ function renderDashboard() {
   CATEGORIES.forEach(function(cat) {
     var pct = catPct(cat.id);
     var pctColor = pct >= 80 ? "var(--greenT)" : (pct >= 50 ? "var(--gold)" : "var(--text3)");
-    var habitCount = HABITS.filter(function(h) { return h.cat === cat.id; }).length;
+    var habitCount = state.habits.filter(function(h) { return h.cat === cat.id; }).length;
     html += '<div class="cat-card" onclick="switchView(\'tracker\')">' +
       '<div class="cat-card-header"><span class="cat-dot" style="background:' + cat.color + '"></span>' +
       '<span class="cat-card-name" style="color:' + cat.color + '">' + cat.name + '</span></div>' +
@@ -762,7 +776,9 @@ function renderTracker() {
   var days = daysInMonth(m);
 
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">' +
-    '<h1>' + MONTHS[m] + ' <span>' + YEAR + '</span></h1><div class="month-pills">';
+    '<div style="display:flex;align-items:center;gap:12px"><h1>' + MONTHS[m] + ' <span>' + YEAR + '</span></h1>' +
+    '<button class="edit-toggle' + (editingHabits ? ' active' : '') + '" onclick="toggleHabitEdit()">' + (editingHabits ? 'DONE' : 'EDIT') + '</button></div>' +
+    '<div class="month-pills">';
 
   MONTHS.forEach(function(mn, i) {
     var active = i === m ? " active" : "";
@@ -770,7 +786,28 @@ function renderTracker() {
     html += '<button class="month-pill' + active + past + '" onclick="state.currentMonth=' + i + ';save();renderTracker()">' + mn + '</button>';
   });
 
-  html += '</div></div><div class="tracker-wrap"><div style="min-width:600px">';
+  html += '</div></div>';
+
+  if (editingHabits) {
+    html += '<div style="margin-bottom:16px">';
+    CATEGORIES.forEach(function(cat) {
+      html += '<div class="cat-header-row"><div class="cat-header-dot" style="background:' + cat.color + '"></div>' +
+        '<span class="cat-header-text" style="color:' + cat.color + '">' + cat.name + '</span></div>';
+      state.habits.filter(function(h) { return h.cat === cat.id; }).forEach(function(hab) {
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:2px;background:var(--surface);border-radius:4px">' +
+          '<input class="habit-name-input" value="' + esc(hab.name) + '" oninput="renameHabit(' + hab.id + ',this.value)">' +
+          '<button class="habit-type-toggle" onclick="toggleHabitType(' + hab.id + ')">' + hab.type + '</button>' +
+          '<button class="habit-del" onclick="removeHabit(' + hab.id + ')">&times;</button>' +
+          '</div>';
+      });
+      html += '<button class="habit-add-btn" onclick="addHabit(\'' + cat.id + '\')">+ Add habit</button>';
+    });
+    html += '</div>';
+    document.getElementById("v-tracker").innerHTML = html;
+    return;
+  }
+
+  html += '<div class="tracker-wrap"><div style="min-width:600px">';
 
   // Day headers
   html += '<div style="display:flex;margin-bottom:2px"><div class="habit-label"></div>';
@@ -785,7 +822,7 @@ function renderTracker() {
     html += '<div class="cat-header-row"><div class="cat-header-dot" style="background:' + cat.color + '"></div>' +
       '<span class="cat-header-text" style="color:' + cat.color + '">' + cat.name + '</span></div>';
 
-    HABITS.filter(function(h) { return h.cat === cat.id; }).forEach(function(hab) {
+    state.habits.filter(function(h) { return h.cat === cat.id; }).forEach(function(hab) {
       var count = 0;
       for (var d = 1; d <= days; d++) {
         var v = getEntry(m, d, hab.id);
@@ -833,6 +870,40 @@ function toggleCheck(m, d, hid) {
 
 function setNum(m, d, hid, v) {
   setEntry(m, d, hid, v);
+}
+
+// === HABIT MANAGEMENT ===
+var editingHabits = false;
+
+function toggleHabitEdit() {
+  editingHabits = !editingHabits;
+  renderTracker();
+}
+
+function addHabit(catId) {
+  var maxId = state.habits.reduce(function(m, h) { return Math.max(m, h.id); }, 0);
+  state.habits.push({ id: maxId + 1, cat: catId, name: "New Habit", type: "check" });
+  save();
+  renderTracker();
+}
+
+function removeHabit(habitId) {
+  state.habits = state.habits.filter(function(h) { return h.id !== habitId; });
+  Object.keys(state.entries).forEach(function(k) {
+    if (k.endsWith("-" + habitId)) delete state.entries[k];
+  });
+  save();
+  renderTracker();
+}
+
+function renameHabit(habitId, newName) {
+  var hab = state.habits.find(function(h) { return h.id === habitId; });
+  if (hab) { hab.name = newName; save(); }
+}
+
+function toggleHabitType(habitId) {
+  var hab = state.habits.find(function(h) { return h.id === habitId; });
+  if (hab) { hab.type = hab.type === "check" ? "number" : "check"; save(); renderTracker(); }
 }
 
 // === GOALS ===
