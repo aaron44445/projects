@@ -198,6 +198,12 @@ h1 span{color:var(--text3)}
 .habit-type-toggle{background:none;border:1px solid var(--border);border-radius:3px;color:var(--text3);font-size:9px;padding:2px 5px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s}
 .habit-type-toggle:hover{color:var(--gold);border-color:var(--gold)}
 
+/* JOURNAL */
+.journal-textarea{width:100%;min-height:200px;background:var(--surface);border:none;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;line-height:1.8;padding:20px;resize:vertical}
+.journal-textarea:focus{outline:none}
+.journal-textarea::placeholder{color:var(--text3)}
+.journal-past-card:hover{border-color:rgba(200,169,81,.15)}
+
 /* VIEW TRANSITIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .view-active{animation:fadeIn .3s ease}
@@ -242,6 +248,7 @@ h1 span{color:var(--text3)}
   <button class="nav-btn active" data-view="dashboard">DASHBOARD</button>
   <button class="nav-btn" data-view="tracker">TRACKER</button>
   <button class="nav-btn" data-view="goals">GOALS</button>
+  <button class="nav-btn" data-view="journal">JOURNAL</button>
   <button class="nav-btn" data-view="finances">FINANCES</button>
   <button id="sign-out-btn" class="nav-btn" style="display:none" onclick="signOut()">SIGN OUT</button>
 </nav>
@@ -250,6 +257,7 @@ h1 span{color:var(--text3)}
   <div id="v-dashboard"></div>
   <div id="v-tracker" style="display:none"></div>
   <div id="v-goals" style="display:none"></div>
+  <div id="v-journal" style="display:none"></div>
   <div id="v-finances" style="display:none"></div>
 </div>
 
@@ -383,6 +391,7 @@ function ensureDefaults() {
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
   if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
   if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
+  if (!state.journal) state.journal = {};
 }
 
 async function handleSignUp() {
@@ -504,6 +513,7 @@ async function signOut() {
   document.getElementById("v-dashboard").innerHTML = "";
   document.getElementById("v-tracker").innerHTML = "";
   document.getElementById("v-goals").innerHTML = "";
+  document.getElementById("v-journal").innerHTML = "";
   document.getElementById("v-finances").innerHTML = "";
 
   document.getElementById("auth-name").value = "";
@@ -632,7 +642,7 @@ function switchView(id) {
   document.querySelectorAll(".nav-btn").forEach(function(b) {
     b.classList.toggle("active", b.dataset.view === id);
   });
-  ["dashboard","tracker","goals","finances"].forEach(function(v) {
+  ["dashboard","tracker","goals","journal","finances"].forEach(function(v) {
     var el = document.getElementById("v-" + v);
     if (v === id) {
       el.style.display = "block";
@@ -646,6 +656,7 @@ function switchView(id) {
   if (id === "dashboard") renderDashboard();
   if (id === "tracker") renderTracker();
   if (id === "goals") renderGoals();
+  if (id === "journal") renderJournal();
   if (id === "finances") renderFinances();
 }
 
@@ -1053,6 +1064,54 @@ function updGoalDate(si, gi, v) { state.goals[si].items[gi].d = v; save(); }
 function updGoalStatus(si, gi, v) { state.goals[si].items[gi].s = v; save(); renderGoals(); }
 function addGoal(si) { state.goals[si].items.push({ t: "", d: "Q2", s: "Not Started" }); save(); renderGoals(); }
 function delGoal(si, gi) { state.goals[si].items.splice(gi, 1); save(); renderGoals(); }
+
+// === JOURNAL ===
+function renderJournal() {
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  var todayEntry = state.journal[todayKey] || "";
+
+  var pastKeys = Object.keys(state.journal)
+    .filter(function(k) { return k !== todayKey && state.journal[k].trim(); })
+    .sort(function(a, b) { return b.localeCompare(a); });
+
+  var html = '<h1 style="margin-bottom:24px">Journal <span>' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
+    '<div class="card" style="padding:0;overflow:hidden">' +
+    '<textarea id="journal-today" class="journal-textarea" placeholder="What\'s on your mind today..." oninput="saveJournal(this.value)">' + esc(todayEntry) + '</textarea>' +
+    '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between">' +
+    '<span class="mono" style="font-size:10px;color:var(--text3)">' + todayKey + '</span>' +
+    '<span class="mono" style="font-size:10px;color:var(--text3)">' + todayEntry.length + ' chars</span>' +
+    '</div></div>';
+
+  if (pastKeys.length > 0) {
+    html += '<div style="margin-top:32px"><span class="section-label">PAST ENTRIES</span></div>';
+    pastKeys.forEach(function(key) {
+      var text = state.journal[key];
+      var dt = new Date(key + "T00:00:00");
+      var dayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][dt.getDay()];
+      var preview = text.length > 120 ? text.substring(0, 120) + "..." : text;
+
+      html += '<div class="card journal-past-card" onclick="expandJournal(\'' + key + '\')" style="cursor:pointer;margin-top:8px">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px">' +
+        '<span class="mono" style="font-size:10px;color:var(--gold)">' + dayName + ' ' + key + '</span>' +
+        '</div>' +
+        '<p style="font-size:13px;color:var(--text2);line-height:1.6" id="journal-text-' + key + '">' + esc(preview) + '</p>' +
+        '</div>';
+    });
+  }
+
+  document.getElementById("v-journal").innerHTML = html;
+}
+
+function saveJournal(text) {
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  state.journal[todayKey] = text;
+  save();
+}
+
+function expandJournal(key) {
+  var el = document.getElementById("journal-text-" + key);
+  if (el) el.textContent = state.journal[key];
+}
 
 // === FINANCES ===
 function renderFinances() {
