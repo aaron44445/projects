@@ -27,11 +27,11 @@ input:focus,select:focus{outline:none;box-shadow:0 0 0 1px rgba(200,169,81,.15)}
 .mono{font-family:'DM Mono',monospace}
 
 /* NAV */
-nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;height:52px;padding:0 16px;gap:0}
-.nav-brand{color:var(--gold);font-weight:700;font-size:12px;letter-spacing:3px;margin-right:auto;font-family:'DM Mono',monospace}
-.nav-btn{background:none;border:none;color:var(--text2);font-size:11px;font-weight:500;letter-spacing:1.5px;padding:16px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
+nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;height:48px;padding:0 16px;gap:0}
+.nav-brand{color:var(--gold);font-weight:700;font-size:11px;letter-spacing:3px;margin-right:auto;font-family:'DM Mono',monospace}
+.nav-btn{background:none;border:none;color:var(--text3);font-size:10px;font-weight:500;letter-spacing:1px;padding:14px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
-@media(max-width:500px){.nav-btn{padding:16px 8px;font-size:9px;letter-spacing:1px}.nav-brand{font-size:10px;letter-spacing:2px}}
+@media(max-width:500px){.nav-btn{padding:14px 6px;font-size:8px;letter-spacing:.5px}.nav-brand{font-size:9px;letter-spacing:2px}}
 #sign-out-btn{margin-left:12px;color:var(--text3);border-bottom:none}
 #sign-out-btn:hover{color:var(--redT)}
 
@@ -42,15 +42,15 @@ h1 span{color:var(--text3)}
 .section-label{color:var(--text2);font-size:11px;letter-spacing:2px;font-weight:500}
 
 /* CARDS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;transition:border-color .2s}
-.card:hover{border-color:rgba(200,169,81,.12)}
+.card{background:var(--surface);border:1px solid rgba(255,255,255,.04);border-radius:6px;padding:24px;margin-bottom:16px;transition:border-color .2s}
+.card:hover{border-color:rgba(255,255,255,.06)}
 @media(max-width:500px){.card{padding:16px;margin-bottom:12px}}
 
 /* PROGRESS BAR */
 .progress-track{background:#1A1A1A;border-radius:4px;height:6px;overflow:hidden;margin:8px 0}
 .progress-fill{background:var(--gold);height:100%;border-radius:4px;transition:width .5s}
 
-.quote{color:var(--text3);font-size:12px;font-style:italic;font-family:'DM Mono',monospace;margin-top:6px}
+.quote{color:var(--text3);font-size:11px;font-style:italic;font-family:'DM Mono',monospace;margin-top:6px;text-align:center}
 
 /* AUTH / ONBOARDING */
 .ob-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:24px}
@@ -123,14 +123,11 @@ h1 span{color:var(--text3)}
 .day-header.today{color:var(--gold);font-weight:700;border-bottom:2px solid var(--gold)}
 .day-header.past{color:var(--text3)}
 
-.day-cell{min-width:34px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;transition:all .12s;user-select:none;-webkit-user-select:none;position:relative;overflow:hidden}
-.day-cell::after{content:'';position:absolute;inset:0;background:rgba(200,169,81,.15);opacity:0;transition:opacity .2s}
-.day-cell:active::after{opacity:1}
-.day-cell.done{background:var(--green)}
-.day-cell.done{animation:pop .2s ease}
-@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
-.day-cell.done .check{color:var(--greenT);font-size:13px;font-weight:600}
-.day-cell.past-empty{opacity:.35}
+.day-cell{min-width:34px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;transition:all .12s;user-select:none;-webkit-user-select:none;border:1px solid transparent}
+.day-cell:not(.done):hover{border-color:rgba(200,169,81,.2)}
+.day-cell.done{background:var(--gold);animation:pop .2s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.day-cell.past-empty{background:rgba(255,255,255,.02);opacity:1}
 .day-cell.today-border{box-shadow:inset 0 0 0 1px rgba(200,169,81,.25)}
 
 .num-input{width:28px;height:24px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;text-align:center}
@@ -705,14 +702,13 @@ function renderDashboard() {
 
   var html = '<div style="margin-bottom:32px">' +
     '<h1>Hey, ' + esc(state.userName) + ' <span>\u00B7 ' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
-    '<p class="quote">\u201C' + QUOTES[quoteIndex] + '\u201D</p>' +
     '</div>' +
     '<div class="card"><div class="life-score-wrap"><div class="life-score-ring">' +
     '<svg width="160" height="160" viewBox="0 0 160 160">' +
     '<circle class="ring-bg" cx="80" cy="80" r="72"/>' +
     '<circle class="ring-fill" cx="80" cy="80" r="72" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + offset + '"/>' +
     '</svg><div><div class="life-score-num">0</div><div class="life-score-label">LIFE SCORE</div></div>' +
-    '</div></div></div>' +
+    '</div><p class="quote" style="margin-top:16px;opacity:.5">\u201C' + QUOTES[quoteIndex] + '\u201D</p></div></div>' +
     '<div class="cat-grid">';
 
   CATEGORIES.forEach(function(cat) {
@@ -723,8 +719,7 @@ function renderDashboard() {
       '<div class="cat-card-header"><span class="cat-dot" style="background:' + cat.color + '"></span>' +
       '<span class="cat-card-name" style="color:' + cat.color + '">' + cat.name + '</span></div>' +
       '<div class="cat-card-pct" style="color:' + pctColor + '">' + pct + '%</div>' +
-      '<div class="cat-card-sub">' + habitCount + ' habits tracked</div>' +
-      '<div class="progress-track" style="margin-top:8px"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="cat-card-sub">' + habitCount + ' habits</div>' +
       '</div>';
   });
 
@@ -811,10 +806,7 @@ function renderTracker() {
         if (hab.type === "check") {
           var done = v === "\u2713";
           var cellCls = "day-cell" + (done ? " done" : "") + (past && !done ? " past-empty" : "") + (today ? " today-border" : "");
-          html += '<div class="' + cellCls + '" onclick="toggleCheck(' + m + ',' + d + ',' + hab.id + ')">';
-          if (done) html += '<span class="check">\u2713</span>';
-          else if (past) html += '<span style="color:var(--red);font-size:10px">\u00B7</span>';
-          html += '</div>';
+          html += '<div class="' + cellCls + '" onclick="toggleCheck(' + m + ',' + d + ',' + hab.id + ')"></div>';
         } else {
           var numCls = v ? "num-input has-val" : "num-input";
           var opSt = past && !v ? "opacity:.35" : "";
