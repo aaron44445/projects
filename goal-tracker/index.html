@@ -9,6 +9,7 @@
 <title>LOCKED IN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;scroll-behavior:smooth}
 :root{
@@ -31,6 +32,8 @@ nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px soli
 .nav-btn{background:none;border:none;color:var(--text2);font-size:11px;font-weight:500;letter-spacing:1.5px;padding:16px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
 @media(max-width:500px){.nav-btn{padding:16px 8px;font-size:9px;letter-spacing:1px}.nav-brand{font-size:10px;letter-spacing:2px}}
+#sign-out-btn{margin-left:12px;color:var(--text3);border-bottom:none}
+#sign-out-btn:hover{color:var(--redT)}
 
 /* MAIN */
 .container{max-width:900px;margin:0 auto;padding:24px 16px 80px}
@@ -49,7 +52,7 @@ h1 span{color:var(--text3)}
 
 .quote{color:var(--text3);font-size:12px;font-style:italic;font-family:'DM Mono',monospace;margin-top:6px}
 
-/* ONBOARDING */
+/* AUTH / ONBOARDING */
 .ob-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:24px}
 .ob-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:400px;width:100%;text-align:center;animation:fadeUp .5s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -63,6 +66,9 @@ h1 span{color:var(--text3)}
 .ob-btn:disabled{opacity:.3;cursor:default}
 .ob-btn:not(:disabled):hover{filter:brightness(1.1)}
 .ob-footer{color:var(--text3);font-size:11px;margin-top:16px}
+.ob-footer a{color:var(--gold);text-decoration:none}
+.ob-footer a:hover{text-decoration:underline}
+.auth-error{color:var(--redT);font-size:12px;margin-bottom:12px;text-align:left;display:none}
 
 /* LIFE SCORE */
 .life-score-wrap{text-align:center;padding:32px 0}
@@ -80,7 +86,7 @@ h1 span{color:var(--text3)}
 .cat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;transition:border-color .2s;cursor:pointer}
 .cat-card:hover{border-color:rgba(200,169,81,.2)}
 .cat-card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.cat-card-icon{font-size:18px}
+.cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
 .cat-card-name{font-size:10px;letter-spacing:2px;font-weight:500}
 .cat-card-pct{font-size:28px;font-weight:300;font-family:'DM Mono',monospace}
 .cat-card-sub{font-size:11px;color:var(--text3);margin-top:4px}
@@ -96,7 +102,7 @@ h1 span{color:var(--text3)}
 .streak-wrap{display:flex;align-items:center;gap:12px}
 .streak-num{font-size:32px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold)}
 .streak-text{font-size:12px;color:var(--text2)}
-.streak-fire{font-size:24px}
+.streak-fire{font-size:18px;font-family:'DM Mono',monospace;font-weight:700}
 
 /* MONTH PILLS */
 .month-pills{display:flex;gap:3px;flex-wrap:wrap}
@@ -109,8 +115,7 @@ h1 span{color:var(--text3)}
 .habit-row{display:flex;margin-bottom:1px;border-radius:4px}
 .habit-row:nth-child(odd){background:var(--surface)}
 .habit-row:nth-child(even){background:var(--surface2)}
-.habit-label{min-width:140px;width:140px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:12px;position:sticky;left:0;z-index:2}
-.habit-label span.icon{font-size:13px}
+.habit-label{min-width:140px;width:140px;padding:6px 10px;display:flex;align-items:center;font-size:12px;position:sticky;left:0;z-index:2;border-left:3px solid transparent}
 .habit-label span.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:500px){.habit-label{min-width:110px;width:110px;font-size:11px;padding:6px 6px}}
 
@@ -191,16 +196,34 @@ h1 span{color:var(--text3)}
 </head>
 <body>
 
-<div id="onboarding" style="display:none">
+<div id="auth-screen" style="display:none">
   <div class="ob-backdrop">
     <div class="ob-card">
       <div class="ob-brand">LOCKED IN</div>
       <p class="ob-tagline">Track everything. Waste nothing.</p>
       <div class="ob-divider"></div>
-      <label class="ob-label">WHAT'S YOUR NAME?</label>
-      <input id="ob-name" class="ob-input" type="text" placeholder="Enter your name" maxlength="20" autofocus>
-      <button id="ob-submit" class="ob-btn" disabled>LOCK IN &rarr;</button>
-      <p class="ob-footer">Your data stays on this device. No account needed.</p>
+
+      <div id="auth-signup">
+        <label class="ob-label">YOUR NAME</label>
+        <input id="auth-name" class="ob-input" type="text" placeholder="Enter your name" maxlength="20">
+        <label class="ob-label">EMAIL</label>
+        <input id="auth-email-up" class="ob-input" type="email" placeholder="you@example.com">
+        <label class="ob-label">PASSWORD</label>
+        <input id="auth-pass-up" class="ob-input" type="password" placeholder="Min 6 characters">
+        <div id="auth-error-up" class="auth-error"></div>
+        <button id="auth-submit-up" class="ob-btn" disabled>CREATE ACCOUNT &rarr;</button>
+        <p class="ob-footer">Already have an account? <a href="#" id="auth-to-signin">Sign in</a></p>
+      </div>
+
+      <div id="auth-signin" style="display:none">
+        <label class="ob-label">EMAIL</label>
+        <input id="auth-email-in" class="ob-input" type="email" placeholder="you@example.com">
+        <label class="ob-label">PASSWORD</label>
+        <input id="auth-pass-in" class="ob-input" type="password" placeholder="Your password">
+        <div id="auth-error-in" class="auth-error"></div>
+        <button id="auth-submit-in" class="ob-btn" disabled>SIGN IN &rarr;</button>
+        <p class="ob-footer">Don&rsquo;t have an account? <a href="#" id="auth-to-signup">Sign up</a></p>
+      </div>
     </div>
   </div>
 </div>
@@ -211,6 +234,7 @@ h1 span{color:var(--text3)}
   <button class="nav-btn" data-view="tracker">TRACKER</button>
   <button class="nav-btn" data-view="goals">GOALS</button>
   <button class="nav-btn" data-view="finances">FINANCES</button>
+  <button id="sign-out-btn" class="nav-btn" style="display:none" onclick="signOut()">SIGN OUT</button>
 </nav>
 
 <div class="container">
@@ -221,56 +245,63 @@ h1 span{color:var(--text3)}
 </div>
 
 <script>
+// === SUPABASE CONFIG ===
+// Replace these with your Supabase project values
+var SUPABASE_URL = 'https://njqkflrojtpwdtgjyfvt.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qcWtmbHJvanRwd2R0Z2p5ZnZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2NjEwMjYsImV4cCI6MjA4ODIzNzAyNn0.fARRXNQzxPaOX47nw5WOzZd5dXWfCvCi1t2PX02eJ0Q';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var currentUser = null;
+
 // === CONSTANTS ===
-const NOW = new Date();
-const YEAR = NOW.getFullYear();
-const TODAY_M = NOW.getMonth();
-const TODAY_D = NOW.getDate();
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var NOW = new Date();
+var YEAR = NOW.getFullYear();
+var TODAY_M = NOW.getMonth();
+var TODAY_D = NOW.getDate();
+var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-const CATEGORIES = [
-  { id: "money", name: "MONEY", icon: "\u{1F4B0}", color: "var(--gold)" },
-  { id: "body", name: "BODY", icon: "\u{1F3CB}\u{FE0F}", color: "var(--greenT)" },
-  { id: "mind", name: "MIND", icon: "\u{1F9E0}", color: "#7B8CDE" },
-  { id: "spirit", name: "SPIRIT", icon: "\u2728", color: "#C77DBA" }
+var CATEGORIES = [
+  { id: "money", name: "MONEY", color: "var(--gold)" },
+  { id: "body", name: "BODY", color: "var(--greenT)" },
+  { id: "mind", name: "MIND", color: "#7B8CDE" },
+  { id: "spirit", name: "SPIRIT", color: "#C77DBA" }
 ];
 
-const HABITS = [
-  { id: 1, cat: "money", name: "Side Hustle Work", icon: "\u{1F4BC}", type: "check" },
-  { id: 2, cat: "money", name: "Learning / Skill", icon: "\u{1F4DA}", type: "check" },
-  { id: 3, cat: "money", name: "Networking", icon: "\u{1F91D}", type: "check" },
-  { id: 4, cat: "body", name: "Workout", icon: "\u{1F3CB}\u{FE0F}", type: "check" },
-  { id: 5, cat: "body", name: "Sleep 7+ hrs", icon: "\u{1F634}", type: "check" },
-  { id: 6, cat: "body", name: "Clean Eating", icon: "\u{1F957}", type: "check" },
-  { id: 7, cat: "mind", name: "Reading", icon: "\u{1F4D6}", type: "check" },
-  { id: 8, cat: "mind", name: "Deep Work (hrs)", icon: "\u{1F3AF}", type: "number" },
-  { id: 9, cat: "mind", name: "No Doomscroll", icon: "\u{1F4F5}", type: "check" },
-  { id: 10, cat: "spirit", name: "Journal", icon: "\u{1F4DD}", type: "check" },
-  { id: 11, cat: "spirit", name: "Gratitude", icon: "\u{1F64F}", type: "check" },
-  { id: 12, cat: "spirit", name: "Meditation / Faith", icon: "\u{1F9D8}", type: "check" }
+var HABITS = [
+  { id: 1, cat: "money", name: "Side Hustle Work", type: "check" },
+  { id: 2, cat: "money", name: "Learning / Skill", type: "check" },
+  { id: 3, cat: "money", name: "Networking", type: "check" },
+  { id: 4, cat: "body", name: "Workout", type: "check" },
+  { id: 5, cat: "body", name: "Sleep 7+ hrs", type: "check" },
+  { id: 6, cat: "body", name: "Clean Eating", type: "check" },
+  { id: 7, cat: "mind", name: "Reading", type: "check" },
+  { id: 8, cat: "mind", name: "Deep Work (hrs)", type: "number" },
+  { id: 9, cat: "mind", name: "No Doomscroll", type: "check" },
+  { id: 10, cat: "spirit", name: "Journal", type: "check" },
+  { id: 11, cat: "spirit", name: "Gratitude", type: "check" },
+  { id: 12, cat: "spirit", name: "Meditation / Faith", type: "check" }
 ];
 
-const GOALS_DEFAULT = [
-  { cat: "\u{1F4B0} MONEY", items: [
+var GOALS_DEFAULT = [
+  { cat: "MONEY", items: [
     { t: "Start a side income stream", d: "Q2", s: "Not Started" },
     { t: "Save $1,000 emergency fund", d: "Q3", s: "Not Started" },
     { t: "Learn a marketable skill", d: "Q2", s: "Not Started" }
   ]},
-  { cat: "\u{1F3CB}\u{FE0F} BODY", items: [
+  { cat: "BODY", items: [
     { t: "Work out 4x/week consistently", d: "Ongoing", s: "Not Started" },
     { t: "Hit a fitness milestone", d: "Q3", s: "Not Started" }
   ]},
-  { cat: "\u{1F9E0} MIND", items: [
+  { cat: "MIND", items: [
     { t: "Read 12 books this year", d: "Q4", s: "Not Started" },
     { t: "Build a deep work habit", d: "Ongoing", s: "Not Started" }
   ]},
-  { cat: "\u2728 SPIRIT", items: [
+  { cat: "SPIRIT", items: [
     { t: "Daily journal streak", d: "Ongoing", s: "Not Started" },
     { t: "Weekly reflection practice", d: "Ongoing", s: "Not Started" }
   ]}
 ];
 
-const QUOTES = [
+var QUOTES = [
   "Discipline is choosing between what you want now and what you want most.",
   "You don\u2019t rise to the level of your goals. You fall to the level of your systems.",
   "The only way to do great work is to love what you do.",
@@ -282,7 +313,7 @@ const QUOTES = [
 ];
 
 // === STATE ===
-let state = {
+var state = {
   userName: "",
   entries: {},
   goals: null,
@@ -297,20 +328,282 @@ let state = {
   currentMonth: TODAY_M
 };
 
-function load() {
-  try {
-    const d = localStorage.getItem("lockedin_state");
-    if (d) { const p = JSON.parse(d); state = { ...state, ...p }; }
-  } catch(e) {}
+// === AUTH ===
+function showAuth() {
+  document.getElementById("auth-screen").style.display = "block";
+  document.getElementById("sign-out-btn").style.display = "none";
+}
+
+function hideAuth() {
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("sign-out-btn").style.display = "";
+}
+
+function clearAuthErrors() {
+  document.getElementById("auth-error-up").style.display = "none";
+  document.getElementById("auth-error-in").style.display = "none";
+}
+
+function showAuthError(type, msg) {
+  var el = document.getElementById("auth-error-" + type);
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function validateSignUp() {
+  var name = document.getElementById("auth-name").value.trim();
+  var email = document.getElementById("auth-email-up").value.trim();
+  var pass = document.getElementById("auth-pass-up").value;
+  document.getElementById("auth-submit-up").disabled = !(name && email && pass.length >= 6);
+}
+
+function validateSignIn() {
+  var email = document.getElementById("auth-email-in").value.trim();
+  var pass = document.getElementById("auth-pass-in").value;
+  document.getElementById("auth-submit-in").disabled = !(email && pass);
+}
+
+function ensureDefaults() {
+  if (!state.userName && currentUser && currentUser.user_metadata && currentUser.user_metadata.name) {
+    state.userName = currentUser.user_metadata.name;
+  }
   if (!state.finances) state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [] };
   if (!state.finances.streams || !state.finances.streams.length) {
-    state.finances.streams = Array(4).fill(null).map(() => ({ name: "", amount: 0 }));
+    state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
   }
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
 }
 
+async function handleSignUp() {
+  var name = document.getElementById("auth-name").value.trim();
+  var email = document.getElementById("auth-email-up").value.trim();
+  var pass = document.getElementById("auth-pass-up").value;
+
+  var btn = document.getElementById("auth-submit-up");
+  btn.disabled = true;
+  btn.textContent = "CREATING...";
+  clearAuthErrors();
+
+  try {
+    var result = await sb.auth.signUp({
+      email: email,
+      password: pass,
+      options: { data: { name: name } }
+    });
+
+    if (result.error) {
+      showAuthError("up", result.error.message);
+      btn.disabled = false;
+      btn.innerHTML = "CREATE ACCOUNT &rarr;";
+      return;
+    }
+
+    if (result.data.user && !result.data.session) {
+      showAuthError("up", "Check your email to confirm your account, then sign in.");
+      btn.disabled = false;
+      btn.innerHTML = "CREATE ACCOUNT &rarr;";
+      return;
+    }
+
+    currentUser = result.data.user;
+    state.userName = name;
+    state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
+    state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [] };
+    state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
+    await saveRemote();
+    hideAuth();
+    switchView("dashboard");
+  } catch(e) {
+    showAuthError("up", "Something went wrong. Try again.");
+    btn.disabled = false;
+    btn.innerHTML = "CREATE ACCOUNT &rarr;";
+  }
+}
+
+async function handleSignIn() {
+  var email = document.getElementById("auth-email-in").value.trim();
+  var pass = document.getElementById("auth-pass-in").value;
+
+  var btn = document.getElementById("auth-submit-in");
+  btn.disabled = true;
+  btn.textContent = "SIGNING IN...";
+  clearAuthErrors();
+
+  try {
+    var result = await sb.auth.signInWithPassword({
+      email: email,
+      password: pass
+    });
+
+    if (result.error) {
+      showAuthError("in", result.error.message);
+      btn.disabled = false;
+      btn.innerHTML = "SIGN IN &rarr;";
+      return;
+    }
+
+    currentUser = result.data.user;
+
+    try {
+      var cached = localStorage.getItem("lockedin_" + currentUser.id);
+      if (cached) {
+        var p = JSON.parse(cached);
+        state = { userName: "", entries: {}, goals: null, finances: null, currentMonth: TODAY_M };
+        Object.keys(p).forEach(function(k) { state[k] = p[k]; });
+      }
+    } catch(e2) {}
+
+    try {
+      var ud = await sb.from("user_data").select("state").eq("user_id", currentUser.id).single();
+      if (ud.data && ud.data.state) {
+        state = { userName: "", entries: {}, goals: null, finances: null, currentMonth: TODAY_M };
+        Object.keys(ud.data.state).forEach(function(k) { state[k] = ud.data.state[k]; });
+        localStorage.setItem("lockedin_" + currentUser.id, JSON.stringify(state));
+      }
+    } catch(e2) {}
+
+    ensureDefaults();
+    hideAuth();
+    switchView("dashboard");
+  } catch(e) {
+    showAuthError("in", "Something went wrong. Try again.");
+    btn.disabled = false;
+    btn.innerHTML = "SIGN IN &rarr;";
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  currentUser = null;
+  state = {
+    userName: "",
+    entries: {},
+    goals: null,
+    finances: {
+      income: Array(12).fill(0),
+      expenses: Array(12).fill(0),
+      savingsGoal: 5000,
+      savingsCurrent: 0,
+      netWorth: Array(12).fill(0),
+      streams: []
+    },
+    currentMonth: TODAY_M
+  };
+  document.getElementById("v-dashboard").innerHTML = "";
+  document.getElementById("v-tracker").innerHTML = "";
+  document.getElementById("v-goals").innerHTML = "";
+  document.getElementById("v-finances").innerHTML = "";
+
+  document.getElementById("auth-name").value = "";
+  document.getElementById("auth-email-up").value = "";
+  document.getElementById("auth-pass-up").value = "";
+  document.getElementById("auth-email-in").value = "";
+  document.getElementById("auth-pass-in").value = "";
+  document.getElementById("auth-submit-up").disabled = true;
+  document.getElementById("auth-submit-in").disabled = true;
+  document.getElementById("auth-submit-up").innerHTML = "CREATE ACCOUNT &rarr;";
+  document.getElementById("auth-submit-in").innerHTML = "SIGN IN &rarr;";
+  clearAuthErrors();
+
+  document.getElementById("auth-signin").style.display = "block";
+  document.getElementById("auth-signup").style.display = "none";
+  showAuth();
+}
+
+// Wire up auth form events
+document.getElementById("auth-name").addEventListener("input", validateSignUp);
+document.getElementById("auth-email-up").addEventListener("input", validateSignUp);
+document.getElementById("auth-pass-up").addEventListener("input", validateSignUp);
+document.getElementById("auth-email-in").addEventListener("input", validateSignIn);
+document.getElementById("auth-pass-in").addEventListener("input", validateSignIn);
+
+document.getElementById("auth-submit-up").addEventListener("click", handleSignUp);
+document.getElementById("auth-submit-in").addEventListener("click", handleSignIn);
+
+document.getElementById("auth-to-signin").addEventListener("click", function(e) {
+  e.preventDefault();
+  document.getElementById("auth-signup").style.display = "none";
+  document.getElementById("auth-signin").style.display = "block";
+  clearAuthErrors();
+});
+
+document.getElementById("auth-to-signup").addEventListener("click", function(e) {
+  e.preventDefault();
+  document.getElementById("auth-signin").style.display = "none";
+  document.getElementById("auth-signup").style.display = "block";
+  clearAuthErrors();
+});
+
+["auth-name", "auth-email-up", "auth-pass-up"].forEach(function(id) {
+  document.getElementById(id).addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !document.getElementById("auth-submit-up").disabled) handleSignUp();
+  });
+});
+
+["auth-email-in", "auth-pass-in"].forEach(function(id) {
+  document.getElementById(id).addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !document.getElementById("auth-submit-in").disabled) handleSignIn();
+  });
+});
+
+// === DATA ===
+async function load() {
+  try {
+    var sessionResult = await sb.auth.getSession();
+    var session = sessionResult.data.session;
+
+    if (!session) {
+      showAuth();
+      return;
+    }
+
+    currentUser = session.user;
+
+    // Try localStorage cache first for instant render
+    try {
+      var cached = localStorage.getItem("lockedin_" + currentUser.id);
+      if (cached) {
+        var p = JSON.parse(cached);
+        Object.keys(p).forEach(function(k) { state[k] = p[k]; });
+      }
+    } catch(e2) {}
+
+    // Fetch from Supabase (source of truth)
+    try {
+      var ud = await sb.from("user_data").select("state").eq("user_id", currentUser.id).single();
+      if (ud.data && ud.data.state) {
+        Object.keys(ud.data.state).forEach(function(k) { state[k] = ud.data.state[k]; });
+        localStorage.setItem("lockedin_" + currentUser.id, JSON.stringify(state));
+      }
+    } catch(e2) {}
+
+    ensureDefaults();
+    hideAuth();
+    switchView("dashboard");
+  } catch(e) {
+    showAuth();
+  }
+}
+
+var saveTimer = null;
+
 function save() {
-  try { localStorage.setItem("lockedin_state", JSON.stringify(state)); } catch(e) {}
+  if (currentUser) {
+    try { localStorage.setItem("lockedin_" + currentUser.id, JSON.stringify(state)); } catch(e) {}
+  }
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveRemote, 300);
+}
+
+async function saveRemote() {
+  if (!currentUser) return;
+  try {
+    await sb.from("user_data").upsert({
+      user_id: currentUser.id,
+      state: state,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" });
+  } catch(e) {}
 }
 
 // === UTILITIES ===
@@ -345,34 +638,10 @@ function switchView(id) {
 }
 
 document.querySelectorAll(".nav-btn").forEach(function(btn) {
-  btn.addEventListener("click", function() { switchView(btn.dataset.view); });
+  btn.addEventListener("click", function() {
+    if (btn.dataset.view) switchView(btn.dataset.view);
+  });
 });
-
-// === ONBOARDING ===
-function initOnboarding() {
-  if (state.userName) {
-    document.getElementById("onboarding").style.display = "none";
-    return;
-  }
-  document.getElementById("onboarding").style.display = "block";
-  var nameInput = document.getElementById("ob-name");
-  var submitBtn = document.getElementById("ob-submit");
-
-  nameInput.addEventListener("input", function() {
-    submitBtn.disabled = !nameInput.value.trim();
-  });
-  submitBtn.addEventListener("click", function() {
-    var name = nameInput.value.trim();
-    if (!name) return;
-    state.userName = name;
-    save();
-    document.getElementById("onboarding").style.display = "none";
-    switchView("dashboard");
-  });
-  nameInput.addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && nameInput.value.trim()) submitBtn.click();
-  });
-}
 
 // === DASHBOARD ===
 function renderDashboard() {
@@ -451,7 +720,7 @@ function renderDashboard() {
     var pctColor = pct >= 80 ? "var(--greenT)" : (pct >= 50 ? "var(--gold)" : "var(--text3)");
     var habitCount = HABITS.filter(function(h) { return h.cat === cat.id; }).length;
     html += '<div class="cat-card" onclick="switchView(\'tracker\')">' +
-      '<div class="cat-card-header"><span class="cat-card-icon">' + cat.icon + '</span>' +
+      '<div class="cat-card-header"><span class="cat-dot" style="background:' + cat.color + '"></span>' +
       '<span class="cat-card-name" style="color:' + cat.color + '">' + cat.name + '</span></div>' +
       '<div class="cat-card-pct" style="color:' + pctColor + '">' + pct + '%</div>' +
       '<div class="cat-card-sub">' + habitCount + ' habits tracked</div>' +
@@ -470,7 +739,7 @@ function renderDashboard() {
 
   html += '</div></div>' +
     '<div class="card"><div class="streak-wrap">' +
-    '<span class="streak-fire">' + (streak > 0 ? '\u{1F525}' : '\u{1F4A4}') + '</span>' +
+    '<span class="streak-fire" style="color:' + (streak > 0 ? 'var(--gold)' : 'var(--text3)') + '">' + (streak > 0 ? '//' : '--') + '</span>' +
     '<div><div class="streak-num">' + streak + '</div>' +
     '<div class="streak-text">' + (streak === 1 ? 'day' : 'days') + ' streak (80%+ completion)</div></div>' +
     '</div></div>';
@@ -531,7 +800,8 @@ function renderTracker() {
       var pct = hab.type === "check" ? (days ? count / days : 0) : count / days;
       var pctCls = pct >= .8 ? "pct-high" : (pct >= .5 ? "pct-mid" : "pct-low");
 
-      html += '<div class="habit-row"><div class="habit-label" style="background:inherit"><span class="icon">' + hab.icon + '</span><span class="name">' + hab.name + '</span></div>';
+      var catColor = CATEGORIES.find(function(c){return c.id===hab.cat;});
+      html += '<div class="habit-row"><div class="habit-label" style="background:inherit;border-left-color:' + (catColor ? catColor.color : 'var(--text3)') + '"><span class="name">' + hab.name + '</span></div>';
 
       for (var d = 1; d <= days; d++) {
         var v = getEntry(m, d, hab.id);
@@ -580,7 +850,9 @@ function renderGoals() {
   state.goals.forEach(function(sec, si) {
     var done = sec.items.filter(function(g) { return g.s === "Done"; }).length;
 
-    html += '<div class="goal-cat"><span style="color:var(--gold)">' + sec.cat.toUpperCase() + '</span>' +
+    var goalCatObj = CATEGORIES.find(function(c){return c.name===sec.cat;});
+    var goalCatColor = goalCatObj ? goalCatObj.color : 'var(--gold)';
+    html += '<div class="goal-cat"><span style="display:flex;align-items:center;gap:8px"><span class="cat-dot" style="background:' + goalCatColor + '"></span><span style="color:' + goalCatColor + '">' + sec.cat + '</span></span>' +
       '<span class="mono" style="font-size:10px;color:var(--text3)">' + done + '/' + sec.items.length + ' done</span></div>';
 
     if (sec.items.length > 0) {
@@ -689,10 +961,6 @@ function renderFinances() {
 
 // === INIT ===
 load();
-initOnboarding();
-if (state.userName) {
-  renderDashboard();
-}
 </script>
 </body>
 </html>
