@@ -930,6 +930,43 @@ function drawLifeChart() {
   ctx.font = "bold 11px 'DM Mono', monospace";
   ctx.textAlign = "right";
   ctx.fillText(last.val + "%", last.x - 8, last.y - 8);
+
+  // Day rating line (from check-ins)
+  var ratingPoints = [];
+  for (var ri = 29; ri >= 0; ri--) {
+    var rdt = new Date(YEAR, TODAY_M, TODAY_D - ri);
+    var rkey = rdt.getFullYear() + "-" + String(rdt.getMonth() + 1).padStart(2, "0") + "-" + String(rdt.getDate()).padStart(2, "0");
+    var ci = state.checkins ? state.checkins[rkey] : null;
+    if (ci && ci.rating) ratingPoints.push({ x: 29 - ri, val: ci.rating * 10, date: rkey });
+  }
+
+  if (ratingPoints.length >= 2) {
+    var rCoords = ratingPoints.map(function(p) {
+      return {
+        x: padL + (p.x / 29) * chartW,
+        y: padT + chartH - (p.val / 100) * chartH,
+        val: p.val
+      };
+    });
+
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(107,203,119,.5)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.lineJoin = "round";
+    rCoords.forEach(function(c, i) {
+      if (i === 0) ctx.moveTo(c.x, c.y);
+      else ctx.lineTo(c.x, c.y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    var rLast = rCoords[rCoords.length - 1];
+    ctx.fillStyle = "rgba(107,203,119,.7)";
+    ctx.font = "9px 'DM Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(Math.round(rLast.val / 10) + "/10", rLast.x + 6, rLast.y + 3);
+  }
 }
 
 // === TRACKER ===
