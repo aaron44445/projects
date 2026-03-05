@@ -36,7 +36,7 @@ nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px soli
 #sign-out-btn:hover{color:var(--redT)}
 
 /* MAIN */
-.container{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+.container{max-width:900px;margin:0 auto;padding:10px 12px 80px}
 h1{font-size:26px;font-weight:300;letter-spacing:-.5px}
 h1 span{color:var(--text3)}
 .section-label{color:var(--text2);font-size:11px;letter-spacing:2px;font-weight:500}
@@ -226,6 +226,35 @@ h1 span{color:var(--text3)}
 /* VIEW TRANSITIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .view-active{animation:fadeIn .3s ease}
+
+/* DASHBOARD V4 — TREE OF LIFE */
+.tree-wrap{position:relative;width:100%;height:240px;margin-bottom:4px}
+.tree-canvas{width:100%;height:100%;display:block}
+.dash-score-zone{text-align:center;padding:10px 0 6px}
+.dash-score-num{font-size:48px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1}
+.dash-score-status{font-size:11px;letter-spacing:3px;font-weight:600;font-family:'DM Mono',monospace;margin-top:3px}
+.stat-pills{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.stat-pill{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:5px 14px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);display:flex;align-items:center;gap:5px}
+.stat-pill strong{color:var(--gold);font-weight:600}
+.cat-rings{display:flex;justify-content:space-around;padding:12px 0 6px}
+.cat-ring-item{text-align:center;cursor:pointer}
+.cat-ring-item:hover .cat-ring-label{color:var(--text)}
+.cat-ring-svg{display:block;margin:0 auto 4px}
+.cat-ring-pct{font-size:16px;font-weight:400;font-family:'DM Mono',monospace}
+.cat-ring-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);transition:color .2s}
+.goals-dots{display:flex;align-items:center;gap:6px;padding:6px 0}
+.goal-dot{width:9px;height:9px;border-radius:50%}
+.goals-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--text2)}
+.week-float{display:flex;gap:5px;align-items:flex-end;height:72px;padding:4px 0}
+.week-float-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.week-float-pct{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3);min-height:12px}
+.week-float-fill{width:100%;border-radius:3px;transition:height .3s;min-height:2px}
+.week-float-day{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3)}
+.week-float-day.today{color:var(--gold);font-weight:600}
+.fin-inline{display:flex;justify-content:center;gap:18px;padding:6px 0;font-family:'DM Mono',monospace;font-size:13px}
+@media(max-width:500px){.fin-inline{font-size:11px;gap:10px}}
+.dash-divider{height:1px;background:rgba(255,255,255,.04);margin:8px 0}
+.dash-section-label{font-size:9px;letter-spacing:2px;color:var(--text3);font-weight:500;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -753,8 +782,40 @@ function renderDashboard() {
     return Math.round((total / habits.length) * 100);
   }
 
+  // === TEMP DEMO MODE — remove after screenshot ===
+  var DEMO = true;
+  if (DEMO) {
+    lifeScore = 92;
+    var _catPct = catPct;
+    catPct = function(id) {
+      if (id === "money") return 88;
+      if (id === "body") return 95;
+      if (id === "mind") return 82;
+      if (id === "spirit") return 91;
+      return _catPct(id);
+    };
+  }
+  // === END TEMP DEMO ===
+
+  // Today done / total
+  var todayDone = 0, todayTotal = 0;
+  state.habits.forEach(function(h) {
+    todayTotal++;
+    if (h.type === "check") {
+      if (getEntry(m, TODAY_D, h.id) === "\u2713") todayDone++;
+    } else {
+      if (getEntry(m, TODAY_D, h.id)) todayDone++;
+    }
+  });
+
+  // Today's mood from checkins
+  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
+  var todayCheckin = state.checkins ? state.checkins[todayKey] : null;
+  var todayMood = todayCheckin && todayCheckin.rating ? todayCheckin.rating + "/10" : "--";
+
   var weekDays = [];
   var dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var weekTotalPct = 0;
   for (var i = 6; i >= 0; i--) {
     var dt = new Date(YEAR, TODAY_M, TODAY_D - i);
     var dm = dt.getMonth();
@@ -764,8 +825,11 @@ function renderDashboard() {
       wTotal++;
       if (getEntry(dm, dd, h.id) === "\u2713") wDone++;
     });
-    weekDays.push({ label: dayNames[dt.getDay()], pct: wTotal ? wDone / wTotal : 0, isToday: i === 0 });
+    var dayPct = wTotal ? wDone / wTotal : 0;
+    weekTotalPct += dayPct;
+    weekDays.push({ label: dayNames[dt.getDay()], pct: dayPct, isToday: i === 0 });
   }
+  var weekAvg = Math.round((weekTotalPct / 7) * 100);
 
   var streak = 0;
   for (var si = 1; si < 365; si++) {
@@ -779,63 +843,233 @@ function renderDashboard() {
     else break;
   }
 
-  var circumference = 2 * Math.PI * 72;
-  var offset = circumference - (lifeScore / 100) * circumference;
+  // Active goals with linked habit %
+  var activeGoals = [];
+  state.goals.forEach(function(sec, si) {
+    sec.items.forEach(function(g, gi) {
+      if (!g.t.trim()) return;
+      var goalKey = si + "-" + gi;
+      var linked = state.habits.filter(function(h) { return h.goalLink === goalKey && h.type === "check"; });
+      var habitPct = 0;
+      if (linked.length > 0) {
+        var totalLinkedDone = 0;
+        linked.forEach(function(h) {
+          var cnt = 0;
+          for (var d = 1; d <= Math.min(TODAY_D, daysThisMonth); d++) {
+            if (getEntry(TODAY_M, d, h.id) === "\u2713") cnt++;
+          }
+          totalLinkedDone += (TODAY_D > 0 ? cnt / TODAY_D : 0);
+        });
+        habitPct = Math.round((totalLinkedDone / linked.length) * 100);
+      }
+      activeGoals.push({ name: g.t, status: g.s, pct: habitPct, cat: sec.cat, hasLink: linked.length > 0 });
+    });
+  });
+  var goalsDoneCount = activeGoals.filter(function(g) { return g.status === "Done"; }).length;
+
+  // Financial snapshot
+  recalcFinances();
+  var fin = state.finances;
+  var finIncome = fin.income[TODAY_M] || 0;
+  var finExpense = fin.expenses[TODAY_M] || 0;
+  var finNet = finIncome - finExpense;
+  var savingsPct = fin.savingsGoal ? Math.min(100, Math.round((fin.savingsCurrent / fin.savingsGoal) * 100)) : 0;
+
+  // Status label based on score
+  var statusLabel, statusColor;
+  if (lifeScore >= 80) { statusLabel = "LOCKED IN"; statusColor = "var(--gold)"; }
+  else if (lifeScore >= 60) { statusLabel = "ON FIRE"; statusColor = "var(--gold)"; }
+  else if (lifeScore >= 40) { statusLabel = "BUILDING"; statusColor = "var(--text2)"; }
+  else if (lifeScore >= 20) { statusLabel = "WARMING UP"; statusColor = "var(--text3)"; }
+  else { statusLabel = "JUST STARTING"; statusColor = "var(--text3)"; }
+
+  // skylineCatData removed — tree now uses computeTreeData()
+
   var quoteIndex = Math.floor((NOW.getTime() / 86400000)) % QUOTES.length;
+  var goalsInProgress = activeGoals.filter(function(g) { return g.status === "In Progress"; }).length;
+  var goalsNotStarted = activeGoals.filter(function(g) { return g.status !== "Done" && g.status !== "In Progress"; }).length;
 
-  var html = '<div style="margin-bottom:32px">' +
-    '<h1>Hey, ' + esc(state.userName) + ' <span>\u00B7 ' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
-    '</div>' +
-    '<div class="card"><div class="life-score-wrap"><div class="life-score-ring">' +
-    '<svg width="160" height="160" viewBox="0 0 160 160">' +
-    '<circle class="ring-bg" cx="80" cy="80" r="72"/>' +
-    '<circle class="ring-fill" cx="80" cy="80" r="72" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + offset + '"/>' +
-    '</svg><div><div class="life-score-num">0</div><div class="life-score-label">LIFE SCORE</div></div>' +
-    '</div><p class="quote" style="margin-top:16px;opacity:.5">\u201C' + QUOTES[quoteIndex] + '\u201D</p></div></div>' +
-    '<div class="cat-grid">';
+  // === TEMP DEMO OVERRIDES — remove after screenshot ===
+  if (DEMO) {
+    todayDone = 11; todayTotal = 12;
+    todayMood = "9/10";
+    streak = 23;
+    weekDays = [
+      { label: "Thu", pct: 0.85, isToday: false },
+      { label: "Fri", pct: 0.92, isToday: false },
+      { label: "Sat", pct: 0.78, isToday: false },
+      { label: "Sun", pct: 0.88, isToday: false },
+      { label: "Mon", pct: 0.95, isToday: false },
+      { label: "Tue", pct: 0.90, isToday: false },
+      { label: "Wed", pct: 0.93, isToday: true }
+    ];
+    weekAvg = 89;
+    activeGoals = [
+      { name: "Save $10K emergency fund", status: "In Progress", pct: 72, cat: "money" },
+      { name: "Run 5K under 25 min", status: "Done", pct: 100, cat: "body" },
+      { name: "Read 24 books this year", status: "In Progress", pct: 58, cat: "mind" },
+      { name: "Meditate 30 days straight", status: "In Progress", pct: 85, cat: "spirit" },
+      { name: "Bench press 225 lbs", status: "In Progress", pct: 90, cat: "body" },
+      { name: "Launch side project", status: "Done", pct: 100, cat: "money" },
+      { name: "Daily journaling habit", status: "In Progress", pct: 78, cat: "spirit" }
+    ];
+    goalsDoneCount = 2;
+    goalsInProgress = 5;
+    goalsNotStarted = 0;
+    finIncome = 8450;
+    finExpense = 3280;
+    finNet = 5170;
+  }
+  // === END TEMP DEMO OVERRIDES ===
 
+  // === BUILD HTML (V4 — Tree of Life + visual data formats) ===
+  // 1. Header
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">' +
+    '<h1 style="font-size:17px;font-weight:400">Hey, ' + esc(state.userName) + ' <span>\u00B7 ' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
+    '<span class="mono" style="font-size:8px;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + QUOTES[quoteIndex].substring(0, 42) + '\u2026</span>' +
+    '</div>';
+
+  // 2. Tree of Life
+  html += '<div class="tree-wrap"><canvas id="tree-canvas" class="tree-canvas"></canvas></div>';
+
+  // 3. Score + Status + Pills
+  html += '<div class="dash-score-zone">' +
+    '<div style="display:flex;align-items:center;justify-content:center;gap:10px">' +
+    '<div id="dash-score-num" class="dash-score-num">0</div>' +
+    '<div><div class="dash-score-status" style="color:' + statusColor + '">' + statusLabel + '</div></div></div>' +
+    '<div class="stat-pills">' +
+    '<div class="stat-pill"><strong>' + todayDone + '/' + todayTotal + '</strong> TODAY</div>' +
+    '<div class="stat-pill"><strong>' + streak + '</strong> STREAK</div>' +
+    '<div class="stat-pill"><strong>' + todayMood + '</strong> MOOD</div>' +
+    '</div></div>';
+
+  // 4. Category Rings (SVG circles)
+  var CIRC = 2 * Math.PI * 19;
+  html += '<div class="cat-rings">';
   CATEGORIES.forEach(function(cat) {
     var pct = catPct(cat.id);
-    var pctColor = pct >= 80 ? "var(--greenT)" : (pct >= 50 ? "var(--gold)" : "var(--text3)");
-    var habitCount = state.habits.filter(function(h) { return h.cat === cat.id; }).length;
-    html += '<div class="cat-card" onclick="switchView(\'tracker\')">' +
-      '<div class="cat-card-header"><span class="cat-dot" style="background:' + cat.color + '"></span>' +
-      '<span class="cat-card-name" style="color:' + cat.color + '">' + cat.name + '</span></div>' +
-      '<div class="cat-card-pct" style="color:' + pctColor + '">' + pct + '%</div>' +
-      '<div class="cat-card-sub">' + habitCount + ' habits</div>' +
-      '</div>';
+    var offset = CIRC * (1 - pct / 100);
+    html += '<div class="cat-ring-item" onclick="switchView(\'tracker\')">' +
+      '<svg class="cat-ring-svg" width="52" height="52" viewBox="0 0 52 52">' +
+      '<circle cx="26" cy="26" r="19" fill="none" stroke="#1A1A1A" stroke-width="3.5"/>' +
+      '<circle cx="26" cy="26" r="19" fill="none" stroke="' + cat.color + '" stroke-width="3.5" ' +
+      'stroke-dasharray="' + CIRC.toFixed(2) + '" stroke-dashoffset="' + offset.toFixed(2) + '" ' +
+      'transform="rotate(-90 26 26)" stroke-linecap="round" style="transition:stroke-dashoffset .6s"/>' +
+      '</svg>' +
+      '<div class="cat-ring-pct" style="color:' + (pct >= 50 ? cat.color : 'var(--text3)') + '">' + pct + '%</div>' +
+      '<div class="cat-ring-label">' + cat.name + '</div></div>';
   });
+  html += '</div>';
 
-  html += '</div><div class="card"><span class="section-label">LAST 7 DAYS</span><div class="week-chart">';
+  // 5. Goals as dots
+  html += '<div class="dash-divider"></div><div class="goals-dots">' +
+    '<span class="dash-section-label" style="margin-right:4px">GOALS</span>';
+  activeGoals.forEach(function(g) {
+    var dc = g.status === "Done" ? "var(--greenT)" : (g.status === "In Progress" ? "var(--gold)" : "var(--text3)");
+    html += '<span class="goal-dot" style="background:' + dc + '" title="' + esc(g.name) + '"></span>';
+  });
+  if (activeGoals.length === 0) {
+    html += '<span style="font-size:8px;color:var(--text3);font-family:\'DM Mono\',monospace">none set</span>';
+  } else {
+    html += '<span class="goals-count" style="margin-left:auto">' + goalsDoneCount + ' done \u00B7 ' + goalsInProgress + ' active</span>';
+  }
+  html += '</div>';
 
+  // 6. Weekly floating bars
+  html += '<div class="dash-divider"></div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px">' +
+    '<span class="dash-section-label">LAST 7 DAYS</span>' +
+    '<span class="mono" style="font-size:8px;color:var(--gold)">' + weekAvg + '% avg</span></div>' +
+    '<div class="week-float">';
   weekDays.forEach(function(wd) {
-    var h = Math.max(2, wd.pct * 50);
-    var bg = wd.pct > 0 ? "var(--gold)" : "#1A1A1A";
-    html += '<div class="week-bar"><div class="week-bar-fill" style="height:' + h + 'px;background:' + bg + '"></div>' +
-      '<span class="week-bar-label' + (wd.isToday ? ' today' : '') + '">' + wd.label + '</span></div>';
+    var h = Math.max(2, wd.pct * 52);
+    html += '<div class="week-float-bar">' +
+      '<span class="week-float-pct">' + (wd.pct > 0 ? Math.round(wd.pct * 100) + '%' : '') + '</span>' +
+      '<div class="week-float-fill" style="height:' + h + 'px;background:' + (wd.pct > 0 ? 'linear-gradient(to top,rgba(200,169,81,.45),var(--gold))' : '#1A1A1A') + '"></div>' +
+      '<span class="week-float-day' + (wd.isToday ? ' today' : '') + '">' + wd.label + '</span></div>';
   });
+  html += '</div>';
 
-  html += '</div></div>' +
-    '<div class="card"><div class="streak-wrap">' +
-    '<span class="streak-fire" style="color:' + (streak > 0 ? 'var(--gold)' : 'var(--text3)') + '">' + (streak > 0 ? '//' : '--') + '</span>' +
-    '<div><div class="streak-num">' + streak + '</div>' +
-    '<div class="streak-text">' + (streak === 1 ? 'day' : 'days') + ' streak (80%+ completion)</div></div>' +
-    '</div></div>' +
-    '<div class="card"><span class="section-label">LIFE TRAJECTORY</span>' +
-    '<canvas id="life-chart" style="width:100%;height:200px;margin-top:16px"></canvas></div>';
+  // 7. Finance — inline colored text
+  html += '<div class="dash-divider"></div><div class="fin-inline">' +
+    '<span style="color:var(--greenT)">$' + finIncome.toLocaleString() + ' in</span>' +
+    '<span style="color:var(--text3)">\u00B7</span>' +
+    '<span style="color:var(--redT)">$' + finExpense.toLocaleString() + ' out</span>' +
+    '<span style="color:var(--text3)">\u00B7</span>' +
+    '<span style="color:' + (finNet >= 0 ? 'var(--gold)' : 'var(--redT)') + '">' + (finNet >= 0 ? '+' : '-') + '$' + Math.abs(finNet).toLocaleString() + ' net</span></div>';
+
+  // 8. Life Trajectory (floating canvas)
+  html += '<div class="dash-divider"></div><span class="dash-section-label">LIFE TRAJECTORY</span>' +
+    '<canvas id="life-chart" style="width:100%;height:150px;margin-top:4px"></canvas>';
 
   // Record today's life score
-  var todayKey = YEAR + "-" + String(TODAY_M + 1).padStart(2, "0") + "-" + String(TODAY_D).padStart(2, "0");
-  if (state.lifeScoreHistory[todayKey] !== lifeScore) {
+  if (!DEMO && state.lifeScoreHistory[todayKey] !== lifeScore) {
     state.lifeScoreHistory[todayKey] = lifeScore;
     save();
+  }
+  // TEMP DEMO: inject fake trajectory + checkin data
+  if (DEMO) {
+    var _origHist = {};
+    Object.keys(state.lifeScoreHistory).forEach(function(k) { _origHist[k] = state.lifeScoreHistory[k]; });
+    var _origCheckins = state.checkins ? JSON.parse(JSON.stringify(state.checkins)) : {};
+    for (var di = 29; di >= 0; di--) {
+      var ddt = new Date(YEAR, TODAY_M, TODAY_D - di);
+      var dk = ddt.getFullYear() + "-" + String(ddt.getMonth() + 1).padStart(2, "0") + "-" + String(ddt.getDate()).padStart(2, "0");
+      var base = 55 + di * 1.2;
+      state.lifeScoreHistory[dk] = Math.min(97, Math.round(base + Math.sin(di * 0.7) * 12));
+      if (!state.checkins) state.checkins = {};
+      state.checkins[dk] = { rating: Math.min(10, Math.max(5, Math.round(6 + Math.sin(di * 0.5) * 2.5))) };
+    }
+    state.lifeScoreHistory[todayKey] = 92;
   }
 
   document.getElementById("v-dashboard").innerHTML = html;
 
+  // Draw tree of life
+  var treeData = computeTreeData();
+  if (DEMO) {
+    treeData = {
+      overall30: 0.88, overall7: 0.92,
+      branches: [
+        { cat: "money", color: "#C8A951", colorRGB: [200,169,81], growth30: 0.82, health7: 0.85, side: 1, angle: 55,
+          goals: [
+            { name: "Save $10K", status: "In Progress", growth30: 0.72, health7: 0.85,
+              habits: [{ name: "Side Hustle", health7: 0.85, growth30: 0.70 }, { name: "Networking", health7: 0.71, growth30: 0.65 }] },
+            { name: "Launch side project", status: "Done", growth30: 1.0, health7: 1.0, habits: [] }
+          ],
+          unlinkedHabits: [{ name: "Learning", health7: 1.0, growth30: 0.90 }] },
+        { cat: "body", color: "#6BCB77", colorRGB: [107,203,119], growth30: 0.95, health7: 0.93, side: 1, angle: 30,
+          goals: [
+            { name: "Run 5K under 25 min", status: "Done", growth30: 1.0, health7: 1.0,
+              habits: [{ name: "Workout", health7: 1.0, growth30: 0.95 }] },
+            { name: "Bench press 225", status: "In Progress", growth30: 0.90, health7: 0.86,
+              habits: [{ name: "Clean Eating", health7: 0.86, growth30: 0.88 }] }
+          ],
+          unlinkedHabits: [{ name: "Sleep 7hrs", health7: 0.85, growth30: 0.92 }] },
+        { cat: "mind", color: "#7B8CDE", colorRGB: [123,140,222], growth30: 0.78, health7: 0.82, side: -1, angle: 30,
+          goals: [
+            { name: "Read 24 books", status: "In Progress", growth30: 0.58, health7: 0.71,
+              habits: [{ name: "Reading", health7: 0.71, growth30: 0.58 }] }
+          ],
+          unlinkedHabits: [{ name: "Deep Work", health7: 0.86, growth30: 0.82 }, { name: "No Doomscroll", health7: 1.0, growth30: 0.95 }] },
+        { cat: "spirit", color: "#C77DBA", colorRGB: [199,125,186], growth30: 0.88, health7: 0.90, side: -1, angle: 55,
+          goals: [
+            { name: "Meditate 30 days", status: "In Progress", growth30: 0.85, health7: 0.86,
+              habits: [{ name: "Meditation", health7: 0.86, growth30: 0.85 }] },
+            { name: "Daily journaling", status: "In Progress", growth30: 0.78, health7: 0.85,
+              habits: [{ name: "Journal", health7: 0.85, growth30: 0.78 }] }
+          ],
+          unlinkedHabits: [{ name: "Gratitude", health7: 1.0, growth30: 0.95 }] }
+      ]
+    };
+  }
+  setTimeout(function() {
+    drawTreeOfLife(treeData);
+  }, 30);
+
   // Animate Life Score count-up
   setTimeout(function() {
-    var scoreEl = document.querySelector(".life-score-num");
+    var scoreEl = document.getElementById("dash-score-num");
     if (!scoreEl) return;
     var target = lifeScore;
     var current = 0;
@@ -848,6 +1082,14 @@ function renderDashboard() {
   }, 100);
 
   setTimeout(drawLifeChart, 50);
+
+  // TEMP DEMO: restore original data after charts draw
+  if (DEMO) {
+    setTimeout(function() {
+      state.lifeScoreHistory = _origHist;
+      state.checkins = _origCheckins;
+    }, 200);
+  }
 }
 
 function drawLifeChart() {
@@ -896,9 +1138,11 @@ function drawLifeChart() {
     ctx.fillText(v, padL - 6, y + 3);
   });
 
-  var coords = points.map(function(p) {
+  // Spread points across full chart width (left-to-right, oldest to newest)
+  var maxIdx = Math.max(1, points.length - 1);
+  var coords = points.map(function(p, i) {
     return {
-      x: padL + (p.x / 29) * chartW,
+      x: padL + (i / maxIdx) * chartW,
       y: padT + chartH - (p.val / 100) * chartH,
       val: p.val
     };
@@ -948,9 +1192,10 @@ function drawLifeChart() {
   }
 
   if (ratingPoints.length >= 2) {
-    var rCoords = ratingPoints.map(function(p) {
+    var rMaxIdx = Math.max(1, ratingPoints.length - 1);
+    var rCoords = ratingPoints.map(function(p, ri2) {
       return {
-        x: padL + (p.x / 29) * chartW,
+        x: padL + (ri2 / rMaxIdx) * chartW,
         y: padT + chartH - (p.val / 100) * chartH,
         val: p.val
       };
@@ -974,6 +1219,306 @@ function drawLifeChart() {
     ctx.textAlign = "left";
     ctx.fillText(Math.round(rLast.val / 10) + "/10", rLast.x + 6, rLast.y + 3);
   }
+}
+
+// === TREE DATA ===
+function computeTreeData() {
+  var catColors = { money: "#C8A951", body: "#6BCB77", mind: "#7B8CDE", spirit: "#C77DBA" };
+  var catColorRGB = {
+    money: [200, 169, 81], body: [107, 203, 119],
+    mind: [123, 140, 222], spirit: [199, 125, 186]
+  };
+  var layout = {
+    spirit: { side: -1, angle: 55 },
+    mind:   { side: -1, angle: 30 },
+    body:   { side: 1,  angle: 30 },
+    money:  { side: 1,  angle: 55 }
+  };
+  function habitScore(habit, days) {
+    var count = 0;
+    for (var d = 0; d < days; d++) {
+      var dt = new Date(YEAR, TODAY_M, TODAY_D - d);
+      if (getEntry(dt.getMonth(), dt.getDate(), habit.id) === "\u2713") count++;
+    }
+    return count / days;
+  }
+  var checkHabits = state.habits.filter(function(h) { return h.type === "check"; });
+  var allHabit30 = [], allHabit7 = [];
+  var branches = CATEGORIES.map(function(cat) {
+    var catHabits = checkHabits.filter(function(h) { return h.cat === cat.id; });
+    var habitScores = catHabits.map(function(h) {
+      var h30 = habitScore(h, 30);
+      var h7 = habitScore(h, 7);
+      allHabit30.push(h30);
+      allHabit7.push(h7);
+      return { id: h.id, name: h.name, goalLink: h.goalLink, growth30: h30, health7: h7 };
+    });
+    var goals = [];
+    state.goals.forEach(function(sec, si) {
+      if (sec.cat !== cat.name) return;
+      sec.items.forEach(function(g, gi) {
+        if (!g.t.trim()) return;
+        var goalKey = si + "-" + gi;
+        var linked = habitScores.filter(function(hs) { return hs.goalLink === goalKey; });
+        var g30 = 0, g7 = 0;
+        if (linked.length > 0) {
+          linked.forEach(function(l) { g30 += l.growth30; g7 += l.health7; });
+          g30 /= linked.length;
+          g7 /= linked.length;
+        } else {
+          g30 = g.s === "Done" ? 1.0 : (g.s === "In Progress" ? 0.3 : 0.05);
+          g7 = g30;
+        }
+        goals.push({
+          name: g.t, status: g.s, goalKey: goalKey,
+          growth30: g30, health7: g7,
+          habits: linked
+        });
+      });
+    });
+    var linkedKeys = {};
+    goals.forEach(function(g) { g.habits.forEach(function(h) { linkedKeys[h.id] = true; }); });
+    var unlinked = habitScores.filter(function(hs) { return !linkedKeys[hs.id]; });
+    var cat30 = 0, cat7 = 0;
+    if (habitScores.length > 0) {
+      habitScores.forEach(function(hs) { cat30 += hs.growth30; cat7 += hs.health7; });
+      cat30 /= habitScores.length;
+      cat7 /= habitScores.length;
+    }
+    return {
+      cat: cat.id, color: catColors[cat.id], colorRGB: catColorRGB[cat.id],
+      growth30: cat30, health7: cat7,
+      side: layout[cat.id].side, angle: layout[cat.id].angle,
+      goals: goals, unlinkedHabits: unlinked
+    };
+  });
+  var overall30 = 0, overall7 = 0;
+  if (allHabit30.length > 0) {
+    allHabit30.forEach(function(v) { overall30 += v; });
+    allHabit7.forEach(function(v) { overall7 += v; });
+    overall30 /= allHabit30.length;
+    overall7 /= allHabit7.length;
+  }
+  return { overall30: overall30, overall7: overall7, branches: branches };
+}
+
+// === TREE OF LIFE ===
+function drawTreeOfLife(treeData) {
+  var canvas = document.getElementById("tree-canvas");
+  if (!canvas) return;
+  var ctx = canvas.getContext("2d");
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = rect.height;
+
+  var o30 = treeData.overall30;
+  var o7 = treeData.overall7;
+  var cx = W / 2, gy = H * 0.70;
+  var aboveH = gy - 10, belowH = H - gy - 8;
+
+  var seed = 42;
+  function rng() { seed = (seed * 48271) % 2147483647; return (seed - 1) / 2147483646; }
+
+  var gM = [200, 169, 81];
+  var gD = [160, 130, 60];
+  var gP = [130, 100, 45];
+
+  // Background
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, W, H);
+
+  // Golden atmospheric glow
+  if (o30 > 0.15) {
+    var haloR = W * 0.45 * (0.3 + o30 * 0.7);
+    var haloY = gy * 0.45;
+    var halo = ctx.createRadialGradient(cx, haloY, 0, cx, haloY, haloR);
+    halo.addColorStop(0, "rgba(200,169,81," + Math.min(0.10, o30 * 0.12) + ")");
+    halo.addColorStop(0.6, "rgba(200,169,81," + Math.min(0.03, o30 * 0.04) + ")");
+    halo.addColorStop(1, "rgba(200,169,81,0)");
+    ctx.fillStyle = halo;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Trunk
+  var trunkH = aboveH * (0.15 + o30 * 0.60);
+  var trunkBaseW = 4 + o30 * 16;
+  var trunkTopW = 2 + o30 * 8;
+  var trunkTop = gy - trunkH;
+  var trunkMid = gy - trunkH * 0.5;
+
+  ctx.beginPath();
+  ctx.moveTo(cx - trunkBaseW / 2, gy);
+  ctx.quadraticCurveTo(cx - trunkBaseW / 2 + 2, trunkMid, cx - trunkTopW / 2, trunkTop);
+  ctx.lineTo(cx + trunkTopW / 2, trunkTop);
+  ctx.quadraticCurveTo(cx + trunkBaseW / 2 + 2, trunkMid, cx + trunkBaseW / 2, gy);
+  ctx.closePath();
+  var tGrad = ctx.createLinearGradient(cx, trunkTop, cx, gy);
+  tGrad.addColorStop(0, "rgba(" + gD.join(",") + "," + (0.35 + o30 * 0.50) + ")");
+  tGrad.addColorStop(0.5, "rgba(" + gP.join(",") + "," + (0.25 + o30 * 0.40) + ")");
+  tGrad.addColorStop(1, "rgba(" + gD.join(",") + "," + (0.20 + o30 * 0.30) + ")");
+  ctx.fillStyle = tGrad;
+  ctx.fill();
+  // Bark texture
+  ctx.strokeStyle = "rgba(" + gP.join(",") + "," + (0.08 + o30 * 0.12) + ")";
+  ctx.lineWidth = 0.5;
+  for (var bk = -1; bk <= 1; bk++) {
+    var bkX = cx + bk * trunkBaseW * 0.12;
+    ctx.beginPath();
+    ctx.moveTo(bkX, gy - 3);
+    ctx.quadraticCurveTo(bkX + 1, trunkMid, bkX, trunkTop + 3);
+    ctx.stroke();
+  }
+  // Left edge highlight
+  ctx.strokeStyle = "rgba(" + gM.join(",") + "," + (0.10 + o30 * 0.18) + ")";
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(cx - trunkBaseW / 2, gy);
+  ctx.quadraticCurveTo(cx - trunkBaseW / 2 + 2, trunkMid, cx - trunkTopW / 2, trunkTop);
+  ctx.stroke();
+
+  // Cosmetic Roots
+  var maxRL = belowH * (0.35 + o30 * 0.55);
+  var rootDefs = [[-1, 28, 0.72], [1, 22, 0.68], [-1, 52, 0.50], [1, 48, 0.55], [0, 5, 0.78]];
+  var numRoots = Math.max(2, Math.floor(2 + o30 * 4));
+  for (var ri = 0; ri < Math.min(numRoots, rootDefs.length); ri++) {
+    var rd = rootDefs[ri];
+    var rAngle = rd[1] * Math.PI / 180;
+    var rLen = rd[2] * maxRL;
+    var rW = 1 + o30 * 2.5;
+    var rA = 0.20 + o30 * 0.45;
+    var rmx = cx + rd[0] * Math.sin(rAngle * 0.5) * rLen * 0.5;
+    var rmy = gy + Math.cos(rAngle * 0.5) * rLen * 0.5;
+    var rex = cx + rd[0] * Math.sin(rAngle) * rLen;
+    var rey = gy + Math.cos(rAngle) * rLen;
+    ctx.strokeStyle = "rgba(" + gD.join(",") + "," + rA + ")";
+    ctx.lineWidth = rW;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, gy);
+    ctx.quadraticCurveTo(rmx, rmy, rex, rey);
+    ctx.stroke();
+  }
+
+  // Branches
+  var maxBranchLen = Math.min(W * 0.35, aboveH * 0.55);
+
+  treeData.branches.forEach(function(br) {
+    var side = br.side;
+    var angleDeg = br.angle;
+    var angleRad = angleDeg * Math.PI / 180;
+    var brLen = maxBranchLen * (0.10 + br.growth30 * 0.90);
+    var brW = 1.5 + br.health7 * 3.5;
+    var brAlpha = 0.25 + br.growth30 * 0.55;
+    var rgb = br.colorRGB;
+
+    var brEndX = cx + side * Math.sin(angleRad) * brLen;
+    var brEndY = trunkTop - Math.cos(angleRad) * brLen;
+    var brCpX = cx + side * Math.sin(angleRad * 0.65) * brLen * 0.55;
+    var brCpY = trunkTop - Math.cos(angleRad * 0.65) * brLen * 0.55;
+
+    ctx.strokeStyle = "rgba(" + rgb.join(",") + "," + brAlpha + ")";
+    ctx.lineWidth = brW;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx + side * (trunkTopW / 2), trunkTop);
+    ctx.quadraticCurveTo(brCpX, brCpY, brEndX, brEndY);
+    ctx.stroke();
+
+    var items = [];
+    br.goals.forEach(function(g) { items.push({ type: "goal", data: g }); });
+    br.unlinkedHabits.forEach(function(h) { items.push({ type: "habit", data: h }); });
+
+    if (items.length === 0) return;
+
+    items.forEach(function(item, idx) {
+      var t = items.length === 1 ? 0.65 : 0.30 + (idx / (items.length - 1)) * 0.65;
+      var startX = cx + side * (trunkTopW / 2);
+      var startY = trunkTop;
+      var ptX = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * brCpX + t * t * brEndX;
+      var ptY = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * brCpY + t * t * brEndY;
+
+      if (item.type === "goal") {
+        var g = item.data;
+        var subLen = 12 + g.growth30 * 28;
+        var subW = 0.8 + g.health7 * 2;
+        var subAlpha = 0.20 + g.growth30 * 0.50;
+        var subAngle = angleRad + side * (0.3 + idx * 0.15);
+        var subEndX = ptX + side * Math.sin(subAngle) * subLen;
+        var subEndY = ptY - Math.cos(subAngle) * subLen;
+
+        ctx.strokeStyle = "rgba(" + rgb.join(",") + "," + subAlpha + ")";
+        ctx.lineWidth = subW;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(ptX, ptY);
+        ctx.lineTo(subEndX, subEndY);
+        ctx.stroke();
+
+        if (g.habits.length > 0) {
+          g.habits.forEach(function(hab, hi) {
+            var lt = g.habits.length === 1 ? 1.0 : 0.5 + (hi / (g.habits.length - 1)) * 0.5;
+            var leafX = ptX + (subEndX - ptX) * lt;
+            var leafY = ptY + (subEndY - ptY) * lt;
+            var h7 = hab.health7;
+            var leafR, leafA;
+            if (h7 >= 0.99)      { leafR = 5;   leafA = 0.90; }
+            else if (h7 >= 0.71) { leafR = 4;   leafA = 0.75; }
+            else if (h7 >= 0.43) { leafR = 2.5; leafA = 0.50; }
+            else if (h7 >= 0.14) { leafR = 1;   leafA = 0.30; }
+            else                 { leafR = 0.5; leafA = 0.10; }
+            ctx.beginPath();
+            ctx.arc(leafX, leafY, leafR, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(" + rgb.join(",") + "," + leafA + ")";
+            ctx.fill();
+          });
+        } else {
+          var nodeR = 2 + g.growth30 * 2;
+          var nodeA = 0.15 + g.growth30 * 0.35;
+          ctx.beginPath();
+          ctx.arc(subEndX, subEndY, nodeR, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(" + rgb.join(",") + "," + nodeA + ")";
+          ctx.fill();
+        }
+
+      } else {
+        var hab2 = item.data;
+        var h72 = hab2.health7;
+        var leafR2, leafA2;
+        if (h72 >= 0.99)      { leafR2 = 5;   leafA2 = 0.90; }
+        else if (h72 >= 0.71) { leafR2 = 4;   leafA2 = 0.75; }
+        else if (h72 >= 0.43) { leafR2 = 2.5; leafA2 = 0.50; }
+        else if (h72 >= 0.14) { leafR2 = 1;   leafA2 = 0.30; }
+        else                  { leafR2 = 0.5; leafA2 = 0.10; }
+        var offX = side * (3 + leafR2);
+        ctx.beginPath();
+        ctx.arc(ptX + offX, ptY - 2, leafR2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(" + rgb.join(",") + "," + leafA2 + ")";
+        ctx.fill();
+      }
+    });
+
+    if (br.health7 > 0.5) {
+      var glowR = 8 + br.health7 * 14;
+      var glow = ctx.createRadialGradient(brEndX, brEndY, 0, brEndX, brEndY, glowR);
+      glow.addColorStop(0, "rgba(" + rgb.join(",") + "," + br.health7 * 0.12 + ")");
+      glow.addColorStop(1, "rgba(" + rgb.join(",") + ",0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(brEndX, brEndY, glowR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // Ground line
+  ctx.strokeStyle = "rgba(200,169,81,0.08)";
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.08, gy);
+  ctx.lineTo(W * 0.92, gy);
+  ctx.stroke();
 }
 
 // === TRACKER ===
