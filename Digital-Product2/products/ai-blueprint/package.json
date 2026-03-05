@@ -1,0 +1,17 @@
+{
+  "name": "ai-blueprint",
+  "version": "1.0.0",
+  "description": "The AI Business Blueprint — How to Run Your Business with AI Agents",
+  "main": "build-pdf.js",
+  "scripts": {
+    "build": "node build-pdf.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pdfkit": "^0.17.2"
+  }
+}
