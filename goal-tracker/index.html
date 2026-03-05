@@ -1355,6 +1355,79 @@ function removeFinItem(type, idx) {
   renderFinances();
 }
 
+function addRecurringItem(type) {
+  var arr = type === "income" ? state.finances.recurringIncome : state.finances.recurringExpenses;
+  arr.push({ name: "", amount: 0 });
+  recalcFinances();
+  save();
+  renderFinances();
+}
+
+function updateRecurringItem(type, idx, field, val) {
+  var arr = type === "income" ? state.finances.recurringIncome : state.finances.recurringExpenses;
+  if (!arr[idx]) return;
+  if (field === "name") {
+    var oldName = arr[idx].name;
+    var newName = val;
+    if (oldName !== newName && oldName) {
+      var oType = type === "income" ? "income" : "expense";
+      Object.keys(state.finances.overrides).forEach(function(m) {
+        if (state.finances.overrides[m][oType] && state.finances.overrides[m][oType][oldName] !== undefined) {
+          state.finances.overrides[m][oType][newName] = state.finances.overrides[m][oType][oldName];
+          delete state.finances.overrides[m][oType][oldName];
+        }
+      });
+    }
+    arr[idx].name = newName;
+  } else {
+    arr[idx].amount = parseFloat(val) || 0;
+  }
+  recalcFinances();
+  save();
+}
+
+function removeRecurringItem(type, idx) {
+  var arr = type === "income" ? state.finances.recurringIncome : state.finances.recurringExpenses;
+  if (!arr[idx]) return;
+  var name = arr[idx].name;
+  arr.splice(idx, 1);
+  var oType = type === "income" ? "income" : "expense";
+  Object.keys(state.finances.overrides).forEach(function(m) {
+    if (state.finances.overrides[m][oType]) {
+      delete state.finances.overrides[m][oType][name];
+    }
+  });
+  recalcFinances();
+  save();
+  renderFinances();
+}
+
+function overrideRecurringItem(type, name, val) {
+  var fm = state.finMonth;
+  if (!state.finances.overrides[fm]) state.finances.overrides[fm] = {};
+  var oType = type === "income" ? "income" : "expense";
+  if (!state.finances.overrides[fm][oType]) state.finances.overrides[fm][oType] = {};
+  var parsed = parseFloat(val);
+  if (isNaN(parsed)) {
+    delete state.finances.overrides[fm][oType][name];
+  } else {
+    state.finances.overrides[fm][oType][name] = parsed;
+  }
+  recalcFinances();
+  save();
+}
+
+function clearOverride(type, name) {
+  var fm = state.finMonth;
+  var oType = type === "income" ? "income" : "expense";
+  if (state.finances.overrides[fm] && state.finances.overrides[fm][oType]) {
+    delete state.finances.overrides[fm][oType][name];
+  }
+  recalcFinances();
+  save();
+  renderFinances();
+}
+
 function renderFinances() {
   var fin = state.finances;
   var fm = state.finMonth;
