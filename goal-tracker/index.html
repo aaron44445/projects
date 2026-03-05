@@ -227,18 +227,18 @@ h1 span{color:var(--text3)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .view-active{animation:fadeIn .3s ease}
 
-.dash-score-zone{text-align:center;padding:10px 0 6px}
-.dash-score-num{font-size:48px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1}
-.dash-score-status{font-size:11px;letter-spacing:3px;font-weight:600;font-family:'DM Mono',monospace;margin-top:3px}
+.score-hero{text-align:center;padding:28px 0 12px}
+.score-num{font-size:100px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(200,169,81,0.25)}
+.score-num.glow-high{text-shadow:0 0 60px rgba(200,169,81,0.35)}
+.score-status{font-size:11px;letter-spacing:4px;font-weight:600;font-family:'DM Mono',monospace;margin-top:6px}
+.cat-scores{display:flex;justify-content:space-around;padding:16px 0 12px}
+.cat-score-item{text-align:center}
+.cat-score-label{font-size:8px;letter-spacing:2px;color:#444;font-weight:500;margin-bottom:4px}
+.cat-score-num{font-size:26px;font-weight:400;font-family:'DM Mono',monospace}
 .stat-pills{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
 .stat-pill{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:5px 14px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);display:flex;align-items:center;gap:5px}
 .stat-pill strong{color:var(--gold);font-weight:600}
-.cat-rings{display:flex;justify-content:space-around;padding:12px 0 6px}
-.cat-ring-item{text-align:center;cursor:pointer}
-.cat-ring-item:hover .cat-ring-label{color:var(--text)}
-.cat-ring-svg{display:block;margin:0 auto 4px}
-.cat-ring-pct{font-size:16px;font-weight:400;font-family:'DM Mono',monospace}
-.cat-ring-label{font-size:9px;letter-spacing:1.5px;color:var(--text3);transition:color .2s}
+@media(max-width:500px){.score-num{font-size:72px}.cat-score-num{font-size:22px}}
 .goals-dots{display:flex;align-items:center;gap:6px;padding:6px 0}
 .goal-dot{width:9px;height:9px;border-radius:50%}
 .goals-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--text2)}
@@ -961,34 +961,28 @@ function renderDashboard() {
     '<span class="mono" style="font-size:8px;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + QUOTES[quoteIndex].text.substring(0, 42) + '\u2026</span>' +
     '</div>';
 
-  // 2. Score + Status + Pills
-  html += '<div class="dash-score-zone">' +
-    '<div style="display:flex;align-items:center;justify-content:center;gap:10px">' +
-    '<div id="dash-score-num" class="dash-score-num">0</div>' +
-    '<div><div class="dash-score-status" style="color:' + statusColor + '">' + statusLabel + '</div></div></div>' +
-    '<div class="stat-pills">' +
+  // 2. The Score (Hero)
+  var glowClass = lifeScore >= 80 ? ' glow-high' : '';
+  html += '<div class="score-hero">' +
+    '<div id="dash-score-num" class="score-num' + glowClass + '">0</div>' +
+    '<div class="score-status" style="color:' + statusColor + '">' + statusLabel + '</div></div>';
+
+  // 3. Category Scores
+  html += '<div class="cat-scores">';
+  CATEGORIES.forEach(function(cat) {
+    var pct = catPct(cat.id);
+    html += '<div class="cat-score-item">' +
+      '<div class="cat-score-label">' + cat.name + '</div>' +
+      '<div class="cat-score-num" style="color:' + cat.color + '">' + pct + '%</div></div>';
+  });
+  html += '</div>';
+
+  // 4. Stat Pills
+  html += '<div class="stat-pills">' +
     '<div class="stat-pill"><strong>' + todayDone + '/' + todayTotal + '</strong> TODAY</div>' +
     '<div class="stat-pill"><strong>' + streak + '</strong> STREAK</div>' +
     '<div class="stat-pill"><strong>' + todayMood + '</strong> MOOD</div>' +
-    '</div></div>';
-
-  // 4. Category Rings (SVG circles)
-  var CIRC = 2 * Math.PI * 19;
-  html += '<div class="cat-rings">';
-  CATEGORIES.forEach(function(cat) {
-    var pct = catPct(cat.id);
-    var offset = CIRC * (1 - pct / 100);
-    html += '<div class="cat-ring-item" onclick="switchView(\'tracker\')">' +
-      '<svg class="cat-ring-svg" width="52" height="52" viewBox="0 0 52 52">' +
-      '<circle cx="26" cy="26" r="19" fill="none" stroke="#1A1A1A" stroke-width="3.5"/>' +
-      '<circle cx="26" cy="26" r="19" fill="none" stroke="' + cat.color + '" stroke-width="3.5" ' +
-      'stroke-dasharray="' + CIRC.toFixed(2) + '" stroke-dashoffset="' + offset.toFixed(2) + '" ' +
-      'transform="rotate(-90 26 26)" stroke-linecap="round" style="transition:stroke-dashoffset .6s"/>' +
-      '</svg>' +
-      '<div class="cat-ring-pct" style="color:' + (pct >= 50 ? cat.color : 'var(--text3)') + '">' + pct + '%</div>' +
-      '<div class="cat-ring-label">' + cat.name + '</div></div>';
-  });
-  html += '</div>';
+    '</div>';
 
   // 5. Goals as dots
   html += '<div class="dash-divider"></div><div class="goals-dots">' +
