@@ -3,39 +3,53 @@ const fs = require('fs');
 const path = require('path');
 
 // ============================================================
-// Parse markdown files into structured prompt data
+// Parse single self-improvement markdown into categories
 // ============================================================
-function parseMarkdownFile(filePath) {
+function parseSelfImprovementFile(filePath) {
   const raw = fs.readFileSync(filePath, 'utf-8');
   const lines = raw.split('\n');
 
-  let categoryTitle = '';
-  const prompts = [];
-  let current = null;
+  const categories = [];
+  let currentCat = null;
+  let currentPrompt = null;
   let section = null;
   let promptLines = [];
 
   function flushPromptLines() {
-    if (current && promptLines.length > 0) {
+    if (currentPrompt && promptLines.length > 0) {
       const text = promptLines.join('\n').trim();
-      if (section === 'prompt') current.prompt = text;
-      else if (section === 'whenToUse') current.whenToUse = text;
-      else if (section === 'proTip') current.proTip = text;
+      if (section === 'prompt') currentPrompt.prompt = text;
+      else if (section === 'whenToUse') currentPrompt.whenToUse = text;
+      else if (section === 'whatItDoes') currentPrompt.whatItDoes = text;
       promptLines = [];
     }
   }
 
   for (const line of lines) {
+    // Skip the top-level title
     if (line.startsWith('# ') && !line.startsWith('## ')) {
-      categoryTitle = line.replace('# ', '').trim();
       continue;
     }
 
-    const titleMatch = line.match(/^## \d+\.\s+(.+)/);
+    // ## headers are category names
+    const catMatch = line.match(/^## ([^#].+)/);
+    if (catMatch && !line.match(/^## \d+/)) {
+      // Skip category matches that are actually numbered prompts at ## level
+      flushPromptLines();
+      if (currentPrompt && currentCat) currentCat.prompts.push(currentPrompt);
+      currentPrompt = null;
+      if (currentCat) categories.push(currentCat);
+      currentCat = { categoryTitle: catMatch[1].trim(), prompts: [] };
+      section = null;
+      continue;
+    }
+
+    // ### headers are prompt titles
+    const titleMatch = line.match(/^### \d+\.\s+(.+)/);
     if (titleMatch) {
       flushPromptLines();
-      if (current) prompts.push(current);
-      current = { title: titleMatch[1].trim(), prompt: '', whenToUse: '', proTip: '' };
+      if (currentPrompt && currentCat) currentCat.prompts.push(currentPrompt);
+      currentPrompt = { title: titleMatch[1].trim(), prompt: '', whenToUse: '', whatItDoes: '' };
       section = null;
       continue;
     }
@@ -49,15 +63,15 @@ function parseMarkdownFile(filePath) {
       flushPromptLines();
       section = 'whenToUse';
       const inline = line.replace('**When to use it:**', '').trim();
-      if (inline) current.whenToUse = inline;
+      if (inline) currentPrompt.whenToUse = inline;
       section = null;
       continue;
     }
-    if (line.startsWith('**Pro tip:**')) {
+    if (line.startsWith('**What this actually does:**')) {
       flushPromptLines();
-      section = 'proTip';
-      const inline = line.replace('**Pro tip:**', '').trim();
-      if (inline) current.proTip = inline;
+      section = 'whatItDoes';
+      const inline = line.replace('**What this actually does:**', '').trim();
+      if (inline) currentPrompt.whatItDoes = inline;
       section = null;
       continue;
     }
@@ -68,15 +82,16 @@ function parseMarkdownFile(filePath) {
       continue;
     }
 
-    if (section && current) {
+    if (section && currentPrompt) {
       promptLines.push(line);
     }
   }
 
   flushPromptLines();
-  if (current) prompts.push(current);
+  if (currentPrompt && currentCat) currentCat.prompts.push(currentPrompt);
+  if (currentCat) categories.push(currentCat);
 
-  return { categoryTitle, prompts };
+  return categories;
 }
 
 function cleanPromptText(text) {
@@ -161,10 +176,10 @@ function buildHTML(categories) {
                 <span class="meta-text">${escapeHtml(prompt.whenToUse)}</span>
               </div>
             ` : ''}
-            ${prompt.proTip ? `
+            ${prompt.whatItDoes ? `
               <div class="meta-block">
-                <span class="meta-label tip-label">Pro tip</span>
-                <span class="meta-text">${escapeHtml(prompt.proTip)}</span>
+                <span class="meta-label tip-label">How it works</span>
+                <span class="meta-text">${escapeHtml(prompt.whatItDoes)}</span>
               </div>
             ` : ''}
           </div>
@@ -678,7 +693,7 @@ function buildHTML(categories) {
     <div class="cover-title-main">PROMPT</div>
     <div class="cover-title-vault">VAULT</div>
     <div class="cover-divider"></div>
-    <div class="cover-subtitle">${totalPrompts} battle-tested prompts to transform how you work with AI. Copy. Paste. Get results.</div>
+    <div class="cover-subtitle">${totalPrompts} prompts designed to give you the kind of insight you'd get from an exceptional therapist, executive coach, or life strategist.</div>
     <div class="cover-stats">
       <div class="cover-stat">
         <div class="cover-stat-num">${totalPrompts}</div>
@@ -702,12 +717,13 @@ function buildHTML(categories) {
 
   <!-- Closing -->
   <div class="page closing-page">
-    <div class="closing-title">Start Prompting</div>
-    <div class="closing-title closing-accent">Like a Pro</div>
+    <div class="closing-title">Stop Avoiding.</div>
+    <div class="closing-title closing-accent">Start Asking.</div>
     <div class="closing-divider"></div>
     <div class="closing-text">
-      These prompts are your starting point, not your ceiling.<br>
-      Customize them. Combine them. Make them yours.
+      Pick the prompt that matches what you're avoiding thinking about.<br>
+      Copy it. Fill in the bracket. Be honest.<br>
+      The discomfort means it's working.
     </div>
     <div class="closing-brand">THE AI PROMPT VAULT</div>
   </div>
@@ -727,23 +743,9 @@ async function main() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Load categories
-  const files = [
-    'business-strategy.md',
-    'content-creation.md',
-    'coding-assistant.md',
-    'productivity.md',
-    'social-media.md',
-  ];
-
-  const categories = [];
-  let totalPrompts = 0;
-
-  for (const file of files) {
-    const cat = parseMarkdownFile(path.join(promptsDir, file));
-    categories.push(cat);
-    totalPrompts += cat.prompts.length;
-  }
+  // Load categories from single self-improvement file
+  const categories = parseSelfImprovementFile(path.join(promptsDir, 'self-improvement.md'));
+  let totalPrompts = categories.reduce((sum, c) => sum + c.prompts.length, 0);
 
   console.log(`Loaded ${categories.length} categories with ${totalPrompts} prompts`);
 
