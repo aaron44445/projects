@@ -50,8 +50,6 @@ h1 span{color:var(--text3)}
 .progress-track{background:#1A1A1A;border-radius:4px;height:6px;overflow:hidden;margin:8px 0}
 .progress-fill{background:var(--gold);height:100%;border-radius:4px;transition:width .5s}
 
-.quote{color:var(--text3);font-size:11px;font-style:italic;font-family:'DM Mono',monospace;margin-top:6px;text-align:center}
-
 /* AUTH / ONBOARDING */
 .ob-backdrop{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:24px}
 .ob-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:400px;width:100%;text-align:center;animation:fadeUp .5s ease}
@@ -253,6 +251,9 @@ h1 span{color:var(--text3)}
 @media(max-width:500px){.fin-inline{font-size:11px;gap:10px}}
 .dash-divider{height:1px;background:rgba(255,255,255,.04);margin:8px 0}
 .dash-section-label{font-size:9px;letter-spacing:2px;color:var(--text3);font-weight:500;margin-bottom:4px}
+.quote-block{padding:16px 0 24px;text-align:center}
+.quote-text{color:#444;font-size:11px;font-style:italic;font-family:'DM Mono',monospace;line-height:1.7;max-width:500px;margin:0 auto 8px}
+.quote-author{color:var(--gold);font-size:9px;letter-spacing:2px;font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
@@ -1026,6 +1027,10 @@ function renderDashboard() {
   // 8. Life Trajectory (floating canvas)
   html += '<div class="dash-divider"></div><span class="dash-section-label">LIFE TRAJECTORY</span>' +
     '<canvas id="life-chart" style="width:100%;height:220px;margin-top:4px"></canvas>';
+
+  // 9. Bottom quote
+  html += '<div class="quote-block"><div class="quote-text">\u201C' + QUOTES[quoteIndex].text + '\u201D</div>' +
+    '<div class="quote-author">\u2014 ' + QUOTES[quoteIndex].author + '</div></div>';
 
   // Record today's life score
   if (!DEMO && state.lifeScoreHistory[todayKey] !== lifeScore) {
