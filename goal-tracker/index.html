@@ -242,10 +242,11 @@ h1 span{color:var(--text3)}
 .goals-dots{display:flex;align-items:center;gap:6px;padding:6px 0}
 .goal-dot{width:9px;height:9px;border-radius:50%}
 .goals-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--text2)}
-.week-float{display:flex;gap:5px;align-items:flex-end;height:72px;padding:4px 0}
+.week-float{display:flex;gap:8px;align-items:flex-end;height:80px;padding:4px 0}
 .week-float-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
 .week-float-pct{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3);min-height:12px}
-.week-float-fill{width:100%;border-radius:3px;transition:height .3s;min-height:2px}
+.week-float-fill{width:100%;border-radius:4px 4px 0 0;transition:height .3s;min-height:2px}
+.week-float-fill.today-bar{box-shadow:0 0 8px rgba(200,169,81,0.3)}
 .week-float-day{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3)}
 .week-float-day.today{color:var(--gold);font-weight:600}
 .fin-inline{display:flex;justify-content:center;gap:18px;padding:6px 0;font-family:'DM Mono',monospace;font-size:13px}
@@ -1005,10 +1006,11 @@ function renderDashboard() {
     '<span class="mono" style="font-size:8px;color:var(--gold)">' + weekAvg + '% avg</span></div>' +
     '<div class="week-float">';
   weekDays.forEach(function(wd) {
-    var h = Math.max(2, wd.pct * 52);
+    var h = Math.max(2, wd.pct * 68);
+    var todayCls = wd.isToday ? ' today-bar' : '';
     html += '<div class="week-float-bar">' +
       '<span class="week-float-pct">' + (wd.pct > 0 ? Math.round(wd.pct * 100) + '%' : '') + '</span>' +
-      '<div class="week-float-fill" style="height:' + h + 'px;background:' + (wd.pct > 0 ? 'linear-gradient(to top,rgba(200,169,81,.45),var(--gold))' : '#1A1A1A') + '"></div>' +
+      '<div class="week-float-fill' + todayCls + '" style="height:' + h + 'px;background:' + (wd.pct > 0 ? 'linear-gradient(to top,rgba(200,169,81,.45),var(--gold))' : '#1A1A1A') + '"></div>' +
       '<span class="week-float-day' + (wd.isToday ? ' today' : '') + '">' + wd.label + '</span></div>';
   });
   html += '</div>';
