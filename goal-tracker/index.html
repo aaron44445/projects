@@ -1025,7 +1025,7 @@ function renderDashboard() {
 
   // 8. Life Trajectory (floating canvas)
   html += '<div class="dash-divider"></div><span class="dash-section-label">LIFE TRAJECTORY</span>' +
-    '<canvas id="life-chart" style="width:100%;height:150px;margin-top:4px"></canvas>';
+    '<canvas id="life-chart" style="width:100%;height:220px;margin-top:4px"></canvas>';
 
   // Record today's life score
   if (!DEMO && state.lifeScoreHistory[todayKey] !== lifeScore) {
@@ -1103,69 +1103,121 @@ function drawLifeChart() {
     return;
   }
 
-  var padL = 36, padR = 16, padT = 16, padB = 24;
+  var padL = 36, padR = 16, padT = 20, padB = 24;
   var chartW = W - padL - padR;
   var chartH = H - padT - padB;
 
-  ctx.strokeStyle = "rgba(255,255,255,.04)";
-  ctx.lineWidth = 1;
-  [25, 50, 75].forEach(function(v) {
-    var y = padT + chartH - (v / 100) * chartH;
+  // Auto-scale Y axis
+  var dataMin = 100, dataMax = 0;
+  points.forEach(function(p) {
+    if (p.val < dataMin) dataMin = p.val;
+    if (p.val > dataMax) dataMax = p.val;
+  });
+  var range = dataMax - dataMin;
+  if (range < 10) range = 10;
+  var yPad = Math.max(5, Math.round(range * 0.15));
+  var yMin = Math.max(0, dataMin - yPad);
+  var yMax = Math.min(100, dataMax + yPad);
+  var yRange = yMax - yMin;
+
+  function valToY(v) {
+    return padT + chartH - ((v - yMin) / yRange) * chartH;
+  }
+
+  // Dynamic grid lines
+  var gridStep = yRange <= 20 ? 5 : (yRange <= 50 ? 10 : 25);
+  var gridStart = Math.ceil(yMin / gridStep) * gridStep;
+  for (var gv = gridStart; gv <= yMax; gv += gridStep) {
+    var gy = valToY(gv);
+    ctx.strokeStyle = "rgba(255,255,255,.04)";
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(padL, y);
-    ctx.lineTo(W - padR, y);
+    ctx.moveTo(padL, gy);
+    ctx.lineTo(W - padR, gy);
     ctx.stroke();
     ctx.fillStyle = "#333";
     ctx.font = "9px 'DM Mono', monospace";
     ctx.textAlign = "right";
-    ctx.fillText(v, padL - 6, y + 3);
-  });
+    ctx.fillText(gv, padL - 6, gy + 3);
+  }
 
-  // Spread points across full chart width (left-to-right, oldest to newest)
+  // Map points to coordinates
   var maxIdx = Math.max(1, points.length - 1);
   var coords = points.map(function(p, i) {
-    return {
-      x: padL + (i / maxIdx) * chartW,
-      y: padT + chartH - (p.val / 100) * chartH,
-      val: p.val
-    };
+    return { x: padL + (i / maxIdx) * chartW, y: valToY(p.val), val: p.val };
   });
 
+  // Catmull-Rom smooth path helper
+  function drawSmoothPath(pts) {
+    ctx.moveTo(pts[0].x, pts[0].y);
+    if (pts.length === 2) {
+      ctx.lineTo(pts[1].x, pts[1].y);
+      return;
+    }
+    for (var si = 0; si < pts.length - 1; si++) {
+      var p0 = pts[Math.max(0, si - 1)];
+      var p1 = pts[si];
+      var p2 = pts[si + 1];
+      var p3 = pts[Math.min(pts.length - 1, si + 2)];
+      var cp1x = p1.x + (p2.x - p0.x) / 6;
+      var cp1y = p1.y + (p2.y - p0.y) / 6;
+      var cp2x = p2.x - (p3.x - p1.x) / 6;
+      var cp2y = p2.y - (p3.y - p1.y) / 6;
+      ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+    }
+  }
+
+  // Fill area under curve
   var grad = ctx.createLinearGradient(0, padT, 0, padT + chartH);
-  grad.addColorStop(0, "rgba(200,169,81,.15)");
+  grad.addColorStop(0, "rgba(200,169,81,.18)");
   grad.addColorStop(1, "rgba(200,169,81,0)");
   ctx.beginPath();
   ctx.moveTo(coords[0].x, padT + chartH);
-  coords.forEach(function(c) { ctx.lineTo(c.x, c.y); });
+  ctx.lineTo(coords[0].x, coords[0].y);
+  drawSmoothPath(coords);
   ctx.lineTo(coords[coords.length - 1].x, padT + chartH);
   ctx.closePath();
   ctx.fillStyle = grad;
   ctx.fill();
 
+  // Draw smooth line
   ctx.beginPath();
   ctx.strokeStyle = "#C8A951";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.5;
   ctx.lineJoin = "round";
-  coords.forEach(function(c, i) {
-    if (i === 0) ctx.moveTo(c.x, c.y);
-    else ctx.lineTo(c.x, c.y);
-  });
+  ctx.lineCap = "round";
+  drawSmoothPath(coords);
   ctx.stroke();
 
+  // Data point dots
   coords.forEach(function(c) {
     ctx.beginPath();
-    ctx.arc(c.x, c.y, 3, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = "#C8A951";
     ctx.fill();
   });
 
+  // Endpoint glow
   var last = coords[coords.length - 1];
+  var glowGrad = ctx.createRadialGradient(last.x, last.y, 2, last.x, last.y, 12);
+  glowGrad.addColorStop(0, "rgba(200,169,81,0.6)");
+  glowGrad.addColorStop(1, "rgba(200,169,81,0)");
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 12, 0, Math.PI * 2);
+  ctx.fillStyle = glowGrad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = "#C8A951";
+  ctx.fill();
+
+  // Score label at endpoint
   ctx.fillStyle = "#C8A951";
   ctx.font = "bold 11px 'DM Mono', monospace";
   ctx.textAlign = "right";
-  ctx.fillText(last.val + "%", last.x - 8, last.y - 8);
+  ctx.fillText(last.val + "%", last.x - 10, last.y - 10);
 
-  // Day rating line (from check-ins)
+  // Day rating line (mood from check-ins)
   var ratingPoints = [];
   for (var ri = 29; ri >= 0; ri--) {
     var rdt = new Date(YEAR, TODAY_M, TODAY_D - ri);
@@ -1177,11 +1229,7 @@ function drawLifeChart() {
   if (ratingPoints.length >= 2) {
     var rMaxIdx = Math.max(1, ratingPoints.length - 1);
     var rCoords = ratingPoints.map(function(p, ri2) {
-      return {
-        x: padL + (ri2 / rMaxIdx) * chartW,
-        y: padT + chartH - (p.val / 100) * chartH,
-        val: p.val
-      };
+      return { x: padL + (ri2 / rMaxIdx) * chartW, y: valToY(p.val), val: p.val };
     });
 
     ctx.beginPath();
@@ -1189,10 +1237,7 @@ function drawLifeChart() {
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
     ctx.lineJoin = "round";
-    rCoords.forEach(function(c, i) {
-      if (i === 0) ctx.moveTo(c.x, c.y);
-      else ctx.lineTo(c.x, c.y);
-    });
+    drawSmoothPath(rCoords);
     ctx.stroke();
     ctx.setLineDash([]);
 
