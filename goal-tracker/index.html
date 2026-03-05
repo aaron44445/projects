@@ -418,6 +418,9 @@ function ensureDefaults() {
   if (!state.finances.incomeItems) state.finances.incomeItems = {};
   if (!state.finances.expenseItems) state.finances.expenseItems = {};
   if (state.finMonth === undefined) state.finMonth = TODAY_M;
+  if (!state.finances.recurringIncome) state.finances.recurringIncome = [];
+  if (!state.finances.recurringExpenses) state.finances.recurringExpenses = [];
+  if (!state.finances.overrides) state.finances.overrides = {};
   if (!state.goals) state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
   if (!state.habits || !state.habits.length) state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
   if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
@@ -479,7 +482,7 @@ async function handleSignUp() {
     state.habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
     state.goals = JSON.parse(JSON.stringify(GOALS_DEFAULT));
     state.checkins = {};
-    state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {} };
+    state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {}, recurringIncome: [], recurringExpenses: [], overrides: {} };
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
     await saveRemote();
     hideAuth();
@@ -1302,8 +1305,24 @@ function calcMonthTotal(items, monthIndex) {
 
 function recalcFinances() {
   for (var m = 0; m < 12; m++) {
-    state.finances.income[m] = calcMonthTotal(state.finances.incomeItems, m);
-    state.finances.expenses[m] = calcMonthTotal(state.finances.expenseItems, m);
+    var monthOverrides = state.finances.overrides[m] || {};
+    var incOverrides = monthOverrides.income || {};
+    var expOverrides = monthOverrides.expense || {};
+
+    var recurInc = 0;
+    state.finances.recurringIncome.forEach(function(item) {
+      var amt = incOverrides[item.name] !== undefined ? incOverrides[item.name] : item.amount;
+      recurInc += (parseFloat(amt) || 0);
+    });
+
+    var recurExp = 0;
+    state.finances.recurringExpenses.forEach(function(item) {
+      var amt = expOverrides[item.name] !== undefined ? expOverrides[item.name] : item.amount;
+      recurExp += (parseFloat(amt) || 0);
+    });
+
+    state.finances.income[m] = recurInc + calcMonthTotal(state.finances.incomeItems, m);
+    state.finances.expenses[m] = recurExp + calcMonthTotal(state.finances.expenseItems, m);
   }
 }
 
