@@ -1,0 +1,16 @@
+{
+  "name": "locked-in-wallpapers",
+  "version": "1.0.0",
+  "description": "Dark mode aesthetic wallpapers for deep focus — 5 themes, 5 sizes each",
+  "main": "generate.js",
+  "scripts": {
+    "generate": "node generate.js"
+  },
+  "keywords": ["wallpapers", "dark-mode", "productivity", "aesthetic"],
+  "author": "Aaron McBride",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "canvas": "^3.2.1"
+  }
+}
