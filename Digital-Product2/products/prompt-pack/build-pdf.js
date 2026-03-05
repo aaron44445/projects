@@ -19,27 +19,35 @@ function parseSelfImprovementFile(filePath) {
     if (currentPrompt && promptLines.length > 0) {
       const text = promptLines.join('\n').trim();
       if (section === 'prompt') currentPrompt.prompt = text;
-      else if (section === 'whenToUse') currentPrompt.whenToUse = text;
-      else if (section === 'whatItDoes') currentPrompt.whatItDoes = text;
       promptLines = [];
     }
   }
 
+  // Clean category title: "Category 1 -- Self Awareness" -> "Self Awareness"
+  function cleanCategoryTitle(raw) {
+    const dashMatch = raw.match(/--\s*(.+)/);
+    if (dashMatch) return dashMatch[1].trim();
+    return raw.replace(/^Category\s*\d+\s*/, '').trim();
+  }
+
   for (const line of lines) {
-    // Skip the top-level title
+    // Skip the top-level title and "How to Use" section
     if (line.startsWith('# ') && !line.startsWith('## ')) {
       continue;
+    }
+    if (line.startsWith('## How to Use')) {
+      // Stop parsing — everything after is closing content
+      break;
     }
 
     // ## headers are category names
     const catMatch = line.match(/^## ([^#].+)/);
-    if (catMatch && !line.match(/^## \d+/)) {
-      // Skip category matches that are actually numbered prompts at ## level
+    if (catMatch && !line.match(/^## \d+\./)) {
       flushPromptLines();
       if (currentPrompt && currentCat) currentCat.prompts.push(currentPrompt);
       currentPrompt = null;
       if (currentCat) categories.push(currentCat);
-      currentCat = { categoryTitle: catMatch[1].trim(), prompts: [] };
+      currentCat = { categoryTitle: cleanCategoryTitle(catMatch[1].trim()), prompts: [] };
       section = null;
       continue;
     }
@@ -49,29 +57,34 @@ function parseSelfImprovementFile(filePath) {
     if (titleMatch) {
       flushPromptLines();
       if (currentPrompt && currentCat) currentCat.prompts.push(currentPrompt);
-      currentPrompt = { title: titleMatch[1].trim(), prompt: '', whenToUse: '', whatItDoes: '' };
+      currentPrompt = { title: titleMatch[1].trim(), prompt: '', purpose: '', whyItWorks: '', exampleUse: '' };
       section = null;
       continue;
     }
 
+    if (line.startsWith('**Purpose:**')) {
+      flushPromptLines();
+      const inline = line.replace('**Purpose:**', '').trim();
+      if (inline && currentPrompt) currentPrompt.purpose = inline;
+      section = null;
+      continue;
+    }
     if (line.startsWith('**The Prompt:**')) {
       flushPromptLines();
       section = 'prompt';
       continue;
     }
-    if (line.startsWith('**When to use it:**')) {
+    if (line.startsWith('**Why this works:**')) {
       flushPromptLines();
-      section = 'whenToUse';
-      const inline = line.replace('**When to use it:**', '').trim();
-      if (inline) currentPrompt.whenToUse = inline;
+      const inline = line.replace('**Why this works:**', '').trim();
+      if (inline && currentPrompt) currentPrompt.whyItWorks = inline;
       section = null;
       continue;
     }
-    if (line.startsWith('**What this actually does:**')) {
+    if (line.startsWith('**Example use case:**')) {
       flushPromptLines();
-      section = 'whatItDoes';
-      const inline = line.replace('**What this actually does:**', '').trim();
-      if (inline) currentPrompt.whatItDoes = inline;
+      const inline = line.replace('**Example use case:**', '').trim();
+      if (inline && currentPrompt) currentPrompt.exampleUse = inline;
       section = null;
       continue;
     }
@@ -169,17 +182,21 @@ function buildHTML(categories) {
             <div class="prompt-text">${promptFormatted}</div>
           </div>
 
+          ${prompt.purpose ? `
+          <div class="prompt-purpose">${escapeHtml(prompt.purpose)}</div>
+          ` : ''}
+
           <div class="prompt-meta">
-            ${prompt.whenToUse ? `
+            ${prompt.whyItWorks ? `
               <div class="meta-block">
-                <span class="meta-label when-label">When to use</span>
-                <span class="meta-text">${escapeHtml(prompt.whenToUse)}</span>
+                <span class="meta-label tip-label">Why it works</span>
+                <span class="meta-text">${escapeHtml(prompt.whyItWorks)}</span>
               </div>
             ` : ''}
-            ${prompt.whatItDoes ? `
+            ${prompt.exampleUse ? `
               <div class="meta-block">
-                <span class="meta-label tip-label">How it works</span>
-                <span class="meta-text">${escapeHtml(prompt.whatItDoes)}</span>
+                <span class="meta-label example-label">Example</span>
+                <span class="meta-text">${escapeHtml(prompt.exampleUse)}</span>
               </div>
             ` : ''}
           </div>
@@ -612,12 +629,20 @@ function buildHTML(categories) {
     margin-top: 1px;
   }
 
-  .when-label {
+  .prompt-purpose {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .tip-label {
     background: rgba(124,58,237,0.2);
     color: #a78bfa;
   }
 
-  .tip-label {
+  .example-label {
     background: rgba(251,146,60,0.2);
     color: #fb923c;
   }
@@ -693,7 +718,7 @@ function buildHTML(categories) {
     <div class="cover-title-main">PROMPT</div>
     <div class="cover-title-vault">VAULT</div>
     <div class="cover-divider"></div>
-    <div class="cover-subtitle">${totalPrompts} prompts designed to give you the kind of insight you'd get from an exceptional therapist, executive coach, or life strategist.</div>
+    <div class="cover-subtitle">${totalPrompts} prompts that turn any AI into a world-class life strategist. Diagnose what's holding you back, build systems that stick, and execute a plan that actually changes things.</div>
     <div class="cover-stats">
       <div class="cover-stat">
         <div class="cover-stat-num">${totalPrompts}</div>
