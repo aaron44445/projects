@@ -68,39 +68,7 @@ h1 span{color:var(--text3)}
 .ob-footer a:hover{text-decoration:underline}
 .auth-error{color:var(--redT);font-size:12px;margin-bottom:12px;text-align:left;display:none}
 
-/* LIFE SCORE */
-.life-score-wrap{text-align:center;padding:32px 0}
-.life-score-num{font-size:72px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;transition:all .5s}
-.life-score-label{font-size:11px;color:var(--text2);letter-spacing:3px;margin-top:8px}
-.life-score-ring{width:160px;height:160px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:center}
-.life-score-ring svg{position:absolute;transform:rotate(-90deg)}
-.life-score-ring circle{fill:none;stroke-width:4;stroke-linecap:round}
-.life-score-ring .ring-bg{stroke:var(--border)}
-.life-score-ring .ring-fill{stroke:var(--gold);transition:stroke-dashoffset .8s ease}
-
-/* CATEGORY CARDS */
-.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-@media(max-width:500px){.cat-grid{grid-template-columns:1fr}}
-.cat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;transition:border-color .2s;cursor:pointer}
-.cat-card:hover{border-color:rgba(200,169,81,.2)}
-.cat-card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .cat-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.cat-card-name{font-size:10px;letter-spacing:2px;font-weight:500}
-.cat-card-pct{font-size:28px;font-weight:300;font-family:'DM Mono',monospace}
-.cat-card-sub{font-size:11px;color:var(--text3);margin-top:4px}
-
-/* WEEKLY CHART */
-.week-chart{display:flex;gap:6px;align-items:flex-end;height:60px;margin-top:12px}
-.week-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.week-bar-fill{width:100%;border-radius:3px;transition:height .3s;min-height:2px}
-.week-bar-label{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3)}
-.week-bar-label.today{color:var(--gold);font-weight:600}
-
-/* STREAK */
-.streak-wrap{display:flex;align-items:center;gap:12px}
-.streak-num{font-size:32px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold)}
-.streak-text{font-size:12px;color:var(--text2)}
-.streak-fire{font-size:18px;font-family:'DM Mono',monospace;font-weight:700}
 
 /* MONTH PILLS */
 .month-pills{display:flex;gap:3px;flex-wrap:wrap}
@@ -956,7 +924,7 @@ function renderDashboard() {
   }
   // === END TEMP DEMO OVERRIDES ===
 
-  // === BUILD HTML (V4 — Tree of Life + visual data formats) ===
+  // === BUILD HTML (V6 — typography-first dashboard) ===
   // 1. Header
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">' +
     '<h1 style="font-size:17px;font-weight:400">Hey, ' + esc(state.userName) + ' <span>\u00B7 ' + MONTHS[TODAY_M] + ' ' + TODAY_D + '</span></h1>' +
