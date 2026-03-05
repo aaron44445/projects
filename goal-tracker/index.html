@@ -185,6 +185,9 @@ h1 span{color:var(--text3)}
 .stream-amount::placeholder{color:var(--text3)}
 .savings-bar-track{background:#1A1A1A;border-radius:6px;height:10px;overflow:hidden;margin:12px 0}
 .savings-bar-fill{background:linear-gradient(90deg,var(--gold),var(--greenT));height:100%;border-radius:6px;transition:width .5s}
+.recurring-badge{font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:3px;background:rgba(200,169,81,.12);color:var(--gold);font-family:'DM Mono',monospace;white-space:nowrap}
+.override-indicator{font-size:9px;color:var(--text3);text-decoration:line-through;margin-right:4px;font-family:'DM Mono',monospace}
+.recurring-section{margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
 
 /* HABIT MANAGEMENT */
 .habit-add-btn{background:transparent;border:1px dashed var(--border);border-radius:4px;padding:6px;color:var(--text3);font-size:11px;cursor:pointer;width:100%;margin-top:4px;transition:all .2s;font-family:'DM Sans',sans-serif}
@@ -1460,8 +1463,40 @@ function renderFinances() {
     '<div class="fin-stat"><div class="fin-stat-value" style="color:' + (net >= 0 ? "var(--greenT)" : "var(--redT)") + '">$' + Math.abs(net).toLocaleString() + '</div><div class="fin-stat-label">' + (net >= 0 ? "SURPLUS" : "DEFICIT") + '</div></div>' +
     '</div>';
 
-  // Income items
-  html += '<div class="card"><span class="section-label">INCOME &#183; ' + MONTHS[fm] + '</span><div style="margin-top:14px">';
+  // Income card
+  var monthOverrides = fin.overrides[fm] || {};
+  var incOverrides = monthOverrides.income || {};
+  var expOverrides = monthOverrides.expense || {};
+
+  html += '<div class="card"><span class="section-label">INCOME &#183; ' + MONTHS[fm] + '</span>';
+
+  if (fin.recurringIncome.length > 0) {
+    html += '<div class="recurring-section" style="margin-top:14px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">RECURRING</span></div>';
+    fin.recurringIncome.forEach(function(item, i) {
+      var hasOverride = incOverrides[item.name] !== undefined;
+      var displayAmt = hasOverride ? incOverrides[item.name] : item.amount;
+      html += '<div class="stream-row">' +
+        '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateRecurringItem(\'income\',' + i + ',\'name\',this.value)">' +
+        (hasOverride ? '<span class="override-indicator">$' + item.amount + '</span>' : '') +
+        '<span style="color:var(--text3);font-size:12px">$</span>' +
+        '<input type="number" class="stream-amount" value="' + (displayAmt || "") + '" placeholder="0" oninput="overrideRecurringItem(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
+        (hasOverride ? '<button class="habit-del" onclick="clearOverride(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>' : '') +
+        '<button class="habit-del" onclick="removeRecurringItem(\'income\',' + i + ')">&times;</button>' +
+        '</div>';
+    });
+    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'income\')">+ Add recurring income</button></div>';
+  } else {
+    html += '<div style="margin-top:14px"><button class="habit-add-btn" onclick="addRecurringItem(\'income\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring income</button></div>';
+  }
+
+  // One-time income
+  html += '<div style="margin-top:' + (fin.recurringIncome.length > 0 ? '0' : '8px') + '">';
+  if (incItems.length > 0 || fin.recurringIncome.length > 0) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">ONE-TIME</span></div>';
+  }
   incItems.forEach(function(item, i) {
     html += '<div class="stream-row">' +
       '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateFinItem(\'income\',' + i + ',\'name\',this.value)">' +
@@ -1470,15 +1505,43 @@ function renderFinances() {
       '<button class="habit-del" onclick="removeFinItem(\'income\',' + i + ')">&times;</button>' +
       '</div>';
   });
-  html += '</div>' +
-    '<button class="habit-add-btn" style="margin-top:8px" onclick="addFinItem(\'income\')">+ Add income</button>' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+  html += '<button class="habit-add-btn" onclick="addFinItem(\'income\')">+ Add one-time income</button></div>';
+
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
     '<span style="color:var(--text2);font-size:12px">Total</span>' +
     '<span class="mono" style="color:var(--greenT);font-size:14px">$' + monthIncome.toLocaleString() + '</span>' +
     '</div></div>';
 
-  // Expense items
-  html += '<div class="card"><span class="section-label">EXPENSES &#183; ' + MONTHS[fm] + '</span><div style="margin-top:14px">';
+  // Expense card
+  html += '<div class="card"><span class="section-label">EXPENSES &#183; ' + MONTHS[fm] + '</span>';
+
+  if (fin.recurringExpenses.length > 0) {
+    html += '<div class="recurring-section" style="margin-top:14px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">RECURRING</span></div>';
+    fin.recurringExpenses.forEach(function(item, i) {
+      var hasOverride = expOverrides[item.name] !== undefined;
+      var displayAmt = hasOverride ? expOverrides[item.name] : item.amount;
+      html += '<div class="stream-row">' +
+        '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateRecurringItem(\'expense\',' + i + ',\'name\',this.value)">' +
+        (hasOverride ? '<span class="override-indicator">$' + item.amount + '</span>' : '') +
+        '<span style="color:var(--text3);font-size:12px">$</span>' +
+        '<input type="number" class="stream-amount" style="color:var(--redT)" value="' + (displayAmt || "") + '" placeholder="0" oninput="overrideRecurringItem(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
+        (hasOverride ? '<button class="habit-del" onclick="clearOverride(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>' : '') +
+        '<button class="habit-del" onclick="removeRecurringItem(\'expense\',' + i + ')">&times;</button>' +
+        '</div>';
+    });
+    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'expense\')">+ Add recurring expense</button></div>';
+  } else {
+    html += '<div style="margin-top:14px"><button class="habit-add-btn" onclick="addRecurringItem(\'expense\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring expense</button></div>';
+  }
+
+  // One-time expenses
+  html += '<div style="margin-top:' + (fin.recurringExpenses.length > 0 ? '0' : '8px') + '">';
+  if (expItems.length > 0 || fin.recurringExpenses.length > 0) {
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">ONE-TIME</span></div>';
+  }
   expItems.forEach(function(item, i) {
     html += '<div class="stream-row">' +
       '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateFinItem(\'expense\',' + i + ',\'name\',this.value)">' +
@@ -1487,9 +1550,9 @@ function renderFinances() {
       '<button class="habit-del" onclick="removeFinItem(\'expense\',' + i + ')">&times;</button>' +
       '</div>';
   });
-  html += '</div>' +
-    '<button class="habit-add-btn" style="margin-top:8px" onclick="addFinItem(\'expense\')">+ Add expense</button>' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
+  html += '<button class="habit-add-btn" onclick="addFinItem(\'expense\')">+ Add one-time expense</button></div>';
+
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
     '<span style="color:var(--text2);font-size:12px">Total</span>' +
     '<span class="mono" style="color:var(--redT);font-size:14px">$' + monthExpense.toLocaleString() + '</span>' +
     '</div></div>';
