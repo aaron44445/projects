@@ -1,0 +1,17 @@
+{
+  "name": "build-in-public-content-kit",
+  "version": "1.0.0",
+  "description": "The Build-in-Public Content Kit — templates, threads, calendars, and hooks",
+  "main": "build-pdf.js",
+  "scripts": {
+    "build": "node build-pdf.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pdfkit": "^0.17.2"
+  }
+}
