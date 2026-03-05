@@ -91,8 +91,8 @@ h1 span{color:var(--text3)}
 
 .day-cell{min-width:34px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;transition:all .12s;user-select:none;-webkit-user-select:none;border:1px solid transparent}
 .day-cell:not(.done):hover{border-color:rgba(200,169,81,.2)}
-.day-cell.done{background:var(--gold);animation:pop .2s ease}
-@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+.day-cell.done{background:rgba(200,169,81,.12);color:var(--gold);font-size:13px;font-family:'DM Mono',monospace}
+.day-cell.done::after{content:'\2713';opacity:.7}
 .day-cell.past-empty{background:rgba(255,255,255,.02);opacity:1}
 .day-cell.today-border{box-shadow:inset 0 0 0 1px rgba(200,169,81,.25)}
 
@@ -111,6 +111,9 @@ h1 span{color:var(--text3)}
 .cat-header-row:first-child{margin-top:0}
 .cat-header-dot{width:8px;height:8px;border-radius:50%}
 .cat-header-text{font-size:10px;letter-spacing:2px;font-weight:500}
+.cat-header-pct{margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;font-weight:400;opacity:.7}
+.cat-progress{height:3px;background:rgba(255,255,255,.04);border-radius:2px;margin:0 10px 4px;overflow:hidden}
+.cat-progress-fill{height:100%;border-radius:2px;transition:width .4s ease}
 
 /* GOALS */
 .goal-cat{font-size:11px;letter-spacing:2px;font-weight:500;margin-bottom:10px;margin-top:24px;display:flex;align-items:center;justify-content:space-between}
@@ -787,7 +790,7 @@ function renderDashboard() {
   }
 
   // === TEMP DEMO MODE — remove after screenshot ===
-  var DEMO = true;
+  var DEMO = false;
   if (DEMO) {
     lifeScore = 92;
     var _catPct = catPct;
@@ -1277,8 +1280,21 @@ function renderTracker() {
   html += '<div class="stat-cell" style="font-size:9px;color:var(--text3);letter-spacing:1px">%</div></div>';
 
   CATEGORIES.forEach(function(cat) {
+    // Calculate category completion
+    var catHabits = state.habits.filter(function(h) { return h.cat === cat.id && h.type === "check"; });
+    var catDone = 0, catTotal = 0;
+    catHabits.forEach(function(h) {
+      for (var cd = 1; cd <= Math.min(TODAY_D, days); cd++) {
+        catTotal++;
+        if (getEntry(m, cd, h.id) === "\u2713") catDone++;
+      }
+    });
+    var catPctVal = catTotal > 0 ? Math.round((catDone / catTotal) * 100) : 0;
+
     html += '<div class="cat-header-row"><div class="cat-header-dot" style="background:' + cat.color + '"></div>' +
-      '<span class="cat-header-text" style="color:' + cat.color + '">' + cat.name + '</span></div>';
+      '<span class="cat-header-text" style="color:' + cat.color + '">' + cat.name + '</span>' +
+      '<span class="cat-header-pct" style="color:' + cat.color + '">' + catPctVal + '%</span></div>';
+    html += '<div class="cat-progress"><div class="cat-progress-fill" style="width:' + catPctVal + '%;background:' + cat.color + '"></div></div>';
 
     state.habits.filter(function(h) { return h.cat === cat.id; }).forEach(function(hab) {
       var count = 0;
