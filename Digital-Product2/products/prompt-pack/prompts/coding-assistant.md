@@ -4,28 +4,26 @@
 
 **The Prompt:**
 
-> I have a bug I can't figure out. Here's the situation:
+> You are an expert debugging partner who asks clarifying questions before jumping to solutions.
 >
-> **What should happen:** [describe expected behavior]
-> **What actually happens:** [describe actual behavior]
-> **Error message (if any):** [paste the error]
-> **Relevant code:**
-> ```
-> [paste the code that's causing the issue]
-> ```
-> **What I've already tried:** [list your attempts]
+> I'm stuck on a bug. Here's what's happening:
 >
-> Walk me through this systematically:
-> 1. What are the 3 most likely causes of this bug, ranked by probability?
-> 2. For each likely cause, what's the specific line or logic that would produce this behavior?
-> 3. Give me a diagnostic step for each — a `console.log`, test case, or check that would confirm or rule out each cause.
-> 4. Once we identify the cause, give me the fix and explain WHY it works, not just what to change.
+> **Expected behavior:** [What should happen]
+> **Actual behavior:** [What's actually happening]
+> **Code snippet:** [Paste the relevant code]
+> **Error message (if any):** [Exact error]
+> **What I've tried:** [List everything you've attempted]
 >
-> Don't guess a fix. Help me understand the bug first.
+> Before suggesting fixes:
+> 1. Ask me 3 clarifying questions about my setup, data, or assumptions
+> 2. Identify what I might be misunderstanding about how the code works
+> 3. Point out any debugging steps I haven't tried yet
+>
+> Then walk me through the most likely causes, starting with the simplest explanation. Teach me how to think about this type of bug, not just how to fix this specific instance.
 
-**When to use it:** When you've been staring at a bug for more than 15 minutes and can't see what's wrong.
+**When to use it:** When you've been staring at a bug for 30+ minutes and need a fresh perspective that helps you learn, not just copy-paste a fix.
 
-**Pro tip:** Include the full error stack trace, not just the message — the path through the code often reveals the cause faster than the error description.
+**Pro tip:** The "what I've tried" section is critical — it prevents the AI from suggesting things you've already done and forces better reasoning about root causes.
 
 ---
 
@@ -33,32 +31,33 @@
 
 **The Prompt:**
 
-> Review this code as if you're a senior engineer on my team. Be direct, specific, and constructive.
+> You are a senior engineer conducting a thorough but constructive code review. Be direct about issues but explain the "why" behind each suggestion.
 >
+> Review this code with focus on:
+> - **Correctness:** Logic errors, edge cases, potential bugs
+> - **Readability:** Naming, structure, clarity for future maintainers
+> - **Performance:** Obvious inefficiencies or bottlenecks
+> - **Security:** Common vulnerabilities for this type of code
+> - **Best practices:** Patterns specific to [language/framework]
+>
+> **Code to review:**
 > ```
-> [paste your code]
+> [Paste your code here]
 > ```
 >
-> Review for:
-> 1. **Bugs and logic errors:** Anything that will break in production
-> 2. **Edge cases:** Inputs or scenarios this code doesn't handle
-> 3. **Security issues:** SQL injection, XSS, auth bypasses, data exposure, secrets in code
-> 4. **Performance:** N+1 queries, unnecessary re-renders, missing indexes, memory leaks
-> 5. **Readability:** Naming, structure, comments (or lack of). Could a new team member understand this?
-> 6. **DRY violations:** Repeated patterns that should be abstracted
-> 7. **Error handling:** What happens when things go wrong? Are errors swallowed?
+> **Context:** [What this code does and why it exists]
 >
-> For each issue:
-> - Severity: 🔴 Must fix, 🟡 Should fix, 🟢 Nice to have
-> - The specific line(s)
-> - What's wrong
-> - How to fix it (show the code)
+> Format your review as:
+> 1. **Critical issues** (will break or create serious problems)
+> 2. **Strong suggestions** (significantly improves quality)
+> 3. **Nice-to-haves** (polish and consistency)
+> 4. **What you did well** (be specific about good choices I made)
 >
-> End with: "If I could only fix 3 things before shipping, they should be..." and list them.
+> For each issue, show me the improved version inline. No vague advice — show me the exact code change.
 
-**When to use it:** Before merging any PR, deploying to production, or when you want a second pair of eyes on critical code.
+**When to use it:** Before pushing code to a PR, especially when you don't have a senior engineer to review your work or you're working in an unfamiliar area.
 
-**Pro tip:** Include the context of what the code does and the file path — review quality improves dramatically when the reviewer understands the bigger picture.
+**Pro tip:** Add "Context" about what the code does — the AI will catch logical errors and missing edge cases it would otherwise miss.
 
 ---
 
@@ -66,28 +65,30 @@
 
 **The Prompt:**
 
-> I need to make an architecture decision and I want to think through it properly before committing.
+> You are a pragmatic software architect helping me make a technical decision. I need to choose between options, and I want you to cut through the hype and focus on tradeoffs for MY specific situation.
 >
-> **The decision:** [describe what you're trying to decide — e.g., "monolith vs microservices", "SQL vs NoSQL", "REST vs GraphQL"]
-> **Context:**
-> - Project type: [what you're building]
-> - Team size: [number of developers]
-> - Scale expectations: [users, data volume, traffic patterns]
-> - Timeline: [how soon this needs to ship]
-> - Current stack: [what you're already using]
+> **Decision I need to make:** [e.g., "Should I use REST or GraphQL for my API?"]
 >
-> Analyze this decision:
-> 1. **Option A vs Option B** (and Option C if applicable): Pros and cons for MY specific situation, not in general
-> 2. **Total cost of ownership:** Consider not just the build cost but the maintenance, scaling, hiring, and migration costs over 2 years
-> 3. **Reversibility:** How hard is it to change my mind in 6 months? What would that migration look like?
-> 4. **What teams my size typically choose:** Based on real-world patterns, what do similar projects usually go with?
-> 5. **The decision matrix:** Score each option on: simplicity, scalability, team familiarity, ecosystem/tooling, and time to ship
+> **My context:**
+> - **Project type:** [e.g., "SaaS MVP with 3-month timeline"]
+> - **Team size/skill:** [e.g., "Solo founder, intermediate with Node.js"]
+> - **Scale expectations:** [e.g., "100 users in 6 months, maybe 10k in 2 years"]
+> - **Existing stack:** [What you're already using]
+> - **Non-negotiables:** [Any constraints, like "must deploy on Vercel"]
 >
-> Give me your recommendation and the #1 thing I'd regret about each option if I chose it.
+> **Options I'm considering:** [List 2-4 options]
+>
+> For each option, tell me:
+> 1. **Real-world tradeoff** — What will I regret in 6 months if I choose this?
+> 2. **Complexity tax** — How much overhead does this add to my daily work?
+> 3. **Escape hatch** — How hard is it to change this decision later?
+> 4. **Bullshit filter** — Is this solving a problem I actually have, or a problem I might have someday?
+>
+> End with your recommendation and a one-sentence reason why, based on my context.
 
-**When to use it:** Before any major technical decision that would be expensive to reverse — database choices, framework selections, hosting strategies, or API designs.
+**When to use it:** When facing architectural forks in the road (database choice, auth strategy, deployment approach) and you need to cut through blog post hype.
 
-**Pro tip:** Add "What would a staff engineer at a FAANG company tell me I'm overthinking?" to get a reality check on whether you're over-engineering.
+**Pro tip:** Be brutally honest in "My context" — the AI will give you better advice if you admit you're a solo founder with limited time rather than pretending you're building for scale.
 
 ---
 
@@ -95,31 +96,35 @@
 
 **The Prompt:**
 
-> This code works, but it's messy and I need to clean it up. Refactor it with these priorities:
+> You are a refactoring specialist. I have working code that's become messy, and I want to clean it up WITHOUT breaking it. Safety and incremental improvement are more important than perfection.
 >
+> **Code to refactor:**
 > ```
-> [paste your code]
+> [Paste the messy code]
 > ```
 >
-> **Refactoring goals (in order of importance):**
-> 1. Don't break anything — preserve exact behavior
-> 2. Improve readability — someone new should understand this in 5 minutes
-> 3. Reduce complexity — simplify nested logic, long functions, tangled conditionals
-> 4. Improve testability — make it easier to unit test
-> 5. Follow [language/framework] conventions and idioms
+> **Why it needs refactoring:** [e.g., "hard to add features," "duplicated logic," "confusing to read"]
 >
-> **Deliver:**
-> 1. The refactored code with comments explaining each significant change
-> 2. A "before/after" comparison of the most improved section
-> 3. A list of the specific refactoring patterns you applied (Extract Method, Replace Conditional with Polymorphism, etc.)
-> 4. Any tests I should write to verify the refactoring didn't break behavior
-> 5. Remaining code smells you intentionally left alone and why
+> **Constraints:**
+> - I need this to stay working — no risky rewrites
+> - [Any other constraints, like "can't change the public API"]
 >
-> If any change is risky (behavior might change), flag it explicitly.
+> Give me a **step-by-step refactoring plan** where each step:
+> 1. Is small enough to do in one sitting (15-30 minutes)
+> 2. Keeps the code working after each step
+> 3. Can be tested immediately
+> 4. Builds on the previous step
+>
+> For each step, show:
+> - **What to change** (exact before/after code)
+> - **Why this step** (what problem it solves)
+> - **How to verify** (how I know it still works)
+>
+> Number the steps so I can do them one at a time over several days. Start with the highest-impact, lowest-risk changes first.
 
-**When to use it:** When you've inherited legacy code, when a file has grown too large, or when you're about to add features to messy code and want to clean it first.
+**When to use it:** When your code works but has become a mess, and you want to improve it gradually without rewriting everything or breaking functionality.
 
-**Pro tip:** Refactor in small, verifiable steps — ask for the changes in order of independence so you can test each change before moving to the next.
+**Pro tip:** Do one step, test it, commit it, then come back and ask for the next step — treating this as a multi-day project prevents scope creep and keeps your code working.
 
 ---
 
@@ -127,26 +132,36 @@
 
 **The Prompt:**
 
-> I'm designing a REST API for [describe the domain — e.g., "a task management app", "an e-commerce platform"]. Help me design it properly:
+> You are an API design expert helping me design endpoints that are intuitive, consistent, and hard to misuse.
 >
-> **Core entities:** [list the main objects — e.g., Users, Tasks, Projects]
-> **Key operations:** [what users need to do — e.g., create tasks, assign tasks, filter by status]
-> **Authentication:** [what you're using or planning — JWT, API keys, OAuth]
+> **API I'm designing:**
+> [Describe what your API needs to do, e.g., "REST API for a project management tool where users can create projects, add tasks, assign tasks to team members, and track time"]
 >
-> **Design the API:**
-> 1. **Resource naming:** List all endpoints following REST conventions. Use plural nouns, proper nesting, consistent patterns.
-> 2. **For each endpoint:** HTTP method, URL, request body (if applicable), response body, status codes (success AND error cases)
-> 3. **Pagination strategy:** How to handle listing endpoints with many results
-> 4. **Filtering and sorting:** Query parameter conventions for search/filter/sort
-> 5. **Error response format:** A consistent error schema with error codes, messages, and field-level validation errors
-> 6. **Versioning strategy:** How to version the API without breaking existing clients
-> 7. **Rate limiting:** Suggested limits and how to communicate them via headers
+> **Key user workflows:**
+> 1. [e.g., "Create a project and immediately add 5 tasks to it"]
+> 2. [e.g., "See all tasks assigned to me across all projects"]
+> 3. [List 3-5 critical workflows your API must support well]
 >
-> Follow these principles: predictable URLs, consistent response shapes, meaningful status codes, and documentation-friendly design.
+> **Technical context:**
+> - **API style:** [REST / GraphQL / tRPC / other]
+> - **Auth approach:** [JWT / session / API keys]
+> - **Primary clients:** [Web app / mobile app / third-party integrations]
+>
+> Design the endpoints (or GraphQL schema) that would support these workflows. For each endpoint, specify:
+> - **Path and method** (or query/mutation name)
+> - **Request format** (params, body, headers)
+> - **Response format** (structure + example)
+> - **Error cases** (what can go wrong and what error codes to return)
+>
+> Then critique your own design:
+> - Are there consistency issues across endpoints?
+> - Which workflows require too many round trips?
+> - What will be annoying for frontend developers using this API?
+> - What's the most likely way someone will misuse or misunderstand this API?
 
-**When to use it:** Before writing any API code, or when you're inheriting an inconsistent API and need to plan a cleanup.
+**When to use it:** Before writing API code, when you need to design the interface that both frontend and backend developers will use for months or years.
 
-**Pro tip:** After getting the design, ask "A frontend developer is using this API for the first time with no documentation. Where will they get confused?" to find UX issues in your API.
+**Pro tip:** Start with workflows instead of resources — designing around "what users need to accomplish" leads to better APIs than designing around "what database tables I have."
 
 ---
 
@@ -154,31 +169,36 @@
 
 **The Prompt:**
 
-> Design a database schema for [describe your application].
+> You are a database architect helping me design a schema that's normalized enough to avoid problems but practical enough to actually query.
 >
-> **Requirements:**
-> - Core features: [list what the app does]
-> - Key relationships: [what connects to what — e.g., "users have many orders, orders have many items"]
-> - Expected scale: [number of users, records, read/write ratio]
-> - Database: [PostgreSQL/MySQL/MongoDB/other]
+> **What I'm building:** [e.g., "Multi-tenant SaaS where companies can create projects, invite team members, and track tasks"]
 >
-> **Deliver:**
-> 1. **Entity list:** Every table/collection with its purpose in one sentence
-> 2. **Schema definition:** For each table, list columns with:
->    - Column name, data type, constraints (NOT NULL, UNIQUE, etc.)
->    - Default values where appropriate
->    - Why you chose this data type (especially for non-obvious choices)
-> 3. **Relationships:** All foreign keys and the type of relationship (one-to-one, one-to-many, many-to-many with join tables)
-> 4. **Indexes:** Which columns to index and why (including composite indexes)
-> 5. **Common queries:** The 5 most frequent queries this schema will handle, and confirm they're efficient with the proposed indexes
-> 6. **Migration strategy:** The order to create tables (respecting foreign key dependencies)
-> 7. **Future-proofing:** What changes are likely in v2, and is the schema flexible enough to handle them without a painful migration?
+> **Key entities and relationships:**
+> [Describe in plain English, e.g., "A company has many users. A project belongs to a company and has many tasks. A task can be assigned to one user."]
 >
-> Flag any denormalization decisions and explain the tradeoff.
+> **Query patterns I'll need:**
+> 1. [e.g., "Show all tasks for a user across all their projects"]
+> 2. [e.g., "Show project with all tasks and assigned users"]
+> 3. [List 4-6 queries your app will run constantly]
+>
+> **Database:** [PostgreSQL / MySQL / MongoDB / etc.]
+>
+> Design the schema including:
+> 1. **Tables/collections** with all fields and types
+> 2. **Relationships** (foreign keys, junction tables)
+> 3. **Indexes** for my query patterns
+> 4. **Constraints** (unique, not null, defaults)
+>
+> Then show me:
+> - **Example queries** for each query pattern (actual SQL/query language)
+> - **Schema red flags** — what might cause problems at scale or with my query patterns?
+> - **Migration order** — if I'm building this from scratch, what order should I create these tables?
+>
+> Optimize for simplicity and query performance for my specific patterns, not textbook normalization.
 
-**When to use it:** At the start of any project, before writing models or migrations, or when you're restructuring an existing database.
+**When to use it:** At the start of a project or when adding a major new feature that needs new database tables — before you write migrations or models.
 
-**Pro tip:** Include "What data will I wish I had been storing in 6 months?" to catch tracking and analytics fields you'd otherwise forget.
+**Pro tip:** Include "query patterns you'll need" to get indexes and schema design optimized for your actual use case, not theoretical best practices.
 
 ---
 
@@ -186,32 +206,37 @@
 
 **The Prompt:**
 
-> Write a comprehensive test suite for this code:
+> You are a testing strategist helping me build a test suite that catches real bugs without becoming a maintenance nightmare.
 >
+> **Code to test:**
 > ```
-> [paste your code — function, class, or module]
+> [Paste the function, class, or module you want to test]
 > ```
 >
-> **Testing framework:** [Jest/pytest/RSpec/Go testing/etc.]
+> **What this code does:** [Brief description of purpose and behavior]
 >
-> **Generate tests in these categories:**
-> 1. **Happy path tests:** The normal, expected use cases that must always work
-> 2. **Edge cases:** Empty inputs, null/undefined, boundary values, maximum lengths, unicode, special characters
-> 3. **Error cases:** Invalid inputs, missing required fields, unauthorized access, network failures
-> 4. **Integration points:** If this code calls external services or databases, test the contract
-> 5. **Regression traps:** Scenarios where a "simple" code change would break things — name these tests clearly (e.g., "should NOT allow negative quantities even though the type allows it")
+> **Testing framework:** [Jest / Vitest / pytest / RSpec / etc.]
 >
-> **For each test:**
-> - Descriptive name following "should [expected behavior] when [condition]" pattern
-> - Arrange-Act-Assert structure
-> - Only test one thing per test
-> - Include comments on why this test matters if the name doesn't make it obvious
+> Design a test suite that covers:
+> 1. **Happy path** — the main use case works as expected
+> 2. **Edge cases** — empty inputs, nulls, boundary values, weird but valid data
+> 3. **Error cases** — invalid inputs, missing data, things that should throw errors
+> 4. **Integration points** — if this code calls external services, databases, or APIs, how do we mock/stub those?
 >
-> After the tests, tell me: what's the approximate code coverage? What important scenarios are still untested and why?
+> For each test:
+> - Write the full test code (not pseudocode)
+> - Name tests clearly: "should [expected behavior] when [scenario]"
+> - Use **arrange-act-assert** structure with comments
+> - Show setup/teardown if needed (mocks, fixtures, DB state)
+>
+> Then tell me:
+> - **What I'm NOT testing** and why (to avoid false confidence)
+> - **Brittle test warning** — which tests are most likely to break when I refactor, and how to make them more resilient
+> - **Test data strategy** — should I use fixtures, factories, or inline data, and why?
 
-**When to use it:** When writing tests for new code, or when you've inherited code with no tests and need to add safety nets before refactoring.
+**When to use it:** When you know you should test something but don't know what scenarios to cover or how to structure the tests properly.
 
-**Pro tip:** Ask "If this code has a bug that makes it to production, which test from this suite would have caught it?" to evaluate whether your tests are actually protective.
+**Pro tip:** Paste the actual code to test, not a description — you'll get runnable tests with proper assertions instead of generic examples.
 
 ---
 
@@ -219,31 +244,37 @@
 
 **The Prompt:**
 
-> Generate documentation for this code:
+> You are a technical writer creating documentation that helps developers use my code without needing to read the implementation.
 >
+> **Code to document:**
 > ```
-> [paste your code — module, class, API, or library]
+> [Paste the function, class, API endpoint, or module]
 > ```
 >
-> **Create these documentation layers:**
+> **Audience:** [e.g., "Frontend developers using this API," "Future me in 6 months," "Open source contributors"]
 >
-> 1. **Quick start:** 5 lines of code that show the most common use case. Someone should be able to copy-paste this and have something working.
-> 2. **API reference:** Every public function/method with:
->    - Description (one sentence)
->    - Parameters (name, type, required/optional, default value, description)
->    - Return type and description
->    - Example usage
->    - Throws/errors (what can go wrong)
-> 3. **Conceptual guide:** A 2-3 paragraph explanation of the overall design philosophy and how the pieces fit together
-> 4. **Common recipes:** 5-7 real-world usage patterns beyond the basic example
-> 5. **Migration guide:** If this is a v2, what changed from v1 and how to update
-> 6. **Troubleshooting:** The 5 most common mistakes someone will make and how to fix them
+> **Documentation style:** [JSDoc / Docstring / Markdown / README section / etc.]
 >
-> Write for a developer who is competent but has never seen this code before. Avoid jargon specific to your codebase.
+> Create documentation that includes:
+>
+> 1. **One-line summary** — what this does in plain English
+> 2. **Parameters/inputs** — what you pass in, types, required vs optional, what each parameter means
+> 3. **Return value/output** — what you get back, type, structure
+> 4. **Example usage** — real, copy-paste-able code showing the most common use case
+> 5. **Edge cases/gotchas** — things that aren't obvious from the signature (e.g., "returns null if user not found, throws error if database unavailable")
+> 6. **When to use this** — what problem this solves (helps people know if this is the right tool)
+>
+> **Documentation principles:**
+> - Show, don't tell — examples over explanations
+> - Cover what the code does, not how it works internally
+> - Warn about things that will surprise developers
+> - No filler phrases like "this function is used to..." — just start with the verb
+>
+> Write documentation that would make sense to someone who's never seen this codebase before.
 
-**When to use it:** When you've built something others will use (library, API, internal tool) and need docs that actually help people.
+**When to use it:** When you need to document a function, API, or module that others (or future you) will use — especially for shared utilities, public APIs, or open source.
 
-**Pro tip:** After generating docs, ask "A junior developer just read this documentation. What question do they still have?" to find gaps.
+**Pro tip:** Specify your audience to get the right level of detail — docs for API consumers are very different from docs for library maintainers.
 
 ---
 
@@ -251,37 +282,37 @@
 
 **The Prompt:**
 
-> Analyze this code for performance issues and optimization opportunities:
+> You are a performance optimization specialist. I have code that works but is too slow, and I need to make it faster without premature optimization or unreadable code.
 >
+> **Slow code:**
 > ```
-> [paste your code]
+> [Paste the code that's slow]
 > ```
+>
+> **Performance problem:** [e.g., "Takes 3 seconds to load a page," "Uses 2GB memory with 10k records," "API endpoint times out with 100 concurrent users"]
 >
 > **Context:**
-> - This runs [how often — per request, in a cron job, on user interaction]
-> - Typical data size: [how much data is processed]
-> - Current performance: [any metrics — response time, memory usage, CPU]
-> - Performance target: [what you need it to be]
+> - **Language/framework:** [e.g., "Node.js with Express," "Python with Django"]
+> - **Data volume:** [e.g., "10k records now, expecting 100k in 6 months"]
+> - **Environment:** [e.g., "Single server, 2GB RAM," "Serverless with 1GB memory limit"]
 >
-> **Analyze:**
-> 1. **Time complexity:** What's the Big O? Is there a more efficient algorithm?
-> 2. **Space complexity:** Is memory usage reasonable? Any unnecessary allocations?
-> 3. **I/O bottlenecks:** Database queries in loops? Unparallelized async calls? Missing caching?
-> 4. **Framework-specific issues:** [React re-renders / Django query optimization / Node event loop blocking / etc.] based on the stack
-> 5. **Quick wins:** Changes that take < 30 minutes and give measurable improvement
-> 6. **Structural improvements:** Larger changes that would fundamentally improve performance
+> Analyze the performance issues:
 >
-> **For each optimization:**
-> - The before code
-> - The after code
-> - Expected improvement (rough estimate)
-> - Any tradeoffs (readability, memory, complexity)
+> 1. **Bottleneck identification** — what's actually slow? (Don't guess — tell me how to measure/profile this)
+> 2. **Quick wins** — what can I change in 30 minutes that will make the biggest difference?
+> 3. **Proper solutions** — what's the right fix for this bottleneck? (Include code examples)
+> 4. **Optimization priority** — rank improvements by impact vs effort
+> 5. **When to stop** — how do I know when it's "fast enough" and I should move on?
 >
-> Rank all optimizations by impact-to-effort ratio. Start with the biggest wins.
+> For each optimization:
+> - Show the before/after code
+> - Explain WHY it's faster (what changes algorithmically or computationally)
+> - Estimate realistic improvement ("2x faster" not "much faster")
+> - Call out readability tradeoffs if the optimization makes code harder to understand
 
-**When to use it:** When something is slow, when you're about to scale, or during regular performance audits of critical paths.
+**When to use it:** When you have a confirmed performance problem (slow page load, API timeout, memory issue) and need to fix it without over-engineering.
 
-**Pro tip:** Include real performance measurements (response times, query counts) rather than just the code — "this endpoint takes 3.2s" gives much better advice than "optimize this."
+**Pro tip:** Include actual performance numbers ("takes 3 seconds") instead of "it's slow" — you'll get specific, measurable optimizations instead of generic advice.
 
 ---
 
@@ -289,38 +320,39 @@
 
 **The Prompt:**
 
-> Perform a security review on this code:
+> You are a security engineer auditing my code for common vulnerabilities. Focus on practical, exploitable issues — not theoretical attacks that require NSA-level resources.
 >
+> **Code to audit:**
 > ```
-> [paste your code]
+> [Paste the code handling sensitive operations: auth, data access, user input, file uploads, payments, etc.]
 > ```
 >
-> **Context:**
-> - This handles: [user input/payments/authentication/file uploads/etc.]
-> - Stack: [language, framework, database]
-> - Deployment: [how and where this runs]
+> **What this code does:** [e.g., "Handles user login and session management," "Processes file uploads from users"]
 >
-> **Check for these vulnerability categories:**
-> 1. **Injection attacks:** SQL injection, XSS, command injection, LDAP injection — show me the specific vulnerable lines
-> 2. **Authentication/authorization:** Missing auth checks, broken access control, privilege escalation paths
-> 3. **Data exposure:** Sensitive data in logs, error messages, API responses, or URLs
-> 4. **Input validation:** Missing validation, insufficient sanitization, type confusion
-> 5. **Configuration:** Hardcoded secrets, debug mode in production, permissive CORS, missing security headers
-> 6. **Dependencies:** Known vulnerable patterns with the framework/libraries being used
-> 7. **Cryptography:** Weak hashing, missing encryption, insecure random number generation
+> **Stack:** [e.g., "Node.js / Express / PostgreSQL," "Python / Flask / SQLite"]
 >
-> **For each finding:**
-> - Severity: Critical / High / Medium / Low
-> - The vulnerable code
-> - Attack scenario (how would someone exploit this?)
-> - The fix (show the secure version)
-> - Reference (OWASP category or CVE if applicable)
+> Audit for:
 >
-> End with a security score (A-F) and the top 3 things to fix before this code touches production.
+> 1. **Injection vulnerabilities** — SQL injection, NoSQL injection, command injection (show me where unsanitized input is used)
+> 2. **Authentication/authorization flaws** — broken auth, missing permission checks, insecure session handling
+> 3. **Data exposure** — sensitive data in logs, error messages, URLs, or responses
+> 4. **Input validation** — missing validation, client-side only validation, type coercion issues
+> 5. **Cryptography mistakes** — weak hashing, hardcoded secrets, insecure random generation
+> 6. **Common framework vulnerabilities** — known issues in this specific stack
+>
+> For each vulnerability found:
+> - **Severity**: Critical / High / Medium / Low
+> - **Attack scenario** — how would someone actually exploit this? (Be specific)
+> - **Fix** — exact code change to remediate (show before/after)
+> - **Why this matters** — what's the real-world impact if exploited?
+>
+> Prioritize issues by: "How easy is this to exploit?" × "How bad is the impact?"
+>
+> End with a **security checklist** of 5-7 things I should verify before deploying ANY code in this codebase.
 
-**When to use it:** Before deploying any code that handles user data, authentication, payments, or file uploads.
+**When to use it:** Before launching a feature that handles sensitive data (auth, payments, personal info, file uploads) or when security-reviewing existing code.
 
-**Pro tip:** Run this on your authentication flow first — it's the highest-value target and where bugs have the most impact.
+**Pro tip:** Paste code that touches user input, auth, or sensitive data — generic code audits find generic issues, but specific code audits find exploitable vulnerabilities.
 
 ---
 
@@ -328,30 +360,43 @@
 
 **The Prompt:**
 
-> Here's a diff of my code changes:
+> You are a Git historian who writes commit messages that future developers (including future me) will appreciate when debugging, reviewing history, or understanding why a change was made.
+>
+> **Changes I'm committing:**
+> [Paste git diff, or describe the changes in detail]
+>
+> **Why I made this change:** [e.g., "Fixed bug where users couldn't upload files over 5MB," "Refactored auth to prepare for OAuth"]
+>
+> Write a commit message following this structure:
 >
 > ```
-> [paste your git diff or describe the changes]
+> <type>: <short summary in present tense, 50 chars max>
+>
+> <Blank line>
+>
+> <Body: explain the what, why, and any important context.
+> Focus on WHY this change was needed and what problem it solves.
+> Wrap at 72 characters.>
+>
+> <Blank line>
+>
+> <Footer: breaking changes, issue references, or migration notes>
 > ```
 >
-> Write a git commit message following these conventions:
+> **Types**: `feat` (new feature), `fix` (bug fix), `refactor` (code change without behavior change), `perf` (performance), `docs`, `test`, `chore` (tooling, deps)
 >
-> 1. **Type prefix:** `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`, `perf:`, or `style:`
-> 2. **Subject line:** Under 72 characters, imperative mood ("Add feature" not "Added feature"), no period at the end
-> 3. **Body (if the change is non-trivial):** Explain WHAT changed and WHY (not HOW — the diff shows how). Wrap at 72 characters.
-> 4. **Breaking changes:** If any, add `BREAKING CHANGE:` footer
-> 5. **Related issues:** Reference tickets or issues if applicable
+> **Commit message principles:**
+> - Summary line completes: "If applied, this commit will ___"
+> - Body explains WHY, not WHAT (the diff shows what changed)
+> - Include consequences: "This fixes X but means Y will now..."
+> - Reference issues: "Closes #123" or "Related to #456"
+> - Warn about breaking changes explicitly
 >
-> Give me 3 options:
-> - **Concise:** Just the subject line
-> - **Detailed:** Subject + body
-> - **Verbose:** Subject + body + context about the decision
->
-> If the diff contains multiple logical changes, suggest splitting into multiple commits and provide a message for each.
+> Give me 2 versions: a **minimal version** (just summary line) for small changes, and a **detailed version** (summary + body) for complex changes.
 
-**When to use it:** When you want your git history to be clean and useful, not a graveyard of "fix stuff" and "update things" messages.
+**When to use it:** When you've made a complex change and want a commit message that explains the why, or when you're terrible at writing concise, clear summaries.
 
-**Pro tip:** If the commit message is hard to write, the commit is probably too big. Use the "suggest splitting" feature to keep commits atomic.
+**Pro tip:** Paste your actual git diff to get a commit message that accurately describes your changes instead of what you think you changed.
 
 ---
 
@@ -359,29 +404,32 @@
 
 **The Prompt:**
 
-> I'm joining a project and need to understand the codebase quickly. Here's what I know:
+> You are a senior developer creating an onboarding guide for a new team member (or future me) who needs to understand this codebase quickly.
 >
-> **Repo structure:**
-> ```
-> [paste the output of your file tree, or describe the main directories]
-> ```
+> **Codebase context:**
+> - **Project type:** [e.g., "SaaS web app," "REST API," "CLI tool"]
+> - **Tech stack:** [Languages, frameworks, databases, key libraries]
+> - **Repo structure:** [List main directories and what's in them, or paste output of `tree -L 2`]
 >
-> **Stack:** [language, framework, database, hosting]
-> **Key files I've looked at:** [paste snippets or file names]
+> **Key files/modules:** [List 5-10 most important files with one-line descriptions]
 >
-> Help me build a mental model:
+> **How it works:** [Describe the main flow: "User logs in → API authenticates → frontend fetches data → ..."]
 >
-> 1. **Architecture overview:** What pattern is this project using? (MVC, microservices, monolith, serverless, etc.) Draw me a text-based diagram of how data flows through the system.
-> 2. **Entry points:** Where does a request enter the system? Trace a typical user action (e.g., "user logs in") through the code.
-> 3. **Key abstractions:** What are the most important classes/modules/functions? What does each one own?
-> 4. **Configuration:** Where are environment variables, feature flags, and secrets managed?
-> 5. **Data model:** What are the core database tables/models and how do they relate?
-> 6. **Testing strategy:** Where are tests? How do I run them? What's the coverage situation?
-> 7. **Deployment:** How does code get from a PR to production?
-> 8. **Gotchas:** Based on the code patterns, what are the likely "trap doors" that would bite a new developer?
+> Create an onboarding guide that covers:
 >
-> Prioritize what I should read first to become productive fastest.
+> 1. **Mental model** — what is this application at a high level? (Explain in 2-3 sentences using an analogy if helpful)
+> 2. **Architecture overview** — how are the pieces organized? (Frontend/backend split, microservices, monolith, etc.)
+> 3. **Data flow** — trace a typical request from entry point to response (be specific: "Request hits `api/routes/users.js`, calls `getUserById()`, queries `users` table...")
+> 4. **Where to find things** — if I need to change [common task], which files do I look at?
+> 5. **Code conventions** — naming patterns, file organization, any non-obvious patterns used consistently
+> 6. **Gotchas** — what's confusing or surprising about this codebase that a new person should know?
+> 7. **How to run/test locally** — actual commands to get this running and verify it works
+> 8. **First task recommendations** — suggest 2-3 small, self-contained tasks a new developer could tackle to learn the codebase (e.g., "Add a new field to the user profile")
+>
+> Write this for someone technical but unfamiliar with this specific project. Prioritize practical navigation over completeness.
 
-**When to use it:** First day on a new project, or when onboarding someone onto your team and want to create an onboarding doc.
+**When to use it:** When onboarding a new developer, returning to a project after months away, or trying to understand an unfamiliar codebase you just inherited.
 
-**Pro tip:** Paste the README, main config file, and one key route/controller — those three files usually reveal 80% of the project's structure.
+**Pro tip:** Use this prompt on your own codebase every few months and save the output — it forces you to document tribal knowledge and catches when your code has become confusing.
+
+---

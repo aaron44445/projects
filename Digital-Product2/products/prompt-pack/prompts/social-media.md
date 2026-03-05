@@ -4,32 +4,27 @@
 
 **The Prompt:**
 
-> Write a TikTok script for a [length: 30s/60s/90s] video about [topic]. My niche is [your niche]. My style is [talking head/voiceover/skit/tutorial/storytime].
+> You are a viral TikTok scriptwriter who specializes in [your niche/industry]. I need a 45-60 second TikTok script about [topic].
 >
-> **Script structure:**
-> 1. **Hook (first 1-2 seconds):** The opening line or visual that stops the scroll. Give me 5 options:
->    - One that starts with a bold claim
->    - One that starts with "POV:" or "When..."
->    - One that uses a pattern interrupt (unexpected visual or statement)
->    - One that asks a question they NEED answered
->    - One that uses a trending format (describe the format)
-> 2. **Setup (3-5 seconds):** Context that makes them care. Why should they keep watching?
-> 3. **Value delivery (the bulk):** The actual content, broken into short punchy segments:
->    - Each point in 1-2 sentences max
->    - Conversational language (write for speaking, not reading)
->    - Include [VISUAL CUE] markers for text overlays or B-roll transitions
-> 4. **Payoff/twist:** End with either a surprising conclusion, a satisfying wrap-up, or a cliffhanger for part 2
-> 5. **CTA (last 2 seconds):** Natural call to action that doesn't kill engagement (avoid "follow for more")
+> Required structure:
+> - **Hook (0-3 seconds)**: Open with a pattern interrupt, bold claim, or burning question that stops the scroll
+> - **Setup (4-15 seconds)**: Introduce the problem or stakes — why this matters to my audience
+> - **Value Delivery (16-45 seconds)**: Deliver 3 actionable insights, surprising facts, or step-by-step instructions. Use numbered lists or visual metaphors.
+> - **CTA (46-60 seconds)**: End with a clear next step — follow for part 2, comment your experience, or try this and report back
 >
-> **Also provide:**
-> - Caption (with relevant hashtags — mix of big and niche tags)
-> - Suggested trending sound (describe the vibe, not a specific copyrighted song)
-> - Best time to post
-> - Reply-bait comment I should pin to drive engagement
+> Additional requirements:
+> - Write in spoken language, not formal prose (use "you're" not "you are", sentence fragments are fine)
+> - Include [VISUAL CUE] markers where I should show text overlays, product demos, or B-roll
+> - Mark strategic pauses with "..." for comedic timing or emphasis
+> - Avoid cringe phrases like "let that sink in" or "wait for it"
+>
+> My target audience: [describe in detail — age, pain points, platform behavior]
+> My brand voice: [casual/expert/sarcastic/educational]
+> Specific angle I want to take: [contrarian/beginner-friendly/myth-busting/behind-the-scenes]
 
-**When to use it:** When planning TikTok or Reels content, especially if you want to batch-film multiple videos in one session.
+**When to use it:** When you need a scroll-stopping video script that balances entertainment with genuine value, not just empty hooks.
 
-**Pro tip:** Film the hook separately and re-film it 3 different ways. The hook determines 90% of whether the video works, so spend your energy there.
+**Pro tip:** After getting the script, ask "What are 3 alternative hooks I could A/B test for this same script?" to maximize your first 3 seconds.
 
 ---
 
@@ -37,31 +32,41 @@
 
 **The Prompt:**
 
-> Write a Twitter/X thread on [topic]. I want it to go viral (or at least get strong engagement). My audience is [who follows me].
+> You are a Twitter/X growth strategist who has written threads that earned 1M+ impressions. Write a high-performing thread about [topic] for my audience of [target audience].
 >
-> **Thread structure:**
-> 1. **Tweet 1 (The hook):** This must work as a standalone tweet. It should stop the scroll and make someone NEED to click "Show this thread." Give me 3 options:
->    - A bold, slightly controversial take
->    - A "Here's what I learned" or results-driven opening
->    - A story hook ("Last week, [something unexpected] happened...")
-> 2. **Tweet 2:** Establish credibility. Why should anyone listen to me on this topic? (Keep it brief and show-don't-tell)
-> 3. **Tweets 3-8:** One clear point per tweet. Each tweet should:
->    - Make sense on its own (some people will screenshot individual tweets)
->    - Be under 250 characters (leave room for engagement)
->    - Use line breaks for readability
->    - Include a mix of insights, examples, and occasional hot takes
-> 4. **Tweet 9 (The closer):** Summarize the key takeaway in one powerful sentence
-> 5. **Tweet 10 (The CTA):** A natural ask. Options: "If this was useful, RT tweet 1", a question to drive replies, or a subtle plug for my [product/newsletter/course]
+> **Thread Architecture:**
 >
-> **Rules:**
-> - No emoji spam. Maximum 1-2 per thread.
-> - No "Thread 🧵" as tweet 1. The hook IS tweet 1.
-> - Number each tweet (1/, 2/, etc.)
-> - Write like a person, not a LinkedIn influencer
+> **Tweet 1 (Hook Tweet):**
+> - Start with a bold claim, surprising statistic, or "I just learned..." moment
+> - Make it quotable and screenshot-worthy
+> - Include a clear promise of what the thread delivers
+> - End with "Here's what I learned:" or similar thread indicator
+> - NO generic openings like "A thread about..." or "Let's talk about..."
+>
+> **Tweets 2-8 (Value Tweets):**
+> - One clear idea per tweet (no multi-part tweets)
+> - Use formatting: line breaks, bullet points with • or numbers
+> - Include at least 2 tweets with specific data, examples, or case studies
+> - Vary tweet structure: some short punchy claims, some mini-stories, some tactical how-tos
+> - Every tweet should work standalone if someone only reads that one
+>
+> **Final Tweet (CTA Tweet):**
+> - Recap the core insight in one sentence
+> - Strong CTA: follow me for [specific content promise], RT the first tweet if [reason], or reply with [engagement question]
+> - Tag me back to the hook tweet with "If you found this valuable, start here:" + link to tweet 1
+>
+> **Constraints:**
+> - Each tweet must be under 280 characters
+> - No emoji spam or cringe phrases
+> - Write like I've personally experienced this, not like I'm reporting on it
+> - Use "you" language to make it feel like a direct conversation
+>
+> My unique angle or insight: [what's your contrarian take, personal story, or proprietary framework?]
+> Desired thread tone: [tactical/storytelling/controversial/educational]
 
-**When to use it:** When you have a valuable insight, story, or framework to share and want to package it for maximum engagement on Twitter/X.
+**When to use it:** When you have a complex idea worth exploring but need it structured for maximum engagement and shareability on X.
 
-**Pro tip:** Post tweet 1 as a standalone first. If it gets traction on its own, reply with the rest of the thread. This way you don't waste a thread on a hook that doesn't work.
+**Pro tip:** Request 3 alternative hook tweets at the end — the hook is 80% of your thread's success, so test multiple versions.
 
 ---
 
@@ -69,35 +74,45 @@
 
 **The Prompt:**
 
-> Design an Instagram carousel on [topic] for my [niche/audience]. This should be save-worthy and share-worthy.
+> You are an Instagram content strategist specializing in high-engagement carousel posts. Create a 10-slide carousel about [topic] targeting [audience].
 >
-> **Create 10 slides:**
+> **Slide-by-slide breakdown:**
 >
-> 1. **Slide 1 (Cover):** The scroll-stopper. Give me:
->    - Headline (7 words max — big, bold, clear)
->    - Subtext (one line of context)
->    - Design direction (color suggestion, layout type)
->    - This slide must communicate the value of swiping through the rest
-> 2. **Slides 2-8 (Content):** One idea per slide:
->    - Headline (3-5 words)
->    - Body text (2-3 sentences max)
->    - Optional: icon or visual suggestion for each slide
->    - Each slide should provide enough value to screenshot on its own
-> 3. **Slide 9 (Summary/Key Takeaway):** Recap the most important point
-> 4. **Slide 10 (CTA Slide):**
->    - "Save this for later" prompt
->    - Account tag and reason to follow
->    - Optional: "Share with someone who needs this"
+> **Slide 1 (Cover/Hook):**
+> - Headline: 6 words or less, bold claim or curiosity gap
+> - Subheadline: One line explaining what they'll learn
+> - Visual direction: [describe the aesthetic — minimal text, bold typography, specific colors, etc.]
+> - Must make someone think "I need to swipe to see this"
 >
-> **Also provide:**
-> - Caption (150-200 words): Hook in first line (before the "...more"), value add, CTA, hashtag set
-> - Design notes: Font style suggestions, color palette, layout consistency tips
+> **Slides 2-9 (Content Slides):**
+> For each slide provide:
+> - Main text (20-30 words max per slide — Instagram users skim)
+> - Supporting detail or example (1-2 sentences)
+> - Visual suggestion [icon, diagram, screenshot, chart, before/after, etc.]
 >
-> Make each slide scannable. If someone swipes through in 3 seconds per slide, they should still get the key message.
+> Structure the content as:
+> - [Choose: numbered list / step-by-step guide / myth vs reality / before/after / mistakes to avoid / framework breakdown]
+> - Each slide = one complete micro-idea
+> - Use consistent formatting across all slides for cohesion
+>
+> **Slide 10 (CTA Slide):**
+> - Recap the core takeaway in 10 words or less
+> - Clear CTA: Save this for later, follow for [specific content type], or share with someone who needs this
+> - Include a teaser for your next post or related content
+>
+> **Instagram Caption:**
+> Write a 150-200 word caption that:
+> - Opens with a hook that reframes the carousel topic
+> - Expands on one slide with a personal story or deeper context
+> - Ends with an engagement question related to the content
+> - Includes 15 relevant hashtags (mix of high, medium, and niche-specific tags)
+>
+> My brand aesthetic: [minimal/bold/colorful/corporate/hand-drawn]
+> My content goal: [education/inspiration/engagement/sales]
 
-**When to use it:** When creating educational or value-driven Instagram content that you want to get saves and shares, not just likes.
+**When to use it:** When you need a carousel that people actually read through and save, not just scroll past after the cover slide.
 
-**Pro tip:** The cover slide and slide 2 determine whether people keep swiping. Test different cover styles (question, bold statement, numbered list) to see what your audience prefers.
+**Pro tip:** Ask for "3 alternative cover slide headlines" after receiving the carousel — test different curiosity angles to see what drives more swipes.
 
 ---
 
@@ -105,37 +120,44 @@
 
 **The Prompt:**
 
-> Write a LinkedIn post about [topic/lesson/experience]. I want it to be authentic and valuable, not one of those cringe LinkedIn posts.
+> You are a LinkedIn ghostwriter who has written posts for executives that earned 100K+ impressions and led to inbound opportunities. Write a thought leadership post about [topic/recent experience/industry trend].
 >
-> **My perspective:** [your angle, experience, or opinion on this topic]
-> **My role/industry:** [context for credibility]
-> **Tone:** [honest/inspiring/analytical/contrarian/vulnerable]
+> **Post Structure (1,200-1,800 characters):**
 >
-> **Post structure:**
-> 1. **Hook (first line):** This is all people see before clicking "...see more." Make it impossible to not click. Give me 3 options:
->    - A counterintuitive statement
->    - A specific, concrete result or moment
->    - A short, punchy line that creates a knowledge gap
-> 2. **The story or insight:**
->    - If story-driven: Use short paragraphs. One sentence per line. Create rhythm.
->    - If insight-driven: Lead with the "so what" — why this matters to the reader, then explain.
->    - Include ONE specific detail that makes it feel real (a number, a date, a name, a place)
-> 3. **The lesson:** What should the reader take away? Don't preach — share what YOU learned.
-> 4. **The engagement driver:** End with either:
->    - A genuine question (not "Agree?")
->    - A request to share their experience
->    - A slightly provocative statement people will want to respond to
+> **Hook Paragraph (First 2 lines before "see more"):**
+> - Open with a contrarian statement, personal vulnerability, or industry observation that challenges conventional thinking
+> - These 2 lines determine if anyone clicks "see more" — make them count
+> - Avoid: "I've been thinking about...", "Hot take:", or anything that sounds like you're trying to go viral
 >
-> **Rules:**
-> - No "I'm humbled to announce..."
-> - No hashtag vomit (3 max, at the bottom)
-> - No emojis for bullet points
-> - Under 1,300 characters for optimal reach
-> - Write like a human, not a personal branding template
+> **Story/Context (Middle section):**
+> - Share a specific moment, conversation, or realization (use real details — numbers, names of tools, actual dialogue)
+> - Show your thinking process or what you got wrong before getting it right
+> - Make it feel like you're sharing something you learned, not something you're lecturing about
+> - Use short paragraphs (2-3 lines max) and line breaks for readability
+>
+> **Insight/Framework (Value section):**
+> - Extract the universal principle or tactical takeaway from your story
+> - If relevant, present it as a simple framework (3 steps, 2 types of X, before/after comparison)
+> - This is where expertise shines — give away something genuinely useful
+>
+> **Close (Final 2-3 lines):**
+> - Land the plane with a memorable closing thought or question to your audience
+> - Invitation to engage: "What's your experience with this?" or "Where do you see this playing out?"
+> - NO asks for likes, shares, or follows — let the content earn it
+>
+> **Tone requirements:**
+> - Write like you're explaining this to a peer over coffee, not presenting to a board
+> - Confidence without arrogance — "here's what I've learned" not "here's what you should do"
+> - First-person storytelling, but the insight should apply to your audience
+> - Smart but accessible — avoid unnecessary jargon
+>
+> Context about my background: [your role, industry, what makes you credible on this topic]
+> The specific insight or story I want to share: [give the raw idea/experience]
+> Who I want to reach: [target audience — hiring managers, founders, your industry peers, etc.]
 
-**When to use it:** When you have a genuine insight, career lesson, or professional experience worth sharing — not when you just want to post for the algorithm.
+**When to use it:** When you have a real insight worth sharing but need help structuring it so it resonates with your professional network and builds your authority.
 
-**Pro tip:** The best LinkedIn posts make one point, not five. If you're making multiple points, split them into a series over the week.
+**Pro tip:** Post on Tuesday-Thursday between 8-10 AM in your timezone for maximum visibility, and engage with comments in the first 2 hours to boost algorithmic reach.
 
 ---
 
@@ -143,25 +165,43 @@
 
 **The Prompt:**
 
-> Generate 20 engagement hooks for my [platform] account in the [niche] space. These are opening lines designed to stop the scroll and drive comments.
+> You are a social media copywriter who specializes in scroll-stopping opening lines. I need 50 high-performing hooks for posts about [your niche/content theme].
 >
-> **Create hooks in these categories:**
+> **Hook categories to include (provide 10 of each):**
 >
-> 1. **Controversial takes (4 hooks):** Opinions that will split the audience. Respectfully provocative, not offensive. The kind of thing where half the audience says "finally someone said it" and the other half says "no way, here's why..."
-> 2. **Relatable moments (4 hooks):** "Nobody talks about..." or "The thing about [niche] that nobody warns you about..." — things your audience has experienced but rarely seen articulated
-> 3. **Curiosity gaps (4 hooks):** Statements that open a loop the audience can't help but want closed. "I stopped doing [common practice] three months ago. Here's what happened."
-> 4. **Challenge/question hooks (4 hooks):** Direct questions or challenges that demand a response. "Name one [thing in your niche] that's overrated. I'll go first."
-> 5. **Social proof hooks (4 hooks):** Results-based openings that establish authority. Not bragging — sharing lessons from experience. "After [specific result], here's what I wish I'd known..."
+> 1. **Pattern Interrupt Hooks** — statements that break expectations or challenge assumptions
+>    Example format: "Everyone tells you to [common advice]. Here's why that's backwards:"
 >
-> **For each hook, include:**
-> - The hook text (ready to post)
-> - Which platform it works best on
-> - Suggested follow-up content (what to write after the hook)
-> - Predicted engagement type (comments vs saves vs shares)
+> 2. **Curiosity Gap Hooks** — create information gaps that demand to be closed
+>    Example format: "I just discovered why [surprising outcome]. The reason is not what you think:"
+>
+> 3. **Personal Story Hooks** — vulnerable or relatable moment that draws people in
+>    Example format: "Three months ago I [situation]. Today [transformation]. Here's what changed:"
+>
+> 4. **Data-Driven Hooks** — surprising statistics or numbers that demand explanation
+>    Example format: "I analyzed [number] of [thing] and found something shocking:"
+>
+> 5. **Listicle/Framework Hooks** — promise of organized, actionable information
+>    Example format: "The [number] [things] that separate [unsuccessful] from [successful]:"
+>
+> **Requirements for each hook:**
+> - Must be 1-2 sentences maximum
+> - Should work across multiple platforms (Twitter, LinkedIn, Instagram caption, etc.)
+> - Avoid overused phrases: "let's talk about", "here's the thing", "unpopular opinion", "hot take"
+> - Must create genuine curiosity, not clickbait disappointment
+> - Hooks should feel natural to my voice, not like a growth hacker wrote them
+>
+> **Context for customization:**
+> - My niche/industry: [specific area]
+> - My audience's biggest pain points: [list 3-5 specific problems]
+> - My unique perspective or credentials: [what makes your take different]
+> - Content topics I frequently cover: [list 5-7 themes]
+>
+> For each hook, include a [Topic suggestion] tag so I know what type of content would follow that hook.
 
-**When to use it:** When your opening lines feel stale and your engagement rate is dropping, or when you want to build a swipe file of proven hooks.
+**When to use it:** When you're batch-creating content and need proven opening lines that actually stop the scroll instead of blending into the feed.
 
-**Pro tip:** Save hooks that work well for you and create a "swipe file" document. Every 3 months, update it — what worked 6 months ago might feel tired now.
+**Pro tip:** Save these hooks in a swipe file and A/B test them — track which hook styles get the most engagement for YOUR audience, then double down on those patterns.
 
 ---
 
@@ -169,38 +209,43 @@
 
 **The Prompt:**
 
-> Build me a strategic social media content calendar for the next 4 weeks.
+> You are a content strategist who builds sustainable posting systems for [your platform — e.g., LinkedIn, Instagram, Twitter/X]. Create a 30-day content calendar for my business/brand focused on [your niche/offer].
 >
-> **My business:** [what you do]
-> **Platforms:** [list platforms and posting frequency for each]
-> **Content pillars:** [3-5 core topics you want to be known for]
-> **Goals this month:** [growth/sales/engagement/brand awareness/launch]
-> **Upcoming dates:** [product launches, holidays, events, personal milestones]
-> **What's worked before:** [types of content that got the best engagement]
+> **Content pillars to balance (assign percentages based on my goals):**
+> - Educational/Value content: [X%] — teach something specific
+> - Personal/Behind-the-scenes: [X%] — build connection and relatability
+> - Engagement/Conversation: [X%] — ask questions, start discussions
+> - Promotional/Offer: [X%] — showcase product, service, or results
 >
-> **Calendar structure:**
-> For each day, provide:
-> - Platform
-> - Content pillar being served
-> - Content type (educational, entertaining, promotional, personal, engagement)
-> - Post concept (specific enough to create from — not just "post about marketing")
-> - Hook/headline (the first line or visual concept)
-> - CTA type (engage, save, share, click, or no CTA)
-> - Notes on timing or context
+> **For each day, provide:**
+> 1. **Content Type:** [thread, carousel, video script, single post, story series, etc.]
+> 2. **Topic/Angle:** One sentence describing what the post is about
+> 3. **Hook/Opening Line:** The first sentence or headline
+> 4. **Core Message:** 2-3 bullet points outlining what to cover
+> 5. **CTA:** What action you want the audience to take
+> 6. **Content Pillar:** Tag which pillar this post serves
 >
-> **Strategic rules to follow:**
-> - Content pillar rotation so no topic dominates
-> - Promotional content capped at 20% of total posts
-> - Each week builds toward the monthly goal
-> - Engagement-driving posts (questions, polls, hot takes) at least 2x per week
-> - At least one "personal brand" post per week (behind-the-scenes, lessons learned)
-> - Mix of quick-to-create and high-effort content (can't film a video every day)
+> **Calendar structure preferences:**
+> - Posting frequency: [X posts per day/week]
+> - Best performing post types for my audience: [based on past data or best guess]
+> - Seasonal/timely hooks to include: [any launches, events, or trends to leverage]
+> - Topics I want to establish authority in: [list 3-5 specific themes]
 >
-> Present as a week-by-week table with a brief strategy note for each week.
+> **Context about my business:**
+> - What I sell/offer: [product, service, or expertise]
+> - Target audience: [who they are and what they need]
+> - Current audience size: [small/growing/established]
+> - Main business goal for content: [awareness/authority/leads/sales]
+>
+> **Additional requirements:**
+> - Include 2-3 "viral attempt" posts designed for maximum reach
+> - Balance quick wins (easy to create) with pillar content (high effort, high value)
+> - Suggest 1 repurposing opportunity per week where one piece of content becomes 3+ posts
+> - Leave 2 "flex days" for timely reactions or trending topics
 
-**When to use it:** At the start of each month to plan your content strategy and ensure you're not just winging it day-to-day.
+**When to use it:** When you need a complete content strategy that balances value, promotion, and engagement instead of posting random thoughts whenever you remember to.
 
-**Pro tip:** Block a 2-hour "content batch" session each week to create the content. Use the calendar for direction, not as a rigid obligation — swap or skip posts based on what's happening in real time.
+**Pro tip:** Batch-create all content in 2-hour blocks at the start of each week using this calendar as your guide — you'll never stare at a blank screen again.
 
 ---
 
@@ -208,32 +253,55 @@
 
 **The Prompt:**
 
-> Help me deeply understand my social media audience so I can create content they actually want.
+> You are an audience research strategist who uncovers the real motivations, language patterns, and pain points of target audiences. Help me deeply understand [my target audience] so I can create content that resonates at a visceral level.
 >
-> **My account:** [platform, niche, approximate follower count]
-> **My best-performing content:** [describe 3-5 posts that did well — topic, format, engagement]
-> **My worst-performing content:** [describe 2-3 posts that flopped]
-> **What I think my audience wants:** [your assumption]
+> **Conduct a comprehensive audience analysis covering:**
 >
-> **Analysis:**
-> 1. **Audience segments:** Based on my niche and content patterns, identify 3 distinct audience segments that likely follow me. For each:
->    - Who they are (demographics and psychographics)
->    - Why they follow me (what they want from my content)
->    - What content type resonates with them
->    - Their typical journey: lurker → engager → customer
-> 2. **Content-audience fit analysis:** Based on my best and worst performers, what patterns emerge?
->    - What topics get engagement vs. crickets?
->    - What formats work vs. fall flat?
->    - What hooks resonate vs. get scrolled past?
-> 3. **The gap:** What does my audience probably want that I'm NOT creating? What content would make them say "this account gets me"?
-> 4. **Competitor audience analysis:** What successful accounts in my niche are doing that I should learn from? (Don't copy — identify the strategy.)
-> 5. **Content experiments:** Suggest 5 content experiments to test — each designed to either confirm an assumption or discover something new about what my audience wants.
+> **1. Demographic & Psychographic Profile:**
+> - Age range, career stage, income level, location
+> - Values, fears, aspirations beyond surface level
+> - Where they are vs. where they want to be
 >
-> Help me stop guessing and start being strategic.
+> **2. Language & Communication Patterns:**
+> - What specific words and phrases do they use to describe their problems?
+> - What metaphors or comparisons resonate with them?
+> - What jargon do they use vs. avoid?
+> - How do they describe success in their own words?
+>
+> **3. Pain Point Hierarchy (ranked by intensity):**
+> - Surface-level pain (what they say the problem is)
+> - Actual pain (what the problem really is)
+> - Emotional pain (how it makes them feel)
+> - For each pain point, describe: the trigger, the consequence, and what they've tried that didn't work
+>
+> **4. Content Consumption Behavior:**
+> - What platforms do they use and why?
+> - What time of day are they most active and receptive?
+> - What content formats do they prefer (long-form, quick tips, stories, data)?
+> - What creators/brands do they already follow in my space?
+> - What makes them save/share/comment on content?
+>
+> **5. Decision-Making Process:**
+> - What objections prevent them from taking action?
+> - What proof do they need to believe a claim?
+> - Who influences their decisions (peers, experts, data)?
+> - What's the gap between "I should do this" and actually doing it?
+>
+> **6. Content Opportunity Map:**
+> Based on this analysis, identify:
+> - 5 underserved topics my competitors aren't covering well
+> - 3 emotional angles I should lean into
+> - 5 specific content ideas that would make this audience think "this was made for me"
+>
+> **Information to analyze from:**
+> [Provide any of the following: customer reviews, survey responses, comment sections from competitor posts, Reddit threads, interview transcripts, your own customer conversations, or describe your target audience in detail]
+>
+> My business/offer: [what you're selling or promoting]
+> Current hypothesis about my audience: [what you think you know about them]
 
-**When to use it:** When your growth has stalled, engagement is dropping, or you feel disconnected from what your audience wants.
+**When to use it:** Before launching a new content strategy or when your current content isn't landing — this helps you understand your audience at a depth that makes your content feel personalized.
 
-**Pro tip:** Every time a post overperforms or underperforms, add it to a running document. After 3 months, use that data with this prompt for a much more accurate analysis.
+**Pro tip:** Use this analysis to create an "audience avatar document" you reference before writing any piece of content — it eliminates guesswork and generic messaging.
 
 ---
 
@@ -241,36 +309,56 @@
 
 **The Prompt:**
 
-> Analyze why viral content goes viral and help me apply those patterns to my niche.
+> You are a viral content analyst who reverse-engineers high-performing posts to extract replicable patterns. I'm going to share a piece of viral content from [platform], and I want you to break down exactly why it worked and how I can apply those principles.
 >
-> **My niche:** [your area]
-> **Platform:** [where I post]
-> **A piece of viral content I admire:** [describe or paste the content that went viral]
+> **The viral content:**
+> [Paste the full post, thread, caption, or video script here]
 >
-> **Deconstruct the viral mechanics:**
-> 1. **The hook analysis:** What made people stop scrolling? Break down the first 3 seconds (video) or first line (text) and explain the psychological trigger.
-> 2. **The shareability factor:** Why did people share this? Which sharing trigger is at play?
->    - Social currency (makes the sharer look smart/funny/in-the-know)
->    - Emotional resonance (made them feel something strong)
->    - Practical value (useful enough to save or send to a friend)
->    - Tribal identity (says something about who the sharer is)
->    - Story arc (compelling narrative people want others to experience)
-> 3. **The engagement loop:** What made people comment? Was it a question, a debate, a shared experience, or outrage?
-> 4. **The format advantage:** How did the format (carousel, thread, reel, etc.) contribute to its spread?
-> 5. **Pattern extraction:** Distill the formula. "This went viral because it [trigger] + [format] + [timing]."
+> **Provide a detailed analysis covering:**
 >
-> **Now apply it to me:**
-> 6. **5 content ideas** using the same underlying formula, adapted to my niche. For each:
->    - The concept
->    - The hook
->    - Why it has viral potential
->    - How to execute it (format, length, style)
+> **1. Hook Analysis:**
+> - What specific technique did the hook use? (pattern interrupt, curiosity gap, bold claim, relatability, controversy, etc.)
+> - Why did it work for this audience at this moment?
+> - What emotion did it trigger in the first 3 seconds/first line?
 >
-> I don't want to copy viral content. I want to understand the mechanics and build my own.
+> **2. Structure Breakdown:**
+> - Map out the exact structure (e.g., Hook → Story → Insight → CTA)
+> - Identify pacing: where did it speed up, slow down, or create pauses?
+> - Note any formatting choices that enhanced readability (line breaks, emojis, lists, etc.)
+>
+> **3. Psychological Triggers:**
+> - What cognitive biases did this leverage? (social proof, scarcity, authority, reciprocity, curiosity, identity, etc.)
+> - What pain point or desire did it tap into?
+> - Did it create an "enemy" or "us vs. them" dynamic?
+>
+> **4. Engagement Mechanics:**
+> - What specifically made people want to comment, share, or save?
+> - Was there a built-in conversation starter or debate point?
+> - Did it create a status signal (sharing this makes me look smart/in-the-know)?
+>
+> **5. Why This Worked Now:**
+> - Was there a cultural moment, trend, or timing element?
+> - What made this feel fresh vs. overdone?
+>
+> **6. Replication Framework:**
+> Create a fill-in-the-blank template I can use to apply this same structure to MY content:
+> - "Start with [type of hook] about [angle]"
+> - "Then [structure element] to [psychological effect]"
+> - "Close with [CTA type] that makes them [desired action]"
+>
+> **7. Adaptation for My Brand:**
+> - Which elements can I directly copy without looking derivative?
+> - What needs to be modified to fit my voice and audience?
+> - Give me 3 specific content ideas for MY niche using this viral structure
+>
+> **My context:**
+> - My niche/industry: [your area]
+> - My target audience: [who you serve]
+> - My current content challenge: [what's not working for you now]
 
-**When to use it:** When you see a viral post and want to understand WHY it worked, not just admire it.
+**When to use it:** When you see a post that crushes and want to understand the mechanics behind it so you can apply the same principles without copying it directly.
 
-**Pro tip:** Study viral content outside your niche. The best ideas come from applying proven formulas from one industry to another where no one has used them yet.
+**Pro tip:** Build a "viral structure swipe file" where you save these analyses — over time you'll spot patterns across successful content and develop an instinct for what works.
 
 ---
 
@@ -278,32 +366,56 @@
 
 **The Prompt:**
 
-> Create a library of response templates for the comments and DMs I get most often on [platform]. My brand voice is [describe: professional, casual, witty, warm, bold].
+> You are a community engagement specialist who helps creators respond to their audience in a way that builds relationships, not just checks boxes. Create a response template library for my [platform] covering common scenarios.
 >
-> **Build templates for these scenarios:**
+> **For each scenario below, write 3 response variations (casual, professional, and playful tone):**
 >
-> **Comments:**
-> 1. **Positive feedback:** "Love this!" / "So helpful!" — how to respond in a way that deepens the relationship, not just says "thanks!"
-> 2. **Questions about my product/service:** Someone asking what I offer or how much it costs — respond without being pushy but with a clear next step
-> 3. **Negative or critical comments:** Constructive criticism — how to respond gracefully and turn it into a positive
-> 4. **Trolls or bad-faith comments:** When to respond, when to ignore, and what to say when I do respond
-> 5. **"How do I start?" questions:** Someone asking for beginner advice in my field — be helpful without giving away everything for free
-> 6. **Collaboration requests:** People asking to collab — how to assess and respond (both yes and no)
+> **Positive Engagement Responses:**
+> 1. Genuine compliment on my content ("This was so helpful!")
+> 2. Someone sharing their own related story or experience
+> 3. Request to collaborate or be on a podcast
+> 4. Someone tagging a friend in the comments
+> 5. Question asking for more detail on something I posted
 >
-> **DMs:**
-> 7. **"Can I pick your brain?":** Polite redirect to paid offering or clear boundary
-> 8. **Sales/pitch DMs:** Someone trying to sell me something — polite decline template
-> 9. **Fan/follower messages:** Genuine appreciation — response that makes them feel valued
-> 10. **Partnership or sponsorship inquiries:** Professional response that qualifies the opportunity
+> **Negative/Critical Engagement Responses:**
+> 6. Polite disagreement or counterpoint to my take
+> 7. Aggressive criticism or personal attack
+> 8. "This is obvious/I already knew this" dismissiveness
+> 9. Questioning my credibility or credentials
+> 10. Misunderstanding what I said (arguing against a strawman)
 >
-> **For each template, give me:**
-> - 2-3 variations so responses don't feel scripted
-> - Personalization tokens [THEIR NAME], [SPECIFIC THING], etc.
-> - One version that drives them toward my [product/link/offer] and one that doesn't
+> **Sales/Pitch Responses:**
+> 11. Someone asking "How can I work with you?"
+> 12. "Can I pick your brain?" or free consulting requests
+> 13. Pitch/spam in my comments or DMs
+> 14. Request for free advice that should be paid
+>
+> **Engagement-Building Responses:**
+> 15. Someone asking a question I've answered before
+> 16. Open-ended "What do you think about [topic]?" question
+> 17. Request for recommendations (tools, resources, etc.)
+> 18. "Where do I start?" from a complete beginner
+>
+> **Each response template should:**
+> - Feel human and conversational, not copy-paste robotic
+> - Include [personalization slots] where I customize with their name or specific detail
+> - When appropriate, include a soft CTA (check out this post, DM me, try this)
+> - De-escalate tension for negative scenarios without being defensive
+> - Build relationship capital, not just close the conversation
+>
+> **My brand voice guidelines:**
+> - Tone: [friendly/authoritative/witty/warm/direct]
+> - Things I never say: [list any phrases or attitudes to avoid]
+> - How I want people to feel after interacting with me: [valued/inspired/informed/entertained]
+>
+> **Context:**
+> - My niche: [what you post about]
+> - My offer (if any): [what you sell, so responses can strategically mention it]
+> - My engagement goal: [build community/drive sales/establish authority/all of the above]
 
-**When to use it:** When you're spending too long crafting individual responses, or when you want to be more strategic about how you engage.
+**When to use it:** When you want to engage authentically with your audience at scale without spending 2 hours a day writing custom responses or sounding like a bot.
 
-**Pro tip:** Customize 5-10 of these with your personal voice and save them in your phone's text replacement or a notes app. Being fast to respond matters more than being perfect.
+**Pro tip:** Keep these templates in a note on your phone — when you're responding to comments in dead time (waiting in line, between meetings), you'll have thoughtful replies ready instead of just dropping emojis.
 
 ---
 
@@ -311,37 +423,63 @@
 
 **The Prompt:**
 
-> Help me define and document my brand voice for social media so all my content feels consistent.
+> You are a brand voice strategist who helps creators and businesses develop a distinctive, recognizable communication style. Help me define and document my brand voice so all my content sounds cohesively like "me" (or my brand).
 >
-> **About my brand:**
-> - What I do: [your business/content niche]
-> - Who I serve: [your audience]
-> - What I want to be known for: [your positioning]
-> - Brands I admire the voice of: [2-3 examples and what you like about each]
-> - My personality IRL: [how you'd describe yourself in conversation]
+> **First, analyze my existing voice by reviewing:**
+> [Paste 5-10 examples of your best-performing or most authentic content — posts, captions, emails, video scripts, whatever represents how you naturally communicate]
 >
-> **Build my brand voice guide:**
+> **Then create my Brand Voice Blueprint covering:**
 >
-> 1. **Voice attributes:** Define 3-4 core attributes (e.g., "Bold but not arrogant", "Expert but approachable"). For each one, give a "this, not that" example.
-> 2. **Vocabulary rules:**
->    - Words and phrases I should use (that feel on-brand)
->    - Words and phrases I should avoid (that feel off-brand)
->    - Industry jargon: when to use it and when to translate it
-> 3. **Tone spectrum:** My voice stays the same, but tone shifts by context:
->    - Celebrating a win: how I sound
->    - Teaching something: how I sound
->    - Addressing controversy: how I sound
->    - Selling something: how I sound
->    - Being personal/vulnerable: how I sound
-> 4. **Platform-specific adjustments:**
->    - How my voice adapts for [each platform I use]
->    - What stays the same everywhere
-> 5. **The "bar test":** Write 3 sample captions in my voice. They should sound like something I'd actually say to a friend at a bar, not something a marketing team wrote.
-> 6. **Red flags:** 5 signs that a piece of content is NOT in my voice (so I can catch it before posting)
+> **1. Voice Personality Profile:**
+> Define my voice using 4-5 specific attributes (NOT generic words like "authentic" or "professional"):
+> - For each attribute, provide: a one-sentence definition, what it sounds like in practice, and what it does NOT sound like
+> - Example: "Playfully contrarian — I challenge assumptions with wit, not aggression. Sounds like: 'Everyone says X, but here's why Y is actually better.' Does NOT sound like: Cynical, dismissive, or mean-spirited takedowns."
+>
+> **2. Language Patterns:**
+> - Sentence structure: [short and punchy / varied / long and flowing]
+> - Vocabulary level: [accessible / technical / mix]
+> - Unique phrases or verbal tics I use often: [list them]
+> - Words/phrases I avoid: [things that don't fit my brand]
+> - How I use humor: [sarcasm / self-deprecation / wordplay / observational / don't use humor]
+> - Punctuation style: [em-dashes, semicolons, ellipses, or keep it simple]
+>
+> **3. Perspective & Values:**
+> - What I believe that shapes my communication: [3-5 core beliefs]
+> - What I'm FOR: [the causes, approaches, or ideas I champion]
+> - What I'm AGAINST: [the things I push back on or call out]
+> - How I handle disagreement: [direct debate / find common ground / ignore and focus on my lane]
+>
+> **4. Emotional Range:**
+> - Primary emotion I evoke: [inspiration / urgency / calm confidence / excitement / rebellion]
+> - How I balance vulnerability vs. authority: [describe the mix]
+> - When I use ALL CAPS, *emphasis*, or **bold**: [for what effect]
+>
+> **5. Platform Adaptations:**
+> How does my voice shift across platforms while staying recognizably "me"?
+> - [Platform 1]: [adjustments to tone, length, formality]
+> - [Platform 2]: [adjustments to tone, length, formality]
+> - [Platform 3]: [adjustments to tone, length, formality]
+>
+> **6. Voice Comparison Matrix:**
+> Compare my voice to 3 well-known creators/brands:
+> - "I sound like [Creator A] in terms of [specific quality], but different because [specific difference]"
+> - "I sound like [Creator B] in terms of [specific quality], but different because [specific difference]"
+> - "I sound like [Creator C] in terms of [specific quality], but different because [specific difference]"
+>
+> **7. Before/After Examples:**
+> Take 3 pieces of generic content and rewrite them in MY voice:
+> - Generic: "Here are 5 tips for productivity"
+> - My Voice: [your rewrite]
+>
+> **My context:**
+> - Industry/niche: [your space]
+> - Target audience: [who I talk to]
+> - How I want to be perceived: [the reputation I'm building]
+> - Creators whose voice I admire (not copy): [list 2-3 for reference]
 
-**When to use it:** When establishing your brand, when onboarding someone to manage your social media, or when your content feels inconsistent.
+**When to use it:** When your content feels inconsistent, you're hiring writers/assistants who need to sound like you, or you're building a brand that needs a recognizable voice across all content.
 
-**Pro tip:** Read your last 10 posts and highlight the ones that feel most "you." Paste those into this prompt as examples — the AI will extract your natural voice patterns better than you can describe them.
+**Pro tip:** Share this blueprint with AI tools when generating content — the more specific your voice documentation, the less editing you'll need to do to make AI-written content sound like you.
 
 ---
 
@@ -349,37 +487,63 @@
 
 **The Prompt:**
 
-> I want to grow my [platform] account from [current follower count] to [target] in [timeframe]. Build me a specific growth playbook.
+> You are a social media growth strategist with expertise in [specific platform — Instagram, LinkedIn, Twitter/X, TikTok, YouTube, etc.]. Create a comprehensive 90-day growth plan to take me from [current follower count] to [target follower count] with an engaged, high-quality audience.
 >
-> **Current state:**
-> - Follower count: [number]
-> - Average engagement rate: [percentage or "I don't know"]
-> - Posting frequency: [how often]
-> - Content types I create: [what formats]
-> - Time I can spend on social media per day: [hours]
-> - Budget for ads/tools: [amount or $0]
+> **My context:**
+> - Platform: [which one]
+> - Current followers: [number]
+> - Target followers: [goal number]
+> - Niche/industry: [your area]
+> - What I sell/offer (if monetizing): [product, service, or building authority for job opportunities]
+> - Current posting frequency: [how often you post now]
+> - Time I can commit daily: [realistic hours per day]
+> - Past content that performed well: [describe or paste links]
+> - Past content that flopped: [describe what didn't work]
 >
-> **Growth playbook:**
-> 1. **Profile optimization:** Review my current bio strategy. Write an optimized bio that converts profile visitors to followers. Include:
->    - One-line value proposition
->    - Proof element (result, credential, or social proof)
->    - Clear CTA
-> 2. **Content strategy shift:** Based on my current content, what should I do MORE of, LESS of, and START doing? Be specific.
-> 3. **Posting schedule:** Optimal posting times and frequency for growth on [platform] given my available time
-> 4. **Engagement strategy:** A daily 20-minute engagement routine:
->    - How many posts to engage with
->    - Whose posts to prioritize (bigger accounts, peers, potential customers)
->    - What to say in comments that gets noticed (not "Great post!")
-> 5. **Collaboration strategy:** How to land collaborations with accounts 2-5x my size
-> 6. **Hashtag/discovery strategy:** Platform-specific discoverability tactics
-> 7. **Content experiments:** 5 experiments to run this month, each with a clear hypothesis and success metric
-> 8. **Weekly growth metrics:** What to track every week (not just follower count)
+> **Build me a 90-day playbook covering:**
 >
-> Don't give me generic advice. Give me a specific plan for an account at MY current size.
+> **Phase 1: Foundation (Days 1-30) — Optimize & Test**
+> - Profile optimization checklist: [what to update in bio, profile pic, featured content, etc.]
+> - Content testing framework: [what formats, topics, and styles to test to find what resonates]
+> - Posting frequency and timing: [specific schedule based on my availability]
+> - Engagement strategy: [how much time on commenting, DMing, building relationships]
+> - Key metrics to track: [which numbers actually matter vs. vanity metrics]
+> - Week-by-week focus areas and milestones
+>
+> **Phase 2: Momentum (Days 31-60) — Double Down & Collaborate**
+> - Content focus: [based on Phase 1 testing, what to create more of]
+> - Collaboration strategy: [how to leverage others' audiences — guest posts, shoutouts, etc.]
+> - Algorithm hacks specific to this platform: [what behaviors the algorithm rewards right now]
+> - Engagement amplification: [tactics to boost reach of top-performing content]
+> - Community building: [how to convert followers into engaged community members]
+> - Week-by-week focus areas and milestones
+>
+> **Phase 3: Scale (Days 61-90) — Systematize & Accelerate**
+> - Content batching system: [how to produce high-volume content efficiently]
+> - Repurposing workflow: [turn one piece into 5+ assets]
+> - Lead magnet or hook offer: [if monetizing, what to offer to convert followers to email/customers]
+> - Paid amplification strategy: [if/when to use ads or boosted content]
+> - Sustainability plan: [how to maintain growth without burning out]
+> - Week-by-week focus areas and milestones
+>
+> **Supporting Framework:**
+> - **Daily Non-Negotiables:** The 3-5 tasks I MUST do every single day for growth
+> - **Weekly Review Questions:** What to assess each week to stay on track
+> - **Red Flags:** Signs that I'm growing followers but not building a real audience
+> - **Pivot Triggers:** Metrics that indicate I need to change strategy
+>
+> **Deliverables:**
+> - A week-by-week action plan with specific tasks
+> - Content pillar breakdown (what % of content should be educational, personal, promotional, etc.)
+> - Engagement strategy (how many comments/DMs per day, where to engage)
+> - Growth accelerators specific to this platform
+> - Tools/resources I'll need
+>
+> Tailor this plan to be realistic for someone with [my time commitment] and prioritize strategies that build an engaged audience, not just vanity follower counts.
 
-**When to use it:** When you're serious about growing and want a structured plan instead of random tactics.
+**When to use it:** When you're serious about growing on a platform and need a structured, step-by-step plan instead of randomly posting and hoping for the best.
 
-**Pro tip:** Growth advice for a 500-follower account is completely different from a 50K-follower account. Always specify your current size — it changes everything.
+**Pro tip:** Set a calendar reminder every Sunday to review your progress against this playbook — growth comes from consistent execution, not perfect content.
 
 ---
 
@@ -387,30 +551,61 @@
 
 **The Prompt:**
 
-> I created this piece of content: [paste or describe your content — video, blog post, podcast episode, tweet that went viral, etc.]
+> You are a content repurposing strategist who helps creators extract maximum value from every piece of content. I just created [describe the original content piece — long-form video, podcast episode, blog post, LinkedIn article, Twitter thread, etc.] and I want to turn it into 10+ pieces of content across multiple platforms.
 >
-> It performed well. Now I want to squeeze every drop of value from it across all my platforms.
+> **Original Content Details:**
+> - Format: [video/audio/written]
+> - Topic: [what it's about]
+> - Key points covered: [list the main takeaways, stories, or insights]
+> - Length: [duration or word count]
+> - Best moments: [timestamps, quotes, or sections that stood out]
+> - Target audience: [who this was created for]
 >
-> **My platforms:** [list all platforms you're on]
+> **Create a comprehensive repurposing plan:**
 >
-> **Repurpose this into:**
+> **Tier 1: Direct Excerpts (minimal editing required)**
+> 1. Pull quotes → Turn into quote graphics for Instagram/LinkedIn
+>    - Provide 5 specific quotes with design suggestions
+> 2. Key insights → Twitter/X thread (break down the main points)
+>    - Provide the thread structure (hook + 5-7 value tweets + CTA)
+> 3. Highlight clips → TikTok/Reels/Shorts (identify the viral-worthy moments)
+>    - Provide 3 specific clip suggestions with timestamps and hook scripts
+> 4. Listicle → LinkedIn carousel or Instagram carousel
+>    - Provide slide-by-slide breakdown
 >
-> 1. **Short-form video (TikTok/Reels):** Pull out the most quotable or visual moment. Write a 30-60 second script around that moment. Include hook, visual cues, and caption.
-> 2. **Twitter/X thread:** Break the key insights into a 7-10 tweet thread with a killer first tweet.
-> 3. **Instagram carousel:** Design 8-10 slides that teach the concept visually. Provide slide-by-slide text and design direction.
-> 4. **LinkedIn post:** Adapt the insight for a professional audience. Different hook, same core value.
-> 5. **Email newsletter segment:** A 150-word section I can drop into my weekly email.
-> 6. **Quote graphics:** 5 shareable one-liner quotes pulled from the content, each ready for a designed graphic.
-> 7. **Story/ephemeral content:** 3-5 story frames (Instagram/Facebook stories) that tease the content and drive people to the full version.
-> 8. **Blog post (if original wasn't a blog):** A 500-word written version for SEO.
+> **Tier 2: Remixed & Reformatted (moderate editing)**
+> 5. FAQ post → Take questions answered in the content and create a Q&A post
+>    - Provide the top 5 questions and concise answers
+> 6. Email newsletter → Expand on one key point with a story/example
+>    - Provide subject line, opening hook, and outline
+> 7. Contrarian take → Find a counterintuitive point and make it a standalone hot take post
+>    - Provide the angle and hook
+> 8. Before/after → If applicable, show the transformation or comparison from the content
+>    - Provide the framing
 >
-> **For each format:**
-> - The adapted content (ready to post)
-> - Platform-specific tweaks (length, tone, format)
-> - CTA that drives back to the original content or my main platform
+> **Tier 3: New Angles (requires fresh creation but uses same research)**
+> 9. Beginner version → Simplify the core concept for someone brand new to the topic
+>    - Provide hook and structure
+> 10. Advanced deep-dive → Take one subtopic and go 3 levels deeper
+>     - Provide hook and structure
+> 11. Case study → Turn data/examples from the content into a mini case study
+>     - Provide structure and key data points
+> 12. Myth-busting → Address misconceptions related to the topic
+>     - Provide 3 myths to bust based on the content
 >
-> The goal: one great idea, 8+ pieces of content, zero extra thinking.
+> **Repurposing Strategy:**
+> - **Sequencing:** What order should I release these pieces for maximum impact?
+> - **Platform matching:** Which repurposed formats work best on which platforms?
+> - **Linking strategy:** How do I use these pieces to drive traffic back to the original long-form content?
+> - **Freshness span:** How long can I keep repurposing this before it feels stale?
+>
+> **Bonus:**
+> - Suggest 2-3 "part 2" or follow-up content ideas inspired by audience questions or gaps in the original content
+>
+> Provide specific, copy-paste ready content for each repurposed piece, not just ideas.
 
-**When to use it:** Every time you create a piece of content that performs well. The content is already validated — now maximize its reach.
+**When to use it:** After creating any substantial piece of content — this ensures you get 10x the mileage out of the effort you already put in instead of letting great content die after one post.
 
-**Pro tip:** Don't repurpose everything on the same day. Spread it across 1-2 weeks so each platform's audience sees it at the optimal time without feeling like you're repeating yourself.
+**Pro tip:** Batch your repurposing — dedicate 2 hours right after creating the original content to knock out all repurposed versions while it's fresh in your mind. Your content calendar will thank you.
+
+---

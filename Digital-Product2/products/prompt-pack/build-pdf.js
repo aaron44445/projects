@@ -1,32 +1,9 @@
-const PDFDocument = require('pdfkit');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
 // ============================================================
-// Color scheme & constants
-// ============================================================
-const COLORS = {
-  bg: '#0a0a0a',
-  bgLight: '#141414',
-  bgCard: '#1a1a1a',
-  bgCardBorder: '#2a2a2a',
-  text: '#ffffff',
-  textMuted: '#a0a0a0',
-  textDim: '#707070',
-  accent: '#00d4ff',
-  accentDark: '#0099bb',
-  accentGlow: '#00e5ff',
-  proTip: '#ff9f1c',
-  whenToUse: '#7b68ee',
-};
-
-const PAGE_WIDTH = 612;
-const PAGE_HEIGHT = 792;
-const MARGIN = 54;
-const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
-
-// ============================================================
-// Markdown parser — extracts structured prompts from .md files
+// Parse markdown files into structured prompt data
 // ============================================================
 function parseMarkdownFile(filePath) {
   const raw = fs.readFileSync(filePath, 'utf-8');
@@ -35,7 +12,7 @@ function parseMarkdownFile(filePath) {
   let categoryTitle = '';
   const prompts = [];
   let current = null;
-  let section = null; // 'prompt' | 'whenToUse' | 'proTip'
+  let section = null;
   let promptLines = [];
 
   function flushPromptLines() {
@@ -49,13 +26,11 @@ function parseMarkdownFile(filePath) {
   }
 
   for (const line of lines) {
-    // Category title
     if (line.startsWith('# ') && !line.startsWith('## ')) {
       categoryTitle = line.replace('# ', '').trim();
       continue;
     }
 
-    // Prompt title
     const titleMatch = line.match(/^## \d+\.\s+(.+)/);
     if (titleMatch) {
       flushPromptLines();
@@ -65,7 +40,6 @@ function parseMarkdownFile(filePath) {
       continue;
     }
 
-    // Section headers
     if (line.startsWith('**The Prompt:**')) {
       flushPromptLines();
       section = 'prompt';
@@ -76,6 +50,7 @@ function parseMarkdownFile(filePath) {
       section = 'whenToUse';
       const inline = line.replace('**When to use it:**', '').trim();
       if (inline) current.whenToUse = inline;
+      section = null;
       continue;
     }
     if (line.startsWith('**Pro tip:**')) {
@@ -83,17 +58,16 @@ function parseMarkdownFile(filePath) {
       section = 'proTip';
       const inline = line.replace('**Pro tip:**', '').trim();
       if (inline) current.proTip = inline;
+      section = null;
       continue;
     }
 
-    // Separator
     if (line.trim() === '---') {
       flushPromptLines();
       section = null;
       continue;
     }
 
-    // Accumulate content for current section
     if (section && current) {
       promptLines.push(line);
     }
@@ -106,7 +80,6 @@ function parseMarkdownFile(filePath) {
 }
 
 function cleanPromptText(text) {
-  // Remove blockquote markers and clean up
   return text
     .split('\n')
     .map(l => l.replace(/^>\s?/, ''))
@@ -114,522 +87,699 @@ function cleanPromptText(text) {
     .trim();
 }
 
-// ============================================================
-// PDF Builder
-// ============================================================
-class PromptVaultPDF {
-  constructor() {
-    this.doc = new PDFDocument({
-      size: 'LETTER',
-      margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
-      autoFirstPage: false,
-      bufferPages: true,
-    });
-    this.pageNum = 0;
-    this.categories = [];
-    this.tocEntries = [];
-  }
-
-  // Draws dark background on current page
-  drawPageBg() {
-    this.doc
-      .save()
-      .rect(0, 0, PAGE_WIDTH, PAGE_HEIGHT)
-      .fill(COLORS.bg)
-      .restore();
-  }
-
-  // Footer on every content page
-  drawFooter() {
-    const y = PAGE_HEIGHT - 36;
-    this.doc
-      .save()
-      .moveTo(MARGIN, y - 8)
-      .lineTo(PAGE_WIDTH - MARGIN, y - 8)
-      .strokeColor(COLORS.bgCardBorder)
-      .lineWidth(0.5)
-      .stroke()
-      .restore();
-
-    this.doc
-      .font('Helvetica')
-      .fontSize(8)
-      .fillColor(COLORS.textDim)
-      .text('The AI Prompt Vault', MARGIN, y, { width: CONTENT_WIDTH / 2, align: 'left' })
-      .text(`${this.pageNum}`, PAGE_WIDTH / 2, y, { width: CONTENT_WIDTH / 2, align: 'right' });
-  }
-
-  addPage() {
-    this.doc.addPage();
-    this.pageNum++;
-    this.drawPageBg();
-  }
-
-  // --------------------------------------------------------
-  // Cover page
-  // --------------------------------------------------------
-  buildCover() {
-    this.addPage();
-
-    // Accent bar at top
-    this.doc
-      .save()
-      .rect(0, 0, PAGE_WIDTH, 6)
-      .fill(COLORS.accent)
-      .restore();
-
-    // Decorative line elements
-    const cx = PAGE_WIDTH / 2;
-    this.doc
-      .save()
-      .moveTo(cx - 120, 200)
-      .lineTo(cx + 120, 200)
-      .strokeColor(COLORS.accent)
-      .lineWidth(2)
-      .stroke()
-      .restore();
-
-    // Title
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(42)
-      .fillColor(COLORS.accent)
-      .text('THE AI', 0, 230, { width: PAGE_WIDTH, align: 'center' });
-
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(52)
-      .fillColor(COLORS.text)
-      .text('PROMPT VAULT', 0, 278, { width: PAGE_WIDTH, align: 'center' });
-
-    // Decorative line
-    this.doc
-      .save()
-      .moveTo(cx - 120, 345)
-      .lineTo(cx + 120, 345)
-      .strokeColor(COLORS.accent)
-      .lineWidth(2)
-      .stroke()
-      .restore();
-
-    // Subtitle
-    this.doc
-      .font('Helvetica')
-      .fontSize(18)
-      .fillColor(COLORS.textMuted)
-      .text('50+ Prompts to 10x Your Output', 0, 370, { width: PAGE_WIDTH, align: 'center' });
-
-    // Category badges
-    const cats = ['Business Strategy', 'Content Creation', 'Coding Assistant', 'Productivity', 'Social Media'];
-    const badgeY = 430;
-    this.doc.font('Helvetica').fontSize(10).fillColor(COLORS.accent);
-
-    cats.forEach((cat, i) => {
-      const y = badgeY + i * 28;
-      // Draw badge background
-      const badgeW = 180;
-      const badgeX = cx - badgeW / 2;
-      this.doc
-        .save()
-        .roundedRect(badgeX, y - 4, badgeW, 22, 4)
-        .fillAndStroke(COLORS.bgCard, COLORS.bgCardBorder)
-        .restore();
-
-      this.doc
-        .fillColor(COLORS.accent)
-        .text(cat, badgeX, y, { width: badgeW, align: 'center' });
-    });
-
-    // Bottom tagline
-    this.doc
-      .font('Helvetica')
-      .fontSize(10)
-      .fillColor(COLORS.textDim)
-      .text('Ready-to-use prompts for ChatGPT, Claude, and any AI assistant', 0, 620, {
-        width: PAGE_WIDTH,
-        align: 'center',
-      });
-
-    // Accent bar at bottom
-    this.doc
-      .save()
-      .rect(0, PAGE_HEIGHT - 6, PAGE_WIDTH, 6)
-      .fill(COLORS.accent)
-      .restore();
-
-    // Reset page number (cover doesn't count)
-    this.pageNum = 0;
-  }
-
-  // --------------------------------------------------------
-  // Table of contents
-  // --------------------------------------------------------
-  buildTOC() {
-    this.addPage();
-    this.drawFooter();
-
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(28)
-      .fillColor(COLORS.accent)
-      .text('TABLE OF CONTENTS', MARGIN, MARGIN + 20);
-
-    // Decorative line
-    this.doc
-      .save()
-      .moveTo(MARGIN, MARGIN + 58)
-      .lineTo(MARGIN + 200, MARGIN + 58)
-      .strokeColor(COLORS.accent)
-      .lineWidth(2)
-      .stroke()
-      .restore();
-
-    let y = MARGIN + 80;
-
-    this.categories.forEach((cat, catIdx) => {
-      // Category header
-      this.doc
-        .font('Helvetica-Bold')
-        .fontSize(14)
-        .fillColor(COLORS.accent)
-        .text(`${catIdx + 1}. ${cat.categoryTitle}`, MARGIN, y);
-
-      y += 24;
-
-      cat.prompts.forEach((p, pIdx) => {
-        this.doc
-          .font('Helvetica')
-          .fontSize(10)
-          .fillColor(COLORS.textMuted)
-          .text(`${pIdx + 1}. ${p.title}`, MARGIN + 20, y, { width: CONTENT_WIDTH - 20 });
-
-        y += 18;
-      });
-
-      y += 12;
-    });
-  }
-
-  // --------------------------------------------------------
-  // Chapter header page
-  // --------------------------------------------------------
-  buildChapterHeader(title, number, promptCount) {
-    this.addPage();
-    this.drawFooter();
-
-    // Large chapter number
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(120)
-      .fillColor(COLORS.bgLight)
-      .text(`0${number}`, 0, 180, { width: PAGE_WIDTH, align: 'center' });
-
-    // Category name overlay
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(32)
-      .fillColor(COLORS.text)
-      .text(title.toUpperCase(), 0, 300, { width: PAGE_WIDTH, align: 'center' });
-
-    // Accent underline
-    const cx = PAGE_WIDTH / 2;
-    this.doc
-      .save()
-      .moveTo(cx - 80, 345)
-      .lineTo(cx + 80, 345)
-      .strokeColor(COLORS.accent)
-      .lineWidth(3)
-      .stroke()
-      .restore();
-
-    // Prompt count
-    this.doc
-      .font('Helvetica')
-      .fontSize(14)
-      .fillColor(COLORS.textMuted)
-      .text(`${promptCount} Prompts`, 0, 365, { width: PAGE_WIDTH, align: 'center' });
-  }
-
-  // --------------------------------------------------------
-  // Individual prompt page(s)
-  // --------------------------------------------------------
-  buildPromptPages(prompt, promptNumber, categoryName) {
-    this.addPage();
-    this.drawFooter();
-
-    let y = MARGIN;
-
-    // Category + prompt number header
-    this.doc
-      .font('Helvetica')
-      .fontSize(9)
-      .fillColor(COLORS.accent);
-    this.doc.text(`${categoryName.toUpperCase()}  /  PROMPT ${promptNumber}`, MARGIN, y);
-    y += 22;
-
-    // Prompt title
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(20)
-      .fillColor(COLORS.text);
-    this.doc.text(prompt.title, MARGIN, y, { width: CONTENT_WIDTH });
-    y = this.doc.y + 16;
-
-    // The prompt text in a styled card
-    const promptText = cleanPromptText(prompt.prompt);
-
-    // Measure the text height first
-    const textHeight = this.doc
-      .font('Helvetica')
-      .fontSize(10)
-      .heightOfString(promptText, { width: CONTENT_WIDTH - 36 });
-
-    const cardHeight = textHeight + 32;
-    const cardTop = y;
-
-    // Check if card fits on this page
-    if (cardTop + cardHeight > PAGE_HEIGHT - 100) {
-      // Start a new page for the prompt text
-      this.addPage();
-      this.drawFooter();
-      y = MARGIN;
-
-      // Re-draw the header on new page
-      this.doc
-        .font('Helvetica')
-        .fontSize(9)
-        .fillColor(COLORS.accent);
-      this.doc.text(`${categoryName.toUpperCase()}  /  PROMPT ${promptNumber} (continued)`, MARGIN, y);
-      y += 22;
-    }
-
-    // Card background
-    this.doc
-      .save()
-      .roundedRect(MARGIN, y, CONTENT_WIDTH, cardHeight, 6)
-      .fill(COLORS.bgCard)
-      .restore();
-
-    // Left accent bar on card
-    this.doc
-      .save()
-      .roundedRect(MARGIN, y, 4, cardHeight, 2)
-      .fill(COLORS.accent)
-      .restore();
-
-    // Card border
-    this.doc
-      .save()
-      .roundedRect(MARGIN, y, CONTENT_WIDTH, cardHeight, 6)
-      .strokeColor(COLORS.bgCardBorder)
-      .lineWidth(1)
-      .stroke()
-      .restore();
-
-    // Prompt text inside card
-    this.doc
-      .font('Helvetica')
-      .fontSize(10)
-      .fillColor(COLORS.textMuted);
-    this.doc.text(promptText, MARGIN + 18, y + 16, {
-      width: CONTENT_WIDTH - 36,
-      lineGap: 3,
-    });
-
-    y = y + cardHeight + 20;
-
-    // Check if we need a new page for when-to-use and pro-tip
-    if (y > PAGE_HEIGHT - 140) {
-      this.addPage();
-      this.drawFooter();
-      y = MARGIN;
-    }
-
-    // When to use it
-    if (prompt.whenToUse) {
-      // Icon-style label
-      this.doc
-        .save()
-        .roundedRect(MARGIN, y, 110, 20, 3)
-        .fill(COLORS.whenToUse)
-        .restore();
-
-      this.doc
-        .font('Helvetica-Bold')
-        .fontSize(9)
-        .fillColor(COLORS.text)
-        .text('WHEN TO USE', MARGIN + 8, y + 5);
-
-      y += 28;
-
-      this.doc
-        .font('Helvetica')
-        .fontSize(10)
-        .fillColor(COLORS.textMuted)
-        .text(prompt.whenToUse, MARGIN + 4, y, { width: CONTENT_WIDTH - 8 });
-
-      y = this.doc.y + 16;
-    }
-
-    // Pro tip
-    if (prompt.proTip) {
-      // Icon-style label
-      this.doc
-        .save()
-        .roundedRect(MARGIN, y, 70, 20, 3)
-        .fill(COLORS.proTip)
-        .restore();
-
-      this.doc
-        .font('Helvetica-Bold')
-        .fontSize(9)
-        .fillColor('#000000')
-        .text('PRO TIP', MARGIN + 8, y + 5);
-
-      y += 28;
-
-      this.doc
-        .font('Helvetica')
-        .fontSize(10)
-        .fillColor(COLORS.textMuted)
-        .text(prompt.proTip, MARGIN + 4, y, { width: CONTENT_WIDTH - 8 });
-    }
-  }
-
-  // --------------------------------------------------------
-  // Back cover / closing page
-  // --------------------------------------------------------
-  buildClosing() {
-    this.addPage();
-
-    const cx = PAGE_WIDTH / 2;
-
-    // Accent bar
-    this.doc
-      .save()
-      .rect(0, 0, PAGE_WIDTH, 6)
-      .fill(COLORS.accent)
-      .restore();
-
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(28)
-      .fillColor(COLORS.text)
-      .text('Start Prompting', 0, 250, { width: PAGE_WIDTH, align: 'center' });
-
-    this.doc
-      .font('Helvetica-Bold')
-      .fontSize(28)
-      .fillColor(COLORS.accent)
-      .text('Like a Pro', 0, 285, { width: PAGE_WIDTH, align: 'center' });
-
-    this.doc
-      .save()
-      .moveTo(cx - 60, 330)
-      .lineTo(cx + 60, 330)
-      .strokeColor(COLORS.accent)
-      .lineWidth(2)
-      .stroke()
-      .restore();
-
-    this.doc
-      .font('Helvetica')
-      .fontSize(13)
-      .fillColor(COLORS.textMuted)
-      .text(
-        'These prompts are your starting point, not your ceiling.\nCustomize them. Combine them. Make them yours.',
-        0,
-        355,
-        { width: PAGE_WIDTH, align: 'center', lineGap: 6 }
-      );
-
-    this.doc
-      .font('Helvetica')
-      .fontSize(11)
-      .fillColor(COLORS.textDim)
-      .text('The AI Prompt Vault', 0, 440, { width: PAGE_WIDTH, align: 'center' });
-
-    // Bottom accent bar
-    this.doc
-      .save()
-      .rect(0, PAGE_HEIGHT - 6, PAGE_WIDTH, 6)
-      .fill(COLORS.accent)
-      .restore();
-  }
-
-  // --------------------------------------------------------
-  // Build the full PDF
-  // --------------------------------------------------------
-  async build() {
-    const promptsDir = path.join(__dirname, 'prompts');
-    const outputDir = path.join(__dirname, 'output');
-
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    const outputPath = path.join(outputDir, 'ai-prompt-vault.pdf');
-    const writeStream = fs.createWriteStream(outputPath);
-    this.doc.pipe(writeStream);
-
-    // Load all categories
-    const files = [
-      'business-strategy.md',
-      'content-creation.md',
-      'coding-assistant.md',
-      'productivity.md',
-      'social-media.md',
-    ];
-
-    let totalPrompts = 0;
-
-    for (const file of files) {
-      const filePath = path.join(promptsDir, file);
-      const cat = parseMarkdownFile(filePath);
-      this.categories.push(cat);
-      totalPrompts += cat.prompts.length;
-    }
-
-    console.log(`Loaded ${this.categories.length} categories with ${totalPrompts} total prompts`);
-
-    // Build pages
-    this.buildCover();
-    this.buildTOC();
-
-    this.categories.forEach((cat, catIdx) => {
-      this.buildChapterHeader(cat.categoryTitle, catIdx + 1, cat.prompts.length);
-
-      cat.prompts.forEach((prompt, pIdx) => {
-        this.buildPromptPages(prompt, pIdx + 1, cat.categoryTitle);
-      });
-    });
-
-    this.buildClosing();
-
-    // Finalize
-    this.doc.end();
-
-    return new Promise((resolve, reject) => {
-      writeStream.on('finish', () => {
-        const stats = fs.statSync(outputPath);
-        const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-        console.log(`\nPDF generated successfully!`);
-        console.log(`  Output: ${outputPath}`);
-        console.log(`  Pages: ${this.pageNum}`);
-        console.log(`  Size: ${sizeMB} MB`);
-        console.log(`  Prompts: ${totalPrompts}`);
-        resolve();
-      });
-      writeStream.on('error', reject);
-    });
-  }
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\[([^\]]+)\]/g, '<span class="placeholder">[$1]</span>');
 }
 
 // ============================================================
-// Run
+// Build HTML
 // ============================================================
-const builder = new PromptVaultPDF();
-builder.build().catch(err => {
-  console.error('Failed to generate PDF:', err);
+function buildHTML(categories) {
+  const totalPrompts = categories.reduce((sum, c) => sum + c.prompts.length, 0);
+
+  const categoryColors = [
+    { accent: '#e4ff54', accentDim: 'rgba(228,255,84,0.12)', label: 'lime' },
+    { accent: '#ff6b6b', accentDim: 'rgba(255,107,107,0.12)', label: 'coral' },
+    { accent: '#54b8ff', accentDim: 'rgba(84,184,255,0.12)', label: 'blue' },
+    { accent: '#c084fc', accentDim: 'rgba(192,132,252,0.12)', label: 'violet' },
+    { accent: '#fb923c', accentDim: 'rgba(251,146,60,0.12)', label: 'orange' },
+  ];
+
+  let promptsHTML = '';
+
+  categories.forEach((cat, catIdx) => {
+    const color = categoryColors[catIdx];
+
+    // Chapter divider page
+    promptsHTML += `
+      <div class="page chapter-page">
+        <div class="chapter-number" style="color: ${color.accent}15">0${catIdx + 1}</div>
+        <div class="chapter-content">
+          <div class="chapter-label" style="color: ${color.accent}">Chapter ${catIdx + 1}</div>
+          <h2 class="chapter-title">${cat.categoryTitle}</h2>
+          <div class="chapter-line" style="background: ${color.accent}"></div>
+          <div class="chapter-count">${cat.prompts.length} Prompts</div>
+        </div>
+      </div>
+    `;
+
+    // Individual prompt pages
+    cat.prompts.forEach((prompt, pIdx) => {
+      const promptText = escapeHtml(cleanPromptText(prompt.prompt));
+      const promptFormatted = promptText
+        .split('\n')
+        .filter(l => l.trim())
+        .map(l => {
+          if (/^\d+\./.test(l.trim())) return `<div class="prompt-list-item">${l.trim()}</div>`;
+          if (/^\*\*/.test(l.trim())) return `<div class="prompt-bold">${l.trim().replace(/\*\*/g, '')}</div>`;
+          return `<div>${l}</div>`;
+        })
+        .join('');
+
+      promptsHTML += `
+        <div class="page prompt-page">
+          <div class="prompt-header">
+            <span class="prompt-cat" style="color: ${color.accent}">${cat.categoryTitle.toUpperCase()}</span>
+            <span class="prompt-num">${String(pIdx + 1).padStart(2, '0')}</span>
+          </div>
+
+          <h3 class="prompt-title">${prompt.title}</h3>
+
+          <div class="prompt-card" style="border-left-color: ${color.accent}; background: ${color.accentDim}">
+            <div class="prompt-text">${promptFormatted}</div>
+          </div>
+
+          <div class="prompt-meta">
+            ${prompt.whenToUse ? `
+              <div class="meta-block">
+                <span class="meta-label when-label">When to use</span>
+                <span class="meta-text">${escapeHtml(prompt.whenToUse)}</span>
+              </div>
+            ` : ''}
+            ${prompt.proTip ? `
+              <div class="meta-block">
+                <span class="meta-label tip-label">Pro tip</span>
+                <span class="meta-text">${escapeHtml(prompt.proTip)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="page-footer">
+            <span>The AI Prompt Vault</span>
+            <span>${cat.categoryTitle} / Prompt ${pIdx + 1}</span>
+          </div>
+        </div>
+      `;
+    });
+  });
+
+  // Table of contents
+  let tocHTML = '';
+  categories.forEach((cat, catIdx) => {
+    const color = categoryColors[catIdx];
+    tocHTML += `
+      <div class="toc-category">
+        <div class="toc-cat-header">
+          <span class="toc-dot" style="background: ${color.accent}"></span>
+          <span class="toc-cat-title">${cat.categoryTitle}</span>
+          <span class="toc-cat-count">${cat.prompts.length}</span>
+        </div>
+        <div class="toc-prompts">
+          ${cat.prompts.map((p, i) => `
+            <div class="toc-prompt">
+              <span class="toc-prompt-num">${String(i + 1).padStart(2, '0')}</span>
+              <span class="toc-prompt-title">${p.title}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #060608;
+    --bg-surface: #0e0e12;
+    --bg-raised: #16161c;
+    --text: #f0ece4;
+    --text-dim: #8a8680;
+    --text-faint: #4a4844;
+    --accent: #e4ff54;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    padding: 0.7in 0.8in;
+    page-break-after: always;
+    position: relative;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Cover ---- */
+  .cover-page {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  .cover-page::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(228,255,84,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover-page::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,107,60,0.05) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .cover-top-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .cover-bottom-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent));
+  }
+
+  .cover-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .cover-title-the {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .cover-title-main {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .cover-title-vault {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--accent);
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .cover-divider {
+    width: 80px;
+    height: 2px;
+    background: var(--accent);
+    margin: 0 auto 40px;
+    position: relative;
+  }
+
+  .cover-subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    max-width: 350px;
+    margin: 0 auto 50px;
+    position: relative;
+  }
+
+  .cover-stats {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    position: relative;
+  }
+
+  .cover-stat {
+    text-align: center;
+  }
+
+  .cover-stat-num {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .cover-stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* ---- TOC ---- */
+  .toc-page {
+    padding-top: 1in;
+  }
+
+  .toc-heading {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+  }
+
+  .toc-category {
+    margin-bottom: 28px;
+  }
+
+  .toc-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .toc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .toc-cat-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .toc-cat-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-left: auto;
+  }
+
+  .toc-prompts {
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toc-prompt {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    line-height: 1.6;
+  }
+
+  .toc-prompt-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    flex-shrink: 0;
+    width: 18px;
+  }
+
+  .toc-prompt-title {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ---- Chapter Page ---- */
+  .chapter-page {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chapter-number {
+    position: absolute;
+    font-family: var(--font-display);
+    font-size: 300px;
+    font-weight: 800;
+    line-height: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+  }
+
+  .chapter-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .chapter-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .chapter-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .chapter-line {
+    width: 60px;
+    height: 3px;
+    margin: 0 auto 16px;
+    border-radius: 2px;
+  }
+
+  .chapter-count {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  /* ---- Prompt Page ---- */
+  .prompt-page {
+    gap: 0;
+  }
+
+  .prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .prompt-cat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+  }
+
+  .prompt-num {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text-faint);
+  }
+
+  .prompt-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 24px;
+  }
+
+  .prompt-card {
+    border-left: 3px solid;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    flex-grow: 1;
+  }
+
+  .prompt-text {
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  .prompt-text .placeholder {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .prompt-text .prompt-list-item {
+    padding-left: 8px;
+    margin: 4px 0;
+  }
+
+  .prompt-text .prompt-bold {
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .prompt-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+  }
+
+  .meta-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .meta-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .when-label {
+    background: rgba(124,58,237,0.2);
+    color: #a78bfa;
+  }
+
+  .tip-label {
+    background: rgba(251,146,60,0.2);
+    color: #fb923c;
+  }
+
+  .meta-text {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  .page-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-faint);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 12px;
+    margin-top: 20px;
+  }
+
+  /* ---- Closing Page ---- */
+  .closing-page {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .closing-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .closing-accent {
+    color: var(--accent);
+  }
+
+  .closing-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--accent);
+    margin: 24px auto;
+  }
+
+  .closing-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .closing-brand {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.15em;
+    margin-top: 50px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Cover -->
+  <div class="page cover-page">
+    <div class="cover-top-line"></div>
+    <div class="cover-bottom-line"></div>
+    <div class="cover-label">A Premium Prompt Collection</div>
+    <div class="cover-title-the">THE AI</div>
+    <div class="cover-title-main">PROMPT</div>
+    <div class="cover-title-vault">VAULT</div>
+    <div class="cover-divider"></div>
+    <div class="cover-subtitle">${totalPrompts} battle-tested prompts to transform how you work with AI. Copy. Paste. Get results.</div>
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="cover-stat-num">${totalPrompts}</div>
+        <div class="cover-stat-label">Prompts</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">${categories.length}</div>
+        <div class="cover-stat-label">Categories</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="page toc-page">
+    <div class="toc-heading">Table of Contents</div>
+    ${tocHTML}
+  </div>
+
+  <!-- Prompts -->
+  ${promptsHTML}
+
+  <!-- Closing -->
+  <div class="page closing-page">
+    <div class="closing-title">Start Prompting</div>
+    <div class="closing-title closing-accent">Like a Pro</div>
+    <div class="closing-divider"></div>
+    <div class="closing-text">
+      These prompts are your starting point, not your ceiling.<br>
+      Customize them. Combine them. Make them yours.
+    </div>
+    <div class="closing-brand">THE AI PROMPT VAULT</div>
+  </div>
+
+</body>
+</html>`;
+}
+
+// ============================================================
+// Generate PDF from HTML via Puppeteer
+// ============================================================
+async function main() {
+  const promptsDir = path.join(__dirname, 'prompts');
+  const outputDir = path.join(__dirname, 'output');
+
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Load categories
+  const files = [
+    'business-strategy.md',
+    'content-creation.md',
+    'coding-assistant.md',
+    'productivity.md',
+    'social-media.md',
+  ];
+
+  const categories = [];
+  let totalPrompts = 0;
+
+  for (const file of files) {
+    const cat = parseMarkdownFile(path.join(promptsDir, file));
+    categories.push(cat);
+    totalPrompts += cat.prompts.length;
+  }
+
+  console.log(`Loaded ${categories.length} categories with ${totalPrompts} prompts`);
+
+  // Build HTML
+  const html = buildHTML(categories);
+
+  // Save HTML for debugging
+  fs.writeFileSync(path.join(outputDir, 'preview.html'), html);
+  console.log('HTML preview saved to output/preview.html');
+
+  // Launch Puppeteer and generate PDF
+  console.log('Launching browser...');
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+
+  await page.setContent(html, { waitUntil: 'networkidle0' });
+
+  const pdfPath = path.join(outputDir, 'ai-prompt-vault.pdf');
+  await page.pdf({
+    path: pdfPath,
+    format: 'Letter',
+    printBackground: true,
+    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  });
+
+  await browser.close();
+
+  const stats = fs.statSync(pdfPath);
+  const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+  console.log(`\nPDF generated successfully!`);
+  console.log(`  Output: ${pdfPath}`);
+  console.log(`  Size: ${sizeMB} MB`);
+  console.log(`  Prompts: ${totalPrompts}`);
+}
+
+main().catch(err => {
+  console.error('Failed:', err);
   process.exit(1);
 });

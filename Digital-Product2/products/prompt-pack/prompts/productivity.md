@@ -4,27 +4,26 @@
 
 **The Prompt:**
 
-> It's the start of my workday. Help me plan today so I actually move the needle, not just stay busy.
+> You are my strategic operations officer. It's [DAY OF WEEK] and I have [NUMBER] hours of focused work time available today.
 >
-> **Here's what's on my plate today:**
-> [list everything — tasks, meetings, deadlines, half-finished work]
+> Here's what's on my radar:
+> - Active projects: [LIST YOUR CURRENT PROJECTS]
+> - Today's meetings/commitments: [LIST FIXED COMMITMENTS]
+> - Energy level: [LOW/MEDIUM/HIGH]
+> - Biggest current bottleneck: [WHAT'S BLOCKING YOU]
 >
-> **My energy pattern:** [I'm sharpest in the morning / I hit a wall at 2pm / I'm a night owl / etc.]
-> **Hours available for deep work:** [number]
-> **The one thing that would make today a win:** [if you know]
+> Create a battle plan for today that:
+> 1. Identifies my ONE non-negotiable win (the thing that would make today successful even if nothing else gets done)
+> 2. Sequences 3-5 concrete tasks in priority order, with estimated time blocks
+> 3. Includes ONE proactive move (something not urgent but high-leverage)
+> 4. Builds in buffer time and specifies what gets dropped if I'm running behind
+> 5. Tells me what NOT to do today (what can wait until tomorrow or next week)
 >
-> **Build me a battle plan:**
-> 1. **The ONE thing:** What's the single most impactful task on this list? This gets scheduled during my peak energy hours. Non-negotiable.
-> 2. **Time-blocked schedule:** Slot every task into my day. Group similar tasks. Protect deep work blocks. Put meetings and admin in low-energy slots.
-> 3. **Kill list:** Which tasks on this list should I NOT do today? Either delegate, defer, or delete them. Be ruthless.
-> 4. **Decision pre-load:** Are any tasks actually decisions in disguise? If so, help me make the decision now so I don't waste energy later.
-> 5. **End-of-day checkpoint:** What should be true by 5pm for me to call today a success? (Maximum 3 things.)
->
-> Don't give me a perfect plan. Give me a plan I'll actually follow.
+> Format as a simple numbered action list. Be ruthlessly realistic about what's actually achievable. No motivational fluff—just tactical clarity.
 
-**When to use it:** First thing every morning, before opening email or Slack.
+**When to use it:** Every morning before you open your inbox or Slack.
 
-**Pro tip:** Time-box the planning itself to 10 minutes. If planning takes longer than doing, you're overcomplicating it.
+**Pro tip:** Run this for 5 days in a row and you'll develop an intuition for realistic daily scope—most people overestimate what they can do by 3x.
 
 ---
 
@@ -32,26 +31,32 @@
 
 **The Prompt:**
 
-> I want to set a meaningful goal, not just a wish. Here's what I'm thinking about:
+> I want to set a goal that I'll actually achieve, not abandon in two weeks.
 >
-> **Area of life:** [career/health/finance/relationships/skill/business]
-> **Rough goal:** [what you want to achieve, even if vague]
-> **Timeframe:** [by when]
-> **Why this matters:** [the real reason, not the surface-level one]
+> My goal (rough draft): [YOUR GOAL]
+> Why this matters to me: [YOUR REAL REASON]
+> Past goals I've abandoned: [LIST 1-2 FAILED GOALS]
+> My usual failure pattern: [HOW YOU TYPICALLY QUIT]
 >
-> **Transform this into a bulletproof goal:**
-> 1. **Sharpen it:** Rewrite my vague goal as something specific and measurable. I should be able to look at it in [timeframe] and clearly say "yes I did this" or "no I didn't."
-> 2. **Reality check:** Is this achievable in the timeframe? If not, what's the ambitious-but-realistic version?
-> 3. **Leading indicators:** What are 3 weekly metrics I can track that predict whether I'll hit this goal? (Lagging indicators tell you what happened. Leading indicators tell you what's going to happen.)
-> 4. **Obstacle pre-mortem:** What are the 3 most likely reasons I'll quit or fail? For each one, give me an if-then plan. "If [obstacle happens], then I will [specific action]."
-> 5. **Minimum viable progress:** What's the absolute minimum I need to do per day/week to stay on track? This is my "bad day" plan.
-> 6. **Identity statement:** Reframe this goal as an identity. Not "I want to run a marathon" but "I am a runner who is building up to 26.2 miles." Write me mine.
+> Act as a behavioral design expert. Redesign this goal using these principles:
+> 1. Make it ridiculously specific (no room for interpretation)
+> 2. Attach it to a daily or weekly action I can't miss (implementation intention)
+> 3. Build in a forcing function (external accountability or automatic consequence)
+> 4. Define the "minimum viable version" (what counts as success on a bad week)
+> 5. Identify the exact moment I'll be most tempted to quit, and pre-install a response
 >
-> Make this goal feel inevitable, not aspirational.
+> Then create:
+> - A rewritten goal statement (one sentence, measurable, time-bound)
+> - The exact daily/weekly action required
+> - A forcing function recommendation
+> - A "bad week" minimum standard
+> - A quit-moment response plan
+>
+> Be blunt about whether my original goal is realistic. If it's not, tell me a better version.
 
-**When to use it:** When setting quarterly goals, New Year's goals, or any time you want to commit to a meaningful change.
+**When to use it:** When setting quarterly goals, New Year's resolutions, or any commitment longer than 2 weeks.
 
-**Pro tip:** Revisit this prompt monthly and ask "Based on my progress so far, should I adjust the goal, the timeline, or the strategy?"
+**Pro tip:** The forcing function is the most important part—goals without external accountability die quietly.
 
 ---
 
@@ -59,27 +64,37 @@
 
 **The Prompt:**
 
-> I'm stuck on a decision and I need clarity. Here's the situation:
+> I'm stuck on a decision and need systematic clarity, not just gut instinct.
 >
-> **The decision:** [describe what you're choosing between]
-> **Options:** [list your options — there are usually more than 2]
-> **Why I'm stuck:** [what's making this hard — fear, information, competing priorities]
-> **Deadline:** [when I need to decide by]
+> **The decision:** [DESCRIBE THE CHOICE YOU'RE FACING]
 >
-> **Help me think through this:**
-> 1. **Name the real decision:** Am I actually deciding between these options, or is there a deeper question I'm avoiding? (Sometimes "should I quit my job?" is really "am I willing to tolerate discomfort for a few more months?")
-> 2. **10/10/10 analysis:** How will I feel about each option in 10 minutes? 10 months? 10 years?
-> 3. **Reversibility test:** Which options are two-way doors (easily reversed) and which are one-way doors? Two-way doors should be decided fast.
-> 4. **Regret minimization:** When I'm 80, which choice do I regret NOT making?
-> 5. **What would I advise a friend?** If someone I care about described this exact situation, what would I tell them without hesitation?
-> 6. **The missing option:** Is there an Option C I haven't considered? A way to test before committing? A way to get more information cheaply?
-> 7. **Decision:** Based on this analysis, what should I do? Be direct.
+> **My options:** [LIST 2-5 OPTIONS]
 >
-> I don't need more information. I need clarity on the information I already have.
+> **Context that matters:**
+> - Current situation: [RELEVANT BACKGROUND]
+> - What I'm optimizing for: [TIME/MONEY/GROWTH/FREEDOM/ETC]
+> - What I'm afraid of: [YOUR REAL FEAR]
+> - Deadline to decide: [WHEN YOU MUST CHOOSE]
+>
+> Act as a decision architect. Analyze this using:
+> 1. **Regret minimization:** Which choice will I regret least in 10 years?
+> 2. **Reversibility test:** Which decisions are reversible vs. one-way doors?
+> 3. **Opportunity cost:** What am I giving up with each option?
+> 4. **Second-order effects:** What happens AFTER the immediate consequence?
+> 5. **Hell Yeah or No:** Which option makes me feel "hell yeah" vs. "I guess so"?
+>
+> Output:
+> - A clear recommendation with reasoning
+> - The hidden costs I'm not seeing
+> - What would need to be true for the OTHER option to be better
+> - One question I should answer before deciding
+> - A deadline-forcing mechanism if I'm procrastinating
+>
+> Be direct. If I'm overthinking an obvious choice, tell me.
 
-**When to use it:** When you've been going back and forth on something for more than 48 hours without making progress.
+**When to use it:** For medium-to-large decisions where you're spinning in analysis paralysis for more than 2 days.
 
-**Pro tip:** The fact that you're asking an AI for help means you already know the answer and want permission. Ask yourself what you'd do if both options were equally safe.
+**Pro tip:** If you're still uncertain after this analysis, the decision probably doesn't matter as much as you think—flip a coin and commit.
 
 ---
 
@@ -87,31 +102,35 @@
 
 **The Prompt:**
 
-> Here's everything on my plate right now. Categorize each item and tell me what to do:
+> I need to triage my workload using the Eisenhower Matrix (Urgent/Important framework).
 >
-> [list all your tasks, projects, obligations, requests from others]
+> **Everything on my plate right now:**
+> [DUMP YOUR ENTIRE TASK LIST—NO FILTERING, JUST BRAIN DUMP EVERYTHING]
 >
-> **Sort each item into one of these quadrants:**
+> Act as my strategic COO. Sort these into four categories:
 >
-> 1. **DO (Urgent + Important):** These are crises, deadlines, emergencies. Schedule them today.
-> 2. **SCHEDULE (Not Urgent + Important):** These are growth activities — strategy, planning, skill-building, relationships. Block time for them this week.
-> 3. **DELEGATE (Urgent + Not Important):** These feel urgent but don't need MY skill. Who else can handle them? If no one, time-box them aggressively (30 min max each).
-> 4. **ELIMINATE (Not Urgent + Not Important):** These are distractions disguised as tasks. Delete them, say no, or stop doing them.
+> **Q1 - DO FIRST (Urgent + Important):** Crises, deadlines, critical problems
+> **Q2 - SCHEDULE (Not Urgent + Important):** Strategy, planning, relationship-building, prevention
+> **Q3 - DELEGATE (Urgent + Not Important):** Interruptions, busy work, other people's priorities
+> **Q4 - ELIMINATE (Not Urgent + Not Important):** Time wasters, distractions, fake work
 >
-> **For each item, also tell me:**
-> - Why you put it in that quadrant (one sentence)
-> - The specific next action (not the project — the very next physical action)
+> For each item, tell me:
+> - Which quadrant it belongs in (be honest, not nice)
+> - Why it's there (challenge my assumptions if I'm miscategorizing)
+> - For Q3: WHO could do this instead of me (be specific)
+> - For Q4: Permission to delete it entirely (no guilt)
 >
-> **Then give me:**
-> - Today's top 3 priorities (from the DO quadrant)
-> - This week's top 3 priorities (from the SCHEDULE quadrant)
-> - What to stop doing immediately (from the ELIMINATE quadrant)
+> Then create:
+> 1. Today's must-do list (Q1 only)
+> 2. This week's schedule blocks for Q2 work
+> 3. A delegation script for the top Q3 item
+> 4. A "stop doing" list (Q4 items I need to abandon)
 >
-> Challenge my categorization if I'm putting "not important" things in the "important" column out of guilt or habit.
+> Be ruthless. Most people's Q1 is actually Q3 in disguise.
 
-**When to use it:** When you feel overwhelmed, when your to-do list is longer than you can process, or during weekly reviews.
+**When to use it:** When you feel overwhelmed and everything seems urgent.
 
-**Pro tip:** If everything feels urgent and important, you're not being honest. Ask "If I could only do ONE of these things this week, which one would I choose?" That's your real priority.
+**Pro tip:** If your Q1 quadrant has more than 3 items, you're in reactive mode—something in your system is broken.
 
 ---
 
@@ -119,29 +138,32 @@
 
 **The Prompt:**
 
-> I'm running a meeting and I want it to be the kind people DON'T dread. Help me prepare:
+> I need to run a meeting that doesn't waste anyone's time.
 >
-> **Meeting type:** [standup/brainstorm/decision-making/status update/planning/retrospective]
-> **Duration:** [how long]
-> **Attendees:** [who's coming and their roles]
-> **The point of this meeting:** [what needs to be true when it ends that isn't true now]
+> **Meeting purpose:** [WHAT YOU'RE TRYING TO ACCOMPLISH]
+> **Attendees:** [WHO WILL BE THERE]
+> **Duration:** [LENGTH IN MINUTES]
+> **Current status:** [RELEVANT CONTEXT PEOPLE SHOULD KNOW]
 >
-> **Build me:**
-> 1. **The acid test:** Should this meeting even happen? Could this be an email, a Slack message, or a 5-minute call instead? Be honest.
-> 2. **Agenda with time blocks:** Break the meeting into segments with specific durations. Include:
->    - Opening (2 min max): Context and the specific outcome we're trying to reach
->    - Discussion segments: Each one with a clear question to answer, not just a topic to "discuss"
->    - Decision point: When and how we'll make the decision (consensus, leader decides, vote)
->    - Close (3 min): Recap decisions, assign action items with names and deadlines
-> 3. **Pre-work:** What should attendees read, review, or prepare before the meeting? Keep it to 10 minutes max.
-> 4. **Parking lot topics:** If someone brings up [common tangent], here's how to gracefully defer it.
-> 5. **Action item template:** A format for capturing decisions and next steps during the meeting.
+> Create a battlefield-tested agenda using these principles:
+> 1. **Desired outcome:** State the ONE thing that must happen for this meeting to be worth it
+> 2. **Pre-work:** What must attendees read/prepare beforehand (make it optional or the meeting fails)
+> 3. **Decision-making authority:** Who has final say if we disagree
+> 4. **Timeboxes:** Strict minute allocations for each segment
+> 5. **Parking lot protocol:** How we handle off-topic tangents
 >
-> Design this so the meeting could end 10 minutes early. Nobody has ever been annoyed by a meeting ending early.
+> Format the agenda as:
+> - **Before the meeting:** Pre-work assignments with why each matters
+> - **Minute 0-X:** Segment-by-segment breakdown with time limits and owner
+> - **Decision points:** Explicit moments where we commit to something
+> - **End-of-meeting:** Who does what by when (action items with owners and dates)
+> - **Cancellation criteria:** Under what condition should we NOT have this meeting
+>
+> Make it so tight that the meeting could run without me. No fluff, no "intros," no "how's everyone doing."
 
-**When to use it:** Before scheduling any meeting, especially recurring ones that feel like they've lost their purpose.
+**When to use it:** Before scheduling any meeting with more than 2 people.
 
-**Pro tip:** Send the agenda to attendees 24 hours before and say "If you're not sure why you're invited, tell me — you might not need to be."
+**Pro tip:** Send this agenda 24 hours in advance and tell people "if you can't do the pre-work, don't attend"—watch your meeting quality 10x.
 
 ---
 
@@ -149,29 +171,35 @@
 
 **The Prompt:**
 
-> Walk me through a structured weekly review. Here's my raw input:
+> I need to run my weekly review. It's [DAY OF WEEK] and I'm reviewing the week of [DATE RANGE].
 >
-> **This week's wins:** [what went well]
-> **This week's frustrations:** [what didn't go well]
-> **Tasks completed:** [what I actually got done]
-> **Tasks that rolled over:** [what I didn't get to]
-> **Next week's calendar:** [major meetings, deadlines, events]
-> **Open loops:** [things I said I'd do but haven't started]
+> **This week's data:**
+> - Goals I set last week: [LIST THEM]
+> - What I actually accomplished: [HONEST LIST]
+> - Biggest win: [ONE THING]
+> - Biggest disappointment: [ONE THING]
+> - Time wasters: [WHAT DRAINED ENERGY WITHOUT RESULTS]
+> - Energy level overall: [1-10]
 >
-> **Process this into:**
-> 1. **Win analysis:** What went well and WHY — so I can repeat the pattern, not just the outcome.
-> 2. **Loss analysis:** What didn't work and what's the root cause — was it planning, energy, motivation, external factors, or something else?
-> 3. **Rolled-over triage:** For each task that didn't get done: is it still important? If yes, what blocked it? If no, kill it and stop feeling guilty.
-> 4. **Open loop cleanup:** For each open loop: schedule it, delegate it, or decide to not do it. No more "I should probably..."
-> 5. **Next week's focus:** What are the 3 things (max) that matter most next week? Everything else is secondary.
-> 6. **Process improvements:** Based on this week's patterns, one thing to do differently next week.
-> 7. **Personal check-in:** On a scale of 1-10, how was my energy this week? My motivation? My satisfaction? What would move each number up by 1?
+> Act as my executive coach. Analyze this week across five dimensions:
 >
-> Be honest with me, even if it means pointing out patterns I might not want to see.
+> 1. **Execution score (0-10):** Did I do what I said I'd do? What's the pattern in my misses?
+> 2. **Leverage audit:** Which activities produced 10x results? Which produced 0.1x?
+> 3. **System failures:** What broke down? Was it willpower, process, or bad planning?
+> 4. **Energy leaks:** What drained me that I should eliminate/delegate/redesign?
+> 5. **Leading indicators:** Based on this week's actions, what results am I setting up for next month?
+>
+> Then create:
+> - **Keep/Stop/Start:** One behavior in each category
+> - **Next week's focus:** My ONE non-negotiable priority
+> - **System tweak:** One small process improvement to implement
+> - **Celebration moment:** Why this week mattered (even if it felt like failure)
+>
+> Be honest about patterns I'm not seeing. If I'm lying to myself about productivity, call it out.
 
-**When to use it:** Every Friday afternoon or Sunday evening. Make it a non-negotiable ritual.
+**When to use it:** Every Friday afternoon or Sunday evening—consistency matters more than the day.
 
-**Pro tip:** Keep your weekly reviews in a running document. After 4-6 weeks, ask the AI to analyze all your reviews and identify patterns — what consistently makes good weeks vs. bad weeks?
+**Pro tip:** Track your execution score over 12 weeks—if it's consistently below 7, you're overcommitting or underestimating task complexity.
 
 ---
 
@@ -179,26 +207,42 @@
 
 **The Prompt:**
 
-> I tracked how I spent my time this week. Analyze where my time actually goes and tell me what to change:
+> I want to know where my time ACTUALLY goes, not where I think it goes.
 >
-> [Paste your time log — can be rough estimates like "3 hours meetings, 2 hours email, 4 hours coding" or detailed calendar data]
+> **Time tracking data:** [PASTE YOUR CALENDAR EXPORT, TIME LOG, OR DETAILED BREAKDOWN OF LAST WEEK]
 >
-> **My priorities are supposed to be:** [list your top 3 priorities]
-> **My hourly rate (or salary equivalent):** [amount, so we can calculate costs]
+> If you don't have tracking data, estimate your last week:
+> - Sleep: [HOURS]
+> - Deep work (focused, hard thinking): [HOURS]
+> - Meetings: [HOURS]
+> - Email/Slack: [HOURS]
+> - Admin/operations: [HOURS]
+> - Breaks/rest: [HOURS]
+> - Commute: [HOURS]
+> - Personal/family: [HOURS]
+> - Wasted time (honest answer): [HOURS]
 >
-> **Analysis:**
-> 1. **Priority alignment score:** What percentage of my time went to my stated priorities? What percentage went to everything else?
-> 2. **Time vampires:** What's eating the most time relative to its importance? Quantify the cost. ("You spent 8 hours in meetings this week. At your rate, those meetings cost $X. Were they worth it?")
-> 3. **Deep work ratio:** How many hours of uninterrupted, focused work did I get? What's the industry standard for my role?
-> 4. **Context switching cost:** How many times did I switch between different types of work? Each switch costs roughly 23 minutes of refocus time. My estimated switching cost: [calculate it].
-> 5. **Delegation candidates:** Which time blocks could someone else handle (even at 80% of my quality) to free me up for higher-value work?
-> 6. **Ideal week design:** Based on this data, redesign my ideal week — time blocks for deep work, admin, meetings, and breaks.
+> **My role:** [YOUR JOB TITLE OR PRIMARY RESPONSIBILITY]
+> **What creates value in my role:** [THE ACTIVITIES THAT ACTUALLY MOVE THE NEEDLE]
 >
-> Be blunt. I probably think I spend my time better than I actually do.
+> Act as a time management forensic analyst. Calculate:
+> 1. **Value time %:** Hours spent on high-leverage work vs. total available hours
+> 2. **Interrupt tax:** Time lost to context-switching and meeting recovery
+> 3. **Ghost work:** Tasks I do regularly that have zero measurable impact
+> 4. **Margin vs. treadmill:** How much time is reactive (emails, requests) vs. proactive (building, creating)
+> 5. **Misalignment cost:** Hours spent on work that doesn't match my stated priorities
+>
+> Then recommend:
+> - **One thing to eliminate entirely** (free up X hours/week)
+> - **One thing to delegate or automate** (specific tool or person)
+> - **One process to batch** (reduce context-switching)
+> - **Ideal week template** (reallocate time to match actual priorities)
+>
+> Show me the brutal math. Don't soften the numbers.
 
-**When to use it:** Once per month as a reality check, or whenever you feel busy but unproductive.
+**When to use it:** Quarterly, or whenever you feel busy but unproductive.
 
-**Pro tip:** Track time for a full week before using this prompt — most people dramatically misjudge where their time goes until they measure it.
+**Pro tip:** Most people discover they spend <20% of their time on high-value work—the goal isn't perfection, it's moving that number to 40%.
 
 ---
 
@@ -206,28 +250,34 @@
 
 **The Prompt:**
 
-> I want to build a new habit. Help me design it so it actually sticks:
+> I want to build a new habit that actually sticks, not one that dies in 12 days.
 >
-> **The habit I want:** [what I want to do regularly]
-> **Frequency:** [daily/weekly/specific days]
-> **Current attempt status:** [never tried / tried and failed / doing it inconsistently]
-> **Why it matters:** [the deeper reason, not the surface one]
-> **My biggest obstacle:** [what usually stops me]
+> **Habit I want to build:** [BE SPECIFIC - "exercise" is too vague, "20 pushups before shower" is perfect]
+> **Why I want this:** [YOUR REAL REASON, NOT WHAT SOUNDS GOOD]
+> **Past attempts:** [WHAT YOU'VE TRIED BEFORE AND WHY IT FAILED]
+> **Current morning routine:** [WHAT YOU ALREADY DO EVERY DAY]
+> **Biggest obstacle:** [WHAT WILL MAKE YOU SKIP THIS]
 >
-> **Design the habit system:**
-> 1. **Minimum viable habit:** Shrink this habit to something so small it feels almost silly. (Not "work out for an hour" but "put on workout shoes.") What's my 2-minute version?
-> 2. **Habit stack:** What existing habit can I attach this to? "After I [existing habit], I will [new habit]."
-> 3. **Environment design:** What one change to my physical or digital environment would make this habit easier? What friction should I add to competing behaviors?
-> 4. **Reward loop:** What's the immediate reward? (Habits need instant gratification, not just long-term benefits.) Design a reward that triggers after each completion.
-> 5. **Tracking method:** The simplest possible way to track consistency. Don't break the chain.
-> 6. **Failure protocol:** When (not if) I miss a day, what's the rule? (Suggestion: never miss twice in a row.)
-> 7. **Escalation plan:** After 2 weeks of consistency at the minimum viable level, how do I gradually increase?
+> Act as a behavioral scientist specializing in habit formation. Design this habit using:
 >
-> Design this for a real human who has limited willpower, not a robot with infinite discipline.
+> 1. **Trigger design:** Anchor this habit to an existing behavior I never miss (implementation intention)
+> 2. **Friction removal:** Eliminate every step between decision and action
+> 3. **Minimum viable habit:** Make it so easy I'd be embarrassed NOT to do it
+> 4. **Streak tracking:** Visible progress system (what gets measured gets managed)
+> 5. **Failure protocol:** What I do when I miss a day (no shame, just system)
+>
+> Output:
+> - **Habit stack sentence:** "After I [EXISTING HABIT], I will [NEW HABIT] in [LOCATION]"
+> - **Environment design:** One physical change to make this automatic
+> - **2-minute version:** The embarrassingly easy version I do on bad days
+> - **Tracking method:** Specific tool or system (not just "track it")
+> - **Reset ritual:** Exactly what I do after missing a day (no guilt spiral)
+>
+> Make this so small and specific that failure is nearly impossible. If I can't do this version, the habit is poorly designed.
 
-**When to use it:** When starting any new habit, or when you want to understand why a previous habit attempt failed.
+**When to use it:** When starting any new daily or weekly behavior you want to maintain for 90+ days.
 
-**Pro tip:** Focus on building the streak first, intensity second. Doing 5 minutes daily for 30 days beats doing 60 minutes once and quitting.
+**Pro tip:** The 2-minute version is the real habit—the full version is just a bonus you do when motivated.
 
 ---
 
@@ -235,29 +285,40 @@
 
 **The Prompt:**
 
-> I have a big project that feels overwhelming. Break it down until every piece feels doable:
+> I have a big, vague project that feels overwhelming. I need to break it into concrete next actions.
 >
-> **The project:** [describe the end result you want]
-> **Deadline:** [when it needs to be done]
-> **Resources:** [what you have — time, money, tools, people]
-> **What I know so far:** [any research, planning, or progress already made]
+> **Project name:** [WHAT YOU'RE TRYING TO BUILD/ACCOMPLISH]
+> **Success looks like:** [DESCRIBE THE FINISHED STATE IN DETAIL]
+> **Why this matters:** [YOUR REAL MOTIVATION]
+> **Current status:** [WHAT'S BEEN DONE SO FAR, IF ANYTHING]
+> **Deadline (if any):** [DATE OR "NONE"]
+> **Constraints:** [TIME/BUDGET/SKILL LIMITATIONS]
 >
-> **Break this down:**
-> 1. **Milestone map:** Divide the project into 3-5 major milestones. Each milestone should be a meaningful checkpoint — something you could demo or celebrate.
-> 2. **Task breakdown:** For each milestone, list every task needed. Each task should be:
->    - Completable in 1-4 hours (if it's longer, break it down further)
->    - Starting with a verb (Write, Build, Research, Design, Test, Send, etc.)
->    - Clear enough that you'd know when it's done
-> 3. **Dependencies:** Which tasks block other tasks? What's the critical path?
-> 4. **First three actions:** Regardless of the full plan, what are the first 3 things I should do? Make them specific enough that I could start right now with zero additional planning.
-> 5. **Risk register:** What could go wrong? For the top 3 risks, what's the mitigation plan?
-> 6. **Weekly targets:** If I work backward from the deadline, what needs to be done each week to stay on track?
+> Act as a project manager who specializes in execution, not planning theater. Break this down using:
 >
-> Make the first task absurdly easy. The hardest part of any project is starting.
+> 1. **Outcome definition:** What does "done" mean? (Specific, measurable, binary yes/no)
+> 2. **Reverse engineering:** Work backwards from done to now
+> 3. **Critical path:** What must happen sequentially vs. what can be parallel
+> 4. **First follower task:** The absolute next physical action I can take in under 30 minutes
+> 5. **Forcing function:** External deadline or commitment device to prevent drift
+>
+> Output format:
+> - **Phase 1:** [PHASE NAME] - Milestone: [WHAT'S TRUE WHEN THIS PHASE IS DONE]
+>   - Task 1: [CONCRETE ACTION WITH VERB] - Time: [REALISTIC ESTIMATE] - Owner: [ME/SOMEONE ELSE]
+>   - Task 2: [NEXT ACTION]...
+> - **Phase 2:** [NEXT PHASE]...
+>
+> Then tell me:
+> - **The next 30-minute action:** What I should do immediately after reading this
+> - **The bottleneck:** What will slow this down or stop it completely
+> - **The simplification:** How I could achieve 80% of the value with 20% of the work
+> - **The accountability:** Who I should tell about this project and when to report progress
+>
+> Be ruthlessly realistic about time estimates. Double whatever I think it will take.
 
-**When to use it:** When you have a big, ambiguous project and don't know where to start.
+**When to use it:** At the start of any project larger than a single day's work.
 
-**Pro tip:** After getting the breakdown, ask "What tasks am I going to procrastinate on?" and then ask for strategies to make those specific tasks less aversive.
+**Pro tip:** If you can't identify the "next 30-minute action," the project isn't broken down enough—keep going until you have something you could start right now.
 
 ---
 
@@ -265,33 +326,36 @@
 
 **The Prompt:**
 
-> I'm trying to delegate more effectively. Help me decide what to delegate and how:
+> I need to delegate something I've been doing myself, but I don't know how to hand it off without it becoming a mess.
 >
-> **My current responsibilities:** [list everything you do regularly]
-> **My unique strengths:** [what only I can do, or what I do significantly better than others]
-> **People available to delegate to:** [team members, contractors, tools/automation]
-> **My hourly value:** [your rate or salary-equivalent hourly cost]
+> **Task to delegate:** [WHAT YOU CURRENTLY DO]
+> **Who might do this:** [TEAM MEMBER/VA/CONTRACTOR/UNKNOWN]
+> **Why I've been doing it myself:** [YOUR REAL REASON - CONTROL, SPEED, "EASIER THAN EXPLAINING"]
+> **Current process:** [HOW YOU DO IT NOW, STEP BY STEP IF POSSIBLE]
+> **Acceptable quality bar:** [WHAT "GOOD ENOUGH" LOOKS LIKE - BE HONEST]
 >
-> **Build my delegation plan:**
-> 1. **Delegation audit:** For each responsibility, categorize it:
->    - **Only I can do this** — requires my specific expertise, relationships, or authority
->    - **I do this best, but others could do it at 80%** — train someone and let go
->    - **Someone else could do this better than me** — delegate immediately
->    - **This shouldn't be done at all** — eliminate it
-> 2. **ROI calculation:** For each task I should delegate, calculate: "This takes me X hours/week at $Y/hour = $Z cost. Delegating it at $A/hour saves me $B/week to spend on higher-value work."
-> 3. **Delegation brief template:** For the top 3 tasks to delegate, write a clear brief:
->    - What the task is (outcome, not process)
->    - What "done well" looks like (quality standards)
->    - What decisions they can make without asking me
->    - When to check in and what to report
->    - Common mistakes to avoid
-> 4. **Letting go plan:** How to resist the urge to micromanage or take work back when it's not done exactly my way
+> Act as an operations consultant specializing in delegation. Create a handoff package:
 >
-> My goal is to free up [X hours per week] for [what I want to spend time on instead].
+> 1. **Task definition:** What this is and isn't (clear boundaries)
+> 2. **Why it matters:** The outcome this task serves (context, not just instructions)
+> 3. **Step-by-step SOP:** Detailed enough that someone could do it without asking questions
+> 4. **Decision rights:** What they can decide alone vs. what needs my approval
+> 5. **Quality checklist:** How they know they did it right before submitting
+> 6. **Communication protocol:** When/how to update me (not constant check-ins)
+> 7. **Failure recovery:** What to do if something goes wrong
+>
+> Then answer:
+> - **First delegation:** Should I delegate the whole task or just one part first?
+> - **Training time:** Realistic estimate of how long to teach this (don't lowball it)
+> - **Tools needed:** What they need access to or what I need to set up
+> - **My ongoing role:** How much time I'll spend on this after handoff (be honest)
+> - **Trust threshold:** When I can stop reviewing their work on this task
+>
+> Format as a Google Doc or Loom video script I can send. Make it so clear that questions are rare.
 
-**When to use it:** When you're doing work that's below your pay grade, when you're a bottleneck, or when you're burning out from trying to do everything yourself.
+**When to use it:** Whenever you find yourself saying "it's faster if I just do it myself" for the third time.
 
-**Pro tip:** Start by delegating something small and low-stakes. Build trust in the process before handing over anything mission-critical.
+**Pro tip:** The rule of 3: if you've done something three times, document it and delegate it—your time is too valuable for repetitive work.
 
 ---
 
@@ -299,35 +363,44 @@
 
 **The Prompt:**
 
-> I want to optimize my workday around my energy levels, not just my calendar.
+> I want to work WITH my energy patterns instead of fighting them.
 >
-> **My patterns:**
-> - I wake up at [time] and go to bed at [time]
-> - My peak energy hours: [when I feel sharpest]
-> - My low energy window: [when I hit a wall]
-> - My second wind (if any): [when I bounce back]
-> - Exercise schedule: [when/how often]
-> - Meals: [when I eat, what kind of eater I am]
-> - Current caffeine habit: [what and when]
+> **Typical day timeline:** [DESCRIBE YOUR CURRENT SCHEDULE]
 >
-> **My typical tasks:**
-> - High-cognitive tasks: [deep work, writing, strategy, coding]
-> - Medium-effort tasks: [emails, reviews, calls, planning]
-> - Low-effort tasks: [admin, filing, updating, routine work]
+> **Energy audit:**
+> - Time I feel most mentally sharp: [TIME RANGE]
+> - Time I hit an energy wall: [TIME RANGE]
+> - Activities that energize me: [LIST THEM]
+> - Activities that drain me: [LIST THEM]
+> - Sleep schedule: [TYPICAL BEDTIME AND WAKE TIME]
+> - Current caffeine/break habits: [WHEN AND HOW MUCH]
 >
-> **Optimize my day:**
-> 1. **Energy-matched schedule:** Map my task types to my energy windows. Deep work during peak energy. Admin during low energy. No negotiations.
-> 2. **Transition rituals:** What should I do between each block to shift gears (5-minute activities that reset focus)?
-> 3. **Meal timing:** Based on my energy patterns, when should I eat (and what kind of food) to sustain focus rather than crash?
-> 4. **Break design:** When should I take breaks, how long, and what should I do during them for maximum recovery?
-> 5. **Evening routine:** What should the last 90 minutes of my day look like to set up tomorrow's energy?
-> 6. **Recovery days:** Based on my schedule, when do I need to plan lighter days to prevent burnout?
+> **Work I need to do:**
+> - Deep thinking work: [TASKS REQUIRING FOCUS]
+> - Shallow/admin work: [TASKS THAT ARE EASIER]
+> - Creative work: [BRAINSTORMING, WRITING, DESIGNING]
+> - Communication work: [MEETINGS, EMAILS, CALLS]
 >
-> I'd rather have 5 incredibly productive hours than 10 mediocre ones.
+> Act as a performance coach who optimizes for energy, not just time. Design an energy-optimized day:
+>
+> 1. **Peak performance blocks:** When to schedule deep work (align with natural energy peaks)
+> 2. **Recovery architecture:** Strategic breaks, not just "rest when tired"
+> 3. **Batch scheduling:** Group similar tasks to reduce context-switching tax
+> 4. **Energy drains first:** When to tackle the work you're avoiding
+> 5. **Ultradian rhythm respect:** Work in 90-minute cycles, not 8-hour marathons
+>
+> Create:
+> - **Ideal day template:** Hour-by-hour task alignment with energy patterns
+> - **Meeting boundaries:** When I accept meetings vs. when I decline
+> - **Afternoon slump strategy:** What to do when energy crashes (not just power through)
+> - **Weekly energy map:** Which days for focus vs. collaboration vs. admin
+> - **One experiment:** A single change to test this week to improve energy
+>
+> Be specific about timing. "Morning" isn't helpful—"8:30-11:00 AM" is.
 
-**When to use it:** When you feel like you're working long hours but not getting enough done, or when you want to redesign your daily routine.
+**When to use it:** When you notice you're most productive at certain times but your schedule doesn't reflect that.
 
-**Pro tip:** Track your energy in 1-10 ratings every 2 hours for a week before using this prompt — your actual energy patterns might be different from what you think.
+**Pro tip:** Protect your top 3 peak-energy hours like you'd protect your bank account—no meetings, no email, no exceptions.
 
 ---
 
@@ -335,33 +408,37 @@
 
 **The Prompt:**
 
-> I need to do [specific task] and I keep getting distracted. Design a focused work session for me:
+> I need to get serious work done and I want to design the perfect focus session—environment, structure, and boundaries.
 >
-> **The task:** [what I need to accomplish]
-> **Time available:** [how long I have]
-> **My current state:** [how I'm feeling — energized, tired, anxious, scattered]
-> **My biggest distraction right now:** [what keeps pulling me away]
-> **Environment:** [where I'm working — home, office, coffee shop]
+> **Work I'm doing:** [SPECIFIC TASK OR PROJECT]
+> **Estimated time needed:** [YOUR GUESS]
+> **Typical distractions:** [WHAT USUALLY INTERRUPTS YOU]
+> **Current environment:** [WHERE YOU'LL WORK]
+> **Time available:** [HOW LONG YOU HAVE]
 >
-> **Build my focus session:**
-> 1. **Pre-session setup (5 minutes):**
->    - Specific environment changes to make right now (phone in another room, close tabs, etc.)
->    - One sentence to write down: "The single thing I will accomplish in this session is: ___"
->    - One physical action to signal "start" (make tea, put on headphones, close the door)
-> 2. **Session structure:**
->    - Block 1: [X minutes] focused work — what specifically to work on
->    - Break: [X minutes] — exactly what to do during the break (not scroll social media)
->    - Block 2: [X minutes] focused work — continuation
->    - (Repeat as needed for the time available)
-> 3. **Distraction protocol:** When [my biggest distraction] pops into my head, I will: [specific action — write it on a "later" list and immediately return]
-> 4. **Stuck protocol:** If I get stuck during the session, I will: [specific steps — set a 5-minute timer, try a different angle, move to the next subtask and come back]
-> 5. **Session close (3 minutes):**
->    - Capture where I stopped and what to do next (so I can start fast tomorrow)
->    - One sentence: what I accomplished
->    - Reward: [something small and immediate]
+> Act as a deep work architect. Design a focus session protocol using:
 >
-> Don't give me productivity theory. Give me a step-by-step protocol I can follow right now.
+> 1. **Pre-session ritual:** 3-minute routine to signal "focus mode" to your brain
+> 2. **Environment lockdown:** Specific apps to close, notifications to disable, physical changes
+> 3. **Session structure:** Pomodoro-style time blocks with specific break activities
+> 4. **Success definition:** What does "done" look like for this session (not the whole project)
+> 5. **Escape hatch:** When it's okay to stop (avoid guilt spirals)
+>
+> Create:
+> - **5-minute pre-game:** Exact steps to enter focus mode (make it a ritual)
+> - **Distraction blockers:** Apps, settings, physical environment changes (be specific)
+> - **Time blocks:** Work/break intervals optimized for this type of work
+> - **Progress markers:** Milestones to hit so I feel momentum
+> - **Post-session:** 2-minute cool-down and logging system (track what worked)
+>
+> Then give me:
+> - **The countdown script:** Exact words to think/say when I'm about to start
+> - **Interrupt protocol:** What I do if someone/something interrupts mid-session
+> - **Failure case:** If I can't focus, when do I stop trying and reschedule
+> - **Celebration trigger:** How I reward my brain when the session is complete
+>
+> Make this a system I can repeat, not a one-time motivational push. Treat focus like a skill, not willpower.
 
-**When to use it:** When you have an important task, limited time, and a tendency to procrastinate or get distracted.
+**When to use it:** Before any work session requiring more than 60 minutes of uninterrupted focus.
 
-**Pro tip:** The session setup is the most important part. If you skip it and try to "just start working," your brain will find an escape route within 10 minutes.
+**Pro tip:** The pre-session ritual is more important than the work itself—it trains your brain to enter focus mode on command like Pavlov's dogs.
