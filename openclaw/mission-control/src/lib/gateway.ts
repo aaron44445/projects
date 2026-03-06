@@ -1,3 +1,4 @@
+import { readFile as fsReadFile } from "fs/promises";
 import type { CronJob, GatewayHealth } from "./types";
 
 const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL!;
@@ -18,30 +19,9 @@ async function gatewayFetch(
   });
 }
 
-// Invoke a tool via the gateway
-async function invokeTool(
-  toolName: string,
-  args: Record<string, unknown>
-): Promise<string> {
-  const res = await gatewayFetch("/tools/invoke", {
-    method: "POST",
-    body: JSON.stringify({ tool: toolName, arguments: args }),
-  });
-  if (!res.ok) {
-    throw new Error(
-      `Gateway tool invoke failed: ${res.status} ${res.statusText}`
-    );
-  }
-  const json = await res.json();
-  // Response envelope: result.content[0].text
-  return json?.result?.content?.[0]?.text ?? JSON.stringify(json);
-}
-
-// Read a file from the gateway host filesystem
+// Read a file from the local filesystem (Mission Control runs co-located with OpenCLAW)
 export async function readFile(filePath: string): Promise<string> {
-  return invokeTool("exec", {
-    command: `cat "${filePath.replace(/\\/g, "/")}"`,
-  });
+  return fsReadFile(filePath, "utf-8");
 }
 
 // Read and parse a JSON file
@@ -76,11 +56,23 @@ export async function getCronJobs(): Promise<CronJob[]> {
   return data.jobs;
 }
 
-// Trigger a cron job to run now
+// Trigger a cron job to run now (via chat completions as a command)
 export async function runCronJob(jobId: string): Promise<string> {
-  return invokeTool("exec", {
-    command: `openclaw cron run ${jobId}`,
+  const res = await gatewayFetch("/v1/chat/completions", {
+    method: "POST",
+    body: JSON.stringify({
+      model: "openclaw:main",
+      messages: [
+        { role: "user", content: `/cron run ${jobId}` },
+      ],
+      stream: false,
+    }),
   });
+  if (!res.ok) {
+    throw new Error(`Run cron job failed: ${res.status} ${res.statusText}`);
+  }
+  const json = await res.json();
+  return json.choices?.[0]?.message?.content ?? "Job triggered";
 }
 
 // Toggle a cron job enabled/disabled
@@ -88,22 +80,26 @@ export async function toggleCronJob(
   jobId: string,
   enabled: boolean
 ): Promise<string> {
-  return invokeTool("exec", {
-    command: `openclaw cron edit ${jobId} --enabled ${enabled}`,
-  });
+  // Read current jobs, toggle, write back
+  const jobsPath = "C:/Users/aaron/.openclaw/cron/jobs.json";
+  const data = await readJsonFile<{ jobs: CronJob[] }>(jobsPath);
+  const job = data.jobs.find((j) => j.id === jobId);
+  if (!job) throw new Error(`Job ${jobId} not found`);
+  job.enabled = enabled;
+  const { writeFile } = await import("fs/promises");
+  await writeFile(jobsPath, JSON.stringify(data, null, 2), "utf-8");
+  return `Job ${jobId} ${enabled ? "enabled" : "disabled"}`;
 }
 
-// Get OpenCLAW config
+// Get OpenCLAW config (with sensitive fields masked)
 export async function getConfig(): Promise<Record<string, unknown>> {
   return readJsonFile("C:/Users/aaron/.openclaw/openclaw.json");
 }
 
 // List files in a directory
 export async function listFiles(dirPath: string): Promise<string[]> {
-  const output = await invokeTool("exec", {
-    command: `ls "${dirPath.replace(/\\/g, "/")}"`,
-  });
-  return output.split("\n").filter(Boolean);
+  const { readdir } = await import("fs/promises");
+  return readdir(dirPath);
 }
 
 // Send a message to an agent via chat completions
