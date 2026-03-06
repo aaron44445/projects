@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetRenderer } from "@/components/widgets/widget-renderer";
 import { ArrowLeft, Bot, Clock, LayoutGrid } from "lucide-react";
 import type { Project } from "@/lib/types";
 
@@ -149,32 +149,45 @@ export default function ProjectDetailPage({
         )}
       </div>
 
-      {/* Dashboard area */}
-      <Card className="border-border/50 bg-card">
-        <CardHeader className="pb-3 pt-4 px-4">
-          <CardTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Dashboard
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-6 pt-0">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/5 mb-3">
-              <LayoutGrid className="h-5 w-5 text-muted-foreground/40" />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Widget dashboard coming soon
-            </p>
-            {widgetCount > 0 && (
-              <p className="text-[11px] text-muted-foreground/60 mt-1">
-                {widgetCount} widget{widgetCount !== 1 ? "s" : ""} configured
-                {project.dashboard.template
-                  ? ` from ${project.dashboard.template} template`
-                  : ""}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Widget Dashboard */}
+      {widgetCount > 0 ? (
+        <div className="space-y-4">
+          {/* Group widgets by row */}
+          {Object.entries(
+            project.dashboard.widgets.reduce<Record<number, typeof project.dashboard.widgets>>((acc, w) => {
+              const row = w.row ?? 1;
+              if (!acc[row]) acc[row] = [];
+              acc[row].push(w);
+              return acc;
+            }, {})
+          )
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([row, widgets]) => (
+              <div
+                key={row}
+                className={`grid gap-4 ${
+                  widgets.length === 1
+                    ? "grid-cols-1"
+                    : widgets.length === 2
+                    ? "grid-cols-2"
+                    : "grid-cols-3"
+                }`}
+              >
+                {widgets.map((widget) => (
+                  <WidgetRenderer key={widget.id} widget={widget} />
+                ))}
+              </div>
+            ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 text-center border border-border/30 rounded-lg bg-card/40">
+          <LayoutGrid className="h-8 w-8 text-muted-foreground/30 mb-3" />
+          <p className="text-sm text-muted-foreground">No widgets configured</p>
+          <p className="text-[11px] text-muted-foreground/60 mt-1">
+            Add widgets to this project&apos;s dashboard to see data here.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
