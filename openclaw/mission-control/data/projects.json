@@ -1,0 +1,25 @@
+[
+  {
+    "id": "injectseo",
+    "name": "InjectSEO",
+    "description": "Med spa SEO outreach and lead generation pipeline",
+    "status": "active",
+    "workspace": "C:\\Users\\aaron\\.openclaw\\workspace",
+    "agents": ["main"],
+    "cronJobs": ["lead-discovery", "lead-enrichment", "outreach-send", "follow-up-send", "dm-outreach", "reply-check-afternoon", "reply-check-evening", "inbox-forward", "content-creation"],
+    "dataFiles": {
+      "pipeline": "C:\\Users\\aaron\\.openclaw\\workspace\\pipeline.json",
+      "performance": "C:\\Users\\aaron\\.openclaw\\workspace\\performance.json"
+    },
+    "dashboard": {
+      "widgets": [
+        { "id": "w1", "type": "kpi-cards", "row": 1, "title": "Today's Numbers", "data": "performance", "config": { "metrics": ["emailsSentToday", "dmsSentToday", "repliesTotal"] } },
+        { "id": "w2", "type": "pipeline-funnel", "row": 2, "title": "Pipeline", "data": "pipeline" },
+        { "id": "w3", "type": "cron-grid", "row": 2, "title": "Cron Jobs", "config": { "filter": "injectseo" } },
+        { "id": "w4", "type": "progress-bar", "row": 3, "title": "$5K MRR Target", "config": { "current": 0, "target": 5000, "unit": "$" } }
+      ]
+    },
+    "createdAt": "2026-03-06T00:00:00.000Z",
+    "updatedAt": "2026-03-06T00:00:00.000Z"
+  }
+]
