@@ -57,9 +57,9 @@ const products: Product[] = [
   },
   {
     title: "The AI Prompt Vault",
-    tagline: "60 battle-tested prompts across business, content, code & more",
-    price: "$12",
-    link: "#",
+    tagline: "20 AI prompts that turn ChatGPT into your personal life strategist",
+    price: "$9",
+    link: "https://vault.aaronmcbride.com",
     tag: "prompts",
   },
   {
