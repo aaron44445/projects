@@ -26,7 +26,15 @@ const AGENTS: AgentDef[] = [
     label: "Claw",
     model: "nvidia/moonshotai/kimi-k2.5",
     workspace: "C:\\Users\\aaron\\.openclaw\\workspace",
-    description: "Primary autonomous agent",
+    description: "Primary autonomous agent — outreach, leads, content, DMs",
+  },
+  {
+    id: "marketer",
+    label: "Bloom",
+    model: "anthropic/claude-sonnet-4-6",
+    fallbacks: ["nvidia/moonshotai/kimi-k2.5"],
+    workspace: "C:\\Users\\aaron\\.openclaw\\workspace-marketer",
+    description: "Digital marketing — strategy, SEO, content, analytics",
   },
   {
     id: "board-moderator",
