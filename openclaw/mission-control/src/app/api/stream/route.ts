@@ -15,13 +15,15 @@ export async function GET() {
 
       const poll = async () => {
         try {
-          const [health, cron] = await Promise.allSettled([
+          const [health, cron, activity] = await Promise.allSettled([
             gateway.getHealth(),
             gateway.getCronJobs(),
+            gateway.getAgentActivity(),
           ]);
 
           if (health.status === "fulfilled") send("health", health.value);
           if (cron.status === "fulfilled") send("cron", { jobs: cron.value });
+          if (activity.status === "fulfilled") send("agent-activity", { activities: activity.value });
 
           send("heartbeat", { timestamp: Date.now() });
         } catch {

@@ -192,10 +192,21 @@ export type SSEEventType =
   | "cron"
   | "pipeline"
   | "performance"
-  | "activity";
+  | "activity"
+  | "agent-activity";
 
 export interface SSEEvent {
   type: SSEEventType;
   data: unknown;
+  timestamp: number;
+}
+
+// Agent activity for live war room tracking
+export interface AgentActivity {
+  agentId: string;
+  agentLabel: string;
+  action: "working" | "idle" | "completed" | "error";
+  project?: string;
+  description: string;
   timestamp: number;
 }

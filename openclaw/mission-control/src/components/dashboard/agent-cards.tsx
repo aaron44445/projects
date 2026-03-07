@@ -20,10 +20,22 @@ const AGENTS: AgentDef[] = [
     description: "Primary autonomous agent",
   },
   {
+    id: "marketer",
+    label: "Bloom",
+    model: "nvidia/writer/palmyra-creative-122b",
+    description: "Digital marketing agent",
+  },
+  {
     id: "board-moderator",
     label: "The Board",
     model: "anthropic/claude-opus-4-6",
     description: "Nightly advisory board synthesizer",
+  },
+  {
+    id: "builder",
+    label: "Forge",
+    model: "openai-codex/gpt-5.3-codex",
+    description: "Dedicated coding sub-agent",
   },
 ];
 
@@ -43,7 +55,7 @@ export function AgentCards() {
           : "offline";
 
         return (
-          <Card key={agent.id} className="border-border/50 bg-card">
+          <Card key={agent.id} className="border-[#2a2a3e] bg-[#141420]">
             <CardHeader className="pb-2 pt-4 px-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -54,7 +66,7 @@ export function AgentCards() {
                 </div>
                 <Badge
                   variant="outline"
-                  className="font-mono text-[10px] px-1.5 py-0 h-5 border-border/60 text-muted-foreground"
+                  className="font-mono text-[10px] px-1.5 py-0 h-5 border-[#2a2a3e] text-[#666680]"
                 >
                   {agent.id}
                 </Badge>
@@ -68,7 +80,7 @@ export function AgentCards() {
                 <span className="text-[10px] text-muted-foreground">
                   Model
                 </span>
-                <span className="font-mono text-[10px] text-foreground truncate ml-2 max-w-[180px]">
+                <span className="font-mono text-[10px] text-[#e0e0e0] truncate ml-2 max-w-[180px]">
                   {live?.model ?? agent.model}
                 </span>
               </div>
@@ -80,9 +92,9 @@ export function AgentCards() {
                   <span
                     className={`font-mono text-[10px] uppercase ${
                       status === "running"
-                        ? "text-status-blue"
+                        ? "text-[#4da6ff]"
                         : status === "online"
-                          ? "text-status-green"
+                          ? "text-[#00ff41]"
                           : "text-muted-foreground"
                     }`}
                   >

@@ -31,8 +31,8 @@ const AGENTS: AgentDef[] = [
   {
     id: "marketer",
     label: "Bloom",
-    model: "anthropic/claude-sonnet-4-6",
-    fallbacks: ["nvidia/moonshotai/kimi-k2.5"],
+    model: "nvidia/writer/palmyra-creative-122b",
+    fallbacks: ["nvidia/deepseek-ai/deepseek-v3.2"],
     workspace: "C:\\Users\\aaron\\.openclaw\\workspace-marketer",
     description: "Digital marketing — strategy, SEO, content, analytics",
   },
@@ -43,6 +43,14 @@ const AGENTS: AgentDef[] = [
     fallbacks: ["anthropic/claude-sonnet-4-6"],
     workspace: "C:\\Users\\aaron\\.openclaw\\workspace-board",
     description: "Nightly advisory board synthesizer",
+  },
+  {
+    id: "builder",
+    label: "Forge",
+    model: "openai-codex/gpt-5.3-codex",
+    fallbacks: ["anthropic/claude-sonnet-4-6"],
+    workspace: "C:\\Users\\aaron\\.openclaw\\workspace-builder",
+    description: "Dedicated coding sub-agent — builds, PRs, refactoring",
   },
 ];
 
@@ -62,14 +70,14 @@ export function AgentDetailCard({ agent }: { agent: AgentDef }) {
     : "offline";
 
   return (
-    <Card className="border-border/50 bg-card py-0 overflow-hidden">
+    <Card className="border-[#2a2a3e] bg-[#141420] py-0 overflow-hidden">
       {/* Top accent bar */}
       <div
         className={`h-0.5 w-full ${
           status === "running"
-            ? "bg-status-blue"
+            ? "bg-[#4da6ff]"
             : status === "online"
-              ? "bg-status-green"
+              ? "bg-[#00ff41]"
               : "bg-border"
         }`}
       />
@@ -95,9 +103,9 @@ export function AgentDetailCard({ agent }: { agent: AgentDef }) {
               variant="outline"
               className={`font-mono text-[10px] px-1.5 py-0 h-5 uppercase tracking-wider ${
                 status === "running"
-                  ? "border-status-blue/40 text-status-blue"
+                  ? "border-[#4da6ff]/40 text-[#4da6ff]"
                   : status === "online"
-                    ? "border-status-green/40 text-status-green"
+                    ? "border-[#00ff41]/40 text-[#00ff41]"
                     : "border-border/60 text-muted-foreground"
               }`}
             >
@@ -110,7 +118,7 @@ export function AgentDetailCard({ agent }: { agent: AgentDef }) {
       <CardContent className="px-5 pb-4 pt-0 space-y-2.5">
         <p className="text-xs text-muted-foreground">{agent.description}</p>
 
-        <div className="space-y-1.5 rounded-md bg-secondary/40 border border-border/30 p-3">
+        <div className="space-y-1.5 rounded-md bg-[#1a1a2e]/60 border border-[#2a2a3e]/50 p-3">
           {/* Primary model */}
           <div className="flex items-center gap-2">
             <Cpu className="h-3 w-3 text-muted-foreground shrink-0" />

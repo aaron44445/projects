@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { CronJob, GatewayHealth } from "@/lib/types";
+import type { CronJob, GatewayHealth, AgentActivity } from "@/lib/types";
 
 interface SSEState {
   health: GatewayHealth | null;
   cronJobs: CronJob[];
+  agentActivities: AgentActivity[];
   connected: boolean;
   lastUpdate: number | null;
 }
@@ -13,6 +14,7 @@ export function useSSE() {
   const [state, setState] = useState<SSEState>({
     health: null,
     cronJobs: [],
+    agentActivities: [],
     connected: false,
     lastUpdate: null,
   });
@@ -40,6 +42,18 @@ export function useSSE() {
       setState((prev) => ({
         ...prev,
         cronJobs: data.jobs,
+        lastUpdate: Date.now(),
+      }));
+    });
+
+    es.addEventListener("agent-activity", (e) => {
+      const data = JSON.parse(e.data);
+      setState((prev) => ({
+        ...prev,
+        agentActivities: [
+          ...prev.agentActivities,
+          ...data.activities,
+        ].slice(-50), // keep last 50
         lastUpdate: Date.now(),
       }));
     });

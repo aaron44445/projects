@@ -1,5 +1,5 @@
 import { readFile as fsReadFile } from "fs/promises";
-import type { CronJob, GatewayHealth } from "./types";
+import type { CronJob, GatewayHealth, AgentActivity } from "./types";
 
 const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL!;
 const GATEWAY_TOKEN = process.env.OPENCLAW_TOKEN!;
@@ -127,6 +127,77 @@ export async function chatWithAgent(
   return json.choices?.[0]?.message?.content ?? "";
 }
 
+// Get agent activity by checking session files and cron state
+export async function getAgentActivity(): Promise<AgentActivity[]> {
+  const activities: AgentActivity[] = [];
+  const now = Date.now();
+
+  // Agent definitions for labels
+  const agentDefs: Record<string, { label: string; project?: string }> = {
+    main: { label: "CLAW", project: "InjectSEO" },
+    marketer: { label: "BLOOM", project: "InjectSEO" },
+    "board-moderator": { label: "THE BOARD" },
+    builder: { label: "FORGE" },
+  };
+
+  try {
+    // Check cron jobs for recently running/completed jobs
+    const cronJobs = await getCronJobs();
+    for (const job of cronJobs) {
+      if (!job.state) continue;
+      const agentDef = agentDefs[job.agentId] ?? { label: job.agentId.toUpperCase() };
+
+      // If job ran in the last 60 seconds
+      if (job.state.lastRunAtMs && now - job.state.lastRunAtMs < 60000) {
+        const action = job.state.lastRunStatus === "ok" ? "completed" :
+                       job.state.lastRunStatus === "error" ? "error" : "working";
+        activities.push({
+          agentId: job.agentId,
+          agentLabel: agentDef.label,
+          action,
+          project: agentDef.project,
+          description: `Cron: ${job.name}`,
+          timestamp: job.state.lastRunAtMs,
+        });
+      }
+
+      // If job is currently running (nextRun is in the past but no recent completion)
+      if (job.state.nextRunAtMs && job.state.nextRunAtMs < now && job.enabled) {
+        const lastRun = job.state.lastRunAtMs ?? 0;
+        if (now - lastRun > 60000) {
+          activities.push({
+            agentId: job.agentId,
+            agentLabel: agentDef.label,
+            action: "working",
+            project: agentDef.project,
+            description: `Running: ${job.name}`,
+            timestamp: now,
+          });
+        }
+      }
+    }
+  } catch {
+    // Cron data not available, skip
+  }
+
+  // Add idle status for agents with no recent activity
+  for (const [agentId, def] of Object.entries(agentDefs)) {
+    const hasActivity = activities.some((a) => a.agentId === agentId);
+    if (!hasActivity) {
+      activities.push({
+        agentId,
+        agentLabel: def.label,
+        action: "idle",
+        project: def.project,
+        description: "Standing by",
+        timestamp: now,
+      });
+    }
+  }
+
+  return activities;
+}
+
 export const gateway = {
   getHealth,
   getCronJobs,
@@ -137,4 +208,5 @@ export const gateway = {
   readJsonFile,
   listFiles,
   chatWithAgent,
+  getAgentActivity,
 };

@@ -1,44 +1,109 @@
 "use client";
 
-import { GatewayHealth } from "@/components/dashboard/gateway-health";
-import { AgentCards } from "@/components/dashboard/agent-cards";
-import { CronGrid } from "@/components/dashboard/cron-grid";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { useState, useMemo } from "react";
+import { MissionBanner } from "@/components/command-center/mission-banner";
+import { WarRoomMap, type AgentPosition } from "@/components/command-center/war-room-map";
+import { ActivityTicker, type TickerEntry } from "@/components/command-center/activity-ticker";
+import { AgentPanel } from "@/components/command-center/agent-panel";
+import { ProjectPanel } from "@/components/command-center/project-panel";
+import { useSSEContext } from "@/components/providers/sse-provider";
+import { getDefaultMapConfig } from "@/lib/map-data";
+
+// Map agent IDs to their default project assignments
+const AGENT_PROJECT_MAP: Record<string, string> = {
+  main: "injectseo",
+  marketer: "medseo",
+  "board-moderator": "injectseo",
+  builder: "forge-station",
+};
+
+const ALL_AGENT_IDS = ["main", "marketer", "board-moderator", "builder"];
 
 export default function CommandCenter() {
+  const { agentActivities } = useSSEContext();
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
+  const mapConfig = useMemo(() => getDefaultMapConfig(), []);
+
+  // Convert agent activities to ticker entries
+  const tickerEntries: TickerEntry[] = useMemo(() => {
+    return (agentActivities ?? []).map((a) => ({
+      agentId: a.agentId,
+      agentLabel: a.agentLabel,
+      project: a.project,
+      description: a.description,
+      timestamp: a.timestamp,
+      status: a.action,
+    }));
+  }, [agentActivities]);
+
+  // Compute agent positions from latest activities
+  const agentPositions: AgentPosition[] = useMemo(() => {
+    const latest = new Map<string, typeof agentActivities[number]>();
+
+    // Get the latest activity per agent
+    for (const activity of agentActivities ?? []) {
+      const existing = latest.get(activity.agentId);
+      if (!existing || activity.timestamp > existing.timestamp) {
+        latest.set(activity.agentId, activity);
+      }
+    }
+
+    return ALL_AGENT_IDS.map((agentId, idx) => {
+      const activity = latest.get(agentId);
+      const projectId = activity?.project?.toLowerCase().replace(/\s+/g, "") ?? AGENT_PROJECT_MAP[agentId];
+
+      // Find the base for this project
+      const base = mapConfig.bases.find((b) =>
+        b.projectId === projectId ||
+        b.name.toLowerCase().replace(/\s+/g, "") === projectId
+      );
+
+      let x: number, y: number;
+      if (base) {
+        // Position at dock point
+        const dockIdx = idx % base.agentDockPoints.length;
+        x = base.agentDockPoints[dockIdx].x;
+        y = base.agentDockPoints[dockIdx].y;
+      } else {
+        // Idle at home with offset
+        x = mapConfig.homePosition.x + (idx - 1.5) * 20;
+        y = mapConfig.homePosition.y;
+      }
+
+      const state: AgentPosition["state"] =
+        activity?.action === "working" ? "working" :
+        activity?.action === "completed" ? "idle" :
+        activity?.action === "error" ? "idle" :
+        "idle";
+
+      return {
+        agentId,
+        x,
+        y,
+        targetX: x,
+        targetY: y,
+        state,
+        currentProject: base?.projectId,
+        frame: 0,
+      };
+    });
+  }, [agentActivities, mapConfig]);
+
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold tracking-tight">
-          Command Center
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Live
-          </span>
-        </div>
+    <div className="flex flex-col h-[calc(100vh-48px)]">
+      <MissionBanner />
+      <div className="flex-1 relative overflow-hidden">
+        <WarRoomMap
+          agentPositions={agentPositions}
+          onBaseClick={setSelectedProject}
+          onAgentClick={setSelectedAgent}
+        />
       </div>
-
-      {/* Three-column layout */}
-      <div className="grid grid-cols-[260px_1fr_300px] gap-4 items-start">
-        {/* Left column: Gateway + Agents stacked */}
-        <div className="space-y-3">
-          <GatewayHealth />
-          <AgentCards />
-        </div>
-
-        {/* Center column: Cron grid */}
-        <div>
-          <CronGrid />
-        </div>
-
-        {/* Right column: Activity feed */}
-        <div className="max-h-[calc(100vh-140px)] sticky top-4">
-          <ActivityFeed />
-        </div>
-      </div>
+      <ActivityTicker entries={tickerEntries} />
+      <AgentPanel agentId={selectedAgent} onClose={() => setSelectedAgent(null)} />
+      <ProjectPanel projectId={selectedProject} onClose={() => setSelectedProject(null)} />
     </div>
   );
 }
