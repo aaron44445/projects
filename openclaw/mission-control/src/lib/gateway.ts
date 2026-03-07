@@ -181,15 +181,17 @@ export async function getAgentActivity(): Promise<AgentActivity[]> {
   }
 
   // Add idle status for agents with no recent activity
+  const SCHEDULED_AGENTS = new Set(["board-moderator"]);
   for (const [agentId, def] of Object.entries(agentDefs)) {
     const hasActivity = activities.some((a) => a.agentId === agentId);
     if (!hasActivity) {
+      const isScheduled = SCHEDULED_AGENTS.has(agentId);
       activities.push({
         agentId,
         agentLabel: def.label,
         action: "idle",
         project: def.project,
-        description: "Standing by",
+        description: isScheduled ? "Next board: tonight" : "Awaiting orders",
         timestamp: now,
       });
     }

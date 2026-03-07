@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 const AGENTS = [
   { id: "main", label: "Claw" },
   { id: "marketer", label: "Bloom" },
-  { id: "board-moderator", label: "The Board" },
   { id: "builder", label: "Forge" },
 ];
 

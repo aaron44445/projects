@@ -9,12 +9,14 @@ interface AgentMeta {
   label: string;
   color: string;
   project: string;
+  idleLabel?: string; // custom label when idle (instead of "Standing by")
+  scheduledOnly?: boolean; // true = only works during scheduled runs (e.g. Board)
 }
 
 const AGENTS: AgentMeta[] = [
   { id: "main", label: "Claw", color: "#00ff41", project: "InjectSEO" },
   { id: "marketer", label: "Bloom", color: "#ff69b4", project: "MedSEO" },
-  { id: "board-moderator", label: "The Board", color: "#9b59b6", project: "InjectSEO" },
+  { id: "board-moderator", label: "The Board", color: "#9b59b6", project: "InjectSEO", idleLabel: "Next board: tonight", scheduledOnly: true },
   { id: "builder", label: "Forge", color: "#ff6600", project: "Forge Station" },
 ];
 
@@ -85,8 +87,26 @@ export function AgentStatusSidebar() {
             : null;
 
           const status = latest?.action ?? "idle";
-          const statusLabel = status === "working" ? "ACTIVE" : status === "completed" ? "DONE" : status === "error" ? "ERROR" : "STANDBY";
-          const statusColor = status === "working" ? "#00ff41" : status === "error" ? "#ff2d2d" : "#666680";
+          const isScheduledOnly = agent.scheduledOnly ?? false;
+
+          let statusLabel: string;
+          let statusColor: string;
+          if (status === "working") {
+            statusLabel = "ACTIVE";
+            statusColor = "#00ff41";
+          } else if (status === "error") {
+            statusLabel = "ERROR";
+            statusColor = "#ff2d2d";
+          } else if (status === "completed") {
+            statusLabel = "DONE";
+            statusColor = "#00ff41";
+          } else if (isScheduledOnly) {
+            statusLabel = "SCHEDULED";
+            statusColor = "#9b59b6";
+          } else {
+            statusLabel = "READY";
+            statusColor = "#ffa500";
+          }
 
           return (
             <div
@@ -132,7 +152,9 @@ export function AgentStatusSidebar() {
 
                   {/* Current task */}
                   <div className="mt-1.5 font-mono text-[10px] text-[#8a8aaa] truncate">
-                    {latest?.description ?? "Standing by"}
+                    {latest?.description && latest.description !== "Standing by"
+                      ? latest.description
+                      : agent.idleLabel ?? "Awaiting orders"}
                   </div>
 
                   {/* Project assignment */}
