@@ -16,6 +16,10 @@ import {
 // ---------------------------------------------------------------------------
 const PIXEL_SCALE = 3;
 
+// Draw scale — multiplier for sprites/buildings to make them visually larger
+const DRAW_SCALE = 2;
+const DS = PIXEL_SCALE * DRAW_SCALE; // each sprite/building pixel = DS×DS canvas pixels
+
 // Logical resolution (matches map-data tile coords)
 const LOGICAL_W = 480;
 const LOGICAL_H = 320;
@@ -71,13 +75,14 @@ const AGENT_COLORS: Record<string, string> = {
 // Drawing helpers — all coordinates are in CANVAS space (scaled)
 // ---------------------------------------------------------------------------
 
-/** Render a pixel-art frame at canvas position (cx, cy). Each data pixel = S×S canvas pixels. */
+/** Render a pixel-art frame at canvas position (cx, cy). pixelSize controls how large each data pixel is rendered. */
 function drawPixelArt(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
   frame: number[][],
   palette: string[],
+  pixelSize: number = S,
 ) {
   for (let row = 0; row < frame.length; row++) {
     const cols = frame[row];
@@ -87,7 +92,7 @@ function drawPixelArt(
       const color = palette[idx];
       if (!color || color === "transparent") continue;
       ctx.fillStyle = color;
-      ctx.fillRect(cx + col * S, cy + row * S, S, S);
+      ctx.fillRect(cx + col * pixelSize, cy + row * pixelSize, pixelSize, pixelSize);
     }
   }
 }
@@ -130,9 +135,9 @@ function drawCircuitTraces(
     const wps = path.waypoints;
     if (wps.length < 2) continue;
 
-    // Draw line in canvas space
+    // Draw line in canvas space — thicker for visibility
     ctx.strokeStyle = "#1a1a2e";
-    ctx.lineWidth = S;
+    ctx.lineWidth = S * 2;
     ctx.beginPath();
     ctx.moveTo(wps[0].x * S + 0.5, wps[0].y * S + 0.5);
     for (let i = 1; i < wps.length; i++) {
@@ -140,7 +145,7 @@ function drawCircuitTraces(
     }
     ctx.stroke();
 
-    // Animated green data dots
+    // Animated green data dots — bigger
     for (let i = 0; i < wps.length - 1; i++) {
       const a = wps[i];
       const b = wps[i + 1];
@@ -158,69 +163,77 @@ function drawCircuitTraces(
 
         ctx.fillStyle = "#00ff41";
         ctx.globalAlpha = 0.5 + 0.3 * Math.sin((frameCount + d) * 0.8);
-        ctx.fillRect(Math.round(dotX), Math.round(dotY), S, S);
+        ctx.fillRect(Math.round(dotX) - 1, Math.round(dotY) - 1, S * 2, S * 2);
       }
     }
   }
   ctx.globalAlpha = 1;
 }
 
-/** Layer 3 — base building + glow + label. */
+/** Layer 3 — base building + glow + label. Drawn at 2x size, centered on tile position. */
 function drawBase(
   ctx: CanvasRenderingContext2D,
   base: ProjectBase,
   frameCount: number,
 ) {
-  // Convert tile position to canvas coordinates
-  const cx = base.x * 16 * S;
-  const cy = base.y * 16 * S;
-  const bw = base.width * S;
-  const bh = base.height * S;
+  // Original tile position in canvas space
+  const origCx = base.x * 16 * S;
+  const origCy = base.y * 16 * S;
+  const origW = base.width * S;
+  const origH = base.height * S;
 
-  // --- Status glow ---
+  // Scaled dimensions
+  const scaledW = base.width * DS;
+  const scaledH = base.height * DS;
+
+  // Center the larger building on the original position
+  const cx = origCx + (origW - scaledW) / 2;
+  const cy = origCy + (origH - scaledH) / 2;
+
+  // --- Status glow --- (scaled up)
   const glowColors: Record<string, string> = {
     active: "#00ff41",
     idle: "#ffa500",
     error: "#ff2d2d",
   };
   const glowColor = glowColors[base.status] ?? "#00ff41";
-  const centerX = cx + bw / 2;
-  const centerY = cy + bh;
-  const radius = Math.max(bw, bh) * 0.8;
+  const centerX = cx + scaledW / 2;
+  const centerY = cy + scaledH;
+  const radius = Math.max(scaledW, scaledH) * 0.9;
 
   ctx.save();
   const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-  const pulseAlpha = 0.15 + 0.08 * Math.sin(frameCount * 0.5);
+  const pulseAlpha = 0.18 + 0.1 * Math.sin(frameCount * 0.5);
   grad.addColorStop(0, glowColor + alphaHex(pulseAlpha));
   grad.addColorStop(1, glowColor + "00");
   ctx.fillStyle = grad;
   ctx.fillRect(centerX - radius, centerY - radius, radius * 2, radius * 2);
   ctx.restore();
 
-  // --- Pixel art building ---
+  // --- Pixel art building at 2x ---
   const fi = frameCount % base.frames.length;
-  drawPixelArt(ctx, cx, cy, base.frames[fi], base.palette);
+  drawPixelArt(ctx, cx, cy, base.frames[fi], base.palette, DS);
 
-  // --- Building name label ---
+  // --- Building name label --- (larger font)
   ctx.save();
-  ctx.fillStyle = "#8a8aaa";
-  ctx.font = `bold ${Math.max(10, 4 * S)}px monospace`;
+  ctx.fillStyle = "#c0c0d0";
+  ctx.font = `bold ${Math.max(16, 6 * S)}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText(base.name, cx + bw / 2, cy - 4 * S);
+  ctx.fillText(base.name, cx + scaledW / 2, cy - 4 * S);
 
   // Underline
   const textWidth = ctx.measureText(base.name).width;
-  ctx.strokeStyle = "#2a2a3e";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#3a3a4e";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(cx + bw / 2 - textWidth / 2, cy - 3 * S);
-  ctx.lineTo(cx + bw / 2 + textWidth / 2, cy - 3 * S);
+  ctx.moveTo(cx + scaledW / 2 - textWidth / 2, cy - 3 * S);
+  ctx.lineTo(cx + scaledW / 2 + textWidth / 2, cy - 3 * S);
   ctx.stroke();
   ctx.restore();
 }
 
-/** Layer 4 — agent sprites with name labels. */
+/** Layer 4 — agent sprites with name labels. Drawn at 2x size. */
 function drawAgent(
   ctx: CanvasRenderingContext2D,
   agent: AgentPosition,
@@ -256,24 +269,30 @@ function drawAgent(
   const canvasX = agent.x * S;
   const canvasY = agent.y * S;
 
-  // Draw sprite centered horizontally, bottom-aligned
-  const spriteCanvasSize = sheet.size * S;
+  // Draw sprite centered horizontally, bottom-aligned — at 2x size
+  const spriteCanvasSize = sheet.size * DS;
   const drawX = Math.round(canvasX - spriteCanvasSize / 2);
   const drawY = Math.round(canvasY - spriteCanvasSize);
 
-  drawPixelArt(ctx, drawX, drawY, frame, sheet.palette);
+  drawPixelArt(ctx, drawX, drawY, frame, sheet.palette, DS);
 
-  // --- Agent name label below sprite ---
+  // --- Agent name label below sprite --- (larger, bolder)
   const label = AGENT_LABELS[agent.agentId] ?? agent.agentId.toUpperCase();
   const color = AGENT_COLORS[agent.agentId] ?? "#00ff41";
 
   ctx.save();
   ctx.fillStyle = color;
-  ctx.font = `bold ${Math.max(9, 3 * S)}px monospace`;
+  ctx.font = `bold ${Math.max(14, 5 * S)}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.globalAlpha = 0.9;
-  ctx.fillText(label, canvasX, canvasY + 2 * S);
+  ctx.globalAlpha = 0.95;
+
+  // Text shadow for readability
+  ctx.shadowColor = "#000000";
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  ctx.fillText(label, canvasX, canvasY + 3 * S);
   ctx.restore();
 }
 
@@ -334,6 +353,7 @@ export function WarRoomMap({
   }, [agentPositions]);
 
   // Click handling — translate screen coords → logical coords
+  // Hit areas are scaled up to match 2x rendered size
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -347,22 +367,26 @@ export function WarRoomMap({
 
       const mapCfg = mapConfigRef.current;
 
-      // Check agents first (16x16 logical bounding box)
+      // Check agents first — larger hit area for 2x sprites
+      const hitSize = 16 * DRAW_SCALE;
       for (const agent of agentPositions) {
-        const size = 16;
-        const ax = agent.x - size / 2;
-        const ay = agent.y - size;
-        if (logicalX >= ax && logicalX <= ax + size && logicalY >= ay && logicalY <= ay + size) {
+        const ax = agent.x - hitSize / 2;
+        const ay = agent.y - hitSize;
+        if (logicalX >= ax && logicalX <= ax + hitSize && logicalY >= ay && logicalY <= ay + hitSize) {
           onAgentClick?.(agent.agentId);
           return;
         }
       }
 
-      // Check bases
+      // Check bases — larger hit area
       for (const base of mapCfg.bases) {
         const bx = base.x * 16;
         const by = base.y * 16;
-        if (logicalX >= bx && logicalX <= bx + base.width && logicalY >= by && logicalY <= by + base.height) {
+        const bw = base.width * DRAW_SCALE;
+        const bh = base.height * DRAW_SCALE;
+        const hitX = bx + (base.width - bw) / 2;
+        const hitY = by + (base.height - bh) / 2;
+        if (logicalX >= hitX && logicalX <= hitX + bw && logicalY >= hitY && logicalY <= hitY + bh) {
           onBaseClick?.(base.projectId);
           return;
         }

@@ -105,7 +105,7 @@ export default function CommandCenter() {
         </div>
 
         {/* Agent status sidebar */}
-        <div className="w-72 border-l border-[#2a2a3e] bg-[#0d0d15] shrink-0">
+        <div className="w-80 border-l border-[#2a2a3e] bg-[#0d0d15] shrink-0">
           <AgentStatusSidebar />
         </div>
       </div>
