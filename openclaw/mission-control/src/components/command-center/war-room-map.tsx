@@ -8,24 +8,33 @@ import {
 } from "@/lib/map-data";
 import {
   getAgentSprite,
-  type SpriteSheet,
   type SpriteFrame,
 } from "@/lib/sprites";
 
 // ---------------------------------------------------------------------------
-// Native canvas resolution — scaled up with CSS + image-rendering: pixelated
+// Pixel scale — each sprite/building pixel renders as S×S canvas pixels
 // ---------------------------------------------------------------------------
-const NATIVE_W = 480;
-const NATIVE_H = 320;
+const PIXEL_SCALE = 3;
+
+// Logical resolution (matches map-data tile coords)
+const LOGICAL_W = 480;
+const LOGICAL_H = 320;
+
+// Actual canvas resolution
+const CANVAS_W = LOGICAL_W * PIXEL_SCALE;
+const CANVAS_H = LOGICAL_H * PIXEL_SCALE;
+
 const TARGET_FPS = 8;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
+
+const S = PIXEL_SCALE; // shorthand
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 export interface AgentPosition {
   agentId: string;
-  x: number; // pixel position
+  x: number; // logical pixel position (480x320 space)
   y: number;
   targetX: number;
   targetY: number;
@@ -40,15 +49,31 @@ interface WarRoomMapProps {
   onAgentClick?: (agentId: string) => void;
 }
 
+// Agent display names
+const AGENT_LABELS: Record<string, string> = {
+  main: "CLAW",
+  marketer: "BLOOM",
+  "board-moderator": "BOARD",
+  builder: "FORGE",
+};
+
+// Agent accent colors for name labels
+const AGENT_COLORS: Record<string, string> = {
+  main: "#00ff41",
+  marketer: "#ff69b4",
+  "board-moderator": "#9b59b6",
+  builder: "#ff6600",
+};
+
 // ---------------------------------------------------------------------------
-// Drawing helpers
+// Drawing helpers — all coordinates are in CANVAS space (scaled)
 // ---------------------------------------------------------------------------
 
-/** Render a single pixel-art frame (2-D grid of palette indices) at (x, y). */
+/** Render a pixel-art frame at canvas position (cx, cy). Each data pixel = S×S canvas pixels. */
 function drawPixelArt(
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
+  cx: number,
+  cy: number,
   frame: number[][],
   palette: string[],
 ) {
@@ -56,153 +81,144 @@ function drawPixelArt(
     const cols = frame[row];
     for (let col = 0; col < cols.length; col++) {
       const idx = cols[col];
-      if (idx === 0) continue; // transparent
+      if (idx === 0) continue;
       const color = palette[idx];
       if (!color || color === "transparent") continue;
       ctx.fillStyle = color;
-      ctx.fillRect(x + col, y + row, 1, 1);
+      ctx.fillRect(cx + col * S, cy + row * S, S, S);
     }
   }
 }
 
-/** Layer 1 — dark background + subtle grid lines every 16 px. */
+/** Layer 1 — dark background + grid. */
 function drawGround(
   ctx: CanvasRenderingContext2D,
-  mapConfig: MapConfig,
+  _mapConfig: MapConfig,
   _frameCount: number,
 ) {
-  // Fill background
   ctx.fillStyle = "#0a0a0f";
-  ctx.fillRect(0, 0, NATIVE_W, NATIVE_H);
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Grid lines
-  ctx.strokeStyle = "#1a1a2e";
+  // Subtle grid every tile (16 * S canvas pixels)
+  ctx.strokeStyle = "#13131f";
   ctx.lineWidth = 1;
+  const gridStep = 16 * S;
 
-  const ts = mapConfig.tileSize;
-  for (let x = 0; x <= NATIVE_W; x += ts) {
+  for (let x = 0; x <= CANVAS_W; x += gridStep) {
     ctx.beginPath();
     ctx.moveTo(x + 0.5, 0);
-    ctx.lineTo(x + 0.5, NATIVE_H);
+    ctx.lineTo(x + 0.5, CANVAS_H);
     ctx.stroke();
   }
-  for (let y = 0; y <= NATIVE_H; y += ts) {
+  for (let y = 0; y <= CANVAS_H; y += gridStep) {
     ctx.beginPath();
     ctx.moveTo(0, y + 0.5);
-    ctx.lineTo(NATIVE_W, y + 0.5);
+    ctx.lineTo(CANVAS_W, y + 0.5);
     ctx.stroke();
   }
 }
 
-/** Layer 2 — circuit-trace paths between bases with blinking green dots. */
+/** Layer 2 — circuit traces between bases. */
 function drawCircuitTraces(
   ctx: CanvasRenderingContext2D,
   mapConfig: MapConfig,
   frameCount: number,
 ) {
-  ctx.strokeStyle = "#1a1a2e";
-  ctx.lineWidth = 1;
-
   for (const path of mapConfig.paths) {
     const wps = path.waypoints;
     if (wps.length < 2) continue;
 
-    // Draw connecting lines between waypoints
+    // Draw line in canvas space
+    ctx.strokeStyle = "#1a1a2e";
+    ctx.lineWidth = S;
     ctx.beginPath();
-    ctx.moveTo(wps[0].x + 0.5, wps[0].y + 0.5);
+    ctx.moveTo(wps[0].x * S + 0.5, wps[0].y * S + 0.5);
     for (let i = 1; i < wps.length; i++) {
-      ctx.lineTo(wps[i].x + 0.5, wps[i].y + 0.5);
+      ctx.lineTo(wps[i].x * S + 0.5, wps[i].y * S + 0.5);
     }
     ctx.stroke();
 
-    // Blinking green data-flow dots along the path
+    // Animated green data dots
     for (let i = 0; i < wps.length - 1; i++) {
       const a = wps[i];
       const b = wps[i + 1];
       const dx = b.x - a.x;
       const dy = b.y - a.y;
       const segLen = Math.sqrt(dx * dx + dy * dy);
-      const dotSpacing = 24; // pixels between dots
-      const dotCount = Math.max(1, Math.floor(segLen / dotSpacing));
+      const dotCount = Math.max(1, Math.floor(segLen / 30));
 
       for (let d = 0; d < dotCount; d++) {
-        // Shift the position along the segment based on frameCount for animation
-        const t =
-          ((d / dotCount + (frameCount * 0.15 + i * 0.3)) % 1 + 1) % 1;
-        const dotX = a.x + dx * t;
-        const dotY = a.y + dy * t;
-
-        // Only show some dots based on frame phase for blink effect
+        const t = ((d / dotCount + frameCount * 0.12 + i * 0.25) % 1 + 1) % 1;
+        const dotX = (a.x + dx * t) * S;
+        const dotY = (a.y + dy * t) * S;
         const visible = (frameCount + d + i * 3) % 4 < 2;
         if (!visible) continue;
 
         ctx.fillStyle = "#00ff41";
-        ctx.globalAlpha = 0.6 + 0.4 * Math.sin((frameCount + d) * 0.8);
-        ctx.fillRect(Math.round(dotX), Math.round(dotY), 1, 1);
+        ctx.globalAlpha = 0.5 + 0.3 * Math.sin((frameCount + d) * 0.8);
+        ctx.fillRect(Math.round(dotX), Math.round(dotY), S, S);
       }
     }
   }
   ctx.globalAlpha = 1;
 }
 
-/**
- * Layer 3 + 4 + 5 — base building pixel art, status glow, and label.
- */
+/** Layer 3 — base building + glow + label. */
 function drawBase(
   ctx: CanvasRenderingContext2D,
   base: ProjectBase,
   frameCount: number,
 ) {
-  const px = base.x * 16; // tile -> pixel
-  const py = base.y * 16;
+  // Convert tile position to canvas coordinates
+  const cx = base.x * 16 * S;
+  const cy = base.y * 16 * S;
+  const bw = base.width * S;
+  const bh = base.height * S;
 
-  // --- Layer 4: status glow beneath the building ---
+  // --- Status glow ---
   const glowColors: Record<string, string> = {
     active: "#00ff41",
     idle: "#ffa500",
     error: "#ff2d2d",
   };
   const glowColor = glowColors[base.status] ?? "#00ff41";
-  const centerX = px + base.width / 2;
-  const centerY = py + base.height - 2;
-  const radius = Math.max(base.width, base.height) * 0.6;
+  const centerX = cx + bw / 2;
+  const centerY = cy + bh;
+  const radius = Math.max(bw, bh) * 0.8;
 
   ctx.save();
-  const grad = ctx.createRadialGradient(
-    centerX,
-    centerY,
-    0,
-    centerX,
-    centerY,
-    radius,
-  );
-  const pulseAlpha = 0.12 + 0.06 * Math.sin(frameCount * 0.5);
+  const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+  const pulseAlpha = 0.15 + 0.08 * Math.sin(frameCount * 0.5);
   grad.addColorStop(0, glowColor + alphaHex(pulseAlpha));
   grad.addColorStop(1, glowColor + "00");
   ctx.fillStyle = grad;
-  ctx.fillRect(
-    centerX - radius,
-    centerY - radius,
-    radius * 2,
-    radius * 2,
-  );
+  ctx.fillRect(centerX - radius, centerY - radius, radius * 2, radius * 2);
   ctx.restore();
 
-  // --- Layer 3: pixel-art frame ---
+  // --- Pixel art building ---
   const fi = frameCount % base.frames.length;
-  drawPixelArt(ctx, px, py, base.frames[fi], base.palette);
+  drawPixelArt(ctx, cx, cy, base.frames[fi], base.palette);
 
-  // --- Layer 5: project name label above the building ---
+  // --- Building name label ---
   ctx.save();
   ctx.fillStyle = "#8a8aaa";
-  ctx.font = "4px monospace";
+  ctx.font = `bold ${Math.max(10, 4 * S)}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText(base.name, px + base.width / 2, py - 2);
+  ctx.fillText(base.name, cx + bw / 2, cy - 4 * S);
+
+  // Underline
+  const textWidth = ctx.measureText(base.name).width;
+  ctx.strokeStyle = "#2a2a3e";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx + bw / 2 - textWidth / 2, cy - 3 * S);
+  ctx.lineTo(cx + bw / 2 + textWidth / 2, cy - 3 * S);
+  ctx.stroke();
   ctx.restore();
 }
 
-/** Layer 6 — agent sprites. */
+/** Layer 4 — agent sprites with name labels. */
 function drawAgent(
   ctx: CanvasRenderingContext2D,
   agent: AgentPosition,
@@ -219,7 +235,6 @@ function drawAgent(
       frames = sheet.working;
       break;
     case "walking": {
-      // Pick walk direction based on movement delta
       const dx = agent.targetX - agent.x;
       frames = dx < 0 ? sheet.walkLeft : sheet.walkRight;
       break;
@@ -230,30 +245,42 @@ function drawAgent(
       break;
   }
 
-  if (!frames || frames.length === 0) {
-    frames = sheet.idle;
-  }
+  if (!frames || frames.length === 0) frames = sheet.idle;
 
   const fi = agent.frame % frames.length;
   const frame = frames[fi];
 
-  // Draw the sprite centered horizontally on the agent position,
-  // with the bottom of the sprite at the agent y
-  const drawX = Math.round(agent.x - sheet.size / 2);
-  const drawY = Math.round(agent.y - sheet.size);
+  // Convert logical position to canvas coordinates
+  const canvasX = agent.x * S;
+  const canvasY = agent.y * S;
+
+  // Draw sprite centered horizontally, bottom-aligned
+  const spriteCanvasSize = sheet.size * S;
+  const drawX = Math.round(canvasX - spriteCanvasSize / 2);
+  const drawY = Math.round(canvasY - spriteCanvasSize);
 
   drawPixelArt(ctx, drawX, drawY, frame, sheet.palette);
+
+  // --- Agent name label below sprite ---
+  const label = AGENT_LABELS[agent.agentId] ?? agent.agentId.toUpperCase();
+  const color = AGENT_COLORS[agent.agentId] ?? "#00ff41";
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.font = `bold ${Math.max(9, 3 * S)}px monospace`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.globalAlpha = 0.9;
+  ctx.fillText(label, canvasX, canvasY + 2 * S);
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------------------
 // Utility
 // ---------------------------------------------------------------------------
-
-/** Convert a 0-1 alpha value to a 2-char hex suffix. */
 function alphaHex(a: number): string {
   const clamped = Math.max(0, Math.min(1, a));
-  const byte = Math.round(clamped * 255);
-  return byte.toString(16).padStart(2, "0");
+  return Math.round(clamped * 255).toString(16).padStart(2, "0");
 }
 
 // ---------------------------------------------------------------------------
@@ -269,23 +296,17 @@ export function WarRoomMap({
   const lastFrameTimeRef = useRef(0);
   const mapConfigRef = useRef<MapConfig>(getDefaultMapConfig());
 
-  // ---- Animation loop ----
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
-
-    // Disable image smoothing for crisp pixel art
     ctx.imageSmoothingEnabled = false;
 
     let rafId: number;
 
     function tick(timestamp: number) {
       rafId = requestAnimationFrame(tick);
-
-      // Throttle to ~8 FPS
       const elapsed = timestamp - lastFrameTimeRef.current;
       if (elapsed < FRAME_INTERVAL) return;
       lastFrameTimeRef.current = timestamp - (elapsed % FRAME_INTERVAL);
@@ -293,16 +314,12 @@ export function WarRoomMap({
       const fc = frameCountRef.current;
       const mapCfg = mapConfigRef.current;
 
-      // Clear & draw all layers in order
       drawGround(ctx!, mapCfg, fc);
       drawCircuitTraces(ctx!, mapCfg, fc);
 
-      // Draw bases (building + glow + label)
       for (const base of mapCfg.bases) {
         drawBase(ctx!, base, fc);
       }
-
-      // Draw agents
       for (const agent of agentPositions) {
         drawAgent(ctx!, agent, fc);
       }
@@ -311,54 +328,39 @@ export function WarRoomMap({
     }
 
     rafId = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-    };
+    return () => cancelAnimationFrame(rafId);
   }, [agentPositions]);
 
-  // ---- Click handling ----
+  // Click handling — translate screen coords → logical coords
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-
-      // Translate screen coordinates to native canvas coordinates
       const rect = canvas.getBoundingClientRect();
-      const scaleX = NATIVE_W / rect.width;
-      const scaleY = NATIVE_H / rect.height;
-      const nativeX = (e.clientX - rect.left) * scaleX;
-      const nativeY = (e.clientY - rect.top) * scaleY;
+      // Screen → canvas → logical
+      const canvasX = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
+      const canvasY = ((e.clientY - rect.top) / rect.height) * CANVAS_H;
+      const logicalX = canvasX / S;
+      const logicalY = canvasY / S;
 
       const mapCfg = mapConfigRef.current;
 
-      // Check agent hit (16x16 bounding box centred on agent position)
+      // Check agents first (16x16 logical bounding box)
       for (const agent of agentPositions) {
-        const spriteData = getAgentSprite(agent.agentId);
-        const size = spriteData?.sheet.size ?? 16;
+        const size = 16;
         const ax = agent.x - size / 2;
         const ay = agent.y - size;
-        if (
-          nativeX >= ax &&
-          nativeX <= ax + size &&
-          nativeY >= ay &&
-          nativeY <= ay + size
-        ) {
+        if (logicalX >= ax && logicalX <= ax + size && logicalY >= ay && logicalY <= ay + size) {
           onAgentClick?.(agent.agentId);
           return;
         }
       }
 
-      // Check base hit (pixel bounds at base tile position)
+      // Check bases
       for (const base of mapCfg.bases) {
-        const bx = base.x * mapCfg.tileSize;
-        const by = base.y * mapCfg.tileSize;
-        if (
-          nativeX >= bx &&
-          nativeX <= bx + base.width &&
-          nativeY >= by &&
-          nativeY <= by + base.height
-        ) {
+        const bx = base.x * 16;
+        const by = base.y * 16;
+        if (logicalX >= bx && logicalX <= bx + base.width && logicalY >= by && logicalY <= by + base.height) {
           onBaseClick?.(base.projectId);
           return;
         }
@@ -370,11 +372,11 @@ export function WarRoomMap({
   return (
     <canvas
       ref={canvasRef}
-      width={NATIVE_W}
-      height={NATIVE_H}
+      width={CANVAS_W}
+      height={CANVAS_H}
       onClick={handleClick}
       className="w-full h-full cursor-pointer"
-      style={{ imageRendering: "pixelated" }}
+      style={{ imageRendering: "pixelated", objectFit: "contain" }}
     />
   );
 }
