@@ -321,8 +321,9 @@ export function getDefaultMapConfig(): MapConfig {
         ],
         frames: [commsTowerFrame0, commsTowerFrame1],
         agentDockPoints: [
-          { x: 80, y: 80 },
-          { x: 96, y: 80 },
+          { x: 60, y: 80 },
+          { x: 88, y: 80 },
+          { x: 116, y: 80 },
         ],
       },
 
@@ -346,8 +347,8 @@ export function getDefaultMapConfig(): MapConfig {
         ],
         frames: [serverRackFrame0, serverRackFrame1],
         agentDockPoints: [
-          { x: 368, y: 80 },
-          { x: 384, y: 80 },
+          { x: 356, y: 80 },
+          { x: 390, y: 80 },
         ],
       },
 
@@ -371,8 +372,8 @@ export function getDefaultMapConfig(): MapConfig {
         ],
         frames: [beaconTowerFrame0, beaconTowerFrame1],
         agentDockPoints: [
-          { x: 80, y: 224 },
-          { x: 96, y: 224 },
+          { x: 68, y: 224 },
+          { x: 102, y: 224 },
         ],
       },
 
@@ -397,8 +398,8 @@ export function getDefaultMapConfig(): MapConfig {
         ],
         frames: [forgeStationFrame0, forgeStationFrame1],
         agentDockPoints: [
-          { x: 368, y: 224 },
-          { x: 384, y: 224 },
+          { x: 356, y: 224 },
+          { x: 390, y: 224 },
         ],
       },
     ],
