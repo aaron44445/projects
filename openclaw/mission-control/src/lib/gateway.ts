@@ -138,6 +138,7 @@ export async function getAgentActivity(): Promise<AgentActivity[]> {
     marketer: { label: "BLOOM", project: "InjectSEO" },
     "board-moderator": { label: "THE BOARD" },
     builder: { label: "FORGE" },
+    enforcer: { label: "SENTINEL" },
   };
 
   try {

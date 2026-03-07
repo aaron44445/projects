@@ -16,9 +16,10 @@ const AGENT_PROJECT_MAP: Record<string, string> = {
   marketer: "medseo",
   "board-moderator": "injectseo",
   builder: "forge-station",
+  enforcer: "injectseo",
 };
 
-const ALL_AGENT_IDS = ["main", "marketer", "board-moderator", "builder"];
+const ALL_AGENT_IDS = ["main", "marketer", "board-moderator", "builder", "enforcer"];
 
 export default function CommandCenter() {
   const { agentActivities } = useSSEContext();

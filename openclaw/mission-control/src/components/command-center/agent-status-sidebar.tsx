@@ -14,6 +14,7 @@ interface AgentMeta {
 }
 
 const AGENTS: AgentMeta[] = [
+  { id: "enforcer", label: "Sentinel", color: "#F59E0B", project: "All Agents", idleLabel: "Patrolling every 10 min" },
   { id: "main", label: "Claw", color: "#00ff41", project: "InjectSEO" },
   { id: "marketer", label: "Bloom", color: "#ff69b4", project: "MedSEO" },
   { id: "board-moderator", label: "The Board", color: "#9b59b6", project: "InjectSEO", idleLabel: "Next board: tonight", scheduledOnly: true },

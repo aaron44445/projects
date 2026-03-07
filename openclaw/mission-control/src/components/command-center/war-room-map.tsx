@@ -55,6 +55,7 @@ const AGENT_LABELS: Record<string, string> = {
   marketer: "BLOOM",
   "board-moderator": "BOARD",
   builder: "FORGE",
+  enforcer: "SENTINEL",
 };
 
 // Agent accent colors for name labels
@@ -63,6 +64,7 @@ const AGENT_COLORS: Record<string, string> = {
   marketer: "#ff69b4",
   "board-moderator": "#9b59b6",
   builder: "#ff6600",
+  enforcer: "#F59E0B",
 };
 
 // ---------------------------------------------------------------------------
