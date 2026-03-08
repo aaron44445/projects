@@ -85,8 +85,8 @@
   --color-terminal-green: #00ff41;
   --color-mission-red: #ff2d2d;
   --color-mission-amber: #ffa500;
-  --color-map-ground: #12121a;
-  --color-map-grid: #1a1a2e;
+  --color-map-ground: #1a2418;
+  --color-map-grid: #253020;
   --color-status-green: #00ff41;
   --color-status-red: #ff2d2d;
   --color-status-amber: #ffa500;
@@ -128,8 +128,8 @@
   --color-terminal-green: #00ff41;
   --color-mission-red: #ff2d2d;
   --color-mission-amber: #ffa500;
-  --color-map-ground: #12121a;
-  --color-map-grid: #1a1a2e;
+  --color-map-ground: #1a2418;
+  --color-map-grid: #253020;
   --color-status-green: #00ff41;
   --color-status-red: #ff2d2d;
   --color-status-amber: #ffa500;
@@ -151,8 +151,8 @@
   body {
     @apply bg-background text-foreground;
     background-image:
-      linear-gradient(rgba(0, 255, 65, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 255, 65, 0.02) 1px, transparent 1px);
+      linear-gradient(rgba(30, 50, 30, 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 50, 30, 0.15) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 }

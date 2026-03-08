@@ -5,6 +5,7 @@ import {
   getDefaultMapConfig,
   type MapConfig,
   type ProjectBase,
+  type Decoration,
 } from "@/lib/map-data";
 import {
   getAgentSprite,
@@ -97,36 +98,37 @@ function drawPixelArt(
   }
 }
 
-/** Layer 1 — dark background + grid. */
-function drawGround(
+/** Seeded random for consistent terrain noise */
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 127.1 + seed * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/** Layer 1 — dark military green terrain with noise texture. */
+function drawTerrain(
   ctx: CanvasRenderingContext2D,
   _mapConfig: MapConfig,
   _frameCount: number,
 ) {
-  ctx.fillStyle = "#0a0a0f";
+  ctx.fillStyle = "#1a2418";
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-  // Subtle grid every tile (16 * S canvas pixels)
-  ctx.strokeStyle = "#13131f";
-  ctx.lineWidth = 1;
-  const gridStep = 16 * S;
-
-  for (let x = 0; x <= CANVAS_W; x += gridStep) {
-    ctx.beginPath();
-    ctx.moveTo(x + 0.5, 0);
-    ctx.lineTo(x + 0.5, CANVAS_H);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= CANVAS_H; y += gridStep) {
-    ctx.beginPath();
-    ctx.moveTo(0, y + 0.5);
-    ctx.lineTo(CANVAS_W, y + 0.5);
-    ctx.stroke();
+  // Sparse noise texture — random dark/light green pixels
+  const step = S * 4; // every 4th logical pixel
+  for (let x = 0; x < CANVAS_W; x += step) {
+    for (let y = 0; y < CANVAS_H; y += step) {
+      const r = seededRandom(x * 73 + y * 137);
+      if (r > 0.7) {
+        const shade = r > 0.85 ? "#253020" : "#162012";
+        ctx.fillStyle = shade;
+        ctx.fillRect(x, y, S, S);
+      }
+    }
   }
 }
 
-/** Layer 2 — circuit traces between bases. */
-function drawCircuitTraces(
+/** Layer 2 — dirt paths between bases with dust motes. */
+function drawDirtPaths(
   ctx: CanvasRenderingContext2D,
   mapConfig: MapConfig,
   frameCount: number,
@@ -135,35 +137,72 @@ function drawCircuitTraces(
     const wps = path.waypoints;
     if (wps.length < 2) continue;
 
-    // Draw line in canvas space — thicker for visibility
-    ctx.strokeStyle = "#1a1a2e";
-    ctx.lineWidth = S * 2;
+    // Draw wider dark-edge border path first
+    ctx.strokeStyle = "#6B5335";
+    ctx.lineWidth = S * 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     ctx.beginPath();
-    ctx.moveTo(wps[0].x * S + 0.5, wps[0].y * S + 0.5);
+    ctx.moveTo(wps[0].x * S, wps[0].y * S);
     for (let i = 1; i < wps.length; i++) {
-      ctx.lineTo(wps[i].x * S + 0.5, wps[i].y * S + 0.5);
+      ctx.lineTo(wps[i].x * S, wps[i].y * S);
     }
     ctx.stroke();
 
-    // Animated green data dots — bigger
+    // Draw inner sandy path
+    ctx.strokeStyle = "#8B7355";
+    ctx.lineWidth = S * 2;
+    ctx.beginPath();
+    ctx.moveTo(wps[0].x * S, wps[0].y * S);
+    for (let i = 1; i < wps.length; i++) {
+      ctx.lineTo(wps[i].x * S, wps[i].y * S);
+    }
+    ctx.stroke();
+
+    // Rough edge noise — random offset pixels along path edges
     for (let i = 0; i < wps.length - 1; i++) {
       const a = wps[i];
       const b = wps[i + 1];
       const dx = b.x - a.x;
       const dy = b.y - a.y;
       const segLen = Math.sqrt(dx * dx + dy * dy);
-      const dotCount = Math.max(1, Math.floor(segLen / 30));
+      const steps = Math.floor(segLen / 4);
 
-      for (let d = 0; d < dotCount; d++) {
-        const t = ((d / dotCount + frameCount * 0.12 + i * 0.25) % 1 + 1) % 1;
-        const dotX = (a.x + dx * t) * S;
-        const dotY = (a.y + dy * t) * S;
-        const visible = (frameCount + d + i * 3) % 4 < 2;
-        if (!visible) continue;
+      for (let s = 0; s < steps; s++) {
+        const t = s / steps;
+        const px = (a.x + dx * t) * S;
+        const py = (a.y + dy * t) * S;
+        const seed = i * 1000 + s;
+        const offsetX = (seededRandom(seed) - 0.5) * S * 3;
+        const offsetY = (seededRandom(seed + 500) - 0.5) * S * 3;
+        if (seededRandom(seed + 1000) > 0.6) {
+          ctx.fillStyle = seededRandom(seed + 2000) > 0.5 ? "#7a6645" : "#6B5335";
+          ctx.fillRect(px + offsetX, py + offsetY, S, S);
+        }
+      }
+    }
 
-        ctx.fillStyle = "#00ff41";
-        ctx.globalAlpha = 0.5 + 0.3 * Math.sin((frameCount + d) * 0.8);
-        ctx.fillRect(Math.round(dotX) - 1, Math.round(dotY) - 1, S * 2, S * 2);
+    // Animated dust motes — tan particles floating upward
+    for (let i = 0; i < wps.length - 1; i++) {
+      const a = wps[i];
+      const b = wps[i + 1];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const segLen = Math.sqrt(dx * dx + dy * dy);
+      const moteCount = Math.max(1, Math.floor(segLen / 40));
+
+      for (let d = 0; d < moteCount; d++) {
+        const t = ((d / moteCount + frameCount * 0.04 + i * 0.3) % 1 + 1) % 1;
+        const moteX = (a.x + dx * t) * S;
+        const baseY = (a.y + dy * t) * S;
+        // Float upward over time
+        const floatOffset = ((frameCount * 0.5 + d * 7) % 20) * S * 0.3;
+        const moteY = baseY - floatOffset;
+        const fade = 1 - floatOffset / (20 * S * 0.3);
+
+        ctx.fillStyle = "#D4C4A8";
+        ctx.globalAlpha = (0.15 + 0.25 * fade) * (((frameCount + d) % 3 === 0) ? 1 : 0.5);
+        ctx.fillRect(Math.round(moteX), Math.round(moteY), S, S);
       }
     }
   }
@@ -199,11 +238,11 @@ function drawBase(
   const glowColor = glowColors[base.status] ?? "#00ff41";
   const centerX = cx + scaledW / 2;
   const centerY = cy + scaledH;
-  const radius = Math.max(scaledW, scaledH) * 0.9;
+  const radius = Math.max(scaledW, scaledH) * 0.7;
 
   ctx.save();
   const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-  const pulseAlpha = 0.18 + 0.1 * Math.sin(frameCount * 0.5);
+  const pulseAlpha = 0.12 + 0.06 * Math.sin(frameCount * 0.5);
   grad.addColorStop(0, glowColor + alphaHex(pulseAlpha));
   grad.addColorStop(1, glowColor + "00");
   ctx.fillStyle = grad;
@@ -216,7 +255,7 @@ function drawBase(
 
   // --- Building name label --- (larger font)
   ctx.save();
-  ctx.fillStyle = "#c0c0d0";
+  ctx.fillStyle = "#D4C4A8";
   ctx.font = `bold ${Math.max(16, 6 * S)}px monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
@@ -224,13 +263,27 @@ function drawBase(
 
   // Underline
   const textWidth = ctx.measureText(base.name).width;
-  ctx.strokeStyle = "#3a3a4e";
+  ctx.strokeStyle = "#6B5335";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(cx + scaledW / 2 - textWidth / 2, cy - 3 * S);
   ctx.lineTo(cx + scaledW / 2 + textWidth / 2, cy - 3 * S);
   ctx.stroke();
   ctx.restore();
+}
+
+/** Layer 3.5 — static decorations (tank, jeep, sandbags, flag). Drawn at 2x size. */
+function drawDecorations(
+  ctx: CanvasRenderingContext2D,
+  decorations: Decoration[],
+  frameCount: number,
+) {
+  for (const deco of decorations) {
+    const cx = deco.x * S;
+    const cy = deco.y * S;
+    const fi = frameCount % deco.frames.length;
+    drawPixelArt(ctx, cx, cy, deco.frames[fi], deco.palette, DS);
+  }
 }
 
 /** Layer 4 — agent sprites with name labels. Drawn at 2x size. */
@@ -335,12 +388,13 @@ export function WarRoomMap({
       const fc = frameCountRef.current;
       const mapCfg = mapConfigRef.current;
 
-      drawGround(ctx!, mapCfg, fc);
-      drawCircuitTraces(ctx!, mapCfg, fc);
+      drawTerrain(ctx!, mapCfg, fc);
+      drawDirtPaths(ctx!, mapCfg, fc);
 
       for (const base of mapCfg.bases) {
         drawBase(ctx!, base, fc);
       }
+      drawDecorations(ctx!, mapCfg.decorations, fc);
       for (const agent of agentPositions) {
         drawAgent(ctx!, agent, fc);
       }

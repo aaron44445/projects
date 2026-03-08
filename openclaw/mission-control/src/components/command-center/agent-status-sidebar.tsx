@@ -14,11 +14,11 @@ interface AgentMeta {
 }
 
 const AGENTS: AgentMeta[] = [
-  { id: "enforcer", label: "Sentinel", color: "#F59E0B", project: "All Agents", idleLabel: "Patrolling every 10 min" },
-  { id: "main", label: "Claw", color: "#00ff41", project: "InjectSEO" },
-  { id: "marketer", label: "Bloom", color: "#ff69b4", project: "MedSEO" },
-  { id: "board-moderator", label: "The Board", color: "#9b59b6", project: "InjectSEO", idleLabel: "Next board: tonight", scheduledOnly: true },
-  { id: "builder", label: "Forge", color: "#ff6600", project: "Forge Station" },
+  { id: "enforcer", label: "SGT Sentinel", color: "#D4AF37", project: "All Agents", idleLabel: "Patrolling perimeter" },
+  { id: "main", label: "CPT Claw", color: "#00ff41", project: "Command HQ" },
+  { id: "marketer", label: "LT Bloom", color: "#ff69b4", project: "Comms Tower" },
+  { id: "board-moderator", label: "GEN Board", color: "#9b59b6", project: "Command HQ", idleLabel: "Next briefing: tonight", scheduledOnly: true },
+  { id: "builder", label: "SPC Forge", color: "#ff6600", project: "Armory" },
 ];
 
 function SpritePreview({ agentId, size = 56 }: { agentId: string; size?: number }) {
@@ -72,7 +72,7 @@ export function AgentStatusSidebar() {
       {/* Header */}
       <div className="px-4 py-3 border-b border-[#2a2a3e]">
         <h2 className="font-[family-name:var(--font-pixel)] text-[10px] text-[#ffa500] tracking-wider">
-          AGENT STATUS
+          TROOP STATUS
         </h2>
       </div>
 
@@ -160,7 +160,7 @@ export function AgentStatusSidebar() {
 
                   {/* Project assignment */}
                   <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className="font-mono text-[9px] text-[#555566]">PROJECT</span>
+                    <span className="font-mono text-[9px] text-[#555566]">STATION</span>
                     <span className="font-mono text-[10px] text-[#00ff41]/60">
                       {agent.project}
                     </span>
@@ -175,7 +175,7 @@ export function AgentStatusSidebar() {
       {/* Footer stats */}
       <div className="px-4 py-3 border-t border-[#2a2a3e] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-[#555566]">AGENTS</span>
+          <span className="font-mono text-[10px] text-[#555566]">TROOPS</span>
           <span className="font-[family-name:var(--font-pixel)] text-[10px] text-[#00ff41]">
             {AGENTS.length}
           </span>
