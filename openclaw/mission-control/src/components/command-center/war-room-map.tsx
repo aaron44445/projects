@@ -11,15 +11,17 @@ import {
   getAgentSprite,
   type SpriteFrame,
 } from "@/lib/sprites";
+import { BUILDING_POSITIONS, getWaypoints, moveToward, WALK_SPEED } from "@/lib/pathfinding";
+import type { BuildingId } from "@/lib/job-building-map";
 
 // ---------------------------------------------------------------------------
-// Pixel scale — each sprite/building pixel renders as S×S canvas pixels
+// Pixel scale — each sprite/building pixel renders as S*S canvas pixels
 // ---------------------------------------------------------------------------
 const PIXEL_SCALE = 3;
 
 // Draw scale — multiplier for sprites/buildings to make them visually larger
 const DRAW_SCALE = 2;
-const DS = PIXEL_SCALE * DRAW_SCALE; // each sprite/building pixel = DS×DS canvas pixels
+const DS = PIXEL_SCALE * DRAW_SCALE; // each sprite/building pixel = DS*DS canvas pixels
 
 // Logical resolution (matches map-data tile coords)
 const LOGICAL_W = 480;
@@ -34,6 +36,23 @@ const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
 const S = PIXEL_SCALE; // shorthand
 
+// Sentinel yell interval (~10 seconds at 8fps)
+const YELL_CHECK_INTERVAL = 80;
+// Speech bubble duration (~3 seconds at 8fps)
+const BUBBLE_DURATION = 24;
+
+// Yell phrases
+const YELL_PHRASES = ["MOVE IT!", "GET TO WORK!", "NO SLACKING!", "DOUBLE TIME!"];
+
+// Non-barracks buildings for random dispatch
+const DISPATCH_BUILDINGS: BuildingId[] = [
+  "war-room",
+  "outreach-hq",
+  "intel-room",
+  "content-lab",
+  "comms-tower",
+];
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -43,9 +62,29 @@ export interface AgentPosition {
   y: number;
   targetX: number;
   targetY: number;
-  state: "idle" | "working" | "walking";
+  state: "idle" | "working" | "walking" | "yelled-at";
   currentProject?: string;
   frame: number;
+  buildingId?: string;
+}
+
+interface AnimatedAgent {
+  x: number;
+  y: number;
+  state: "idle" | "working" | "walking" | "yelled-at";
+  buildingId: string;
+  waypoints: { x: number; y: number }[];
+  waypointIndex: number;
+  frame: number;
+}
+
+interface YellState {
+  active: boolean;
+  targetAgentId: string;
+  bubbleText: string;
+  bubbleFramesLeft: number;
+  sentinelMovingToBarracks: boolean;
+  dispatchBuildingId: BuildingId; // where to send the idle agent after yell
 }
 
 interface WarRoomMapProps {
@@ -214,6 +253,7 @@ function drawBase(
   ctx: CanvasRenderingContext2D,
   base: ProjectBase,
   frameCount: number,
+  statusOverride?: "active" | "idle" | "error",
 ) {
   // Original tile position in canvas space
   const origCx = base.x * 16 * S;
@@ -230,19 +270,22 @@ function drawBase(
   const cy = origCy + (origH - scaledH) / 2;
 
   // --- Status glow --- (scaled up)
+  const effectiveStatus = statusOverride ?? base.status;
   const glowColors: Record<string, string> = {
     active: "#00ff41",
     idle: "#ffa500",
     error: "#ff2d2d",
   };
-  const glowColor = glowColors[base.status] ?? "#00ff41";
+  const glowColor = glowColors[effectiveStatus] ?? "#00ff41";
   const centerX = cx + scaledW / 2;
   const centerY = cy + scaledH;
   const radius = Math.max(scaledW, scaledH) * 0.7;
 
   ctx.save();
   const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-  const pulseAlpha = 0.12 + 0.06 * Math.sin(frameCount * 0.5);
+  const pulseAlpha = effectiveStatus === "idle"
+    ? 0.06 + 0.03 * Math.sin(frameCount * 0.3)  // dim pulse for idle
+    : 0.12 + 0.06 * Math.sin(frameCount * 0.5);  // brighter pulse for active
   grad.addColorStop(0, glowColor + alphaHex(pulseAlpha));
   grad.addColorStop(1, glowColor + "00");
   ctx.fillStyle = grad;
@@ -289,24 +332,32 @@ function drawDecorations(
 /** Layer 4 — agent sprites with name labels. Drawn at 2x size. */
 function drawAgent(
   ctx: CanvasRenderingContext2D,
-  agent: AgentPosition,
-  _frameCount: number,
+  agentId: string,
+  x: number,
+  y: number,
+  state: "idle" | "working" | "walking" | "yelled-at",
+  frame: number,
+  targetX?: number,
+  targetY?: number,
 ) {
-  const spriteData = getAgentSprite(agent.agentId);
+  const spriteData = getAgentSprite(agentId);
   if (!spriteData) return;
 
   const sheet = spriteData.sheet;
   let frames: SpriteFrame[];
 
-  switch (agent.state) {
+  switch (state) {
     case "working":
       frames = sheet.working;
       break;
     case "walking": {
-      const dx = agent.targetX - agent.x;
+      const dx = (targetX ?? x) - x;
       frames = dx < 0 ? sheet.walkLeft : sheet.walkRight;
       break;
     }
+    case "yelled-at":
+      frames = sheet.idle; // idle pose when being yelled at
+      break;
     case "idle":
     default:
       frames = sheet.idle;
@@ -315,23 +366,23 @@ function drawAgent(
 
   if (!frames || frames.length === 0) frames = sheet.idle;
 
-  const fi = agent.frame % frames.length;
-  const frame = frames[fi];
+  const fi = frame % frames.length;
+  const spriteFrame = frames[fi];
 
   // Convert logical position to canvas coordinates
-  const canvasX = agent.x * S;
-  const canvasY = agent.y * S;
+  const canvasX = x * S;
+  const canvasY = y * S;
 
   // Draw sprite centered horizontally, bottom-aligned — at 2x size
   const spriteCanvasSize = sheet.size * DS;
   const drawX = Math.round(canvasX - spriteCanvasSize / 2);
   const drawY = Math.round(canvasY - spriteCanvasSize);
 
-  drawPixelArt(ctx, drawX, drawY, frame, sheet.palette, DS);
+  drawPixelArt(ctx, drawX, drawY, spriteFrame, sheet.palette, DS);
 
   // --- Agent name label below sprite --- (larger, bolder)
-  const label = AGENT_LABELS[agent.agentId] ?? agent.agentId.toUpperCase();
-  const color = AGENT_COLORS[agent.agentId] ?? "#00ff41";
+  const label = AGENT_LABELS[agentId] ?? agentId.toUpperCase();
+  const color = AGENT_COLORS[agentId] ?? "#00ff41";
 
   ctx.save();
   ctx.fillStyle = color;
@@ -347,6 +398,53 @@ function drawAgent(
   ctx.shadowOffsetY = 1;
   ctx.fillText(label, canvasX, canvasY + 3 * S);
   ctx.restore();
+}
+
+/** Draw a speech bubble above an agent */
+function drawSpeechBubble(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+) {
+  const bubbleW = text.length * 5 * S + 10 * S;
+  const bubbleH = 10 * S;
+  const bx = x * S - bubbleW / 2;
+  const by = y * S - 40 * S;
+
+  // White bubble with rounded corners
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bubbleW, bubbleH, 4 * S);
+  ctx.fill();
+
+  // Black border
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = S;
+  ctx.stroke();
+
+  // Tail triangle pointing down
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.moveTo(x * S - 4 * S, by + bubbleH);
+  ctx.lineTo(x * S, by + bubbleH + 6 * S);
+  ctx.lineTo(x * S + 4 * S, by + bubbleH);
+  ctx.fill();
+
+  // Tail border
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = S;
+  ctx.beginPath();
+  ctx.moveTo(x * S - 4 * S, by + bubbleH);
+  ctx.lineTo(x * S, by + bubbleH + 6 * S);
+  ctx.lineTo(x * S + 4 * S, by + bubbleH);
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = "#000000";
+  ctx.font = `bold ${6 * S}px monospace`;
+  ctx.textAlign = "center";
+  ctx.fillText(text, x * S, by + 7 * S);
 }
 
 // ---------------------------------------------------------------------------
@@ -370,6 +468,300 @@ export function WarRoomMap({
   const lastFrameTimeRef = useRef(0);
   const mapConfigRef = useRef<MapConfig>(getDefaultMapConfig());
 
+  // Internal animated positions — smooth interpolation state per agent
+  const animatedPositions = useRef<Map<string, AnimatedAgent>>(new Map());
+
+  // Sentinel yell state
+  const yellState = useRef<YellState | null>(null);
+  const yellCooldownRef = useRef(0);
+
+  // Sync animated positions with incoming prop targets
+  const syncAnimatedPositions = useCallback(
+    (positions: AgentPosition[]) => {
+      const map = animatedPositions.current;
+
+      for (const pos of positions) {
+        const existing = map.get(pos.agentId);
+        const targetBuildingId = pos.buildingId || "barracks";
+
+        if (!existing) {
+          // First time seeing this agent — snap to position
+          map.set(pos.agentId, {
+            x: pos.x,
+            y: pos.y,
+            state: pos.state === "walking" ? "walking" : pos.state,
+            buildingId: targetBuildingId,
+            waypoints: [],
+            waypointIndex: 0,
+            frame: 0,
+          });
+          continue;
+        }
+
+        // Check if agent is currently being yelled at — don't override yell state
+        if (yellState.current?.active && yellState.current.targetAgentId === pos.agentId) {
+          continue;
+        }
+
+        // If sentinel is currently being controlled by yell system, skip prop updates
+        if (
+          yellState.current?.active &&
+          pos.agentId === "enforcer" &&
+          yellState.current.sentinelMovingToBarracks
+        ) {
+          continue;
+        }
+
+        // Check if building target changed
+        if (existing.buildingId !== targetBuildingId && existing.state !== "walking") {
+          // Generate waypoints for smooth walk
+          const fromBuilding = existing.buildingId as BuildingId;
+          const toBuilding = targetBuildingId as BuildingId;
+
+          // Only pathfind between known buildings
+          if (
+            BUILDING_POSITIONS[fromBuilding] &&
+            BUILDING_POSITIONS[toBuilding]
+          ) {
+            const waypoints = getWaypoints(fromBuilding, toBuilding);
+            existing.waypoints = waypoints;
+            existing.waypointIndex = 0;
+            existing.state = "walking";
+            // Don't update buildingId until arrival
+          } else {
+            // Unknown building — snap
+            existing.x = pos.x;
+            existing.y = pos.y;
+            existing.buildingId = targetBuildingId;
+            existing.state = pos.state;
+          }
+        } else if (existing.state !== "walking") {
+          // Not walking, and same building — update state from props
+          existing.state = pos.state;
+          // Gently nudge to dock point if not walking
+          existing.x = pos.x;
+          existing.y = pos.y;
+        }
+      }
+    },
+    [],
+  );
+
+  // Advance walking agents each tick
+  const tickAnimations = useCallback(() => {
+    const map = animatedPositions.current;
+
+    for (const [agentId, agent] of map) {
+      agent.frame++;
+
+      if (agent.state === "walking" && agent.waypoints.length > 0) {
+        const target = agent.waypoints[agent.waypointIndex];
+        if (!target) {
+          // Done with all waypoints
+          agent.state = "idle";
+          agent.waypoints = [];
+          agent.waypointIndex = 0;
+          continue;
+        }
+
+        const result = moveToward(agent.x, agent.y, target.x, target.y, WALK_SPEED);
+        agent.x = result.x;
+        agent.y = result.y;
+
+        if (result.arrived) {
+          agent.waypointIndex++;
+          if (agent.waypointIndex >= agent.waypoints.length) {
+            // Arrived at final destination
+            const lastWp = agent.waypoints[agent.waypoints.length - 1];
+
+            // Determine which building we arrived at
+            let arrivedBuildingId = agent.buildingId;
+            for (const [bid, pos] of Object.entries(BUILDING_POSITIONS)) {
+              if (Math.abs(pos.x - lastWp.x) < 10 && Math.abs(pos.y - lastWp.y) < 10) {
+                arrivedBuildingId = bid;
+                break;
+              }
+            }
+
+            agent.buildingId = arrivedBuildingId;
+            agent.waypoints = [];
+            agent.waypointIndex = 0;
+
+            // Check if this was a sentinel arriving at barracks for a yell
+            if (
+              agentId === "enforcer" &&
+              yellState.current?.sentinelMovingToBarracks
+            ) {
+              yellState.current.sentinelMovingToBarracks = false;
+              // Now show the bubble
+              yellState.current.bubbleFramesLeft = BUBBLE_DURATION;
+              // Mark the target agent as yelled-at
+              const targetAgent = map.get(yellState.current.targetAgentId);
+              if (targetAgent) {
+                targetAgent.state = "yelled-at";
+              }
+            } else {
+              // Normal arrival — determine state from props
+              const propAgent = agentPositions.find(
+                (p) => p.agentId === agentId,
+              );
+              agent.state = propAgent?.state === "working" ? "working" : "idle";
+            }
+          }
+        }
+      }
+    }
+
+    // --- Yell state machine ---
+    if (yellState.current?.active) {
+      const ys = yellState.current;
+
+      if (!ys.sentinelMovingToBarracks && ys.bubbleFramesLeft > 0) {
+        ys.bubbleFramesLeft--;
+
+        if (ys.bubbleFramesLeft <= 0) {
+          // Bubble expired — dispatch idle agent to random building
+          const targetAgent = map.get(ys.targetAgentId);
+          if (targetAgent) {
+            const destBuilding = ys.dispatchBuildingId;
+            const waypoints = getWaypoints(
+              targetAgent.buildingId as BuildingId,
+              destBuilding,
+            );
+            targetAgent.waypoints = waypoints;
+            targetAgent.waypointIndex = 0;
+            targetAgent.state = "walking";
+          }
+
+          // Return sentinel to war-room
+          const sentinel = map.get("enforcer");
+          if (sentinel && sentinel.buildingId === "barracks") {
+            // Find the sentinel's prop building
+            const sentinelProp = agentPositions.find(
+              (p) => p.agentId === "enforcer",
+            );
+            const sentinelTarget = (sentinelProp?.buildingId ||
+              "war-room") as BuildingId;
+            if (sentinelTarget !== "barracks") {
+              const waypoints = getWaypoints("barracks", sentinelTarget);
+              sentinel.waypoints = waypoints;
+              sentinel.waypointIndex = 0;
+              sentinel.state = "walking";
+            }
+          }
+
+          // Clear yell state
+          yellState.current = null;
+        }
+      }
+    }
+  }, [agentPositions]);
+
+  // Check for idle agents at barracks and trigger sentinel yell
+  const checkForYell = useCallback(() => {
+    if (yellState.current?.active) return; // Already yelling
+
+    const map = animatedPositions.current;
+    const sentinel = map.get("enforcer");
+    if (!sentinel) return;
+    if (sentinel.state === "walking") return; // Don't interrupt sentinel walks
+
+    // Find idle agents at barracks (excluding sentinel)
+    const idleAtBarracks: string[] = [];
+    for (const [agentId, agent] of map) {
+      if (agentId === "enforcer") continue;
+      if (agent.buildingId === "barracks" && agent.state === "idle") {
+        idleAtBarracks.push(agentId);
+      }
+    }
+
+    if (idleAtBarracks.length === 0) return;
+
+    // Pick a random idle agent
+    const targetId =
+      idleAtBarracks[Math.floor(Math.random() * idleAtBarracks.length)];
+    const phrase =
+      YELL_PHRASES[Math.floor(Math.random() * YELL_PHRASES.length)];
+    const dispatchBuilding =
+      DISPATCH_BUILDINGS[
+        Math.floor(Math.random() * DISPATCH_BUILDINGS.length)
+      ];
+
+    // Is sentinel already at barracks?
+    if (sentinel.buildingId === "barracks") {
+      // Already there — start yelling immediately
+      yellState.current = {
+        active: true,
+        targetAgentId: targetId,
+        bubbleText: phrase,
+        bubbleFramesLeft: BUBBLE_DURATION,
+        sentinelMovingToBarracks: false,
+        dispatchBuildingId: dispatchBuilding,
+      };
+
+      // Mark target as yelled-at
+      const targetAgent = map.get(targetId);
+      if (targetAgent) {
+        targetAgent.state = "yelled-at";
+      }
+    } else {
+      // Sentinel needs to walk to barracks first
+      const waypoints = getWaypoints(
+        sentinel.buildingId as BuildingId,
+        "barracks",
+      );
+      sentinel.waypoints = waypoints;
+      sentinel.waypointIndex = 0;
+      sentinel.state = "walking";
+
+      yellState.current = {
+        active: true,
+        targetAgentId: targetId,
+        bubbleText: phrase,
+        bubbleFramesLeft: 0, // will start when sentinel arrives
+        sentinelMovingToBarracks: true,
+        dispatchBuildingId: dispatchBuilding,
+      };
+    }
+  }, []);
+
+  // Determine building status based on animated agent positions
+  const getBuildingStatus = useCallback(
+    (buildingId: string): "active" | "idle" | "error" => {
+      const map = animatedPositions.current;
+      let hasWorking = false;
+      let hasError = false;
+
+      for (const [, agent] of map) {
+        if (agent.buildingId === buildingId) {
+          if (agent.state === "working") hasWorking = true;
+          // Check corresponding prop for error state
+          const prop = agentPositions.find(
+            (p) => p.agentId === [...map].find(([, a]) => a === agent)?.[0],
+          );
+          if (prop?.state === "working") {
+            // Check the original activity for errors
+            hasWorking = true;
+          }
+        }
+      }
+
+      // Also check props directly for error indication
+      for (const pos of agentPositions) {
+        if (pos.buildingId === buildingId) {
+          // The parent maps "error" action to "working" state, but we can check
+          // if any agent at this building is in error via the original activities
+          if (pos.state === "working") hasWorking = true;
+        }
+      }
+
+      if (hasError) return "error";
+      if (hasWorking) return "active";
+      return "idle";
+    },
+    [agentPositions],
+  );
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -388,15 +780,63 @@ export function WarRoomMap({
       const fc = frameCountRef.current;
       const mapCfg = mapConfigRef.current;
 
+      // Sync prop positions to animated state
+      syncAnimatedPositions(agentPositions);
+
+      // Advance animations
+      tickAnimations();
+
+      // Check for yell opportunity
+      yellCooldownRef.current++;
+      if (yellCooldownRef.current >= YELL_CHECK_INTERVAL) {
+        yellCooldownRef.current = 0;
+        checkForYell();
+      }
+
+      // --- RENDER ---
+
+      // Layer 1: Terrain
       drawTerrain(ctx!, mapCfg, fc);
+
+      // Layer 2: Dirt paths
       drawDirtPaths(ctx!, mapCfg, fc);
 
+      // Layer 3: Buildings with dynamic glow state
       for (const base of mapCfg.bases) {
-        drawBase(ctx!, base, fc);
+        const dynamicStatus = getBuildingStatus(base.projectId);
+        drawBase(ctx!, base, fc, dynamicStatus);
       }
+
+      // Layer 3.5: Decorations
       drawDecorations(ctx!, mapCfg.decorations, fc);
-      for (const agent of agentPositions) {
-        drawAgent(ctx!, agent, fc);
+
+      // Layer 4: Agents from animated positions
+      const map = animatedPositions.current;
+      for (const [agentId, agent] of map) {
+        // Determine walk target for sprite direction
+        let targetX = agent.x;
+        let targetY = agent.y;
+        if (
+          agent.state === "walking" &&
+          agent.waypoints.length > 0 &&
+          agent.waypointIndex < agent.waypoints.length
+        ) {
+          targetX = agent.waypoints[agent.waypointIndex].x;
+          targetY = agent.waypoints[agent.waypointIndex].y;
+        }
+
+        drawAgent(ctx!, agentId, agent.x, agent.y, agent.state, agent.frame, targetX, targetY);
+      }
+
+      // Layer 5: Speech bubbles
+      if (yellState.current?.active && !yellState.current.sentinelMovingToBarracks) {
+        const ys = yellState.current;
+        if (ys.bubbleFramesLeft > 0) {
+          const sentinel = map.get("enforcer");
+          if (sentinel) {
+            drawSpeechBubble(ctx!, sentinel.x, sentinel.y, ys.bubbleText);
+          }
+        }
       }
 
       frameCountRef.current = fc + 1;
@@ -404,16 +844,16 @@ export function WarRoomMap({
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [agentPositions]);
+  }, [agentPositions, syncAnimatedPositions, tickAnimations, checkForYell, getBuildingStatus]);
 
-  // Click handling — translate screen coords → logical coords
+  // Click handling — translate screen coords -> logical coords
   // Hit areas are scaled up to match 2x rendered size
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-      // Screen → canvas → logical
+      // Screen -> canvas -> logical
       const canvasX = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
       const canvasY = ((e.clientY - rect.top) / rect.height) * CANVAS_H;
       const logicalX = canvasX / S;
@@ -421,13 +861,14 @@ export function WarRoomMap({
 
       const mapCfg = mapConfigRef.current;
 
-      // Check agents first — larger hit area for 2x sprites
+      // Check agents first — use animated positions for accuracy
       const hitSize = 16 * DRAW_SCALE;
-      for (const agent of agentPositions) {
+      const map = animatedPositions.current;
+      for (const [agentId, agent] of map) {
         const ax = agent.x - hitSize / 2;
         const ay = agent.y - hitSize;
         if (logicalX >= ax && logicalX <= ax + hitSize && logicalY >= ay && logicalY <= ay + hitSize) {
-          onAgentClick?.(agent.agentId);
+          onAgentClick?.(agentId);
           return;
         }
       }
@@ -446,7 +887,7 @@ export function WarRoomMap({
         }
       }
     },
-    [agentPositions, onBaseClick, onAgentClick],
+    [onBaseClick, onAgentClick],
   );
 
   return (

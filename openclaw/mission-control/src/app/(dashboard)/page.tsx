@@ -9,15 +9,7 @@ import { ProjectPanel } from "@/components/command-center/project-panel";
 import { AgentStatusSidebar } from "@/components/command-center/agent-status-sidebar";
 import { useSSEContext } from "@/components/providers/sse-provider";
 import { getDefaultMapConfig } from "@/lib/map-data";
-
-// Map agent IDs to their default project assignments
-const AGENT_PROJECT_MAP: Record<string, string> = {
-  main: "injectseo",
-  marketer: "medseo",
-  "board-moderator": "injectseo",
-  builder: "forge-station",
-  enforcer: "injectseo",
-};
+import { Map as MapIcon, Users } from "lucide-react";
 
 const ALL_AGENT_IDS = ["main", "marketer", "board-moderator", "builder", "enforcer"];
 
@@ -25,6 +17,7 @@ export default function CommandCenter() {
   const { agentActivities } = useSSEContext();
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<"map" | "troops">("map");
 
   const mapConfig = useMemo(() => getDefaultMapConfig(), []);
 
@@ -40,7 +33,7 @@ export default function CommandCenter() {
     }));
   }, [agentActivities]);
 
-  // Compute agent positions from latest activities
+  // Compute agent positions from latest activities — building-based mapping
   const agentPositions: AgentPosition[] = useMemo(() => {
     const latest = new Map<string, (typeof agentActivities)[number]>();
 
@@ -53,15 +46,8 @@ export default function CommandCenter() {
 
     return ALL_AGENT_IDS.map((agentId, idx) => {
       const activity = latest.get(agentId);
-      const projectId =
-        activity?.project?.toLowerCase().replace(/\s+/g, "") ??
-        AGENT_PROJECT_MAP[agentId];
-
-      const base = mapConfig.bases.find(
-        (b) =>
-          b.projectId === projectId ||
-          b.name.toLowerCase().replace(/\s+/g, "") === projectId
-      );
+      const buildingId = (activity?.buildingId as string) || "barracks";
+      const base = mapConfig.bases.find((b) => b.projectId === buildingId);
 
       let x: number, y: number;
       if (base) {
@@ -69,12 +55,16 @@ export default function CommandCenter() {
         x = base.agentDockPoints[dockIdx].x;
         y = base.agentDockPoints[dockIdx].y;
       } else {
-        x = mapConfig.homePosition.x + (idx - 1.5) * 20;
+        x = mapConfig.homePosition.x + (idx - 2) * 20;
         y = mapConfig.homePosition.y;
       }
 
       const state: AgentPosition["state"] =
-        activity?.action === "working" ? "working" : "idle";
+        activity?.action === "working"
+          ? "working"
+          : activity?.action === "error"
+            ? "working"
+            : "idle";
 
       return {
         agentId,
@@ -83,18 +73,45 @@ export default function CommandCenter() {
         targetX: x,
         targetY: y,
         state,
-        currentProject: base?.projectId,
+        currentProject: buildingId,
         frame: 0,
+        buildingId,
       };
     });
   }, [agentActivities, mapConfig]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-48px)]">
+    <div className="flex flex-col h-[calc(100dvh-96px-env(safe-area-inset-bottom,0px))] md:h-[calc(100vh-48px)]">
       <MissionBanner />
 
-      {/* Main content: Map + Agent sidebar */}
-      <div className="flex-1 flex min-h-0">
+      {/* Mobile view toggle */}
+      <div className="flex md:hidden border-b border-[#2a2a3e] bg-[#0d0d15]">
+        <button
+          onClick={() => setMobileView("map")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 transition-colors ${
+            mobileView === "map"
+              ? "text-[#00ff41] border-b-2 border-[#00ff41] bg-[#00ff41]/5"
+              : "text-[#555566]"
+          }`}
+        >
+          <MapIcon className="h-3.5 w-3.5" />
+          <span className="font-[family-name:var(--font-pixel)] text-[8px] tracking-wider">WAR ROOM</span>
+        </button>
+        <button
+          onClick={() => setMobileView("troops")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 transition-colors ${
+            mobileView === "troops"
+              ? "text-[#ffa500] border-b-2 border-[#ffa500] bg-[#ffa500]/5"
+              : "text-[#555566]"
+          }`}
+        >
+          <Users className="h-3.5 w-3.5" />
+          <span className="font-[family-name:var(--font-pixel)] text-[8px] tracking-wider">TROOPS</span>
+        </button>
+      </div>
+
+      {/* Desktop layout: side by side */}
+      <div className="flex-1 hidden md:flex min-h-0">
         {/* Map area */}
         <div className="flex-1 relative overflow-hidden bg-[#0a0a0f]">
           <WarRoomMap
@@ -108,6 +125,23 @@ export default function CommandCenter() {
         <div className="w-80 border-l border-[#2a2a3e] bg-[#0d0d15] shrink-0">
           <AgentStatusSidebar />
         </div>
+      </div>
+
+      {/* Mobile layout: toggled views */}
+      <div className="flex-1 flex md:hidden min-h-0">
+        {mobileView === "map" ? (
+          <div className="flex-1 relative overflow-hidden bg-[#0a0a0f]">
+            <WarRoomMap
+              agentPositions={agentPositions}
+              onBaseClick={setSelectedProject}
+              onAgentClick={setSelectedAgent}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto bg-[#0d0d15]">
+            <AgentStatusSidebar />
+          </div>
+        )}
       </div>
 
       <ActivityTicker entries={tickerEntries} />
