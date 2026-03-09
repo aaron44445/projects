@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MissionBanner } from "@/components/command-center/mission-banner";
 import { WarRoomMap, type AgentPosition } from "@/components/command-center/war-room-map";
 import { ActivityTicker, type TickerEntry } from "@/components/command-center/activity-ticker";
@@ -11,10 +11,39 @@ import { useSSEContext } from "@/components/providers/sse-provider";
 import { getDefaultMapConfig } from "@/lib/map-data";
 import { Map as MapIcon, Users } from "lucide-react";
 
+function ConnectionIndicator({ connected, lastUpdate }: { connected: boolean; lastUpdate: number | null }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const secondsAgo = lastUpdate ? Math.floor((now - lastUpdate) / 1000) : null;
+
+  return (
+    <div className="absolute top-3 right-3 z-10 flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
+      <div
+        className="w-2 h-2 rounded-full"
+        style={{
+          backgroundColor: connected ? "#00ff41" : "#ff2d2d",
+          boxShadow: connected ? "0 0 6px #00ff41" : "0 0 6px #ff2d2d",
+        }}
+      />
+      <span className="text-[10px] font-mono text-white/60">
+        {connected
+          ? secondsAgo !== null ? `${secondsAgo}s ago` : "Connected"
+          : "Disconnected"
+        }
+      </span>
+    </div>
+  );
+}
+
 const ALL_AGENT_IDS = ["main", "marketer", "board-moderator", "builder", "enforcer"];
 
 export default function CommandCenter() {
-  const { agentActivities } = useSSEContext();
+  const { agentActivities, connected, lastUpdate } = useSSEContext();
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"map" | "troops">("map");
@@ -114,6 +143,7 @@ export default function CommandCenter() {
       <div className="flex-1 hidden md:flex min-h-0">
         {/* Map area */}
         <div className="flex-1 relative overflow-hidden bg-[#0a0a0f]">
+          <ConnectionIndicator connected={connected} lastUpdate={lastUpdate} />
           <WarRoomMap
             agentPositions={agentPositions}
             onBaseClick={setSelectedProject}
@@ -131,6 +161,7 @@ export default function CommandCenter() {
       <div className="flex-1 flex md:hidden min-h-0">
         {mobileView === "map" ? (
           <div className="flex-1 relative overflow-hidden bg-[#0a0a0f]">
+            <ConnectionIndicator connected={connected} lastUpdate={lastUpdate} />
             <WarRoomMap
               agentPositions={agentPositions}
               onBaseClick={setSelectedProject}
