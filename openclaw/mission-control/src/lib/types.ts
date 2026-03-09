@@ -209,4 +209,6 @@ export interface AgentActivity {
   project?: string;
   description: string;
   timestamp: number;
+  buildingId?: string;
+  jobId?: string;
 }
