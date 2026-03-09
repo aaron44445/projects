@@ -56,6 +56,7 @@ export default function CommandCenter() {
       agentId: a.agentId,
       agentLabel: a.agentLabel,
       project: a.project,
+      buildingId: a.buildingId,
       description: a.description,
       timestamp: a.timestamp,
       status: a.action,
