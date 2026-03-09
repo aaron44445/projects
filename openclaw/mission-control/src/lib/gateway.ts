@@ -1,5 +1,6 @@
 import { readFile as fsReadFile } from "fs/promises";
 import type { CronJob, GatewayHealth, AgentActivity } from "./types";
+import { getBuildingForJob, type BuildingId } from "./job-building-map";
 
 const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL!;
 const GATEWAY_TOKEN = process.env.OPENCLAW_TOKEN!;
@@ -102,100 +103,160 @@ export async function listFiles(dirPath: string): Promise<string[]> {
   return readdir(dirPath);
 }
 
-// Send a message to an agent via chat completions
+// Send a message to an agent via chat completions (with 120s timeout)
 export async function chatWithAgent(
   agentId: string,
   message: string,
   sessionKey?: string
 ): Promise<string> {
-  const res = await gatewayFetch("/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "x-openclaw-agent-id": agentId,
-      ...(sessionKey ? { "x-openclaw-session-key": sessionKey } : {}),
-    },
-    body: JSON.stringify({
-      model: `openclaw:${agentId}`,
-      messages: [{ role: "user", content: message }],
-      stream: false,
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`Chat failed: ${res.status} ${res.statusText}`);
-  }
-  const json = await res.json();
-  return json.choices?.[0]?.message?.content ?? "";
-}
-
-// Get agent activity by checking session files and cron state
-export async function getAgentActivity(): Promise<AgentActivity[]> {
-  const activities: AgentActivity[] = [];
-  const now = Date.now();
-
-  // Agent definitions for labels
-  const agentDefs: Record<string, { label: string; project?: string }> = {
-    main: { label: "CLAW", project: "InjectSEO" },
-    marketer: { label: "BLOOM", project: "InjectSEO" },
-    "board-moderator": { label: "THE BOARD" },
-    builder: { label: "FORGE" },
-    enforcer: { label: "SENTINEL" },
-  };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
 
   try {
-    // Check cron jobs for recently running/completed jobs
-    const cronJobs = await getCronJobs();
-    for (const job of cronJobs) {
-      if (!job.state) continue;
-      const agentDef = agentDefs[job.agentId] ?? { label: job.agentId.toUpperCase() };
+    const res = await gatewayFetch("/v1/chat/completions", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "x-openclaw-agent-id": agentId,
+        ...(sessionKey ? { "x-openclaw-session-key": sessionKey } : {}),
+      },
+      body: JSON.stringify({
+        model: `openclaw:${agentId}`,
+        messages: [{ role: "user", content: message }],
+        stream: false,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`Chat failed: ${res.status} ${res.statusText}`);
+    }
+    const json = await res.json();
+    return json.choices?.[0]?.message?.content ?? "";
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Agent response timed out (120s). The model may be slow — try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
-      // If job ran in the last 60 seconds
-      if (job.state.lastRunAtMs && now - job.state.lastRunAtMs < 60000) {
-        const action = job.state.lastRunStatus === "ok" ? "completed" :
-                       job.state.lastRunStatus === "error" ? "error" : "working";
+// Get agent activity — 3-source priority with 2-min window and building assignment
+export async function getAgentActivity(): Promise<AgentActivity[]> {
+  const agents = [
+    { id: "main", label: "CLAW" },
+    { id: "marketer", label: "BLOOM" },
+    { id: "board-moderator", label: "THE BOARD" },
+    { id: "builder", label: "FORGE" },
+    { id: "enforcer", label: "SENTINEL" },
+  ];
+
+  const activities: AgentActivity[] = [];
+  const agentsWithActivity = new Set<string>();
+  const now = Date.now();
+  const TWO_MINUTES = 2 * 60 * 1000;
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  // Source 1: Cron jobs (highest priority)
+  try {
+    const jobs = await getCronJobs();
+    for (const job of jobs) {
+      if (!job.state) continue;
+      const agent = agents.find((a) => a.id === job.agentId);
+      if (!agent) continue;
+
+      const lastRun = job.state.lastRunAtMs || 0;
+      const timeSinceRun = now - lastRun;
+      const isRunning = (job.state as Record<string, unknown>).runningAtMs != null;
+      const buildingId = getBuildingForJob(job.id || job.name);
+
+      // Currently running
+      if (isRunning) {
         activities.push({
-          agentId: job.agentId,
-          agentLabel: agentDef.label,
-          action,
-          project: agentDef.project,
-          description: `Cron: ${job.name}`,
-          timestamp: job.state.lastRunAtMs,
+          agentId: agent.id,
+          agentLabel: agent.label,
+          action: "working",
+          description: job.name,
+          timestamp: now,
+          buildingId,
+          jobId: job.id || job.name,
         });
+        agentsWithActivity.add(agent.id);
+        continue;
       }
 
-      // If job is currently running (nextRun is in the past but no recent completion)
-      if (job.state.nextRunAtMs && job.state.nextRunAtMs < now && job.enabled) {
-        const lastRun = job.state.lastRunAtMs ?? 0;
-        if (now - lastRun > 60000) {
-          activities.push({
-            agentId: job.agentId,
-            agentLabel: agentDef.label,
-            action: "working",
-            project: agentDef.project,
-            description: `Running: ${job.name}`,
-            timestamp: now,
-          });
-        }
+      // Completed or errored within 2 minutes
+      if (timeSinceRun < TWO_MINUTES) {
+        const action = job.state.lastRunStatus === "error" ? "error"
+          : job.state.lastRunStatus === "ok" ? "completed"
+          : "working";
+        activities.push({
+          agentId: agent.id,
+          agentLabel: agent.label,
+          action,
+          description: job.name,
+          timestamp: lastRun,
+          buildingId: action === "error" ? buildingId : "barracks",
+          jobId: job.id || job.name,
+        });
+        agentsWithActivity.add(agent.id);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to read cron jobs:", e);
+  }
+
+  // Source 2: Enforcer dispatch state
+  try {
+    const stateFile = "C:/Users/aaron/.openclaw/workspace-enforcer/state.json";
+    const state = await readJsonFile<{
+      agentStates?: Record<string, { status?: string; lastDispatch?: { task?: string }; dispatchedAtMs?: number }>;
+    }>(stateFile);
+    if (state?.agentStates) {
+      for (const [agentId, agentState] of Object.entries(state.agentStates)) {
+        if (agentsWithActivity.has(agentId)) continue;
+        if (!["DISPATCHED", "COOLDOWN", "WORKING"].includes(agentState?.status ?? "")) continue;
+
+        const dispatchedAt = agentState.dispatchedAtMs || 0;
+        if (now - dispatchedAt > FIVE_MINUTES) continue;
+
+        const agent = agents.find((a) => a.id === agentId);
+        if (!agent) continue;
+
+        const taskDesc = agentState.lastDispatch?.task || "Enforcer dispatch";
+        let buildingId: BuildingId = "outreach-hq";
+        const t = taskDesc.toLowerCase();
+        if (t.includes("email") || t.includes("outreach")) buildingId = "outreach-hq";
+        else if (t.includes("content") || t.includes("blog")) buildingId = "content-lab";
+        else if (t.includes("lead") || t.includes("enrich")) buildingId = "intel-room";
+        else if (t.includes("reply") || t.includes("inbox")) buildingId = "comms-tower";
+
+        activities.push({
+          agentId: agent.id,
+          agentLabel: agent.label,
+          action: "working",
+          description: taskDesc,
+          timestamp: dispatchedAt,
+          buildingId,
+        });
+        agentsWithActivity.add(agentId);
       }
     }
   } catch {
-    // Cron data not available, skip
+    // Enforcer state file may not exist
   }
 
-  // Add idle status for agents with no recent activity
-  const SCHEDULED_AGENTS = new Set(["board-moderator"]);
-  for (const [agentId, def] of Object.entries(agentDefs)) {
-    const hasActivity = activities.some((a) => a.agentId === agentId);
-    if (!hasActivity) {
-      const isScheduled = SCHEDULED_AGENTS.has(agentId);
-      activities.push({
-        agentId,
-        agentLabel: def.label,
-        action: "idle",
-        project: def.project,
-        description: isScheduled ? "Next board: tonight" : "Awaiting orders",
-        timestamp: now,
-      });
-    }
+  // Source 3: Fill idle agents — everyone without activity goes to barracks
+  for (const agent of agents) {
+    if (agentsWithActivity.has(agent.id)) continue;
+    activities.push({
+      agentId: agent.id,
+      agentLabel: agent.label,
+      action: "idle",
+      description: agent.id === "board-moderator" ? "Next board: tonight" : "Standing by",
+      timestamp: now,
+      buildingId: "barracks",
+    });
   }
 
   return activities;
