@@ -311,6 +311,16 @@ input,select,textarea{font-size:16px}
 .rank-progress-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.22,1,.36,1)}
 .rank-next{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;margin-top:4px}
 
+/* MILESTONE */
+#milestone-overlay{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;text-align:center;padding:24px;opacity:0;transition:opacity .4s ease}
+#milestone-overlay.visible{display:flex;opacity:1}
+#milestone-overlay.fade-out{opacity:0}
+.ms-icon{font-size:64px;margin-bottom:16px;animation:msBounce .6s cubic-bezier(.22,1,.36,1)}
+.ms-title{color:var(--gold);font-size:20px;font-weight:700;letter-spacing:4px;font-family:'DM Mono',monospace;margin-bottom:8px;animation:msFadeUp .5s .2s both}
+.ms-sub{color:var(--text2);font-size:13px;line-height:1.6;animation:msFadeUp .5s .35s both}
+@keyframes msBounce{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes msFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
 .score-hero{text-align:center;padding:28px 0 12px}
 .score-num{font-size:100px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(200,169,81,0.25)}
 .score-num.glow-high{animation:breatheGlow 3s ease-in-out infinite}
@@ -410,6 +420,7 @@ input,select,textarea{font-size:16px}
 </div>
 
 <div id="onboarding-overlay"></div>
+<div id="milestone-overlay" onclick="dismissMilestone()"></div>
 
 <div class="bnav" id="bottom-nav">
   <div class="bnav-inner">
@@ -640,6 +651,7 @@ function ensureDefaults() {
   if (!state.lifeScoreHistory) state.lifeScoreHistory = {};
   if (state.startDay === undefined) { state.startMonth = TODAY_M; state.startDay = TODAY_D; }
   if (!state.journal) state.journal = {};
+  if (!state.milestonesSeen) state.milestonesSeen = {};
   state.habits.forEach(function(h) { if (h.goalLink === undefined) h.goalLink = ""; });
   var defaultEmojis = { money: "\uD83D\uDCB0", body: "\uD83D\uDCAA", mind: "\uD83E\uDDE0", spirit: "\uD83D\uDD4A\uFE0F" };
   state.habits.forEach(function(h) { if (!h.emoji) h.emoji = defaultEmojis[h.cat] || "\u2B50"; });
@@ -1258,6 +1270,8 @@ function renderDashboard() {
   }, 100);
 
   setTimeout(drawLifeChart, 50);
+
+  setTimeout(function() { checkMilestones(lifeScore, streak, goalsDoneCount); }, 1500);
 }
 
 function drawLifeChart() {
@@ -2366,6 +2380,55 @@ function renderSettings() {
   html += '<div class="set-version">LOCKED IN v1.0</div>';
 
   document.getElementById("v-settings").innerHTML = html;
+}
+
+// === MILESTONES ===
+var milestoneQueue = [];
+var milestoneShowing = false;
+
+function checkMilestones(lifeScore, streak, goalsDoneCount) {
+  var checks = [
+    { id: "first-check", test: Object.keys(state.entries).some(function(k) { return state.entries[k] === "\u2713"; }), icon: "\u2705", title: "FIRST STEP", sub: "You just checked your first habit.\nThe journey has begun." },
+    { id: "streak-7", test: streak >= 7, icon: "\uD83D\uDD25", title: "7 DAY STREAK", sub: "One full week of showing up.\nMost people quit by now." },
+    { id: "streak-30", test: streak >= 30, icon: "\u26A1", title: "30 DAY STREAK", sub: "A full month locked in.\nThis is no longer luck." },
+    { id: "score-50", test: lifeScore >= 50, icon: "\uD83D\uDCAA", title: "HALF WAY", sub: "Life Score hit 50.\nYou're building real momentum." },
+    { id: "score-80", test: lifeScore >= 80, icon: "\uD83C\uDFC6", title: "ELITE STATUS", sub: "Life Score hit 80.\nTop performers only." },
+    { id: "score-90", test: lifeScore >= 90, icon: "\uD83D\uDC51", title: "LOCKED IN", sub: "Life Score hit 90.\nYou've reached the top rank." },
+    { id: "goal-done", test: goalsDoneCount >= 1, icon: "\uD83C\uDFAF", title: "GOAL CRUSHED", sub: "You completed your first goal.\nSet the next one higher." }
+  ];
+  checks.forEach(function(m) {
+    if (m.test && !state.milestonesSeen[m.id]) {
+      state.milestonesSeen[m.id] = true;
+      milestoneQueue.push(m);
+    }
+  });
+  if (milestoneQueue.length > 0 && !milestoneShowing) {
+    save();
+    showNextMilestone();
+  }
+}
+
+function showNextMilestone() {
+  if (milestoneQueue.length === 0) { milestoneShowing = false; return; }
+  milestoneShowing = true;
+  var m = milestoneQueue.shift();
+  var el = document.getElementById("milestone-overlay");
+  el.innerHTML = '<div><div class="ms-icon">' + m.icon + '</div>' +
+    '<div class="ms-title">' + m.title + '</div>' +
+    '<div class="ms-sub">' + m.sub.replace(/\n/g, '<br>') + '</div></div>';
+  el.classList.remove("fade-out");
+  el.classList.add("visible");
+  setTimeout(function() { el.style.opacity = "1"; }, 10);
+  setTimeout(function() { dismissMilestone(); }, 4000);
+}
+
+function dismissMilestone() {
+  var el = document.getElementById("milestone-overlay");
+  el.style.opacity = "0";
+  setTimeout(function() {
+    el.classList.remove("visible");
+    showNextMilestone();
+  }, 400);
 }
 
 // === INIT ===
