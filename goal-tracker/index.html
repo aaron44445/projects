@@ -218,6 +218,22 @@ h1 span{color:var(--text3)}
 .set-btn.danger:hover{background:rgba(203,107,107,.08)}
 .set-version{text-align:center;color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:2px;padding:16px 0}
 
+/* ONBOARDING FLOW */
+#onboarding-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:24px;transition:opacity .5s ease}
+#onboarding-overlay.visible{display:flex}
+#onboarding-overlay.fade-out{opacity:0}
+.ob-flow-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 36px;max-width:420px;width:100%;text-align:center;animation:fadeUp .5s ease}
+.ob-flow-step{font-size:9px;color:var(--text3);letter-spacing:3px;font-family:'DM Mono',monospace;margin-bottom:24px}
+.ob-flow-title{color:var(--gold);font-size:20px;font-weight:300;margin-bottom:8px}
+.ob-flow-text{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:24px}
+.ob-flow-btn{width:100%;background:var(--gold);color:#0A0A0A;border:none;border-radius:8px;padding:14px;font-size:13px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.ob-flow-btn:hover{filter:brightness(1.1)}
+.ob-flow-skip{background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;margin-top:16px;padding:8px;transition:color .2s;font-family:'DM Sans',sans-serif}
+.ob-flow-skip:hover{color:var(--text2)}
+.ob-flow-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-size:15px;margin-bottom:12px;text-align:left;transition:border-color .2s}
+.ob-flow-input:focus{outline:none;border-color:var(--gold)}
+.ob-flow-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-size:13px;margin-bottom:12px;cursor:pointer;font-family:'DM Mono',monospace;text-align:left}
+
 /* BOTTOM NAV (Mobile) */
 .bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.06);padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
 .bnav-inner{display:flex;justify-content:space-around;align-items:center;max-width:500px;margin:0 auto}
@@ -341,6 +357,8 @@ input,select,textarea{font-size:16px}
   <div id="v-finances" style="display:none"></div>
   <div id="v-settings" style="display:none"></div>
 </div>
+
+<div id="onboarding-overlay"></div>
 
 <div class="bnav" id="bottom-nav">
   <div class="bnav-inner">
@@ -575,6 +593,10 @@ function ensureDefaults() {
   if (!state.checkins) state.checkins = {};
   if (!state.disabledCategories) state.disabledCategories = [];
   if (!state.weekStart) state.weekStart = "mon";
+  if (state.onboardingComplete === undefined) {
+    var hasEntries = Object.keys(state.entries || {}).some(function(k) { return state.entries[k]; });
+    state.onboardingComplete = hasEntries;
+  }
   if (state.journal) {
     Object.keys(state.journal).forEach(function(k) {
       if (typeof state.journal[k] === "string" && state.journal[k].trim() && !state.checkins[k]) {
@@ -638,9 +660,12 @@ async function handleSignUp() {
     state.checkins = {};
     state.finances = { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {}, recurringIncome: [], recurringExpenses: [], overrides: {} };
     state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
+    state.onboardingComplete = false;
+    state.disabledCategories = [];
+    state.weekStart = "mon";
     await saveRemote();
     hideAuth();
-    switchView("dashboard");
+    showOnboarding();
   } catch(e) {
     showAuthError("up", "Something went wrong. Try again.");
     btn.disabled = false;
@@ -815,7 +840,11 @@ async function loadUserData() {
   ensureDefaults();
   hideAuth();
   appLoaded = true;
-  switchView("dashboard");
+  if (!state.onboardingComplete) {
+    showOnboarding();
+  } else {
+    switchView("dashboard");
+  }
 }
 
 async function load() {
@@ -2084,6 +2113,80 @@ function renderFinances() {
   html += '</div></div>';
 
   document.getElementById("v-finances").innerHTML = html;
+}
+
+// === ONBOARDING ===
+var onboardingStep = 1;
+var onboardingGoal = { text: "", cat: "MONEY", deadline: "Q2" };
+
+function showOnboarding() {
+  onboardingStep = 1;
+  renderOnboardingStep();
+  document.getElementById("onboarding-overlay").classList.add("visible");
+}
+
+function renderOnboardingStep() {
+  var el = document.getElementById("onboarding-overlay");
+  var html = '<div class="ob-flow-card">';
+  html += '<div class="ob-flow-step">STEP ' + onboardingStep + ' OF 3</div>';
+
+  if (onboardingStep === 1) {
+    html += '<div class="ob-brand" style="margin-bottom:16px">LOCKED IN</div>' +
+      '<div class="ob-flow-title">Welcome, ' + esc(state.userName) + '</div>' +
+      '<div class="ob-flow-text">Let\'s set it up in 60 seconds.</div>' +
+      '<button class="ob-flow-btn" onclick="onboardingStep=2;renderOnboardingStep()">CONTINUE &rarr;</button>';
+  } else if (onboardingStep === 2) {
+    html += '<div class="ob-flow-title">Focus Areas</div>' +
+      '<div class="ob-flow-text">Toggle off anything you don\'t want to track.</div>' +
+      '<div class="set-cat-grid" style="margin-bottom:24px">';
+    CATEGORIES.forEach(function(cat) {
+      var active = isCatActive(cat.id);
+      html += '<div class="set-cat-card ' + (active ? 'active' : 'disabled') + '" onclick="toggleCategory(\'' + cat.id + '\');renderOnboardingStep()">' +
+        '<div class="set-cat-dot" style="background:' + cat.color + '"></div>' +
+        '<div class="set-cat-name" style="color:' + (active ? cat.color : 'var(--text3)') + '">' + cat.name + '</div></div>';
+    });
+    html += '</div>' +
+      '<button class="ob-flow-btn" onclick="onboardingStep=3;renderOnboardingStep()">CONTINUE &rarr;</button>';
+  } else if (onboardingStep === 3) {
+    html += '<div class="ob-flow-title">Your First Goal</div>' +
+      '<div class="ob-flow-text">What do you want to achieve?</div>' +
+      '<input class="ob-flow-input" placeholder="e.g. Save $1,000" value="' + esc(onboardingGoal.text) + '" oninput="onboardingGoal.text=this.value">' +
+      '<div style="display:flex;gap:8px;margin-bottom:20px">' +
+      '<select class="ob-flow-select" style="flex:1" onchange="onboardingGoal.cat=this.value">';
+    CATEGORIES.forEach(function(cat) {
+      html += '<option value="' + cat.name + '"' + (onboardingGoal.cat === cat.name ? ' selected' : '') + '>' + cat.name + '</option>';
+    });
+    html += '</select><select class="ob-flow-select" style="width:80px" onchange="onboardingGoal.deadline=this.value">' +
+      '<option value="Q1"' + (onboardingGoal.deadline === "Q1" ? ' selected' : '') + '>Q1</option>' +
+      '<option value="Q2"' + (onboardingGoal.deadline === "Q2" ? ' selected' : '') + '>Q2</option>' +
+      '<option value="Q3"' + (onboardingGoal.deadline === "Q3" ? ' selected' : '') + '>Q3</option>' +
+      '<option value="Q4"' + (onboardingGoal.deadline === "Q4" ? ' selected' : '') + '>Q4</option>' +
+      '<option value="Ongoing"' + (onboardingGoal.deadline === "Ongoing" ? ' selected' : '') + '>Ongoing</option>' +
+      '</select></div>' +
+      '<button class="ob-flow-btn" onclick="completeOnboarding()">START TRACKING &rarr;</button>' +
+      '<button class="ob-flow-skip" onclick="completeOnboarding()">Skip for now</button>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function completeOnboarding() {
+  if (onboardingGoal.text.trim()) {
+    var catSection = state.goals.find(function(s) { return s.cat === onboardingGoal.cat; });
+    if (catSection) {
+      catSection.items.unshift({ t: onboardingGoal.text, d: onboardingGoal.deadline, s: "Not Started" });
+    }
+  }
+  state.onboardingComplete = true;
+  save();
+  var overlay = document.getElementById("onboarding-overlay");
+  overlay.classList.add("fade-out");
+  setTimeout(function() {
+    overlay.classList.remove("visible", "fade-out");
+    overlay.innerHTML = "";
+    switchView("dashboard");
+  }, 500);
 }
 
 // === SETTINGS ===
