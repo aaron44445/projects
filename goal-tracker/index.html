@@ -978,6 +978,18 @@ function getHabitStreak(habitId) {
   return count;
 }
 
+function animateValue(el, from, to, duration, suffix) {
+  if (!el || from === to) { if (el) el.textContent = to + (suffix || ''); return; }
+  var start = performance.now();
+  function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function tick(now) {
+    var p = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(easeOut(p) * (to - from) + from) + (suffix || '');
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 // === VIEW SWITCHING ===
 function switchView(id) {
   document.querySelectorAll(".nav-btn").forEach(function(b) {
@@ -1159,14 +1171,14 @@ function renderDashboard() {
     var pct = catPct(cat.id);
     html += '<div class="cat-score-item">' +
       '<div class="cat-score-label">' + cat.name + '</div>' +
-      '<div class="cat-score-num" style="color:' + cat.color + '">' + pct + '%</div></div>';
+      '<div class="cat-score-num" id="cat-score-' + cat.id + '" style="color:' + cat.color + '">0%</div></div>';
   });
   html += '</div>';
 
   // 4. Stat Pills
   html += '<div class="stat-pills">' +
-    '<div class="stat-pill"><strong>' + todayDone + '/' + todayTotal + '</strong> TODAY</div>' +
-    '<div class="stat-pill"><strong>' + streak + '</strong> STREAK</div>' +
+    '<div class="stat-pill"><strong id="stat-today">0/' + todayTotal + '</strong> TODAY</div>' +
+    '<div class="stat-pill"><strong id="stat-streak">0</strong> STREAK</div>' +
     '<div class="stat-pill"><strong>' + todayMood + '</strong> MOOD</div>' +
     '</div>';
 
@@ -1234,22 +1246,15 @@ function renderDashboard() {
 
   document.getElementById("v-dashboard").innerHTML = html;
 
-  // Animate Life Score count-up (cubic ease-out)
+  // Animate all dashboard numbers (count-up with cubic ease-out)
   setTimeout(function() {
-    var scoreEl = document.getElementById("dash-score-num");
-    if (!scoreEl) return;
-    var target = lifeScore;
-    var duration = 1200;
-    var start = performance.now();
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-    function tick(now) {
-      var elapsed = now - start;
-      var progress = Math.min(elapsed / duration, 1);
-      var val = Math.round(easeOutCubic(progress) * target);
-      scoreEl.textContent = val;
-      if (progress < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    animateValue(document.getElementById("dash-score-num"), 0, lifeScore, 1200, '');
+    animateValue(document.getElementById("stat-today"), 0, todayDone, 600, '/' + todayTotal);
+    animateValue(document.getElementById("stat-streak"), 0, streak, 800, '');
+    CATEGORIES.forEach(function(cat) {
+      if (!isCatActive(cat.id)) return;
+      animateValue(document.getElementById("cat-score-" + cat.id), 0, catPct(cat.id), 900, '%');
+    });
   }, 100);
 
   setTimeout(drawLifeChart, 50);
