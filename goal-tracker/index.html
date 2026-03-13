@@ -321,6 +321,11 @@ input,select,textarea{font-size:16px}
 @keyframes msBounce{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
 @keyframes msFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
+/* SHARE */
+.share-btn{background:var(--gold);color:#0A0A0A;border:none;border-radius:6px;padding:10px 20px;font-size:11px;font-weight:600;letter-spacing:2px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;display:flex;align-items:center;gap:6px;margin:0 auto}
+.share-btn:active{transform:scale(.97)}
+.share-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+
 .score-hero{text-align:center;padding:28px 0 12px}
 .score-num{font-size:100px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(200,169,81,0.25)}
 .score-num.glow-high{animation:breatheGlow 3s ease-in-out infinite}
@@ -1249,6 +1254,11 @@ function renderDashboard() {
   // 9. Bottom quote
   html += '<div class="quote-block"><div class="quote-text">\u201C' + QUOTES[quoteIndex].text + '\u201D</div>' +
     '<div class="quote-author">\u2014 ' + QUOTES[quoteIndex].author + '</div></div>';
+
+  html += '<div style="text-align:center;padding-bottom:12px">' +
+    '<button class="share-btn" onclick="generateShareCard()">' +
+    '<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>' +
+    'SHARE YOUR PROGRESS</button></div>';
 
   // Record today's life score
   if (state.lifeScoreHistory[todayKey] !== lifeScore) {
@@ -2380,6 +2390,197 @@ function renderSettings() {
   html += '<div class="set-version">LOCKED IN v1.0</div>';
 
   document.getElementById("v-settings").innerHTML = html;
+}
+
+// === SHARE CARD ===
+function generateShareCard() {
+  var W = 1080, H = 1920;
+  var canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  var ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle gold gradient accent at top
+  var topGrad = ctx.createLinearGradient(0, 0, 0, 400);
+  topGrad.addColorStop(0, "rgba(200,169,81,.08)");
+  topGrad.addColorStop(1, "rgba(200,169,81,0)");
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, W, 400);
+
+  // Brand
+  ctx.fillStyle = "#C8A951";
+  ctx.font = "bold 36px 'DM Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("LOCKED IN", W / 2, 160);
+
+  // Divider
+  ctx.strokeStyle = "rgba(200,169,81,.3)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - 40, 200);
+  ctx.lineTo(W / 2 + 40, 200);
+  ctx.stroke();
+
+  // Compute stats
+  var checkHabits = state.habits.filter(function(h) { return h.type === "check"; });
+  var m = TODAY_M;
+  var fad = firstActiveDay(m);
+  var activeDays = Math.max(1, Math.min(TODAY_D, daysInMonth(m)) - fad + 1);
+  var totalPct = 0;
+  checkHabits.forEach(function(h) {
+    var done = 0;
+    for (var d = fad; d <= Math.min(TODAY_D, daysInMonth(m)); d++) {
+      if (getEntry(m, d, h.id) === "\u2713") done++;
+    }
+    totalPct += (activeDays > 0 ? done / activeDays : 0);
+  });
+  var lifeScore = checkHabits.length ? Math.round((totalPct / checkHabits.length) * 100) : 0;
+  var rank = getRank(lifeScore);
+
+  var streak = 0;
+  for (var si = 0; si < 365; si++) {
+    var sdt = new Date(YEAR, TODAY_M, TODAY_D - si);
+    if (sdt.getFullYear() < YEAR - 1) break;
+    var sDone = 0, sTotal = 0;
+    checkHabits.forEach(function(h) { sTotal++; if (getEntry(sdt.getMonth(), sdt.getDate(), h.id) === "\u2713") sDone++; });
+    if (sTotal && (sDone / sTotal) >= 0.8) streak++;
+    else if (si > 0) break;
+  }
+
+  // Life Score (huge)
+  ctx.fillStyle = "#C8A951";
+  ctx.font = "200 200px 'DM Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(lifeScore, W / 2, 520);
+
+  // Rank badge
+  ctx.font = "bold 28px 'DM Mono', monospace";
+  ctx.fillStyle = "#C8A951";
+  ctx.fillText(rank.name, W / 2, 590);
+
+  // Stats row
+  var statsY = 700;
+  ctx.font = "300 48px 'DM Mono', monospace";
+  ctx.fillStyle = "#E8E8E8";
+  ctx.textAlign = "center";
+  ctx.fillText(streak + " DAY STREAK", W / 2, statsY);
+
+  // Category bars
+  var catY = 820;
+  var catColors = { money: "#C8A951", body: "#6BCB77", mind: "#7B8CDE", spirit: "#C77DBA" };
+  CATEGORIES.forEach(function(cat) {
+    if (!isCatActive(cat.id)) return;
+    var habits = state.habits.filter(function(h) { return h.cat === cat.id && h.type === "check"; });
+    if (!habits.length) return;
+    var total = 0;
+    habits.forEach(function(h) {
+      var done = 0;
+      for (var d = fad; d <= Math.min(TODAY_D, daysInMonth(m)); d++) {
+        if (getEntry(m, d, h.id) === "\u2713") done++;
+      }
+      total += (activeDays > 0 ? done / activeDays : 0);
+    });
+    var pct = Math.round((total / habits.length) * 100);
+    var color = catColors[cat.id] || "#C8A951";
+
+    // Category name
+    ctx.fillStyle = color;
+    ctx.font = "500 22px 'DM Sans', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(cat.name, 120, catY);
+
+    // Percentage
+    ctx.font = "400 22px 'DM Mono', monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(pct + "%", W - 120, catY);
+
+    // Bar track
+    ctx.fillStyle = "rgba(255,255,255,.06)";
+    roundRect(ctx, 120, catY + 12, W - 240, 8, 4);
+    ctx.fill();
+
+    // Bar fill
+    ctx.fillStyle = color;
+    var fillW = Math.max(0, ((W - 240) * pct) / 100);
+    if (fillW > 0) {
+      roundRect(ctx, 120, catY + 12, fillW, 8, 4);
+      ctx.fill();
+    }
+
+    catY += 70;
+  });
+
+  // Quote
+  var quoteIndex = Math.floor((NOW.getTime() / 86400000)) % QUOTES.length;
+  var quoteY = Math.max(catY + 80, 1200);
+  ctx.fillStyle = "rgba(200,169,81,.3)";
+  ctx.fillRect(W / 2 - 20, quoteY - 30, 40, 1);
+
+  ctx.fillStyle = "#555";
+  ctx.font = "italic 24px 'DM Mono', monospace";
+  ctx.textAlign = "center";
+  wrapText(ctx, "\u201C" + QUOTES[quoteIndex].text + "\u201D", W / 2, quoteY + 10, W - 200, 36);
+
+  // Date
+  ctx.fillStyle = "#444";
+  ctx.font = "300 20px 'DM Mono', monospace";
+  ctx.textAlign = "center";
+  ctx.fillText(MONTHS[TODAY_M] + " " + TODAY_D + ", " + YEAR, W / 2, H - 160);
+
+  // Footer watermark
+  ctx.fillStyle = "rgba(200,169,81,.25)";
+  ctx.font = "bold 18px 'DM Mono', monospace";
+  ctx.fillText("LOCKED IN \u00B7 lockedintracker.com", W / 2, H - 100);
+
+  canvas.toBlob(function(blob) { shareCard(blob); }, "image/png");
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  var words = text.split(' ');
+  var line = '';
+  for (var n = 0; n < words.length; n++) {
+    var test = line + words[n] + ' ';
+    if (ctx.measureText(test).width > maxW && n > 0) {
+      ctx.fillText(line.trim(), x, y);
+      line = words[n] + ' ';
+      y += lineH;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line.trim(), x, y);
+}
+
+function shareCard(blob) {
+  var file = new File([blob], "locked-in-" + YEAR + "-" + (TODAY_M + 1) + "-" + TODAY_D + ".png", { type: "image/png" });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: "LOCKED IN", text: "My progress today" }).catch(function() {});
+  } else {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 }
 
 // === MILESTONES ===
