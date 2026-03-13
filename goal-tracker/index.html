@@ -268,12 +268,27 @@ input,select,textarea{font-size:16px}
 .empty-card{background:var(--surface);border:1px solid rgba(200,169,81,.15);border-radius:6px;padding:28px 24px;text-align:center}
 
 /* VIEW TRANSITIONS */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.view-active{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.view-active{animation:fadeIn .4s cubic-bezier(.22,1,.36,1)}
+
+/* CARD STAGGER */
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card,.set-card,.fin-stat,.empty-card{animation:cardIn .4s cubic-bezier(.22,1,.36,1) both}
+.card:nth-child(1),.set-card:nth-child(1),.fin-stat:nth-child(1){animation-delay:0ms}
+.card:nth-child(2),.set-card:nth-child(2),.fin-stat:nth-child(2){animation-delay:80ms}
+.card:nth-child(3),.set-card:nth-child(3),.fin-stat:nth-child(3){animation-delay:160ms}
+.card:nth-child(4),.set-card:nth-child(4){animation-delay:240ms}
+.card:nth-child(5),.set-card:nth-child(5){animation-delay:320ms}
+
+/* PROGRESS BAR ANIMATION */
+.progress-fill,.trk-bar-fill,.savings-bar-fill{transition:width .6s cubic-bezier(.22,1,.36,1)}
+
+/* HIGH SCORE GLOW */
+@keyframes breatheGlow{0%,100%{text-shadow:0 0 40px rgba(200,169,81,0.25)}50%{text-shadow:0 0 60px rgba(200,169,81,0.45),0 0 100px rgba(200,169,81,0.15)}}
 
 .score-hero{text-align:center;padding:28px 0 12px}
 .score-num{font-size:100px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(200,169,81,0.25)}
-.score-num.glow-high{text-shadow:0 0 60px rgba(200,169,81,0.35)}
+.score-num.glow-high{animation:breatheGlow 3s ease-in-out infinite}
 .score-status{font-size:11px;letter-spacing:4px;font-weight:600;font-family:'DM Mono',monospace;margin-top:6px}
 .cat-scores{display:flex;justify-content:space-around;padding:16px 0 12px}
 .cat-score-item{text-align:center}
@@ -1216,18 +1231,22 @@ function renderDashboard() {
 
   document.getElementById("v-dashboard").innerHTML = html;
 
-  // Animate Life Score count-up
+  // Animate Life Score count-up (cubic ease-out)
   setTimeout(function() {
     var scoreEl = document.getElementById("dash-score-num");
     if (!scoreEl) return;
     var target = lifeScore;
-    var current = 0;
-    var step = Math.max(1, Math.ceil(target / 30));
-    var iv = setInterval(function() {
-      current = Math.min(current + step, target);
-      scoreEl.textContent = current;
-      if (current >= target) clearInterval(iv);
-    }, 20);
+    var duration = 1200;
+    var start = performance.now();
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function tick(now) {
+      var elapsed = now - start;
+      var progress = Math.min(elapsed / duration, 1);
+      var val = Math.round(easeOutCubic(progress) * target);
+      scoreEl.textContent = val;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   }, 100);
 
   setTimeout(drawLifeChart, 50);
