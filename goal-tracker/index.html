@@ -158,7 +158,7 @@ h1 span{color:var(--text3)}
 .stream-amount{width:80px;background:transparent;border:none;color:var(--gold);font-family:'DM Mono',monospace;font-size:13px;text-align:right}
 .stream-amount::placeholder{color:var(--text3)}
 .savings-bar-track{background:#1A1A1A;border-radius:6px;height:10px;overflow:hidden;margin:12px 0}
-.savings-bar-fill{background:linear-gradient(90deg,var(--gold),var(--greenT));height:100%;border-radius:6px;transition:width .5s}
+.savings-bar-fill{background:linear-gradient(90deg,var(--gold),var(--greenT));height:100%;border-radius:6px;transition:width .6s cubic-bezier(.22,1,.36,1);box-shadow:0 0 8px rgba(200,169,81,.25),0 0 16px rgba(107,203,119,.1)}
 .recurring-badge{font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:3px;background:rgba(200,169,81,.12);color:var(--gold);font-family:'DM Mono',monospace;white-space:nowrap}
 .override-indicator{font-size:9px;color:var(--text3);text-decoration:line-through;margin-right:4px;font-family:'DM Mono',monospace}
 .recurring-section{margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
@@ -312,9 +312,19 @@ input,select,textarea{font-size:16px}
 @media(max-width:500px){.fin-inline{font-size:11px;gap:10px}}
 .dash-divider{height:1px;background:rgba(255,255,255,.04);margin:8px 0}
 .dash-section-label{font-size:9px;letter-spacing:2px;color:var(--text3);font-weight:500;margin-bottom:4px}
-.quote-block{padding:16px 0 24px;text-align:center}
-.quote-text{color:#444;font-size:11px;font-style:italic;font-family:'DM Mono',monospace;line-height:1.7;max-width:500px;margin:0 auto 8px}
-.quote-author{color:var(--gold);font-size:9px;letter-spacing:2px;font-family:'DM Mono',monospace}
+.quote-block{padding:20px 0 28px;text-align:center;position:relative}
+.quote-block::before{content:'';display:block;width:40px;height:1px;background:var(--gold);margin:0 auto 16px;opacity:.4}
+.quote-text{color:#555;font-size:11px;font-style:italic;font-family:'DM Mono',monospace;line-height:1.8;max-width:500px;margin:0 auto 10px}
+.quote-author{color:var(--gold);font-size:9px;letter-spacing:3px;font-family:'DM Mono',monospace}
+
+/* CARD HOVER GLOW (desktop) */
+@media(hover:hover){
+.card:hover,.set-card:hover{border-color:rgba(200,169,81,.12);box-shadow:0 0 20px rgba(200,169,81,.04)}
+}
+
+/* NAV ACTIVE GLOW */
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);text-shadow:0 0 10px rgba(200,169,81,.3)}
+.bnav-btn.active{text-shadow:0 0 8px rgba(200,169,81,.3)}
 </style>
 </head>
 <body>
