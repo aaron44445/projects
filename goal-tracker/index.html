@@ -6,6 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A0A0A">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>LOCKED IN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -27,7 +29,7 @@ input:focus,select:focus{outline:none;box-shadow:0 0 0 1px rgba(200,169,81,.15)}
 .mono{font-family:'DM Mono',monospace}
 
 /* NAV */
-nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;height:48px;padding:0 16px;gap:0}
+nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;height:48px;padding:0 16px;padding-top:env(safe-area-inset-top,0px);gap:0}
 .nav-brand{color:var(--gold);font-weight:700;font-size:11px;letter-spacing:3px;margin-right:auto;font-family:'DM Mono',monospace}
 .nav-btn{background:none;border:none;color:var(--text3);font-size:10px;font-weight:500;letter-spacing:1px;padding:14px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
@@ -2297,6 +2299,13 @@ function renderSettings() {
 
 // === INIT ===
 load();
+
+// Service Worker registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function() {});
+  });
+}
 </script>
 </body>
 </html>
