@@ -641,6 +641,8 @@ function ensureDefaults() {
   if (state.startDay === undefined) { state.startMonth = TODAY_M; state.startDay = TODAY_D; }
   if (!state.journal) state.journal = {};
   state.habits.forEach(function(h) { if (h.goalLink === undefined) h.goalLink = ""; });
+  var defaultEmojis = { money: "\uD83D\uDCB0", body: "\uD83D\uDCAA", mind: "\uD83E\uDDE0", spirit: "\uD83D\uDD4A\uFE0F" };
+  state.habits.forEach(function(h) { if (!h.emoji) h.emoji = defaultEmojis[h.cat] || "\u2B50"; });
   if (!state.checkins) state.checkins = {};
   if (!state.disabledCategories) state.disabledCategories = [];
   if (!state.weekStart) state.weekStart = "mon";
@@ -1471,7 +1473,14 @@ function renderTracker() {
         goals.forEach(function(g) {
           goalOpts += '<option value="' + g.key + '"' + (hab.goalLink === g.key ? ' selected' : '') + '>' + esc(g.label).substring(0, 25) + '</option>';
         });
+        var emojiChoices = ["\uD83D\uDCB0","\uD83D\uDCAA","\uD83E\uDDE0","\uD83D\uDD4A\uFE0F","\u2B50","\uD83D\uDD25","\uD83C\uDFAF","\uD83D\uDCDA","\uD83C\uDFC3","\u2764\uFE0F","\uD83C\uDF1F","\u26A1","\uD83E\uDDD8","\uD83D\uDE80","\u2705"];
+        var emojiHtml = '<select style="font-size:16px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px;cursor:pointer;width:36px;text-align:center" onchange="setHabitEmoji(' + hab.id + ',this.value)">';
+        emojiChoices.forEach(function(em) {
+          emojiHtml += '<option value="' + em + '"' + (hab.emoji === em ? ' selected' : '') + '>' + em + '</option>';
+        });
+        emojiHtml += '</select>';
         html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:2px;background:var(--surface);border-radius:4px">' +
+          emojiHtml +
           '<input class="habit-name-input" value="' + esc(hab.name) + '" oninput="renameHabit(' + hab.id + ',this.value)">' +
           '<select class="goal-select" style="min-width:70px;font-size:9px;padding:3px 4px" onchange="linkHabitGoal(' + hab.id + ',this.value)">' + goalOpts + '</select>' +
           '<button class="habit-type-toggle" onclick="toggleHabitType(' + hab.id + ')">' + hab.type + '</button>' +
@@ -1568,7 +1577,7 @@ function renderTracker() {
 
       var habStreak = hab.type === "check" ? getHabitStreak(hab.id) : 0;
       var streakBadge = habStreak >= 2 ? '<span class="mono" style="font-size:8px;color:var(--gold);margin-left:auto;flex-shrink:0;padding-left:2px">' + habStreak + 'd</span>' : '';
-      html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + ';display:flex;align-items:center">' + '<span style="overflow:hidden;text-overflow:ellipsis">' + esc(hab.name) + '</span>' + streakBadge + '</div>';
+      html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + ';display:flex;align-items:center">' + '<span style="overflow:hidden;text-overflow:ellipsis">' + (hab.emoji || '') + ' ' + esc(hab.name) + '</span>' + streakBadge + '</div>';
 
       visibleDays.forEach(function(d) {
         var v = getEntry(m, d, hab.id);
@@ -1656,6 +1665,11 @@ function removeHabit(habitId) {
   });
   save();
   renderTracker();
+}
+
+function setHabitEmoji(habitId, emoji) {
+  var hab = state.habits.find(function(h) { return h.id === habitId; });
+  if (hab) { hab.emoji = emoji; save(); }
 }
 
 function renameHabit(habitId, newName) {
