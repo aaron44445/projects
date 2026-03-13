@@ -1,4 +1,4 @@
-var CACHE_NAME = 'lockedin-v1';
+var CACHE_NAME = 'lockedin-v5';
 var URLS_TO_CACHE = [
   './',
   './index.html',
@@ -37,13 +37,17 @@ self.addEventListener('fetch', function(event) {
       url.indexOf('cdn.jsdelivr.net') !== -1) {
     return;
   }
+  // Stale-while-revalidate: serve cached version immediately, fetch fresh in background
   event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request).then(function(fetchResponse) {
-        return caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, fetchResponse.clone());
-          return fetchResponse;
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.match(event.request).then(function(cached) {
+        var fetchPromise = fetch(event.request).then(function(networkResponse) {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        }).catch(function() {
+          return cached;
         });
+        return cached || fetchPromise;
       });
     }).catch(function() {
       return caches.match('./index.html');
