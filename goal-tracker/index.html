@@ -962,6 +962,20 @@ function getRank(score) {
   return ranks[0];
 }
 
+function getHabitStreak(habitId) {
+  var count = 0;
+  for (var i = 0; i < 365; i++) {
+    var dt = new Date(YEAR, TODAY_M, TODAY_D - i);
+    if (dt.getFullYear() < YEAR - 1) break;
+    var dm = dt.getMonth();
+    var dd = dt.getDate();
+    if (isBeforeStart(dm, dd)) break;
+    if (getEntry(dm, dd, habitId) === "\u2713") count++;
+    else break;
+  }
+  return count;
+}
+
 // === VIEW SWITCHING ===
 function switchView(id) {
   document.querySelectorAll(".nav-btn").forEach(function(b) {
@@ -1552,7 +1566,9 @@ function renderTracker() {
       var pct = hab.type === "check" ? (daysToCount ? count / daysToCount : 0) : 0;
       var pctDisplay = hab.type === "check" ? Math.round(pct * 100) + '%' : (count ? count.toFixed(1) : '\u2014');
 
-      html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + '">' + esc(hab.name) + '</div>';
+      var habStreak = hab.type === "check" ? getHabitStreak(hab.id) : 0;
+      var streakBadge = habStreak >= 2 ? '<span class="mono" style="font-size:8px;color:var(--gold);margin-left:auto;flex-shrink:0;padding-left:2px">' + habStreak + 'd</span>' : '';
+      html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + ';display:flex;align-items:center">' + '<span style="overflow:hidden;text-overflow:ellipsis">' + esc(hab.name) + '</span>' + streakBadge + '</div>';
 
       visibleDays.forEach(function(d) {
         var v = getEntry(m, d, hab.id);
