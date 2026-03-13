@@ -35,7 +35,7 @@ nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px soli
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
 @media(max-width:500px){.nav-btn{padding:14px 5px;font-size:7.5px;letter-spacing:.3px}.nav-brand{font-size:8px;letter-spacing:1.5px}}
 #sign-out-btn{margin-left:8px;color:var(--text3);border-bottom:none}
-#sign-out-btn:hover{color:var(--redT)}
+#sign-out-btn:hover{color:var(--gold)}
 
 /* MAIN */
 .container{max-width:900px;margin:0 auto;padding:10px 12px 80px}
@@ -98,8 +98,7 @@ h1 span{color:var(--text3)}
 .trk-lbl{width:110px;flex-shrink:0;font-size:11px;color:var(--text2);padding-left:8px;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
 .trk-cell{width:20px;height:20px;flex-shrink:0;position:relative;cursor:pointer}
 .trk-cell::after{content:'';position:absolute;top:4px;left:4px;right:4px;bottom:4px;border-radius:2px;transition:all .15s}
-.trk-cell:hover::after{transform:scale(1.3)}
-.trk-cell:not(.done):not(.missed):hover::after{background:rgba(255,255,255,.06)}
+@media(hover:hover){.trk-cell:hover::after{background:rgba(255,255,255,.08)}}
 .trk-cell.done::after{background:var(--fill)}
 .trk-cell.missed::after{background:rgba(255,255,255,.04)}
 .trk-cell.empty::after{background:rgba(255,255,255,.025)}
@@ -109,15 +108,31 @@ h1 span{color:var(--text3)}
 .trk-cell .trk-num{position:absolute;top:4px;left:4px;right:4px;bottom:4px;width:auto;height:auto;background:transparent;border:none;color:var(--gold);font-size:7px;font-family:'DM Mono',monospace;text-align:center;padding:0;border-radius:2px;z-index:1;transition:all .12s}
 .trk-cell .trk-num:focus{outline:none;background:rgba(200,169,81,.12)}
 .trk-cell.has-val::after{background:var(--fill)}
+/* Mobile weekly tracker */
+.trk-week-nav{display:none}
 @media(max-width:600px){
-.trk-lbl-spacer,.trk-lbl{width:80px}
-.trk-day,.trk-cell{width:16px;height:16px}
-.trk-cell::after{top:3px;left:3px;right:3px;bottom:3px}
-.trk-cell .trk-num{font-size:6px}
-.trk-day{font-size:6px}
-.trk-lbl{font-size:9px;padding-left:6px}
-.trk-stat{width:28px;font-size:8px}
-.trk-stat-hdr{width:28px;font-size:6px}
+.trk-week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.trk-week-label{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace;letter-spacing:1px}
+.trk-week-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text2);width:36px;height:36px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Mono',monospace}
+.trk-week-btn:active{border-color:var(--gold);color:var(--gold);background:rgba(200,169,81,.08)}
+.trk-week-btn:disabled{opacity:.15;cursor:default}
+.trk-wrap{overflow-x:visible;margin:0;padding:0}
+.trk-grid{min-width:0}
+.trk-lbl-spacer{width:76px}
+.trk-lbl{width:76px;font-size:10px;padding-left:6px}
+.trk-day{width:auto;flex:1;height:auto;font-size:11px;font-weight:500;padding:4px 0;line-height:1.3;flex-shrink:1}
+.trk-day .trk-day-letter{display:block;font-size:8px;font-weight:400;color:var(--text3);margin-bottom:1px}
+.trk-cell{width:auto;flex:1;height:40px;flex-shrink:1}
+.trk-cell::after{top:4px;left:4px;right:4px;bottom:4px;border-radius:5px}
+.trk-cell .trk-num{font-size:12px;top:4px;left:4px;right:4px;bottom:4px;border-radius:5px}
+.trk-cell.today-col::after{box-shadow:0 0 0 1.5px rgba(200,169,81,.4)}
+.trk-row{padding:1px 0}
+.trk-cat-row{padding:10px 0 4px;gap:6px}
+.trk-cat-dot{width:7px;height:7px}
+.trk-cat-name{font-size:10px;letter-spacing:1.5px}
+.trk-cat-pct{font-size:11px}
+.trk-bar{height:3px;margin:0 8px}
+.trk-stat,.trk-stat-hdr{display:none}
 }
 
 /* GOALS */
@@ -224,7 +239,8 @@ h1 span{color:var(--text3)}
 #onboarding-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:none;align-items:center;justify-content:center;padding:24px;transition:opacity .5s ease}
 #onboarding-overlay.visible{display:flex}
 #onboarding-overlay.fade-out{opacity:0}
-.ob-flow-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 36px;max-width:420px;width:100%;text-align:center;animation:fadeUp .5s ease}
+.ob-flow-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 36px;max-width:420px;width:100%;text-align:center;animation:obStepIn .4s cubic-bezier(.22,1,.36,1)}
+@keyframes obStepIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .ob-flow-step{font-size:9px;color:var(--text3);letter-spacing:3px;font-family:'DM Mono',monospace;margin-bottom:24px}
 .ob-flow-title{color:var(--gold);font-size:20px;font-weight:300;margin-bottom:8px}
 .ob-flow-text{color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:24px}
@@ -239,7 +255,7 @@ h1 span{color:var(--text3)}
 /* BOTTOM NAV (Mobile) */
 .bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.06);padding:6px 0;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
 .bnav-inner{display:flex;justify-content:space-around;align-items:center;max-width:500px;margin:0 auto}
-.bnav-btn{background:none;border:none;color:var(--text3);font-size:8px;letter-spacing:.5px;font-family:'DM Sans',sans-serif;padding:4px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s;min-width:44px}
+.bnav-btn{background:none;border:none;color:var(--text3);font-size:8px;letter-spacing:.5px;font-family:'DM Sans',sans-serif;padding:8px 0 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s;min-width:44px;min-height:44px}
 .bnav-btn.active{color:var(--gold)}
 .bnav-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:600px){
@@ -247,6 +263,9 @@ h1 span{color:var(--text3)}
 nav{display:none}
 .container{padding-bottom:100px}
 input,select,textarea{font-size:16px}
+.month-pills{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none}
+.month-pills::-webkit-scrollbar{display:none}
+.month-pill{flex-shrink:0;padding:6px 10px;font-size:11px}
 .score-num{font-size:64px}
 .cat-scores{flex-wrap:wrap;gap:4px}
 .cat-score-item{width:calc(50% - 4px)}
@@ -286,10 +305,15 @@ input,select,textarea{font-size:16px}
 /* HIGH SCORE GLOW */
 @keyframes breatheGlow{0%,100%{text-shadow:0 0 40px rgba(200,169,81,0.25)}50%{text-shadow:0 0 60px rgba(200,169,81,0.45),0 0 100px rgba(200,169,81,0.15)}}
 
+/* RANK */
+.rank-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:10px;letter-spacing:2px;font-weight:600;font-family:'DM Mono',monospace;border:1px solid}
+.rank-progress{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:6px;overflow:hidden}
+.rank-progress-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.rank-next{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;text-align:center;margin-top:4px}
+
 .score-hero{text-align:center;padding:28px 0 12px}
 .score-num{font-size:100px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold);line-height:1;text-shadow:0 0 40px rgba(200,169,81,0.25)}
 .score-num.glow-high{animation:breatheGlow 3s ease-in-out infinite}
-.score-status{font-size:11px;letter-spacing:4px;font-weight:600;font-family:'DM Mono',monospace;margin-top:6px}
 .cat-scores{display:flex;justify-content:space-around;padding:16px 0 12px}
 .cat-score-item{text-align:center}
 .cat-score-label{font-size:8px;letter-spacing:2px;color:#444;font-weight:500;margin-bottom:4px}
@@ -923,6 +947,21 @@ function getEntry(m, d, hid) { return state.entries[eKey(m, d, hid)] || ""; }
 function setEntry(m, d, hid, v) { state.entries[eKey(m, d, hid)] = v; save(); }
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
 
+function getRank(score) {
+  var ranks = [
+    { name: "BEGINNER", color: "var(--text3)", min: 0, next: 20 },
+    { name: "RISING", color: "var(--text2)", min: 20, next: 40 },
+    { name: "BUILDING", color: "var(--text2)", min: 40, next: 60 },
+    { name: "ON FIRE", color: "var(--gold)", min: 60, next: 80 },
+    { name: "ELITE", color: "var(--gold)", min: 80, next: 90 },
+    { name: "LOCKED IN", color: "var(--gold)", min: 90, next: 100 }
+  ];
+  for (var i = ranks.length - 1; i >= 0; i--) {
+    if (score >= ranks[i].min) return ranks[i];
+  }
+  return ranks[0];
+}
+
 // === VIEW SWITCHING ===
 function switchView(id) {
   document.querySelectorAll(".nav-btn").forEach(function(b) {
@@ -988,21 +1027,6 @@ function renderDashboard() {
     });
     return Math.round((total / habits.length) * 100);
   }
-
-  // === TEMP DEMO MODE — remove after screenshot ===
-  var DEMO = false;
-  if (DEMO) {
-    lifeScore = 92;
-    var _catPct = catPct;
-    catPct = function(id) {
-      if (id === "money") return 88;
-      if (id === "body") return 95;
-      if (id === "mind") return 82;
-      if (id === "spirit") return 91;
-      return _catPct(id);
-    };
-  }
-  // === END TEMP DEMO ===
 
   // Today done / total
   var todayDone = 0, todayTotal = 0;
@@ -1083,49 +1107,13 @@ function renderDashboard() {
   var savingsPct = fin.savingsGoal ? Math.min(100, Math.round((fin.savingsCurrent / fin.savingsGoal) * 100)) : 0;
 
   // Status label based on score
-  var statusLabel, statusColor;
-  if (lifeScore >= 80) { statusLabel = "LOCKED IN"; statusColor = "var(--gold)"; }
-  else if (lifeScore >= 60) { statusLabel = "ON FIRE"; statusColor = "var(--gold)"; }
-  else if (lifeScore >= 40) { statusLabel = "BUILDING"; statusColor = "var(--text2)"; }
-  else if (lifeScore >= 20) { statusLabel = "WARMING UP"; statusColor = "var(--text3)"; }
-  else { statusLabel = "JUST STARTING"; statusColor = "var(--text3)"; }
+  var rank = getRank(lifeScore);
+  var statusLabel = rank.name;
+  var statusColor = rank.color;
 
   var quoteIndex = Math.floor((NOW.getTime() / 86400000)) % QUOTES.length;
   var goalsInProgress = activeGoals.filter(function(g) { return g.status === "In Progress"; }).length;
   var goalsNotStarted = activeGoals.filter(function(g) { return g.status !== "Done" && g.status !== "In Progress"; }).length;
-
-  // === TEMP DEMO OVERRIDES — remove after screenshot ===
-  if (DEMO) {
-    todayDone = 11; todayTotal = 12;
-    todayMood = "9/10";
-    streak = 23;
-    weekDays = [
-      { label: "Thu", pct: 0.85, isToday: false },
-      { label: "Fri", pct: 0.92, isToday: false },
-      { label: "Sat", pct: 0.78, isToday: false },
-      { label: "Sun", pct: 0.88, isToday: false },
-      { label: "Mon", pct: 0.95, isToday: false },
-      { label: "Tue", pct: 0.90, isToday: false },
-      { label: "Wed", pct: 0.93, isToday: true }
-    ];
-    weekAvg = 89;
-    activeGoals = [
-      { name: "Save $10K emergency fund", status: "In Progress", pct: 72, cat: "money" },
-      { name: "Run 5K under 25 min", status: "Done", pct: 100, cat: "body" },
-      { name: "Read 24 books this year", status: "In Progress", pct: 58, cat: "mind" },
-      { name: "Meditate 30 days straight", status: "In Progress", pct: 85, cat: "spirit" },
-      { name: "Bench press 225 lbs", status: "In Progress", pct: 90, cat: "body" },
-      { name: "Launch side project", status: "Done", pct: 100, cat: "money" },
-      { name: "Daily journaling habit", status: "In Progress", pct: 78, cat: "spirit" }
-    ];
-    goalsDoneCount = 2;
-    goalsInProgress = 5;
-    goalsNotStarted = 0;
-    finIncome = 8450;
-    finExpense = 3280;
-    finNet = 5170;
-  }
-  // === END TEMP DEMO OVERRIDES ===
 
   // === BUILD HTML (V6 — typography-first dashboard) ===
   // 1. Header
@@ -1138,8 +1126,12 @@ function renderDashboard() {
   var glowClass = lifeScore >= 80 ? ' glow-high' : '';
   html += '<div class="score-hero">' +
     '<div id="dash-score-num" class="score-num' + glowClass + '">0</div>' +
-    '<div class="score-status" style="color:' + statusColor + '">' + (lifeScore === 0 && !DEMO ? 'YOUR JOURNEY BEGINS' : statusLabel) + '</div></div>';
-  if (lifeScore === 0 && !DEMO) {
+    '<div style="text-align:center;margin-top:6px">' +
+    '<span class="rank-badge" style="color:' + statusColor + ';border-color:' + statusColor + '">' + (lifeScore === 0 ? 'YOUR JOURNEY BEGINS' : statusLabel) + '</span>' +
+    (lifeScore > 0 && lifeScore < 100 ? '<div class="rank-progress" style="max-width:120px;margin:6px auto 0"><div class="rank-progress-fill" style="width:' + Math.round(((lifeScore - rank.min) / (rank.next - rank.min)) * 100) + '%;background:' + statusColor + '"></div></div>' +
+    '<div class="rank-next">' + rank.next + ' for next rank</div>' : '') +
+    '</div></div>';
+  if (lifeScore === 0) {
     html += '<div class="empty-state" style="padding:8px 0 0"><div class="empty-state-text">Start tracking habits to see your score climb</div>' +
       '<span class="empty-state-action" onclick="switchView(\'tracker\')">Open Tracker &rarr;</span></div>';
   }
@@ -1181,8 +1173,8 @@ function renderDashboard() {
   html += '<div class="dash-divider"></div>' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px">' +
     '<span class="dash-section-label">LAST 7 DAYS</span>' +
-    '<span class="mono" style="font-size:8px;color:var(--gold)">' + (hasWeekData || DEMO ? weekAvg + '% avg' : '') + '</span></div>';
-  if (!hasWeekData && !DEMO) {
+    '<span class="mono" style="font-size:8px;color:var(--gold)">' + (hasWeekData ? weekAvg + '% avg' : '') + '</span></div>';
+  if (!hasWeekData) {
     html += '<div class="empty-state" style="padding:16px 0"><div class="empty-state-text">Your week starts now.</div></div>';
   } else {
     html += '<div class="week-float">';
@@ -1199,7 +1191,7 @@ function renderDashboard() {
 
   // 7. Finance — inline colored text
   html += '<div class="dash-divider"></div>';
-  if (finIncome === 0 && finExpense === 0 && !DEMO) {
+  if (finIncome === 0 && finExpense === 0) {
     html += '<div class="empty-state" style="padding:8px 0"><span class="empty-state-action" onclick="switchView(\'finances\')">Track your money in Finances &rarr;</span></div>';
   } else {
     html += '<div class="fin-inline">' +
@@ -1219,24 +1211,9 @@ function renderDashboard() {
     '<div class="quote-author">\u2014 ' + QUOTES[quoteIndex].author + '</div></div>';
 
   // Record today's life score
-  if (!DEMO && state.lifeScoreHistory[todayKey] !== lifeScore) {
+  if (state.lifeScoreHistory[todayKey] !== lifeScore) {
     state.lifeScoreHistory[todayKey] = lifeScore;
     save();
-  }
-  // TEMP DEMO: inject fake trajectory + checkin data
-  if (DEMO) {
-    var _origHist = {};
-    Object.keys(state.lifeScoreHistory).forEach(function(k) { _origHist[k] = state.lifeScoreHistory[k]; });
-    var _origCheckins = state.checkins ? JSON.parse(JSON.stringify(state.checkins)) : {};
-    for (var di = 29; di >= 0; di--) {
-      var ddt = new Date(YEAR, TODAY_M, TODAY_D - di);
-      var dk = ddt.getFullYear() + "-" + String(ddt.getMonth() + 1).padStart(2, "0") + "-" + String(ddt.getDate()).padStart(2, "0");
-      var base = 55 + di * 1.2;
-      state.lifeScoreHistory[dk] = Math.min(97, Math.round(base + Math.sin(di * 0.7) * 12));
-      if (!state.checkins) state.checkins = {};
-      state.checkins[dk] = { rating: Math.min(10, Math.max(5, Math.round(6 + Math.sin(di * 0.5) * 2.5))) };
-    }
-    state.lifeScoreHistory[todayKey] = 92;
   }
 
   document.getElementById("v-dashboard").innerHTML = html;
@@ -1260,14 +1237,6 @@ function renderDashboard() {
   }, 100);
 
   setTimeout(drawLifeChart, 50);
-
-  // TEMP DEMO: restore original data after charts draw
-  if (DEMO) {
-    setTimeout(function() {
-      state.lifeScoreHistory = _origHist;
-      state.checkins = _origCheckins;
-    }, 200);
-  }
 }
 
 function drawLifeChart() {
@@ -1472,7 +1441,7 @@ function renderTracker() {
   MONTHS.forEach(function(mn, i) {
     var active = i === m ? " active" : "";
     var past = i < TODAY_M ? " archived" : "";
-    html += '<button class="month-pill' + active + past + '" onclick="state.currentMonth=' + i + ';save();renderTracker()">' + mn + '</button>';
+    html += '<button class="month-pill' + active + past + '" onclick="mobileWeekOffset=0;state.currentMonth=' + i + ';save();renderTracker()">' + mn + '</button>';
   });
   html += '</div></div>';
 
@@ -1502,15 +1471,51 @@ function renderTracker() {
     return;
   }
 
-  // Grid view
+  // Grid view — mobile weekly or desktop full month
+  var isMobile = window.innerWidth <= 600;
+  var visibleDays = [];
+  var dayLetters = ['S','M','T','W','T','F','S'];
+
+  if (isMobile) {
+    var weekStartDow = state.weekStart === 'sun' ? 0 : 1;
+    var refDay = (m === TODAY_M) ? Math.min(TODAY_D, days) : 1;
+    var refDate = new Date(YEAR, m, refDay);
+    var dow = refDate.getDay();
+    var startOfWeek = refDay - ((dow - weekStartDow + 7) % 7) + (mobileWeekOffset * 7);
+    while (startOfWeek + 6 < 1) startOfWeek += 7;
+    while (startOfWeek > days) startOfWeek -= 7;
+    for (var wd = 0; wd < 7; wd++) {
+      var dayNum = startOfWeek + wd;
+      if (dayNum >= 1 && dayNum <= days) visibleDays.push(dayNum);
+    }
+    var canPrev = startOfWeek > 1;
+    var canNext = startOfWeek + 7 <= days;
+    var wStart = visibleDays[0];
+    var wEnd = visibleDays[visibleDays.length - 1];
+    html += '<div class="trk-week-nav">' +
+      '<button class="trk-week-btn"' + (canPrev ? ' onclick="mobileWeekOffset--;renderTracker()"' : ' disabled') + '>&larr;</button>' +
+      '<span class="trk-week-label">' + MONTHS[m] + ' ' + wStart + ' \u2014 ' + wEnd + '</span>' +
+      '<button class="trk-week-btn"' + (canNext ? ' onclick="mobileWeekOffset++;renderTracker()"' : ' disabled') + '>&rarr;</button></div>';
+  } else {
+    for (var vd = 1; vd <= days; vd++) visibleDays.push(vd);
+  }
+
   html += '<div class="trk-wrap"><div class="trk-grid">';
 
   // Day headers
   html += '<div class="trk-days"><div class="trk-lbl-spacer"></div>';
-  for (var d = 1; d <= days; d++) {
-    html += '<div class="trk-day' + (isToday(m, d) ? ' today' : '') + '">' + d + '</div>';
+  visibleDays.forEach(function(d) {
+    var dlabel = d;
+    if (isMobile) {
+      var ddow = new Date(YEAR, m, d).getDay();
+      dlabel = '<span class="trk-day-letter">' + dayLetters[ddow] + '</span>' + d;
+    }
+    html += '<div class="trk-day' + (isToday(m, d) ? ' today' : '') + '">' + dlabel + '</div>';
+  });
+  if (!isMobile) {
+    html += '<div class="trk-stat-hdr">TOT</div><div class="trk-stat-hdr">%</div>';
   }
-  html += '<div class="trk-stat-hdr">TOT</div><div class="trk-stat-hdr">%</div></div>';
+  html += '</div>';
 
   // Categories
   CATEGORIES.forEach(function(cat) {
@@ -1549,7 +1554,7 @@ function renderTracker() {
 
       html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + '">' + esc(hab.name) + '</div>';
 
-      for (var d = 1; d <= days; d++) {
+      visibleDays.forEach(function(d) {
         var v = getEntry(m, d, hab.id);
         var past = isPast(m, d);
         var today = isToday(m, d);
@@ -1575,10 +1580,12 @@ function renderTracker() {
           var nst = v ? '--fill:rgba(' + cr + ',' + cg + ',' + cb + ',.45)' : '';
           html += '<div class="' + ncls + '" style="' + nst + '"><input class="trk-num" value="' + v + '" oninput="setNum(' + m + ',' + d + ',' + hab.id + ',this.value)" inputmode="decimal"></div>';
         }
-      }
+      });
 
-      html += '<div class="trk-stat">' + (hab.type === "check" ? count : (count || '\u2014')) + '</div>';
-      html += '<div class="trk-stat">' + (pct >= .8 ? '<span class="hi">' + pctDisplay + '</span>' : pctDisplay) + '</div>';
+      if (!isMobile) {
+        html += '<div class="trk-stat">' + (hab.type === "check" ? count : (count || '\u2014')) + '</div>';
+        html += '<div class="trk-stat">' + (pct >= .8 ? '<span class="hi">' + pctDisplay + '</span>' : pctDisplay) + '</div>';
+      }
       html += '</div>';
     });
   });
@@ -1612,6 +1619,7 @@ function setNum(m, d, hid, v) {
 
 // === HABIT MANAGEMENT ===
 var editingHabits = false;
+var mobileWeekOffset = 0;
 
 function toggleHabitEdit() {
   editingHabits = !editingHabits;
@@ -2312,13 +2320,12 @@ function renderSettings() {
     '<option value="sun"' + (state.weekStart === "sun" ? ' selected' : '') + '>Sunday</option>' +
     '</select></div></div>';
 
-  // Data
+  // Data & Account
   html += '<div class="set-card"><div class="set-card-title">DATA</div>' +
     '<button class="set-btn" onclick="exportData()">EXPORT AS JSON</button>' +
-    '<button class="set-btn danger" onclick="resetAllData()">RESET ALL DATA</button></div>';
-
-  // Sign out
-  html += '<button class="set-btn" onclick="signOut()" style="margin-top:8px">SIGN OUT</button>';
+    '<button class="set-btn danger" onclick="resetAllData()">RESET ALL DATA</button>' +
+    '<div style="height:1px;background:var(--border);margin:12px 0"></div>' +
+    '<button class="set-btn" onclick="signOut()">SIGN OUT</button></div>';
 
   // Version
   html += '<div class="set-version">LOCKED IN v1.0</div>';
