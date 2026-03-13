@@ -195,6 +195,29 @@ h1 span{color:var(--text3)}
 .past-checkin:hover{border-color:rgba(200,169,81,.15)}
 .past-rating{font-size:24px;font-weight:300;font-family:'DM Mono',monospace;color:var(--gold)}
 
+/* SETTINGS */
+.set-card{background:var(--surface);border:1px solid rgba(255,255,255,.04);border-radius:6px;padding:24px;margin-bottom:16px}
+.set-card-title{font-size:10px;letter-spacing:2px;color:var(--text2);font-weight:500;margin-bottom:16px}
+.set-name-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--text);font-size:14px;width:100%;margin-bottom:8px;transition:border-color .2s}
+.set-name-input:focus{outline:none;border-color:var(--gold)}
+.set-email{color:var(--text3);font-size:12px;font-family:'DM Mono',monospace}
+.set-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.set-cat-card{background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;user-select:none}
+.set-cat-card.active{border-color:var(--gold);background:rgba(200,169,81,.06)}
+.set-cat-card.disabled{opacity:.35;border-color:var(--border)}
+.set-cat-name{font-size:11px;letter-spacing:2px;font-weight:600;margin-top:6px}
+.set-cat-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.set-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.set-toggle-row:last-child{border-bottom:none}
+.set-toggle-label{font-size:13px;color:var(--text)}
+.set-toggle-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.set-select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer}
+.set-btn{width:100%;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:6px;padding:12px;font-size:12px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;margin-bottom:10px}
+.set-btn:hover{background:rgba(200,169,81,.08)}
+.set-btn.danger{border-color:var(--redT);color:var(--redT)}
+.set-btn.danger:hover{background:rgba(203,107,107,.08)}
+.set-version{text-align:center;color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;letter-spacing:2px;padding:16px 0}
+
 /* LOADING SPLASH */
 #loading-screen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease}
 #loading-screen.hide{opacity:0;pointer-events:none}
@@ -291,7 +314,7 @@ h1 span{color:var(--text3)}
   <button class="nav-btn" data-view="goals">GOALS</button>
   <button class="nav-btn" data-view="journal">CHECK-IN</button>
   <button class="nav-btn" data-view="finances">FINANCES</button>
-  <button id="sign-out-btn" class="nav-btn" style="display:none" onclick="signOut()">SIGN OUT</button>
+  <button class="nav-btn" data-view="settings" id="sign-out-btn" style="display:none">SETTINGS</button>
 </nav>
 
 <div class="container">
@@ -300,6 +323,7 @@ h1 span{color:var(--text3)}
   <div id="v-goals" style="display:none"></div>
   <div id="v-journal" style="display:none"></div>
   <div id="v-finances" style="display:none"></div>
+  <div id="v-settings" style="display:none"></div>
 </div>
 
 <script>
@@ -504,6 +528,8 @@ function ensureDefaults() {
   if (!state.journal) state.journal = {};
   state.habits.forEach(function(h) { if (h.goalLink === undefined) h.goalLink = ""; });
   if (!state.checkins) state.checkins = {};
+  if (!state.disabledCategories) state.disabledCategories = [];
+  if (!state.weekStart) state.weekStart = "mon";
   if (state.journal) {
     Object.keys(state.journal).forEach(function(k) {
       if (typeof state.journal[k] === "string" && state.journal[k].trim() && !state.checkins[k]) {
@@ -511,6 +537,10 @@ function ensureDefaults() {
       }
     });
   }
+}
+
+function getActiveCategories() {
+  return CATEGORIES.filter(function(c) { return isCatActive(c.id); });
 }
 
 function getGoalList() {
@@ -647,6 +677,7 @@ async function signOut() {
   document.getElementById("v-goals").innerHTML = "";
   document.getElementById("v-journal").innerHTML = "";
   document.getElementById("v-finances").innerHTML = "";
+  document.getElementById("v-settings").innerHTML = "";
   checkinDraft = { rating: 0, reflection: "", goalPulse: {} };
 
   document.getElementById("auth-name").value = "";
@@ -796,7 +827,7 @@ function switchView(id) {
   document.querySelectorAll(".nav-btn").forEach(function(b) {
     b.classList.toggle("active", b.dataset.view === id);
   });
-  ["dashboard","tracker","goals","journal","finances"].forEach(function(v) {
+  ["dashboard","tracker","goals","journal","finances","settings"].forEach(function(v) {
     var el = document.getElementById("v-" + v);
     if (v === id) {
       el.style.display = "block";
@@ -812,6 +843,7 @@ function switchView(id) {
   if (id === "goals") renderGoals();
   if (id === "journal") renderCheckin();
   if (id === "finances") renderFinances();
+  if (id === "settings") renderSettings();
 }
 
 document.querySelectorAll(".nav-btn").forEach(function(btn) {
@@ -1011,6 +1043,7 @@ function renderDashboard() {
   // 3. Category Scores
   html += '<div class="cat-scores">';
   CATEGORIES.forEach(function(cat) {
+    if (!isCatActive(cat.id)) return;
     var pct = catPct(cat.id);
     html += '<div class="cat-score-item">' +
       '<div class="cat-score-label">' + cat.name + '</div>' +
@@ -1373,6 +1406,7 @@ function renderTracker() {
 
   // Categories
   CATEGORIES.forEach(function(cat) {
+    if (!isCatActive(cat.id)) return;
     var catHabits = state.habits.filter(function(h) { return h.cat === cat.id; });
     if (!catHabits.length) return;
 
@@ -1520,9 +1554,9 @@ function renderGoals() {
   }
 
   state.goals.forEach(function(sec, si) {
-    var done = sec.items.filter(function(g) { return g.s === "Done"; }).length;
-
     var goalCatObj = CATEGORIES.find(function(c){return c.name===sec.cat;});
+    if (goalCatObj && !isCatActive(goalCatObj.id)) return;
+    var done = sec.items.filter(function(g) { return g.s === "Done"; }).length;
     var goalCatColor = goalCatObj ? goalCatObj.color : 'var(--gold)';
     html += '<div class="goal-cat"><span style="display:flex;align-items:center;gap:8px"><span class="cat-dot" style="background:' + goalCatColor + '"></span><span style="color:' + goalCatColor + '">' + sec.cat + '</span></span>' +
       '<span class="mono" style="font-size:10px;color:var(--text3)">' + done + '/' + sec.items.length + ' done</span></div>';
@@ -2001,6 +2035,112 @@ function renderFinances() {
   html += '</div></div>';
 
   document.getElementById("v-finances").innerHTML = html;
+}
+
+// === SETTINGS ===
+function isCatActive(catId) {
+  return !state.disabledCategories || state.disabledCategories.indexOf(catId) === -1;
+}
+
+function toggleCategory(catId) {
+  if (!state.disabledCategories) state.disabledCategories = [];
+  var idx = state.disabledCategories.indexOf(catId);
+  if (idx > -1) {
+    state.disabledCategories.splice(idx, 1);
+  } else {
+    var activeCount = CATEGORIES.length - state.disabledCategories.length;
+    if (activeCount <= 1) return;
+    state.disabledCategories.push(catId);
+  }
+  save();
+  renderSettings();
+}
+
+function updateUserName(val) {
+  state.userName = val;
+  save();
+}
+
+function setWeekStart(val) {
+  state.weekStart = val;
+  save();
+}
+
+function exportData() {
+  var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "locked-in-data-" + YEAR + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAllData() {
+  if (!confirm("This will delete ALL your data. Are you sure?")) return;
+  if (!confirm("Last chance \u2014 this cannot be undone. Continue?")) return;
+  state = {
+    userName: state.userName,
+    entries: {},
+    goals: JSON.parse(JSON.stringify(GOALS_DEFAULT)),
+    habits: JSON.parse(JSON.stringify(DEFAULT_HABITS)),
+    finances: { income: Array(12).fill(0), expenses: Array(12).fill(0), savingsGoal: 5000, savingsCurrent: 0, netWorth: Array(12).fill(0), streams: [], incomeItems: {}, expenseItems: {}, recurringIncome: [], recurringExpenses: [], overrides: {} },
+    currentMonth: TODAY_M,
+    checkins: {},
+    lifeScoreHistory: {},
+    disabledCategories: [],
+    weekStart: "mon"
+  };
+  state.finances.streams = Array(4).fill(null).map(function() { return { name: "", amount: 0 }; });
+  state.startMonth = TODAY_M;
+  state.startDay = TODAY_D;
+  save();
+  switchView("dashboard");
+}
+
+function renderSettings() {
+  var userEmail = currentUser && currentUser.email ? currentUser.email : "";
+
+  var html = '<h1 style="margin-bottom:28px">Settings</h1>';
+
+  // Profile card
+  html += '<div class="set-card"><div class="set-card-title">PROFILE</div>' +
+    '<input class="set-name-input" value="' + esc(state.userName) + '" placeholder="Your name" oninput="updateUserName(this.value)" maxlength="20">' +
+    '<div class="set-email">' + esc(userEmail) + '</div></div>';
+
+  // Active categories
+  html += '<div class="set-card"><div class="set-card-title">ACTIVE CATEGORIES</div>' +
+    '<div class="set-cat-grid">';
+  CATEGORIES.forEach(function(cat) {
+    var active = isCatActive(cat.id);
+    html += '<div class="set-cat-card ' + (active ? 'active' : 'disabled') + '" onclick="toggleCategory(\'' + cat.id + '\')">' +
+      '<div class="set-cat-dot" style="background:' + cat.color + '"></div>' +
+      '<div class="set-cat-name" style="color:' + (active ? cat.color : 'var(--text3)') + '">' + cat.name + '</div></div>';
+  });
+  html += '</div><div style="color:var(--text3);font-size:10px;margin-top:8px;text-align:center">Must keep at least 1 active</div></div>';
+
+  // Preferences
+  html += '<div class="set-card"><div class="set-card-title">PREFERENCES</div>' +
+    '<div class="set-toggle-row">' +
+    '<div><div class="set-toggle-label">Week starts on</div>' +
+    '<div class="set-toggle-sub">Affects weekly stats display</div></div>' +
+    '<select class="set-select" onchange="setWeekStart(this.value)">' +
+    '<option value="mon"' + (state.weekStart === "mon" ? ' selected' : '') + '>Monday</option>' +
+    '<option value="sun"' + (state.weekStart === "sun" ? ' selected' : '') + '>Sunday</option>' +
+    '</select></div></div>';
+
+  // Data
+  html += '<div class="set-card"><div class="set-card-title">DATA</div>' +
+    '<button class="set-btn" onclick="exportData()">EXPORT AS JSON</button>' +
+    '<button class="set-btn danger" onclick="resetAllData()">RESET ALL DATA</button></div>';
+
+  // Sign out
+  html += '<button class="set-btn" onclick="signOut()" style="margin-top:8px">SIGN OUT</button>';
+
+  // Version
+  html += '<div class="set-version">LOCKED IN v1.0</div>';
+
+  document.getElementById("v-settings").innerHTML = html;
 }
 
 // === INIT ===
