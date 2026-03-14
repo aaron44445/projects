@@ -1103,6 +1103,51 @@ document.querySelectorAll(".nav-btn").forEach(function(btn) {
   });
 });
 
+// === SIGIL DATA ===
+function calcSigilData() {
+  var today = new Date(YEAR, TODAY_M, TODAY_D);
+  var cats = {};
+  CATEGORIES.forEach(function(c) {
+    if (!isCatActive(c.id)) return;
+    cats[c.id] = { done: 0, total: 0, days: [], habits: [] };
+    for (var i = 0; i < 7; i++) cats[c.id].days.push({ done: 0, total: 0 });
+  });
+  var checkHabits = state.habits.filter(function(h) { return h.type === "check" && cats[h.cat]; });
+  var habitStats = {};
+  checkHabits.forEach(function(h) { habitStats[h.id] = { name: h.name, cat: h.cat, done: 0 }; });
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(today);
+    d.setDate(d.getDate() - i);
+    var m = d.getMonth();
+    var dd = d.getDate();
+    checkHabits.forEach(function(h) {
+      cats[h.cat].total++;
+      cats[h.cat].days[6 - i].total++;
+      if (getEntry(m, dd, h.id) === "\u2713") {
+        cats[h.cat].done++;
+        cats[h.cat].days[6 - i].done++;
+        habitStats[h.id].done++;
+      }
+    });
+  }
+  var activeCats = Object.keys(cats);
+  var pcts = {};
+  activeCats.forEach(function(id) {
+    pcts[id] = cats[id].total > 0 ? cats[id].done / cats[id].total : 0;
+  });
+  var overall = 0;
+  if (activeCats.length > 0) {
+    activeCats.forEach(function(id) { overall += pcts[id]; });
+    overall /= activeCats.length;
+  }
+  activeCats.forEach(function(id) {
+    cats[id].habits = checkHabits.filter(function(h) { return h.cat === id; }).map(function(h) {
+      return { name: h.name, pct: habitStats[h.id].done / 7 };
+    });
+  });
+  return { cats: cats, pcts: pcts, overall: overall, activeCats: activeCats };
+}
+
 // === DASHBOARD ===
 function renderDashboard() {
   var checkHabits = state.habits.filter(function(h) { return h.type === "check"; });
