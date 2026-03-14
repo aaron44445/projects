@@ -1,4 +1,4 @@
-var CACHE_NAME = 'forged-v6';
+var CACHE_NAME = 'forged-v8';
 var URLS_TO_CACHE = [
   './',
   './index.html',
