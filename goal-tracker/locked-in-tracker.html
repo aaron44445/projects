@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0A0A">
+<title>FORGED — Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#0A0A0A;--surface:#111111;--surface2:#161616;--border:#1E1E1E;
+--gold:#C8A951;--text:#E8E8E8;--text2:#777;--text3:#444;
+--green:#2D5A2D;--greenT:#6BCB77;--red:#3A1B1B;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh;min-height:100dvh}
+input,select,button,textarea{font-family:inherit}
+input:focus,select:focus{outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#222;border-radius:4px}
+.mono{font-family:'DM Mono',monospace}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;height:52px;padding:0 16px;gap:0}
+.nav-brand{color:var(--gold);font-weight:700;font-size:12px;letter-spacing:3px;margin-right:auto;font-family:'DM Mono',monospace}
+.nav-btn{background:none;border:none;color:var(--text2);font-size:11px;font-weight:500;letter-spacing:1.5px;padding:16px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+@media(max-width:500px){.nav-btn{padding:16px 10px;font-size:10px}.nav-brand{font-size:10px;letter-spacing:2px}}
+
+/* MAIN */
+.container{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:26px;font-weight:300;letter-spacing:-.5px}
+h1 span{color:var(--text3)}
+.section-label{color:var(--text2);font-size:11px;letter-spacing:2px;font-weight:500}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px}
+@media(max-width:500px){.card{padding:16px;margin-bottom:12px}}
+
+/* PROGRESS BAR */
+.progress-track{background:#1A1A1A;border-radius:4px;height:6px;overflow:hidden;margin:8px 0}
+.progress-fill{background:var(--gold);height:100%;border-radius:4px;transition:width .5s}
+
+/* CLIENT ROW */
+.client-row{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.client-row:last-child{border-bottom:none}
+.client-row input{background:transparent;border:none;font-size:13px;padding:4px 0}
+.client-name{flex:1;color:var(--text)}
+.client-name::placeholder{color:var(--text3)}
+.client-ret{width:70px;color:var(--gold);font-family:'DM Mono',monospace;text-align:right}
+.client-ret::placeholder{color:var(--text3)}
+
+/* MONTH PILLS */
+.month-pills{display:flex;gap:3px;flex-wrap:wrap}
+.month-pill{background:transparent;border:1px solid var(--border);border-radius:4px;padding:4px 7px;font-size:10px;cursor:pointer;font-family:'DM Mono',monospace;color:var(--text2);transition:all .2s}
+.month-pill.active{background:var(--gold);color:#0A0A0A;border-color:var(--gold);font-weight:600}
+.month-pill.archived{opacity:.35}
+
+/* TRACKER GRID */
+.tracker-wrap{overflow-x:auto;margin:0 -16px;padding:0 16px}
+.habit-row{display:flex;margin-bottom:1px;border-radius:4px}
+.habit-row:nth-child(odd){background:var(--surface)}
+.habit-row:nth-child(even){background:var(--surface2)}
+.habit-label{min-width:140px;width:140px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:12px;position:sticky;left:0;z-index:2}
+.habit-label span.icon{font-size:13px}
+.habit-label span.name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:500px){.habit-label{min-width:110px;width:110px;font-size:11px;padding:6px 6px}}
+
+.day-header{min-width:34px;width:34px;text-align:center;padding:8px 0;font-size:10px;font-family:'DM Mono',monospace;color:var(--text2)}
+.day-header.today{color:var(--gold);font-weight:700;border-bottom:2px solid var(--gold)}
+.day-header.past{color:var(--text3)}
+
+.day-cell{min-width:34px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;transition:all .12s;user-select:none;-webkit-user-select:none}
+.day-cell.done{background:var(--green)}
+.day-cell.done .check{color:var(--greenT);font-size:13px;font-weight:600}
+.day-cell.past-empty{opacity:.35}
+.day-cell.today-border{box-shadow:inset 0 0 0 1px rgba(200,169,81,.25)}
+
+.num-input{width:28px;height:24px;background:transparent;border:1px solid var(--border);border-radius:3px;color:var(--gold);font-size:10px;font-family:'DM Mono',monospace;text-align:center}
+.num-input:focus{border-color:rgba(200,169,81,.4)}
+.num-input.has-val{background:#1A1A10;border-color:rgba(200,169,81,.25)}
+
+.stat-cell{min-width:48px;width:48px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;color:var(--text)}
+.pct-badge{font-size:10px;padding:2px 6px;border-radius:3px}
+.pct-high{color:var(--greenT);background:var(--green)}
+.pct-mid{color:var(--gold)}
+.pct-low{color:var(--text3)}
+
+/* BARS */
+.bar-row{display:flex;gap:3px;align-items:flex-end;height:80px;margin-top:16px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.bar-fill{width:100%;max-width:40px;border-radius:3px;transition:all .3s;min-height:3px}
+.bar-label{font-size:8px;margin-top:4px;font-family:'DM Mono',monospace;color:var(--text3)}
+
+/* GOALS */
+.goal-cat{font-size:12px;color:var(--gold);letter-spacing:2px;font-weight:500;margin-bottom:10px;margin-top:24px}
+.goal-cat:first-child{margin-top:0}
+.goal-row{display:flex;align-items:center;padding:10px 14px;border-radius:4px;margin-bottom:1px;gap:12px}
+.goal-row:nth-child(odd){background:var(--surface)}
+.goal-row:nth-child(even){background:var(--surface2)}
+.goal-text{flex:1;font-size:13px}
+.goal-target{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;min-width:48px;text-align:right}
+.goal-select{background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:11px;padding:4px 8px;font-family:'DM Mono',monospace;cursor:pointer;min-width:95px}
+
+/* MRR GRID */
+.mrr-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px}
+@media(max-width:500px){.mrr-grid{grid-template-columns:repeat(4,1fr)}}
+.mrr-cell{text-align:center}
+.mrr-label{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px}
+.mrr-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--gold);font-size:11px;font-family:'DM Mono',monospace;text-align:center;padding:6px 2px}
+
+.quote{color:var(--text3);font-size:12px;font-style:italic;font-family:'DM Mono',monospace;margin-top:6px}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">FORGED</span>
+  <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard',this)">DASHBOARD</button>
+  <button class="nav-btn" data-view="tracker" onclick="switchView('tracker',this)">TRACKER</button>
+  <button class="nav-btn" data-view="goals" onclick="switchView('goals',this)">GOALS</button>
+</nav>
+
+<div class="container">
+  <div id="v-dashboard"></div>
+  <div id="v-tracker" style="display:none"></div>
+  <div id="v-goals" style="display:none"></div>
+</div>
+
+<script>
+const YEAR=2026,TODAY_M=2,TODAY_D=4;
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const HABITS=[
+  {id:1,name:"Outreach Sent",icon:"💼",type:"number"},
+  {id:2,name:"Follow-Ups",icon:"📲",type:"check"},
+  {id:3,name:"Content Posted",icon:"📣",type:"check"},
+  {id:4,name:"Client Work",icon:"💻",type:"check"},
+  {id:5,name:"Workout",icon:"🏋️",type:"check"},
+  {id:6,name:"Jiu-Jitsu",icon:"🥋",type:"check"},
+  {id:7,name:"Book of Mormon",icon:"📖",type:"check"},
+  {id:8,name:"Deep Work (hrs)",icon:"🧠",type:"number"},
+  {id:9,name:"No Doomscroll",icon:"📵",type:"check"},
+  {id:10,name:"Sleep 8hrs",icon:"😴",type:"check"},
+];
+const GOALS_INIT=[
+  {cat:"💰 BUSINESS",items:[
+    {t:"Close 8 med spa retainer clients",d:"Q2",s:"In Progress"},
+    {t:"Hit $10k MRR with InjectSEO",d:"Q2",s:"In Progress"},
+    {t:"Build automated client reporting",d:"Q3",s:"Not Started"},
+    {t:"Launch case study page",d:"Q2",s:"Not Started"},
+  ]},
+  {cat:"🏋️ BODY",items:[
+    {t:"Train 5x/week consistently",d:"Ongoing",s:"In Progress"},
+    {t:"First jiu-jitsu tournament",d:"Q3",s:"Not Started"},
+    {t:"185lb bench press",d:"Q4",s:"Not Started"},
+  ]},
+  {cat:"📖 SPIRIT",items:[
+    {t:"Read Book of Mormon cover to cover",d:"Q4",s:"In Progress"},
+    {t:"Daily scripture + prayer streak",d:"Ongoing",s:"In Progress"},
+  ]},
+  {cat:"🧠 MIND",items:[
+    {t:"Read 12 books this year",d:"Q4",s:"Not Started"},
+    {t:"4hrs deep work daily average",d:"Ongoing",s:"In Progress"},
+  ]},
+  {cat:"🚗 LIFESTYLE",items:[
+    {t:"Save $5,000 emergency fund",d:"Q3",s:"Not Started"},
+    {t:"Zero doomscroll weeks",d:"Ongoing",s:"Not Started"},
+  ]},
+];
+
+// STATE
+let state={
+  entries:{},
+  clients:Array(8).fill(null).map(()=>({n:"",r:0})),
+  mrr:Array(12).fill(0),
+  goals:JSON.parse(JSON.stringify(GOALS_INIT)),
+  currentMonth:TODAY_M
+};
+
+function load(){
+  try{const d=localStorage.getItem("li_state");if(d){const p=JSON.parse(d);state={...state,...p}}}catch(e){}
+}
+function persist(){try{localStorage.setItem("li_state",JSON.stringify(state))}catch(e){}}
+
+function daysIn(m){return new Date(YEAR,m+1,0).getDate()}
+function isPast(m,d){return m<TODAY_M||(m===TODAY_M&&d<TODAY_D)}
+function isToday(m,d){return m===TODAY_M&&d===TODAY_D}
+function entryKey(m,d,hid){return `${m}-${d}-${hid}`}
+function getE(m,d,hid){return state.entries[entryKey(m,d,hid)]||""}
+function setE(m,d,hid,v){state.entries[entryKey(m,d,hid)]=v;persist()}
+
+function getStats(m,hid,type){
+  const days=daysIn(m);let c=0;
+  for(let d=1;d<=days;d++){const v=getE(m,d,hid);if(type==="check"){if(v==="✓")c++}else{c+=parseFloat(v)||0}}
+  return{count:c,pct:type==="check"?(days?c/days:0):c}
+}
+function avgCheckPct(m){
+  const ch=HABITS.filter(h=>h.type==="check");if(!ch.length)return 0;
+  let t=0;ch.forEach(h=>{t+=getStats(m,h.id,"check").pct});return t/ch.length
+}
+function totalMRR(){return state.clients.reduce((s,c)=>s+(parseFloat(c.r)||0),0)}
+
+// VIEWS
+function switchView(id,btn){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  ['dashboard','tracker','goals'].forEach(v=>{
+    document.getElementById('v-'+v).style.display=v===id?'block':'none'
+  });
+  if(id==='dashboard')renderDashboard();
+  if(id==='tracker')renderTracker();
+  if(id==='goals')renderGoals();
+}
+
+function renderDashboard(){
+  const mrr=totalMRR();const pct=Math.min(100,Math.round((mrr/10000)*100));
+  const slotsOpen=8-state.clients.filter(c=>c.n).length;
+  let h=`
+  <div style="margin-bottom:32px">
+    <h1>Dashboard</h1>
+    <p class="quote">"Focus compounds faster than intelligence."</p>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+      <span class="section-label">REVENUE</span>
+      <span class="mono" style="color:var(--text3);font-size:11px">Target: $10,000/mo</span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px">
+      <span class="mono" style="font-size:38px;font-weight:300;color:var(--gold)">$${mrr.toLocaleString()}</span>
+      <span style="color:var(--text2);font-size:13px">MRR</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <span class="mono" style="color:var(--text3);font-size:11px">${pct}% to goal · ${slotsOpen} slot${slotsOpen!==1?'s':''} open</span>
+  </div>
+
+  <div class="card">
+    <span class="section-label">CLIENT ROSTER</span>
+    <div style="margin-top:14px">`;
+  state.clients.forEach((c,i)=>{
+    h+=`<div class="client-row">
+      <span class="mono" style="color:var(--text3);font-size:11px;width:20px">${String(i+1).padStart(2,'0')}</span>
+      <input class="client-name" value="${esc(c.n)}" placeholder="—" oninput="updClient(${i},'n',this.value)">
+      <span style="color:var(--text3);font-size:12px">$</span>
+      <input type="number" class="client-ret" value="${c.r||''}" placeholder="0" oninput="updClient(${i},'r',this.value)">
+    </div>`;
+  });
+  h+=`</div></div>
+
+  <div class="card">
+    <span class="section-label">COMPLETION BY MONTH</span>
+    <div class="bar-row">`;
+  MONTHS.forEach((m,i)=>{
+    const p=avgCheckPct(i);
+    h+=`<div class="bar-col" onclick="switchView('tracker',document.querySelector('[data-view=tracker]'));state.currentMonth=${i};renderTracker()">
+      <div class="bar-fill" style="height:${Math.max(3,p*70)}px;background:${i<2?'#1A1A1A':(p>0?'var(--gold)':'#1A1A1A')};opacity:${i<2?.3:(p>0?1:.4)}"></div>
+      <span class="bar-label" style="color:${i===TODAY_M?'var(--gold)':'var(--text3)'}">${m}</span>
+    </div>`;
+  });
+  h+=`</div></div>
+
+  <div class="card">
+    <span class="section-label">MRR GROWTH</span>
+    <div class="mrr-grid">`;
+  MONTHS.forEach((m,i)=>{
+    h+=`<div class="mrr-cell">
+      <div class="mrr-label">${m}</div>
+      <input type="number" class="mrr-input" value="${state.mrr[i]||''}" placeholder="—" oninput="updMrr(${i},this.value)">
+    </div>`;
+  });
+  h+=`</div></div>`;
+  document.getElementById('v-dashboard').innerHTML=h;
+}
+
+function renderTracker(){
+  const m=state.currentMonth;const days=daysIn(m);
+  let h=`
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <h1>${MONTHS[m]} <span>${YEAR}</span></h1>
+    <div class="month-pills">`;
+  MONTHS.forEach((mn,i)=>{
+    h+=`<button class="month-pill${i===m?' active':''}${i<2?' archived':''}" onclick="state.currentMonth=${i};persist();renderTracker()">${mn}</button>`;
+  });
+  h+=`</div></div><div class="tracker-wrap"><div style="min-width:600px">`;
+
+  // Day headers
+  h+=`<div style="display:flex;margin-bottom:2px"><div class="habit-label"></div>`;
+  for(let d=1;d<=days;d++){
+    const cls=isToday(m,d)?'today':(isPast(m,d)?'past':'');
+    h+=`<div class="day-header ${cls}">${d}</div>`;
+  }
+  h+=`<div class="stat-cell" style="font-size:9px;color:var(--text3);letter-spacing:1px">TOT</div>`;
+  h+=`<div class="stat-cell" style="font-size:9px;color:var(--text3);letter-spacing:1px">%</div></div>`;
+
+  // Habits
+  HABITS.forEach(hab=>{
+    const st=getStats(m,hab.id,hab.type);
+    const pct=hab.type==="check"?st.pct:(st.count/days);
+    const pctCls=pct>=.8?'pct-high':(pct>=.5?'pct-mid':'pct-low');
+    h+=`<div class="habit-row"><div class="habit-label" style="background:inherit"><span class="icon">${hab.icon}</span><span class="name">${hab.name}</span></div>`;
+    for(let d=1;d<=days;d++){
+      const v=getE(m,d,hab.id);const past=isPast(m,d);const today=isToday(m,d);
+      if(hab.type==="check"){
+        const done=v==="✓";
+        const cls=`day-cell${done?' done':''}${past&&!done?' past-empty':''}${today?' today-border':''}`;
+        h+=`<div class="${cls}" onclick="toggleCheck(${m},${d},${hab.id})">`;
+        if(done)h+=`<span class="check">✓</span>`;
+        else if(past)h+=`<span style="color:#3A1B1B;font-size:10px">·</span>`;
+        h+=`</div>`;
+      }else{
+        const cls=v?'num-input has-val':'num-input';
+        const opSt=past&&!v?'opacity:.35':'';
+        h+=`<div class="day-cell${today?' today-border':''}" style="${opSt}"><input class="${cls}" value="${v}" oninput="setNum(${m},${d},${hab.id},this.value)" inputmode="decimal"></div>`;
+      }
+    }
+    h+=`<div class="stat-cell">${hab.type==="check"?st.count:(st.count||"—")}</div>`;
+    h+=`<div class="stat-cell"><span class="pct-badge ${pctCls}">${hab.type==="check"?Math.round(pct*100)+"%":st.count.toFixed(1)}</span></div>`;
+    h+=`</div>`;
+  });
+  h+=`</div></div>`;
+  document.getElementById('v-tracker').innerHTML=h;
+}
+
+function renderGoals(){
+  let h=`<h1 style="margin-bottom:28px">Goals <span>${YEAR}</span></h1>`;
+  state.goals.forEach((sec,si)=>{
+    h+=`<div class="goal-cat">${sec.cat.toUpperCase()}</div>`;
+    sec.items.forEach((g,gi)=>{
+      const sc=g.s==='Done'?'var(--greenT)':(g.s==='In Progress'?'var(--gold)':'var(--text3)');
+      h+=`<div class="goal-row">
+        <span class="goal-text">${g.t}</span>
+        <span class="goal-target">${g.d}</span>
+        <select class="goal-select" style="color:${sc}" onchange="updGoal(${si},${gi},this.value)">
+          <option${g.s==='Not Started'?' selected':''}>Not Started</option>
+          <option${g.s==='In Progress'?' selected':''}>In Progress</option>
+          <option${g.s==='Done'?' selected':''}>Done</option>
+        </select>
+      </div>`;
+    });
+  });
+  document.getElementById('v-goals').innerHTML=h;
+}
+
+// ACTIONS
+function toggleCheck(m,d,hid){
+  const k=entryKey(m,d,hid);state.entries[k]=state.entries[k]==="✓"?"":"✓";persist();renderTracker();
+}
+function setNum(m,d,hid,v){setE(m,d,hid,v);/* no re-render for perf */}
+function updClient(i,field,v){
+  if(field==='r')state.clients[i].r=v;else state.clients[i].n=v;
+  persist();
+  // Update MRR display
+  const mrrEl=document.querySelector('.progress-fill');
+  if(mrrEl){const mrr=totalMRR();const pct=Math.min(100,Math.round((mrr/10000)*100));mrrEl.style.width=pct+'%'}
+}
+function updMrr(i,v){state.mrr[i]=parseFloat(v)||0;persist()}
+function updGoal(si,gi,v){state.goals[si].items[gi].s=v;persist();renderGoals()}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+
+// INIT
+load();
+renderDashboard();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
-  "name": "LOCKED IN",
-  "short_name": "LOCKED IN",
-  "description": "Track everything. Waste nothing.",
+  "name": "FORGED",
+  "short_name": "FORGED",
+  "description": "Track everything. Forge yourself.",
   "start_url": "/goal-tracker/index.html",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'lockedin-v5';
+var CACHE_NAME = 'forged-v6';
 var URLS_TO_CACHE = [
   './',
   './index.html',
