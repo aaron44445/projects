@@ -1514,7 +1514,10 @@ function renderDashboard() {
     save();
   }
 
-  document.getElementById("v-dashboard").innerHTML = html;
+  var dashEl = document.getElementById("v-dashboard");
+  if (_sigilNode && _sigilNode.parentNode) _sigilNode.remove();
+  dashEl.innerHTML = html;
+  renderSigil(dashEl);
 
   // Animate all dashboard numbers (count-up with cubic ease-out)
   setTimeout(function() {
