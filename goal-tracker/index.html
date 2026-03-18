@@ -2181,43 +2181,57 @@ function renderFinances() {
 
   html += '<div class="card"><span class="section-label">INCOME &#183; ' + MONTHS[fm] + '</span>';
 
+  // Column headers
+  html += '<div class="ledger-hdr" style="margin-top:14px"><span>DATE</span><span>DESCRIPTION</span><span style="text-align:right">AMOUNT</span><span></span></div>';
+
+  // Recurring income
+  var rowIdx = 0;
   if (fin.recurringIncome.length > 0) {
-    html += '<div class="recurring-section" style="margin-top:14px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">RECURRING</span></div>';
+    html += '<div class="ledger-label">RECURRING</div>';
     fin.recurringIncome.forEach(function(item, i) {
       var hasOverride = incOverrides[item.name] !== undefined;
       var displayAmt = hasOverride ? incOverrides[item.name] : item.amount;
-      html += '<div class="stream-row">' +
-        '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateRecurringItem(\'income\',' + i + ',\'name\',this.value)">' +
+      html += '<div class="ledger-row' + (rowIdx % 2 === 1 ? ' alt' : '') + '">' +
+        '<div class="ledger-date">&mdash;</div>' +
+        '<input class="ledger-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateRecurringItem(\'income\',' + i + ',\'name\',this.value)">' +
+        '<div class="ledger-amt">' +
         (hasOverride ? '<span class="override-indicator">$' + item.amount + '</span>' : '') +
-        '<span style="color:var(--text3);font-size:12px">$</span>' +
-        '<input type="number" class="stream-amount" value="' + (displayAmt || "") + '" placeholder="0" oninput="overrideRecurringItem(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
-        (hasOverride ? '<button class="habit-del" onclick="clearOverride(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>' : '') +
-        '<button class="habit-del" onclick="removeRecurringItem(\'income\',' + i + ')">&times;</button>' +
+        '<span style="color:var(--text3);font-size:11px">$</span>' +
+        '<input type="number" class="income" value="' + (displayAmt || '') + '" placeholder="0" oninput="overrideRecurringItem(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
+        '</div>' +
+        (hasOverride
+          ? '<button class="habit-del" onclick="clearOverride(\'income\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>'
+          : '<button class="habit-del" onclick="removeRecurringItem(\'income\',' + i + ')">&times;</button>') +
         '</div>';
+      rowIdx++;
     });
-    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'income\')">+ Add recurring income</button></div>';
+    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'income\')">+ Add recurring income</button>';
   } else {
-    html += '<div style="margin-top:14px"><button class="habit-add-btn" onclick="addRecurringItem(\'income\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring income</button></div>';
+    html += '<div style="margin-top:8px"><button class="habit-add-btn" onclick="addRecurringItem(\'income\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring income</button></div>';
   }
 
-  // One-time income
-  html += '<div style="margin-top:' + (fin.recurringIncome.length > 0 ? '0' : '8px') + '">';
+  // One-time income (sorted by date)
   if (incItems.length > 0 || fin.recurringIncome.length > 0) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">ONE-TIME</span></div>';
+    html += '<div class="ledger-label">ONE-TIME</div>';
   }
-  incItems.forEach(function(item, i) {
-    html += '<div class="stream-row">' +
-      '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateFinItem(\'income\',' + i + ',\'name\',this.value)">' +
-      '<span style="color:var(--text3);font-size:12px">$</span>' +
-      '<input type="number" class="stream-amount" value="' + (item.amount || "") + '" placeholder="0" oninput="updateFinItem(\'income\',' + i + ',\'amount\',this.value)">' +
-      '<button class="habit-del" onclick="removeFinItem(\'income\',' + i + ')">&times;</button>' +
+  var incSorted = incItems.map(function(item, i) { return i; });
+  incSorted.sort(function(a, b) { return (incItems[a].date || '').localeCompare(incItems[b].date || ''); });
+  incSorted.forEach(function(origIdx) {
+    var item = incItems[origIdx];
+    var minDate = YEAR + '-' + String(fm + 1).padStart(2, '0') + '-01';
+    var maxDate = YEAR + '-' + String(fm + 1).padStart(2, '0') + '-' + String(daysInMonth(fm)).padStart(2, '0');
+    html += '<div class="ledger-row' + (rowIdx % 2 === 1 ? ' alt' : '') + '">' +
+      '<div class="ledger-date"><input type="date" value="' + (item.date || '') + '" min="' + minDate + '" max="' + maxDate + '" oninput="updateFinItem(\'income\',' + origIdx + ',\'date\',this.value)"></div>' +
+      '<input class="ledger-name" value="' + esc(item.name) + '" placeholder="Income source..." oninput="updateFinItem(\'income\',' + origIdx + ',\'name\',this.value)">' +
+      '<div class="ledger-amt"><span style="color:var(--text3);font-size:11px">$</span>' +
+      '<input type="number" class="income" value="' + (item.amount || '') + '" placeholder="0" oninput="updateFinItem(\'income\',' + origIdx + ',\'amount\',this.value)"></div>' +
+      '<button class="habit-del" onclick="removeFinItem(\'income\',' + origIdx + ')">&times;</button>' +
       '</div>';
+    rowIdx++;
   });
-  html += '<button class="habit-add-btn" onclick="addFinItem(\'income\')">+ Add one-time income</button></div>';
+  html += '<button class="habit-add-btn" onclick="addFinItem(\'income\')">+ Add one-time income</button>';
 
+  // Income total
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
     '<span style="color:var(--text2);font-size:12px">Total</span>' +
     '<span class="mono" style="color:var(--greenT);font-size:14px">$' + monthIncome.toLocaleString() + '</span>' +
