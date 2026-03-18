@@ -2240,43 +2240,57 @@ function renderFinances() {
   // Expense card
   html += '<div class="card"><span class="section-label">EXPENSES &#183; ' + MONTHS[fm] + '</span>';
 
+  // Column headers
+  html += '<div class="ledger-hdr" style="margin-top:14px"><span>DATE</span><span>DESCRIPTION</span><span style="text-align:right">AMOUNT</span><span></span></div>';
+
+  // Recurring expenses
+  var expRowIdx = 0;
   if (fin.recurringExpenses.length > 0) {
-    html += '<div class="recurring-section" style="margin-top:14px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">RECURRING</span></div>';
+    html += '<div class="ledger-label">RECURRING</div>';
     fin.recurringExpenses.forEach(function(item, i) {
       var hasOverride = expOverrides[item.name] !== undefined;
       var displayAmt = hasOverride ? expOverrides[item.name] : item.amount;
-      html += '<div class="stream-row">' +
-        '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateRecurringItem(\'expense\',' + i + ',\'name\',this.value)">' +
+      html += '<div class="ledger-row' + (expRowIdx % 2 === 1 ? ' alt' : '') + '">' +
+        '<div class="ledger-date">&mdash;</div>' +
+        '<input class="ledger-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateRecurringItem(\'expense\',' + i + ',\'name\',this.value)">' +
+        '<div class="ledger-amt">' +
         (hasOverride ? '<span class="override-indicator">$' + item.amount + '</span>' : '') +
-        '<span style="color:var(--text3);font-size:12px">$</span>' +
-        '<input type="number" class="stream-amount" style="color:var(--redT)" value="' + (displayAmt || "") + '" placeholder="0" oninput="overrideRecurringItem(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
-        (hasOverride ? '<button class="habit-del" onclick="clearOverride(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>' : '') +
-        '<button class="habit-del" onclick="removeRecurringItem(\'expense\',' + i + ')">&times;</button>' +
+        '<span style="color:var(--text3);font-size:11px">$</span>' +
+        '<input type="number" class="expense" value="' + (displayAmt || '') + '" placeholder="0" oninput="overrideRecurringItem(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\',this.value)">' +
+        '</div>' +
+        (hasOverride
+          ? '<button class="habit-del" onclick="clearOverride(\'expense\',\'' + esc(item.name).replace(/'/g, "\\'") + '\')" title="Reset" style="color:var(--gold);opacity:.6">&#8634;</button>'
+          : '<button class="habit-del" onclick="removeRecurringItem(\'expense\',' + i + ')">&times;</button>') +
         '</div>';
+      expRowIdx++;
     });
-    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'expense\')">+ Add recurring expense</button></div>';
+    html += '<button class="habit-add-btn" onclick="addRecurringItem(\'expense\')">+ Add recurring expense</button>';
   } else {
-    html += '<div style="margin-top:14px"><button class="habit-add-btn" onclick="addRecurringItem(\'expense\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring expense</button></div>';
+    html += '<div style="margin-top:8px"><button class="habit-add-btn" onclick="addRecurringItem(\'expense\')" style="border-color:rgba(200,169,81,.3);color:var(--gold);opacity:.5">+ Add recurring expense</button></div>';
   }
 
-  // One-time expenses
-  html += '<div style="margin-top:' + (fin.recurringExpenses.length > 0 ? '0' : '8px') + '">';
+  // One-time expenses (sorted by date)
   if (expItems.length > 0 || fin.recurringExpenses.length > 0) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-      '<span style="font-size:9px;color:var(--text3);letter-spacing:1px">ONE-TIME</span></div>';
+    html += '<div class="ledger-label">ONE-TIME</div>';
   }
-  expItems.forEach(function(item, i) {
-    html += '<div class="stream-row">' +
-      '<input class="stream-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateFinItem(\'expense\',' + i + ',\'name\',this.value)">' +
-      '<span style="color:var(--text3);font-size:12px">$</span>' +
-      '<input type="number" class="stream-amount" style="color:var(--redT)" value="' + (item.amount || "") + '" placeholder="0" oninput="updateFinItem(\'expense\',' + i + ',\'amount\',this.value)">' +
-      '<button class="habit-del" onclick="removeFinItem(\'expense\',' + i + ')">&times;</button>' +
+  var expSorted = expItems.map(function(item, i) { return i; });
+  expSorted.sort(function(a, b) { return (expItems[a].date || '').localeCompare(expItems[b].date || ''); });
+  expSorted.forEach(function(origIdx) {
+    var item = expItems[origIdx];
+    var minDate = YEAR + '-' + String(fm + 1).padStart(2, '0') + '-01';
+    var maxDate = YEAR + '-' + String(fm + 1).padStart(2, '0') + '-' + String(daysInMonth(fm)).padStart(2, '0');
+    html += '<div class="ledger-row' + (expRowIdx % 2 === 1 ? ' alt' : '') + '">' +
+      '<div class="ledger-date"><input type="date" value="' + (item.date || '') + '" min="' + minDate + '" max="' + maxDate + '" oninput="updateFinItem(\'expense\',' + origIdx + ',\'date\',this.value)"></div>' +
+      '<input class="ledger-name" value="' + esc(item.name) + '" placeholder="Expense name..." oninput="updateFinItem(\'expense\',' + origIdx + ',\'name\',this.value)">' +
+      '<div class="ledger-amt"><span style="color:var(--text3);font-size:11px">$</span>' +
+      '<input type="number" class="expense" value="' + (item.amount || '') + '" placeholder="0" oninput="updateFinItem(\'expense\',' + origIdx + ',\'amount\',this.value)"></div>' +
+      '<button class="habit-del" onclick="removeFinItem(\'expense\',' + origIdx + ')">&times;</button>' +
       '</div>';
+    expRowIdx++;
   });
-  html += '<button class="habit-add-btn" onclick="addFinItem(\'expense\')">+ Add one-time expense</button></div>';
+  html += '<button class="habit-add-btn" onclick="addFinItem(\'expense\')">+ Add one-time expense</button>';
 
+  // Expense total
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">' +
     '<span style="color:var(--text2);font-size:12px">Total</span>' +
     '<span class="mono" style="color:var(--redT);font-size:14px">$' + monthExpense.toLocaleString() + '</span>' +
