@@ -1638,12 +1638,13 @@ function renderTracker() {
     while (startOfWeek > days) startOfWeek -= 7;
     for (var wd = 0; wd < 7; wd++) {
       var dayNum = startOfWeek + wd;
-      if (dayNum >= 1 && dayNum <= days) visibleDays.push(dayNum);
+      visibleDays.push((dayNum >= 1 && dayNum <= days) ? dayNum : null);
     }
     var canPrev = startOfWeek > 1;
     var canNext = startOfWeek + 7 <= days;
-    var wStart = visibleDays[0];
-    var wEnd = visibleDays[visibleDays.length - 1];
+    var validDays = visibleDays.filter(function(d) { return d !== null; });
+    var wStart = validDays[0];
+    var wEnd = validDays[validDays.length - 1];
     html += '<div class="trk-week-nav">' +
       '<button class="trk-week-btn"' + (canPrev ? ' onclick="mobileWeekOffset--;renderTracker()"' : ' disabled') + '>&larr;</button>' +
       '<span class="trk-week-label">' + MONTHS[m] + ' ' + wStart + ' \u2014 ' + wEnd + '</span>' +
@@ -1657,6 +1658,10 @@ function renderTracker() {
   // Day headers
   html += '<div class="trk-days"><div class="trk-lbl-spacer"></div>';
   visibleDays.forEach(function(d) {
+    if (d === null) {
+      html += '<div class="trk-day" style="visibility:hidden">&nbsp;</div>';
+      return;
+    }
     var dlabel = d;
     if (isMobile) {
       var ddow = new Date(YEAR, m, d).getDay();
@@ -1707,6 +1712,10 @@ function renderTracker() {
       html += '<div class="trk-row"><div class="trk-lbl" style="border-left-color:' + cat.color + '">' + esc(hab.name) + '</div>';
 
       visibleDays.forEach(function(d) {
+        if (d === null) {
+          html += '<div class="trk-cell" style="visibility:hidden"></div>';
+          return;
+        }
         var v = getEntry(m, d, hab.id);
         var past = isPast(m, d);
         var today = isToday(m, d);
