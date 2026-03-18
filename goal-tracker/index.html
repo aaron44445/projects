@@ -183,17 +183,30 @@ h1 span{color:var(--text3)}
 .fin-month-input.income{color:var(--greenT)}
 .fin-month-input.expense{color:var(--redT)}
 .fin-month-input.networth{color:var(--gold)}
-.stream-row{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.stream-row:last-child{border-bottom:none}
-.stream-name{flex:1;background:transparent;border:none;color:var(--text);font-size:13px}
-.stream-name::placeholder{color:var(--text3)}
-.stream-amount{width:80px;background:transparent;border:none;color:var(--gold);font-family:'DM Mono',monospace;font-size:13px;text-align:right}
-.stream-amount::placeholder{color:var(--text3)}
+.ledger-hdr{display:grid;grid-template-columns:85px 1fr 90px 28px;gap:6px;padding:4px 8px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.ledger-hdr span{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:1px}
+.ledger-row{display:grid;grid-template-columns:85px 1fr 90px 28px;gap:6px;align-items:center;padding:4px 8px;border-radius:4px;margin-bottom:1px}
+.ledger-row.alt{background:rgba(255,255,255,.02)}
+.ledger-date{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace}
+.ledger-date input[type="date"]{background:transparent;border:none;border-bottom:1px dashed rgba(200,169,81,.3);color:var(--gold);font-size:11px;font-family:'DM Mono',monospace;padding:2px 0;width:100%;outline:none}
+.ledger-date input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.7);cursor:pointer}
+.ledger-name{background:transparent;border:none;color:var(--text);font-size:12px;width:100%;min-width:0;outline:none}
+.ledger-name::placeholder{color:var(--text3)}
+.ledger-amt{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+.ledger-amt input{width:60px;background:transparent;border:none;font-family:'DM Mono',monospace;font-size:12px;text-align:right;outline:none}
+.ledger-amt input.income{color:var(--greenT)}
+.ledger-amt input.expense{color:var(--redT)}
+.ledger-label{font-size:9px;color:var(--text3);letter-spacing:1px;padding:8px 8px 4px}
+@media(max-width:500px){
+.ledger-hdr,.ledger-row{grid-template-columns:70px 1fr 75px 24px;gap:4px;padding:4px 4px}
+.ledger-date input[type="date"]{font-size:10px}
+.ledger-name{font-size:11px}
+.ledger-amt input{width:50px;font-size:11px}
+}
 .savings-bar-track{background:#1A1A1A;border-radius:6px;height:10px;overflow:hidden;margin:12px 0}
 .savings-bar-fill{background:linear-gradient(90deg,var(--gold),var(--greenT));height:100%;border-radius:6px;transition:width .6s cubic-bezier(.22,1,.36,1);box-shadow:0 0 8px rgba(200,169,81,.25),0 0 16px rgba(107,203,119,.1)}
 .recurring-badge{font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:3px;background:rgba(200,169,81,.12);color:var(--gold);font-family:'DM Mono',monospace;white-space:nowrap}
 .override-indicator{font-size:9px;color:var(--text3);text-decoration:line-through;margin-right:4px;font-family:'DM Mono',monospace}
-.recurring-section{margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
 
 /* HABIT MANAGEMENT */
 .habit-add-btn{background:transparent;border:1px dashed var(--border);border-radius:4px;padding:6px;color:var(--text3);font-size:11px;cursor:pointer;width:100%;margin-top:4px;transition:all .2s;font-family:'DM Sans',sans-serif}
