@@ -2034,7 +2034,10 @@ function addFinItem(type) {
   var fm = state.finMonth;
   var items = type === "income" ? state.finances.incomeItems : state.finances.expenseItems;
   if (!items[fm]) items[fm] = [];
-  items[fm].push({ name: "", amount: 0 });
+  var defaultDate = fm === TODAY_M
+    ? YEAR + '-' + String(fm + 1).padStart(2, '0') + '-' + String(TODAY_D).padStart(2, '0')
+    : YEAR + '-' + String(fm + 1).padStart(2, '0') + '-01';
+  items[fm].push({ name: "", amount: 0, date: defaultDate });
   recalcFinances();
   save();
   renderFinances();
