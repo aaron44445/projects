@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import SwRegister from "@/components/sw-register";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-dvh bg-[var(--bg-primary)]">{children}</body>
+      <body className="min-h-dvh bg-[var(--bg-primary)]">
+        {children}
+        <SwRegister />
+      </body>
     </html>
   );
 }
