@@ -2,11 +2,11 @@
 
 :root {
   --bg: #09090b;
-  --fg: #e4ddd4;
-  --muted: #52524e;
-  --accent: #b89d5b;
-  --clean: #5a7a5a;
-  --slip: #8b5a5a;
+  --fg: #ede8e0;
+  --muted: #7a746d;
+  --accent: #d4915c;
+  --clean: #6db88a;
+  --slip: #cf7272;
 }
 
 body {
