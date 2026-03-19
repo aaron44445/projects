@@ -1,0 +1,518 @@
+[
+  {
+    "id": "1-nephi",
+    "name": "1 Nephi",
+    "chapters": 22,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "2-nephi",
+    "name": "2 Nephi",
+    "chapters": 33,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "jacob",
+    "name": "Jacob",
+    "chapters": 7,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "enos",
+    "name": "Enos",
+    "chapters": 1,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "jarom",
+    "name": "Jarom",
+    "chapters": 1,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "omni",
+    "name": "Omni",
+    "chapters": 1,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "words-of-mormon",
+    "name": "Words of Mormon",
+    "chapters": 1,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "mosiah",
+    "name": "Mosiah",
+    "chapters": 29,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "alma",
+    "name": "Alma",
+    "chapters": 63,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "helaman",
+    "name": "Helaman",
+    "chapters": 16,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "3-nephi",
+    "name": "3 Nephi",
+    "chapters": 30,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "4-nephi",
+    "name": "4 Nephi",
+    "chapters": 1,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "mormon",
+    "name": "Mormon",
+    "chapters": 9,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "ether",
+    "name": "Ether",
+    "chapters": 15,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "moroni",
+    "name": "Moroni",
+    "chapters": 10,
+    "volume": "book-of-mormon"
+  },
+  {
+    "id": "genesis",
+    "name": "Genesis",
+    "chapters": 50,
+    "volume": "old-testament"
+  },
+  {
+    "id": "exodus",
+    "name": "Exodus",
+    "chapters": 40,
+    "volume": "old-testament"
+  },
+  {
+    "id": "leviticus",
+    "name": "Leviticus",
+    "chapters": 27,
+    "volume": "old-testament"
+  },
+  {
+    "id": "numbers",
+    "name": "Numbers",
+    "chapters": 36,
+    "volume": "old-testament"
+  },
+  {
+    "id": "deuteronomy",
+    "name": "Deuteronomy",
+    "chapters": 34,
+    "volume": "old-testament"
+  },
+  {
+    "id": "joshua",
+    "name": "Joshua",
+    "chapters": 24,
+    "volume": "old-testament"
+  },
+  {
+    "id": "judges",
+    "name": "Judges",
+    "chapters": 21,
+    "volume": "old-testament"
+  },
+  {
+    "id": "ruth",
+    "name": "Ruth",
+    "chapters": 4,
+    "volume": "old-testament"
+  },
+  {
+    "id": "1-samuel",
+    "name": "1 Samuel",
+    "chapters": 31,
+    "volume": "old-testament"
+  },
+  {
+    "id": "2-samuel",
+    "name": "2 Samuel",
+    "chapters": 24,
+    "volume": "old-testament"
+  },
+  {
+    "id": "1-kings",
+    "name": "1 Kings",
+    "chapters": 22,
+    "volume": "old-testament"
+  },
+  {
+    "id": "2-kings",
+    "name": "2 Kings",
+    "chapters": 25,
+    "volume": "old-testament"
+  },
+  {
+    "id": "1-chronicles",
+    "name": "1 Chronicles",
+    "chapters": 29,
+    "volume": "old-testament"
+  },
+  {
+    "id": "2-chronicles",
+    "name": "2 Chronicles",
+    "chapters": 36,
+    "volume": "old-testament"
+  },
+  {
+    "id": "ezra",
+    "name": "Ezra",
+    "chapters": 10,
+    "volume": "old-testament"
+  },
+  {
+    "id": "nehemiah",
+    "name": "Nehemiah",
+    "chapters": 13,
+    "volume": "old-testament"
+  },
+  {
+    "id": "esther",
+    "name": "Esther",
+    "chapters": 10,
+    "volume": "old-testament"
+  },
+  {
+    "id": "job",
+    "name": "Job",
+    "chapters": 42,
+    "volume": "old-testament"
+  },
+  {
+    "id": "psalms",
+    "name": "Psalms",
+    "chapters": 150,
+    "volume": "old-testament"
+  },
+  {
+    "id": "proverbs",
+    "name": "Proverbs",
+    "chapters": 31,
+    "volume": "old-testament"
+  },
+  {
+    "id": "ecclesiastes",
+    "name": "Ecclesiastes",
+    "chapters": 12,
+    "volume": "old-testament"
+  },
+  {
+    "id": "song-of-solomon",
+    "name": "Song of Solomon",
+    "chapters": 8,
+    "volume": "old-testament"
+  },
+  {
+    "id": "isaiah",
+    "name": "Isaiah",
+    "chapters": 66,
+    "volume": "old-testament"
+  },
+  {
+    "id": "jeremiah",
+    "name": "Jeremiah",
+    "chapters": 52,
+    "volume": "old-testament"
+  },
+  {
+    "id": "lamentations",
+    "name": "Lamentations",
+    "chapters": 5,
+    "volume": "old-testament"
+  },
+  {
+    "id": "ezekiel",
+    "name": "Ezekiel",
+    "chapters": 48,
+    "volume": "old-testament"
+  },
+  {
+    "id": "daniel",
+    "name": "Daniel",
+    "chapters": 12,
+    "volume": "old-testament"
+  },
+  {
+    "id": "hosea",
+    "name": "Hosea",
+    "chapters": 14,
+    "volume": "old-testament"
+  },
+  {
+    "id": "joel",
+    "name": "Joel",
+    "chapters": 3,
+    "volume": "old-testament"
+  },
+  {
+    "id": "amos",
+    "name": "Amos",
+    "chapters": 9,
+    "volume": "old-testament"
+  },
+  {
+    "id": "obadiah",
+    "name": "Obadiah",
+    "chapters": 1,
+    "volume": "old-testament"
+  },
+  {
+    "id": "jonah",
+    "name": "Jonah",
+    "chapters": 4,
+    "volume": "old-testament"
+  },
+  {
+    "id": "micah",
+    "name": "Micah",
+    "chapters": 7,
+    "volume": "old-testament"
+  },
+  {
+    "id": "nahum",
+    "name": "Nahum",
+    "chapters": 3,
+    "volume": "old-testament"
+  },
+  {
+    "id": "habakkuk",
+    "name": "Habakkuk",
+    "chapters": 3,
+    "volume": "old-testament"
+  },
+  {
+    "id": "zephaniah",
+    "name": "Zephaniah",
+    "chapters": 3,
+    "volume": "old-testament"
+  },
+  {
+    "id": "haggai",
+    "name": "Haggai",
+    "chapters": 2,
+    "volume": "old-testament"
+  },
+  {
+    "id": "zechariah",
+    "name": "Zechariah",
+    "chapters": 14,
+    "volume": "old-testament"
+  },
+  {
+    "id": "malachi",
+    "name": "Malachi",
+    "chapters": 4,
+    "volume": "old-testament"
+  },
+  {
+    "id": "matthew",
+    "name": "Matthew",
+    "chapters": 28,
+    "volume": "new-testament"
+  },
+  {
+    "id": "mark",
+    "name": "Mark",
+    "chapters": 16,
+    "volume": "new-testament"
+  },
+  {
+    "id": "luke",
+    "name": "Luke",
+    "chapters": 24,
+    "volume": "new-testament"
+  },
+  {
+    "id": "john",
+    "name": "John",
+    "chapters": 21,
+    "volume": "new-testament"
+  },
+  {
+    "id": "acts",
+    "name": "Acts",
+    "chapters": 28,
+    "volume": "new-testament"
+  },
+  {
+    "id": "romans",
+    "name": "Romans",
+    "chapters": 16,
+    "volume": "new-testament"
+  },
+  {
+    "id": "1-corinthians",
+    "name": "1 Corinthians",
+    "chapters": 16,
+    "volume": "new-testament"
+  },
+  {
+    "id": "2-corinthians",
+    "name": "2 Corinthians",
+    "chapters": 13,
+    "volume": "new-testament"
+  },
+  {
+    "id": "galatians",
+    "name": "Galatians",
+    "chapters": 6,
+    "volume": "new-testament"
+  },
+  {
+    "id": "ephesians",
+    "name": "Ephesians",
+    "chapters": 6,
+    "volume": "new-testament"
+  },
+  {
+    "id": "philippians",
+    "name": "Philippians",
+    "chapters": 4,
+    "volume": "new-testament"
+  },
+  {
+    "id": "colossians",
+    "name": "Colossians",
+    "chapters": 4,
+    "volume": "new-testament"
+  },
+  {
+    "id": "1-thessalonians",
+    "name": "1 Thessalonians",
+    "chapters": 5,
+    "volume": "new-testament"
+  },
+  {
+    "id": "2-thessalonians",
+    "name": "2 Thessalonians",
+    "chapters": 3,
+    "volume": "new-testament"
+  },
+  {
+    "id": "1-timothy",
+    "name": "1 Timothy",
+    "chapters": 6,
+    "volume": "new-testament"
+  },
+  {
+    "id": "2-timothy",
+    "name": "2 Timothy",
+    "chapters": 4,
+    "volume": "new-testament"
+  },
+  {
+    "id": "titus",
+    "name": "Titus",
+    "chapters": 3,
+    "volume": "new-testament"
+  },
+  {
+    "id": "philemon",
+    "name": "Philemon",
+    "chapters": 1,
+    "volume": "new-testament"
+  },
+  {
+    "id": "hebrews",
+    "name": "Hebrews",
+    "chapters": 13,
+    "volume": "new-testament"
+  },
+  {
+    "id": "james",
+    "name": "James",
+    "chapters": 5,
+    "volume": "new-testament"
+  },
+  {
+    "id": "1-peter",
+    "name": "1 Peter",
+    "chapters": 5,
+    "volume": "new-testament"
+  },
+  {
+    "id": "2-peter",
+    "name": "2 Peter",
+    "chapters": 3,
+    "volume": "new-testament"
+  },
+  {
+    "id": "1-john",
+    "name": "1 John",
+    "chapters": 5,
+    "volume": "new-testament"
+  },
+  {
+    "id": "2-john",
+    "name": "2 John",
+    "chapters": 1,
+    "volume": "new-testament"
+  },
+  {
+    "id": "3-john",
+    "name": "3 John",
+    "chapters": 1,
+    "volume": "new-testament"
+  },
+  {
+    "id": "jude",
+    "name": "Jude",
+    "chapters": 1,
+    "volume": "new-testament"
+  },
+  {
+    "id": "revelation",
+    "name": "Revelation",
+    "chapters": 22,
+    "volume": "new-testament"
+  },
+  {
+    "id": "doctrine-and-covenants",
+    "name": "Doctrine and Covenants",
+    "chapters": 140,
+    "volume": "doctrine-and-covenants"
+  },
+  {
+    "id": "moses",
+    "name": "Moses",
+    "chapters": 8,
+    "volume": "pearl-of-great-price"
+  },
+  {
+    "id": "abraham",
+    "name": "Abraham",
+    "chapters": 5,
+    "volume": "pearl-of-great-price"
+  },
+  {
+    "id": "joseph-smith-matthew",
+    "name": "Joseph Smith—Matthew",
+    "chapters": 1,
+    "volume": "pearl-of-great-price"
+  },
+  {
+    "id": "joseph-smith-history",
+    "name": "Joseph Smith—History",
+    "chapters": 1,
+    "volume": "pearl-of-great-price"
+  }
+]
