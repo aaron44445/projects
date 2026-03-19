@@ -1284,14 +1284,14 @@ export async function GET() {
 
 // POST: mark today's reading as complete
 export async function POST(req: NextRequest) {
-  const { book, chapter } = await req.json();
+  const { book, chapter, isAiAdjusted } = await req.json();
   const today = new Date().toISOString().split("T")[0];
 
   // Upsert today's reading log
   const { data: log, error: logError } = await supabase
     .from("reading_log")
     .upsert(
-      { date: today, book, chapter, completed: true, is_ai_adjusted: false },
+      { date: today, book, chapter, completed: true, is_ai_adjusted: isAiAdjusted ?? false },
       { onConflict: "date" }
     )
     .select()
@@ -1476,10 +1476,16 @@ export default function StudyPage() {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [loadingReflect, setLoadingReflect] = useState(false);
   const [adjustmentNote, setAdjustmentNote] = useState<string | null>(null);
+  const [isAiAdjusted, setIsAiAdjusted] = useState(false);
 
   const fetchReading = useCallback(async () => {
-    // Trigger AI plan analysis in the background (non-blocking)
-    fetch("/api/ai/adjust-plan", { method: "POST" }).catch(() => {});
+    // Trigger AI plan analysis in the background (throttled to once per day)
+    const lastCheck = localStorage.getItem("last_adjust_check");
+    const today = new Date().toISOString().split("T")[0];
+    if (lastCheck !== today) {
+      localStorage.setItem("last_adjust_check", today);
+      fetch("/api/ai/adjust-plan", { method: "POST" }).catch(() => {});
+    }
 
     const res = await fetch("/api/reading");
     const data = await res.json();
@@ -1487,6 +1493,7 @@ export default function StudyPage() {
     setCompleted(!!data.todayLog?.completed);
     setStudyStreak(data.studyStreak);
     setAdjustmentNote(data.adjustmentNote ?? null);
+    setIsAiAdjusted(data.isAiAdjusted ?? false);
     setLoadingRead(false);
   }, []);
 
@@ -1498,7 +1505,7 @@ export default function StudyPage() {
     const res = await fetch("/api/reading", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ book: reading.book, chapter: reading.chapter }),
+      body: JSON.stringify({ book: reading.book, chapter: reading.chapter, isAiAdjusted }),
     });
     const data = await res.json();
     setCompleted(true);
@@ -2096,14 +2103,15 @@ export async function GET() {
   if (current) {
     const start = new Date(current.start_date);
     const now = new Date();
-    currentDays = Math.floor((now.getTime() - start.getTime()) / 86400000);
+    // +1 because the start date counts as day 1 (not day 0)
+    currentDays = Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
   }
 
   // Find longest streak
   const longestStreak = (history ?? []).reduce((max, s) => {
     const start = new Date(s.start_date);
     const end = s.end_date ? new Date(s.end_date) : new Date();
-    const days = Math.floor((end.getTime() - start.getTime()) / 86400000);
+    const days = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
     return Math.max(max, days);
   }, 0);
 
@@ -2330,11 +2338,11 @@ Create `src/components/streak/emergency-overlay.tsx`:
 
 interface EmergencyOverlayProps {
   text: string;
-  ref: string;
+  scriptureRef: string;
   onClose: () => void;
 }
 
-export default function EmergencyOverlay({ text, ref: scriptureRef, onClose }: EmergencyOverlayProps) {
+export default function EmergencyOverlay({ text, scriptureRef, onClose }: EmergencyOverlayProps) {
   return (
     <div
       className="fixed inset-0 z-50 bg-[var(--bg-primary)] flex flex-col items-center justify-center p-8"
@@ -2509,7 +2517,7 @@ export default function StreakPage() {
       {emergency && (
         <EmergencyOverlay
           text={emergency.text}
-          ref={emergency.ref}
+          scriptureRef={emergency.ref}
           onClose={() => setEmergency(null)}
         />
       )}
