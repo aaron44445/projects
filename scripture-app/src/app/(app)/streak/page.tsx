@@ -37,14 +37,17 @@ export default function StreakPage() {
     setEmergency(data.scripture);
   }
 
-  if (loading) return <div className="text-[var(--text-secondary)] text-center mt-20">Loading...</div>;
+  if (loading) return <div className="min-h-[60vh]" />;
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Accountability</h1>
       <StreakCounter currentDays={currentDays} longestStreak={longestStreak} onReset={handleReset} />
-      <EmergencyButton onPress={handleEmergency} />
-      <CalendarHeatmap checkins={checkins} />
+      <div className="mt-12">
+        <CalendarHeatmap checkins={checkins} />
+      </div>
+      <div className="mt-12">
+        <EmergencyButton onPress={handleEmergency} />
+      </div>
       {emergency && (
         <EmergencyOverlay text={emergency.text} scriptureRef={emergency.ref} onClose={() => setEmergency(null)} />
       )}

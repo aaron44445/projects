@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Crimson_Pro } from "next/font/google";
 import SwRegister from "@/components/sw-register";
 import "./globals.css";
+
+const font = Crimson_Pro({ subsets: ["latin"], weight: ["300", "400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "Scripture Study",
@@ -13,7 +16,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0f172a",
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
@@ -22,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-dvh bg-[var(--bg-primary)]">
+    <html lang="en" className={font.className}>
+      <body className="min-h-dvh">
         {children}
         <SwRegister />
       </body>

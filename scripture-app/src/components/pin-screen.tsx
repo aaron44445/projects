@@ -43,7 +43,7 @@ export default function PinScreen({ onSuccess }: PinScreenProps) {
         if (newConfirm === pin) {
           setupPin(pin);
         } else {
-          setError("PINs don't match");
+          setError("Doesn't match");
           setConfirmPin("");
         }
       }
@@ -91,48 +91,40 @@ export default function PinScreen({ onSuccess }: PinScreenProps) {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-dvh">
-        <div className="text-[var(--text-secondary)]">Loading...</div>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-dvh" />;
 
   const activePin = step === "confirm" ? confirmPin : pin;
+  const title = isSetup
+    ? step === "confirm" ? "Confirm" : "Create PIN"
+    : "Enter PIN";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-dvh px-6">
-      <h1 className="text-2xl font-semibold mb-2">
-        {isSetup ? (step === "confirm" ? "Confirm PIN" : "Create PIN") : "Enter PIN"}
-      </h1>
-      <p className="text-[var(--text-secondary)] text-sm mb-8">
-        {isSetup
-          ? step === "confirm"
-            ? "Enter your PIN again to confirm"
-            : "Choose a 4-digit PIN to protect your app"
-          : "Enter your 4-digit PIN"}
+      <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-10">
+        {title}
       </p>
 
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-6 mb-12">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className={`w-4 h-4 rounded-full border-2 border-[var(--accent-gold)] ${
-              i < activePin.length ? "bg-[var(--accent-gold)]" : ""
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+              i < activePin.length ? "bg-[var(--accent)]" : "bg-[var(--muted)]/30"
             }`}
           />
         ))}
       </div>
 
-      {error && <p className="text-[var(--accent-red)] text-sm mb-4">{error}</p>}
+      {error && (
+        <p className="text-[var(--slip)] text-sm mb-6">{error}</p>
+      )}
 
-      <div className="grid grid-cols-3 gap-4 w-full max-w-[280px]">
+      <div className="grid grid-cols-3 gap-x-12 gap-y-6 w-full max-w-[240px]">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <button
             key={n}
             onClick={() => handleDigit(n.toString())}
-            className="h-16 rounded-xl bg-[var(--bg-secondary)] text-2xl font-medium active:bg-[var(--accent-blue)] transition-colors"
+            className="h-14 text-2xl font-light text-[var(--fg)] active:text-[var(--accent)] transition-colors duration-150"
           >
             {n}
           </button>
@@ -140,15 +132,15 @@ export default function PinScreen({ onSuccess }: PinScreenProps) {
         <div />
         <button
           onClick={() => handleDigit("0")}
-          className="h-16 rounded-xl bg-[var(--bg-secondary)] text-2xl font-medium active:bg-[var(--accent-blue)] transition-colors"
+          className="h-14 text-2xl font-light text-[var(--fg)] active:text-[var(--accent)] transition-colors duration-150"
         >
           0
         </button>
         <button
           onClick={handleDelete}
-          className="h-16 rounded-xl bg-[var(--bg-secondary)] text-lg active:bg-[var(--accent-red)] transition-colors"
+          className="h-14 text-lg text-[var(--muted)] active:text-[var(--fg)] transition-colors duration-150"
         >
-          ←
+          &#x232B;
         </button>
       </div>
     </div>

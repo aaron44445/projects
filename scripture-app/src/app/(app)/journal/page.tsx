@@ -12,7 +12,9 @@ export default function JournalPage() {
   if (mode === "struggle") {
     return (
       <div>
-        <button onClick={() => setMode("menu")} className="text-[var(--text-secondary)] mb-4">← Back</button>
+        <button onClick={() => setMode("menu")} className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-8">
+          Back
+        </button>
         <StruggleForm onSaved={() => setMode("menu")} />
       </div>
     );
@@ -21,7 +23,9 @@ export default function JournalPage() {
   if (mode === "morning" || mode === "evening") {
     return (
       <div>
-        <button onClick={() => setMode("menu")} className="text-[var(--text-secondary)] mb-4">← Back</button>
+        <button onClick={() => setMode("menu")} className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-8">
+          Back
+        </button>
         <CheckinForm
           type={mode === "morning" ? "checkin_morning" : "checkin_evening"}
           onSaved={() => setMode("menu")}
@@ -32,28 +36,26 @@ export default function JournalPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-6">Journal</h1>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col">
         <button
           onClick={() => setMode("struggle")}
-          className="bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 rounded-2xl p-5 text-left"
+          className="py-6 text-left border-b border-white/5"
         >
-          <span className="text-lg font-semibold text-[var(--accent-red)]">I&apos;m struggling</span>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Get immediate support and encouragement</p>
+          <span className="text-lg font-light">I need help</span>
         </button>
         <button
           onClick={() => setMode("morning")}
-          className="bg-[var(--bg-card)] rounded-2xl p-5 text-left"
+          className="py-6 text-left border-b border-white/5"
         >
-          <span className="text-lg font-semibold">Morning Check-in</span>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">How are you feeling today?</p>
+          <span className="text-lg font-light">Morning</span>
+          <span className="block text-sm text-[var(--muted)] mt-0.5">How are you feeling?</span>
         </button>
         <button
           onClick={() => setMode("evening")}
-          className="bg-[var(--bg-card)] rounded-2xl p-5 text-left"
+          className="py-6 text-left"
         >
-          <span className="text-lg font-semibold">Evening Check-in</span>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">How did today go?</p>
+          <span className="text-lg font-light">Evening</span>
+          <span className="block text-sm text-[var(--muted)] mt-0.5">How did today go?</span>
         </button>
       </div>
     </div>

@@ -18,8 +18,7 @@ export default function CalendarHeatmap({ checkins }: CalendarHeatmapProps) {
     days.push({ date: dateStr, status });
   }
 
-  const colorMap = { clean: "bg-[var(--accent-green)]", slip: "bg-[var(--accent-red)]", neutral: "bg-white/10" };
-  const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
+  const colorMap = { clean: "bg-[var(--clean)]", slip: "bg-[var(--slip)]", neutral: "bg-white/5" };
 
   const weeks: typeof days[] = [];
   let currentWeek: typeof days = [];
@@ -34,24 +33,19 @@ export default function CalendarHeatmap({ checkins }: CalendarHeatmapProps) {
   if (currentWeek.length > 0) weeks.push(currentWeek);
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-2xl p-4 mt-4">
-      <h3 className="text-sm text-[var(--text-secondary)] mb-3">Last 90 Days</h3>
-      <div className="flex gap-1">
-        <div className="flex flex-col gap-1 mr-1">
-          {weekDays.map((d, i) => (<div key={i} className="w-3 h-3 text-[8px] text-[var(--text-secondary)] flex items-center">{d}</div>))}
-        </div>
+    <div>
+      <p className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mb-4">90 Days</p>
+      <div className="flex gap-[3px]">
         {weeks.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-1">
+          <div key={wi} className="flex flex-col gap-[3px]">
             {week.map((day, di) => (
-              <div key={di} className={`w-3 h-3 rounded-sm ${day.date ? colorMap[day.status] : "bg-transparent"}`} title={day.date ? `${day.date}: ${day.status}` : ""} />
+              <div
+                key={di}
+                className={`w-2.5 h-2.5 rounded-[1px] ${day.date ? colorMap[day.status] : "bg-transparent"}`}
+              />
             ))}
           </div>
         ))}
-      </div>
-      <div className="flex gap-4 mt-3 text-xs text-[var(--text-secondary)]">
-        <span className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-[var(--accent-green)]" /> Clean</span>
-        <span className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-[var(--accent-red)]" /> Slip</span>
-        <span className="flex items-center gap-1"><div className="w-3 h-3 rounded-sm bg-white/10" /> No data</span>
       </div>
     </div>
   );

@@ -47,37 +47,34 @@ export default function CheckinForm({ type, onSaved }: CheckinFormProps) {
   }
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-2xl p-6">
-      <h3 className="text-lg font-semibold mb-1">
-        {isMorning ? "Morning Check-in" : "Evening Check-in"}
-      </h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-4">
-        {isMorning ? "How are you feeling today?" : "How did today go?"}
+    <div>
+      <p className="text-lg font-light mb-8">
+        {isMorning ? "How are you feeling?" : "How did today go?"}
       </p>
 
       <MoodSelector value={mood} onChange={setMood} />
 
       {!isMorning && (
-        <div className="flex gap-3 mt-4">
+        <div className="flex gap-4 mt-8">
           <button
             onClick={() => setCleanToday(true)}
-            className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+            className={`flex-1 py-3 text-sm tracking-[0.1em] uppercase transition-all duration-300 border ${
               cleanToday === true
-                ? "bg-[var(--accent-green)]/20 border border-[var(--accent-green)] text-[var(--accent-green)]"
-                : "bg-[var(--bg-primary)] text-[var(--text-secondary)]"
+                ? "border-[var(--clean)] text-[var(--clean)]"
+                : "border-white/10 text-[var(--muted)]"
             }`}
           >
-            Stayed clean
+            Clean
           </button>
           <button
             onClick={() => setCleanToday(false)}
-            className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+            className={`flex-1 py-3 text-sm tracking-[0.1em] uppercase transition-all duration-300 border ${
               cleanToday === false
-                ? "bg-[var(--accent-red)]/20 border border-[var(--accent-red)] text-[var(--accent-red)]"
-                : "bg-[var(--bg-primary)] text-[var(--text-secondary)]"
+                ? "border-[var(--slip)] text-[var(--slip)]"
+                : "border-white/10 text-[var(--muted)]"
             }`}
           >
-            I slipped
+            Slipped
           </button>
         </div>
       )}
@@ -85,17 +82,17 @@ export default function CheckinForm({ type, onSaved }: CheckinFormProps) {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Anything on your mind... (optional)"
-        className="w-full bg-[var(--bg-primary)] rounded-xl p-4 text-[var(--text-primary)] placeholder-[var(--text-secondary)] resize-none h-20 mt-4 mb-3"
+        placeholder="Anything on your mind..."
+        className="w-full bg-transparent border-b border-white/10 focus:border-[var(--accent)] pb-3 text-[var(--fg)] resize-none h-20 mt-8 mb-6 outline-none transition-colors"
       />
 
       {!aiResponse && (
         <button
           onClick={handleSubmit}
           disabled={!mood || loading}
-          className="w-full py-3 rounded-xl bg-[var(--accent-gold)] text-[var(--bg-primary)] font-semibold disabled:opacity-40"
+          className="text-sm tracking-[0.15em] uppercase text-[var(--accent)] disabled:opacity-30 transition-opacity"
         >
-          {loading ? "..." : "Check In"}
+          {loading ? "..." : "Check in"}
         </button>
       )}
       {aiResponse && <AiResponseCard response={aiResponse} />}

@@ -16,7 +16,6 @@ export default function StudyPage() {
   const [isAiAdjusted, setIsAiAdjusted] = useState(false);
 
   const fetchReading = useCallback(async () => {
-    // Trigger AI plan analysis in the background (throttled to once per day)
     const lastCheck = localStorage.getItem("last_adjust_check");
     const today = new Date().toISOString().split("T")[0];
     if (lastCheck !== today) {
@@ -49,7 +48,6 @@ export default function StudyPage() {
     setStudyStreak(data.studyStreak);
     setLoadingComplete(false);
 
-    // Fetch reflection question
     setLoadingReflect(true);
     const refRes = await fetch("/api/ai/reflect", {
       method: "POST",
@@ -77,17 +75,14 @@ export default function StudyPage() {
     setReflection(null);
   }
 
-  if (loadingRead) {
-    return <div className="text-[var(--text-secondary)] text-center mt-20">Loading...</div>;
-  }
+  if (loadingRead) return <div className="min-h-[60vh]" />;
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Scripture Study</h1>
       {adjustmentNote && (
-        <div className="bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded-xl p-4 mb-4 text-sm text-[var(--accent-gold)]">
+        <p className="text-sm text-[var(--accent)] mb-8 leading-relaxed italic">
           {adjustmentNote}
-        </div>
+        </p>
       )}
       {reading && (
         <ReadingCard

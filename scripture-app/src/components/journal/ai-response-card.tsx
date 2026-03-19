@@ -4,8 +4,8 @@ interface AiResponseCardProps {
 
 export default function AiResponseCard({ response }: AiResponseCardProps) {
   return (
-    <div className="bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/20 rounded-2xl p-5 mt-4">
-      <p className="text-sm leading-relaxed whitespace-pre-line">{response}</p>
+    <div className="mt-8 pt-6 border-t border-[var(--accent)]/20">
+      <p className="text-base leading-relaxed italic text-[var(--fg)]/80 whitespace-pre-line">{response}</p>
     </div>
   );
 }

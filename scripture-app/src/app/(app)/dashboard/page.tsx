@@ -25,15 +25,23 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
-  if (loading) return <div className="text-[var(--text-secondary)] text-center mt-20">Loading...</div>;
+  if (loading) return <div className="min-h-[60vh]" />;
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
-        <button onClick={() => setShowSettings(!showSettings)} className="text-2xl">⚙️</button>
-      </div>
-      {showSettings ? <SettingsPanel onClose={() => setShowSettings(false)} /> : <StatsOverview {...stats} />}
+      {showSettings ? (
+        <SettingsPanel onClose={() => setShowSettings(false)} />
+      ) : (
+        <>
+          <StatsOverview {...stats} />
+          <button
+            onClick={() => setShowSettings(true)}
+            className="mt-12 text-xs tracking-[0.2em] uppercase text-[var(--muted)] transition-opacity hover:opacity-70"
+          >
+            Settings
+          </button>
+        </>
+      )}
     </div>
   );
 }

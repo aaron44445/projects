@@ -18,23 +18,24 @@ export default function ReadingCard({
   loading,
 }: ReadingCardProps) {
   return (
-    <div className="bg-[var(--bg-card)] rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-[var(--text-secondary)]">Today&apos;s Reading</span>
-        <span className="text-sm text-[var(--accent-gold)]">🔥 {studyStreak} day streak</span>
-      </div>
-      <h2 className="text-2xl font-bold mb-1">{bookName}</h2>
-      <p className="text-[var(--text-secondary)] mb-6">Chapter {chapter}</p>
+    <div>
+      {studyStreak > 0 && (
+        <p className="text-xs tracking-[0.2em] uppercase text-[var(--accent)] mb-8">
+          Day {studyStreak}
+        </p>
+      )}
+      <h1 className="text-4xl font-light leading-tight mb-2">{bookName}</h1>
+      <p className="text-lg text-[var(--muted)] font-light mb-12">Chapter {chapter}</p>
       <button
         onClick={onComplete}
         disabled={completed || loading}
-        className={`w-full py-4 rounded-xl text-lg font-semibold transition-all ${
+        className={`w-full py-4 text-sm tracking-[0.15em] uppercase transition-all duration-300 ${
           completed
-            ? "bg-[var(--accent-green)]/20 text-[var(--accent-green)]"
-            : "bg-[var(--accent-gold)] text-[var(--bg-primary)] active:scale-[0.98]"
+            ? "text-[var(--clean)] border-b border-[var(--clean)]/30"
+            : "text-[var(--fg)] border border-[var(--fg)]/20 active:border-[var(--accent)] active:text-[var(--accent)]"
         }`}
       >
-        {completed ? "✓ Completed" : loading ? "..." : "Mark Complete"}
+        {completed ? "Done" : loading ? "..." : "Mark Complete"}
       </button>
     </div>
   );

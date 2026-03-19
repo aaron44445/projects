@@ -8,20 +8,27 @@ interface StatsOverviewProps {
 
 export default function StatsOverview({ studyStreak, longestStudyStreak, cleanDays, longestCleanStreak, cyclesCompleted }: StatsOverviewProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="bg-[var(--bg-card)] rounded-2xl p-4">
-        <p className="text-sm text-[var(--text-secondary)]">Study Streak</p>
-        <p className="text-3xl font-bold text-[var(--accent-gold)]">{studyStreak}</p>
-        <p className="text-xs text-[var(--text-secondary)]">Best: {longestStudyStreak}</p>
+    <div className="flex flex-col">
+      <div className="py-6">
+        <p className="text-4xl font-light">{studyStreak}</p>
+        <p className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mt-1">Study streak</p>
+        {longestStudyStreak > studyStreak && (
+          <p className="text-xs text-[var(--muted)]/50 mt-1">best: {longestStudyStreak}</p>
+        )}
       </div>
-      <div className="bg-[var(--bg-card)] rounded-2xl p-4">
-        <p className="text-sm text-[var(--text-secondary)]">Clean Days</p>
-        <p className="text-3xl font-bold text-[var(--accent-green)]">{cleanDays}</p>
-        <p className="text-xs text-[var(--text-secondary)]">Best: {longestCleanStreak}</p>
+      <div className="border-t border-white/5 py-6">
+        <p className="text-4xl font-light text-[var(--clean)]">{cleanDays}</p>
+        <p className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mt-1">Clean days</p>
+        {longestCleanStreak > cleanDays && (
+          <p className="text-xs text-[var(--muted)]/50 mt-1">best: {longestCleanStreak}</p>
+        )}
       </div>
       {cyclesCompleted > 0 && (
-        <div className="col-span-2 bg-[var(--accent-gold)]/10 border border-[var(--accent-gold)]/30 rounded-2xl p-4 text-center">
-          <p className="text-[var(--accent-gold)] font-semibold">Completed Full Cycle {cyclesCompleted}x</p>
+        <div className="border-t border-white/5 py-6">
+          <p className="text-4xl font-light text-[var(--accent)]">{cyclesCompleted}</p>
+          <p className="text-xs tracking-[0.2em] uppercase text-[var(--muted)] mt-1">
+            {cyclesCompleted === 1 ? "Cycle complete" : "Cycles complete"}
+          </p>
         </div>
       )}
     </div>

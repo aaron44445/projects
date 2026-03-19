@@ -39,22 +39,21 @@ export default function StruggleForm({ onSaved }: StruggleFormProps) {
   }
 
   return (
-    <div className="bg-[var(--bg-card)] rounded-2xl p-6">
-      <h3 className="text-lg font-semibold mb-1">I&apos;m struggling</h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-4">Write what you&apos;re feeling. You&apos;re not alone.</p>
+    <div>
+      <p className="text-lg font-light mb-6">What are you feeling right now?</p>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="What's going on right now..."
-        className="w-full bg-[var(--bg-primary)] rounded-xl p-4 text-[var(--text-primary)] placeholder-[var(--text-secondary)] resize-none h-32 mb-3"
+        placeholder="Write freely..."
+        className="w-full bg-transparent border-b border-white/10 focus:border-[var(--accent)] pb-3 text-[var(--fg)] resize-none h-32 mb-6 outline-none transition-colors"
       />
       {!aiResponse && (
         <button
           onClick={handleSubmit}
           disabled={!content.trim() || loading}
-          className="w-full py-3 rounded-xl bg-[var(--accent-blue)] text-white font-medium disabled:opacity-40"
+          className="text-sm tracking-[0.15em] uppercase text-[var(--accent)] disabled:opacity-30 transition-opacity"
         >
-          {loading ? "Getting support..." : "Get Support"}
+          {loading ? "..." : "Get support"}
         </button>
       )}
       {aiResponse && <AiResponseCard response={aiResponse} />}

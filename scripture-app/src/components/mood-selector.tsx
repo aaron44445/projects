@@ -1,11 +1,11 @@
 "use client";
 
 const moods = [
-  { value: 1, emoji: "😞", label: "Terrible" },
-  { value: 2, emoji: "😔", label: "Rough" },
-  { value: 3, emoji: "😐", label: "Okay" },
-  { value: 4, emoji: "🙂", label: "Good" },
-  { value: 5, emoji: "😊", label: "Great" },
+  { value: 1, label: "Low" },
+  { value: 2, label: "Hard" },
+  { value: 3, label: "Okay" },
+  { value: 4, label: "Good" },
+  { value: 5, label: "Great" },
 ];
 
 interface MoodSelectorProps {
@@ -15,19 +15,17 @@ interface MoodSelectorProps {
 
 export default function MoodSelector({ value, onChange }: MoodSelectorProps) {
   return (
-    <div className="flex justify-between gap-2">
+    <div className="flex justify-between">
       {moods.map((m) => (
         <button
           key={m.value}
           onClick={() => onChange(m.value)}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-all ${
-            value === m.value
-              ? "bg-[var(--accent-gold)]/20 border border-[var(--accent-gold)]"
-              : "bg-[var(--bg-primary)]"
+          className={`flex flex-col items-center gap-2 px-3 py-2 transition-all duration-300 ${
+            value === m.value ? "text-[var(--accent)]" : "text-[var(--muted)]"
           }`}
         >
-          <span className="text-2xl">{m.emoji}</span>
-          <span className="text-xs text-[var(--text-secondary)]">{m.label}</span>
+          <span className="text-2xl font-light">{m.value}</span>
+          <span className="text-[10px] tracking-[0.15em] uppercase">{m.label}</span>
         </button>
       ))}
     </div>
