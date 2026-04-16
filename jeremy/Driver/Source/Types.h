@@ -18,10 +18,12 @@ struct DriverState {
     std::atomic<AudioMode> mode{AudioMode::Stereo};
     std::atomic<float> limiterThreshold{-1.0f};
     AudioObjectID physicalDeviceID{kAudioObjectUnknown};
+    // NOTE: physicalDeviceName ownership is borrowed from caller.
+    // Caller must ensure it remains valid and is responsible for cleanup.
     CFStringRef physicalDeviceName{nullptr};
     AudioStreamBasicDescription deviceFormat{};
     uint32_t physicalChannelCount{0};
-    bool isActive{false};
+    std::atomic<bool> isActive{false};
 };
 
 // Constants
