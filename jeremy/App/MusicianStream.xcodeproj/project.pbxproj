@@ -12,6 +12,9 @@
 		E0000018000000000000000A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0000019000000000000000A /* Models.swift */; };
 		E000001A000000000000000A /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E000001B000000000000000A /* SettingsManager.swift */; };
 		E000001C000000000000000A /* SettingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E000001D000000000000000A /* SettingsManagerTests.swift */; };
+	E000001E000000000000000A /* XPCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E000001F000000000000000A /* XPCClient.swift */; };
+	E0000020000000000000000A /* XPCClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0000021000000000000000A /* XPCClientTests.swift */; };
+	E0000022000000000000000A /* MusicianStream-Bridging-Header.h in Sources */ = {isa = PBXBuildFile; fileRef = E0000023000000000000000A /* MusicianStream-Bridging-Header.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +25,9 @@
 		E0000019000000000000000A /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Models.swift; path = Sources/Models.swift; sourceTree = "<group>"; };
 		E000001B000000000000000A /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsManager.swift; path = Sources/SettingsManager.swift; sourceTree = "<group>"; };
 		E000001D000000000000000A /* SettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsManagerTests.swift; path = Tests/SettingsManagerTests.swift; sourceTree = "<group>"; };
+	E000001F000000000000000A /* XPCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XPCClient.swift; path = Sources/XPCClient.swift; sourceTree = "<group>"; };
+	E0000021000000000000000A /* XPCClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = XPCClientTests.swift; path = Tests/XPCClientTests.swift; sourceTree = "<group>"; };
+	E0000023000000000000000A /* MusicianStream-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MusicianStream-Bridging-Header.h"; path = "Sources/MusicianStream-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +57,8 @@
 			children = (
 				E0000019000000000000000A /* Models.swift */,
 				E000001B000000000000000A /* SettingsManager.swift */,
+				E000001F000000000000000A /* XPCClient.swift */,
+				E0000023000000000000000A /* MusicianStream-Bridging-Header.h */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -68,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				E000001D000000000000000A /* SettingsManagerTests.swift */,
+				E0000021000000000000000A /* XPCClientTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -163,6 +172,9 @@
 				E0000018000000000000000A /* Models.swift in Sources */,
 				E000001A000000000000000A /* SettingsManager.swift in Sources */,
 				E000001C000000000000000A /* SettingsManagerTests.swift in Sources */,
+				E000001E000000000000000A /* XPCClient.swift in Sources */,
+				E0000020000000000000000A /* XPCClientTests.swift in Sources */,
+				E0000022000000000000000A /* MusicianStream-Bridging-Header.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +322,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.musicianstream.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/MusicianStream-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -325,6 +338,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "Sources/MusicianStream-Bridging-Header.h";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Resources/Info.plist;
