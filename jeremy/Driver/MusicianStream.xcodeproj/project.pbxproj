@@ -17,6 +17,7 @@
 		D0000004000000000000000A /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		D0000006000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = MusicianStream.driver/Contents/Info.plist; sourceTree = "<group>"; };
 		D0000007000000000000000A /* MusicianStream.driver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicianStream.driver; sourceTree = BUILT_PRODUCTS_DIR; };
+		D000001B000000000000000A /* Types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Types.h; path = Source/Types.h; sourceTree = "<group>"; };
 		D0000019000000000000000A /* XPCProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XPCProtocol.h; path = ../Shared/XPCProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -48,6 +49,7 @@
 		D000000A000000000000000A /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				D000001B000000000000000A /* Types.h */,
 			);
 			path = Source;
 			sourceTree = "<group>";
