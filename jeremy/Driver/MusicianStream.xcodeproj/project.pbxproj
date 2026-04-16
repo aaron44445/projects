@@ -12,6 +12,7 @@
 		D0000005000000000000000A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D0000006000000000000000A /* Info.plist */; };
 		D000001C000000000000000A /* Limiter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D000001D000000000000000A /* Limiter.cpp */; };
 		D0000020000000000000000A /* DeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0000021000000000000000A /* DeviceManager.cpp */; };
+		D0000024000000000000000A /* AudioProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0000025000000000000000A /* AudioProcessor.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,9 @@
 		D000001F000000000000000A /* LimiterTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = LimiterTests.cpp; path = Tests/LimiterTests.cpp; sourceTree = "<group>"; };
 		D0000021000000000000000A /* DeviceManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DeviceManager.cpp; path = Source/DeviceManager.cpp; sourceTree = "<group>"; };
 		D0000022000000000000000A /* DeviceManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DeviceManager.h; path = Source/DeviceManager.h; sourceTree = "<group>"; };
+		D0000023000000000000000A /* AudioProcessorTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioProcessorTests.cpp; path = Tests/AudioProcessorTests.cpp; sourceTree = "<group>"; };
+		D0000025000000000000000A /* AudioProcessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioProcessor.cpp; path = Source/AudioProcessor.cpp; sourceTree = "<group>"; };
+		D0000026000000000000000A /* AudioProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AudioProcessor.h; path = Source/AudioProcessor.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +65,8 @@
 				D000001D000000000000000A /* Limiter.cpp */,
 				D0000022000000000000000A /* DeviceManager.h */,
 				D0000021000000000000000A /* DeviceManager.cpp */,
+				D0000026000000000000000A /* AudioProcessor.h */,
+				D0000025000000000000000A /* AudioProcessor.cpp */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -69,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				D000001F000000000000000A /* LimiterTests.cpp */,
+				D0000023000000000000000A /* AudioProcessorTests.cpp */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -177,6 +184,7 @@
 			files = (
 				D000001C000000000000000A /* Limiter.cpp in Sources */,
 				D0000020000000000000000A /* DeviceManager.cpp in Sources */,
+				D0000024000000000000000A /* AudioProcessor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
