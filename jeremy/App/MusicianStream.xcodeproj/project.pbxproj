@@ -10,6 +10,8 @@
 		E0000001000000000000000A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E0000002000000000000000A /* Assets.xcassets */; };
 		E0000003000000000000000A /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E0000004000000000000000A /* Info.plist */; };
 		E0000018000000000000000A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0000019000000000000000A /* Models.swift */; };
+		E000001A000000000000000A /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E000001B000000000000000A /* SettingsManager.swift */; };
+		E000001C000000000000000A /* SettingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E000001D000000000000000A /* SettingsManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +20,8 @@
 		E0000005000000000000000A /* MusicianStream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicianStream.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0000016000000000000000A /* XPCProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XPCProtocol.h; path = ../Shared/XPCProtocol.h; sourceTree = "<group>"; };
 		E0000019000000000000000A /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Models.swift; path = Sources/Models.swift; sourceTree = "<group>"; };
+		E000001B000000000000000A /* SettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsManager.swift; path = Sources/SettingsManager.swift; sourceTree = "<group>"; };
+		E000001D000000000000000A /* SettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsManagerTests.swift; path = Tests/SettingsManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +50,7 @@
 			isa = PBXGroup;
 			children = (
 				E0000019000000000000000A /* Models.swift */,
+				E000001B000000000000000A /* SettingsManager.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -62,6 +67,7 @@
 		E000000A000000000000000A /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E000001D000000000000000A /* SettingsManagerTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -155,6 +161,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E0000018000000000000000A /* Models.swift in Sources */,
+				E000001A000000000000000A /* SettingsManager.swift in Sources */,
+				E000001C000000000000000A /* SettingsManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
