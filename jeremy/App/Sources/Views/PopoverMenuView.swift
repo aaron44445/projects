@@ -89,6 +89,7 @@ struct PopoverMenuView: View {
                     isSelected: settingsManager.audioMode == .stereo
                 ) {
                     settingsManager.audioMode = .stereo
+                    xpcClient.setMode(.stereo)
                 }
 
                 ModeButton(
@@ -96,6 +97,7 @@ struct PopoverMenuView: View {
                     isSelected: settingsManager.audioMode == .mono
                 ) {
                     settingsManager.audioMode = .mono
+                    xpcClient.setMode(.mono)
                 }
             }
         }
@@ -120,7 +122,10 @@ struct PopoverMenuView: View {
 
             LimiterSlider(
                 value: $settingsManager.limiterThreshold,
-                range: AppSettings.limiterMin...AppSettings.limiterMax
+                range: AppSettings.limiterMin...AppSettings.limiterMax,
+                onValueChanged: { newValue in
+                    xpcClient.setLimiterThreshold(newValue)
+                }
             )
         }
     }
@@ -215,6 +220,7 @@ struct ModeButton: View {
 struct LimiterSlider: View {
     @Binding var value: Float
     let range: ClosedRange<Float>
+    var onValueChanged: ((Float) -> Void)? = nil
 
     @State private var isDragging = false
 
@@ -268,6 +274,7 @@ struct LimiterSlider: View {
                             }
                             .onEnded { _ in
                                 isDragging = false
+                                onValueChanged?(value)
                             }
                     )
             }
