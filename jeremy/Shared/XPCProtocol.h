@@ -8,25 +8,44 @@
 #ifndef XPCProtocol_h
 #define XPCProtocol_h
 
-#import <Foundation/Foundation.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// XPC Service Name
-#define kMusicianStreamXPCServiceName "com.musicianstream.xpc"
+// XPC Service Mach service name
+#define kMusicianStreamXPCServiceName "com.musicianstream.driver.xpc"
 
-// XPC Protocol for Driver Control
-@protocol MusicianStreamXPCProtocol
+// XPC Message Types
+#define kXPCMessageTypeKey "message_type"
+#define kXPCMessageTypeSetMode "set_mode"
+#define kXPCMessageTypeSetThreshold "set_threshold"
+#define kXPCMessageTypeGetStatus "get_status"
 
-// Driver control methods
-- (void)enableDriverWithReply:(void (^)(BOOL success, NSError * _Nullable error))reply;
-- (void)disableDriverWithReply:(void (^)(BOOL success, NSError * _Nullable error))reply;
-- (void)getDriverStatusWithReply:(void (^)(BOOL enabled, NSError * _Nullable error))reply;
+// XPC Message Parameters
+#define kXPCParamMode "mode"
+#define kXPCParamThreshold "threshold"
 
-// Audio configuration methods
-- (void)setInputGainDecibels:(float)decibels reply:(void (^)(BOOL success, NSError * _Nullable error))reply;
-- (void)getInputGainWithReply:(void (^)(float decibels, NSError * _Nullable error))reply;
-- (void)setLimiterThresholdDecibels:(float)decibels reply:(void (^)(BOOL success, NSError * _Nullable error))reply;
-- (void)getLimiterThresholdWithReply:(void (^)(float decibels, NSError * _Nullable error))reply;
+// XPC Response Keys
+#define kXPCResponseDeviceName "device_name"
+#define kXPCResponseCurrentMode "current_mode"
+#define kXPCResponseThreshold "limiter_threshold"
+#define kXPCResponseIsActive "is_active"
 
-@end
+// Audio Modes
+#define kAudioModeStereo "stereo"
+#define kAudioModeMono "mono"
+
+// Limiter Constants
+#define kLimiterThresholdMin -6.0f
+#define kLimiterThresholdMax 0.0f
+#define kLimiterThresholdDefault -1.0f
+
+// Settings Keys (for plist persistence)
+#define kSettingsAudioMode "audioMode"
+#define kSettingsLimiterThreshold "limiterThreshold"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* XPCProtocol_h */

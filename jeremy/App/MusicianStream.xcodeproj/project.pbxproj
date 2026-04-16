@@ -15,6 +15,7 @@
 		E0000002000000000000000A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
 		E0000004000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		E0000005000000000000000A /* MusicianStream.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicianStream.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0000016000000000000000A /* XPCProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XPCProtocol.h; path = ../Shared/XPCProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				E0000008000000000000000A /* Sources */,
+				E0000017000000000000000A /* Shared */,
 				E0000009000000000000000A /* Resources */,
 				E000000A000000000000000A /* Tests */,
 				E000000B000000000000000A /* Products */,
@@ -67,6 +69,15 @@
 				E0000005000000000000000A /* MusicianStream.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E0000017000000000000000A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E0000016000000000000000A /* XPCProtocol.h */,
+			);
+			name = Shared;
+			path = ../Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
