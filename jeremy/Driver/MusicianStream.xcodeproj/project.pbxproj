@@ -13,6 +13,7 @@
 		D000001C000000000000000A /* Limiter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D000001D000000000000000A /* Limiter.cpp */; };
 		D0000020000000000000000A /* DeviceManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0000021000000000000000A /* DeviceManager.cpp */; };
 		D0000024000000000000000A /* AudioProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0000025000000000000000A /* AudioProcessor.cpp */; };
+		D0000028000000000000000A /* XPCService.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0000029000000000000000A /* XPCService.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,8 @@
 		D0000023000000000000000A /* AudioProcessorTests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioProcessorTests.cpp; path = Tests/AudioProcessorTests.cpp; sourceTree = "<group>"; };
 		D0000025000000000000000A /* AudioProcessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioProcessor.cpp; path = Source/AudioProcessor.cpp; sourceTree = "<group>"; };
 		D0000026000000000000000A /* AudioProcessor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AudioProcessor.h; path = Source/AudioProcessor.h; sourceTree = "<group>"; };
+		D0000027000000000000000A /* XPCService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = XPCService.h; path = Source/XPCService.h; sourceTree = "<group>"; };
+		D0000029000000000000000A /* XPCService.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = XPCService.cpp; path = Source/XPCService.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +70,8 @@
 				D0000021000000000000000A /* DeviceManager.cpp */,
 				D0000026000000000000000A /* AudioProcessor.h */,
 				D0000025000000000000000A /* AudioProcessor.cpp */,
+				D0000027000000000000000A /* XPCService.h */,
+				D0000029000000000000000A /* XPCService.cpp */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -185,6 +190,7 @@
 				D000001C000000000000000A /* Limiter.cpp in Sources */,
 				D0000020000000000000000A /* DeviceManager.cpp in Sources */,
 				D0000024000000000000000A /* AudioProcessor.cpp in Sources */,
+				D0000028000000000000000A /* XPCService.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
