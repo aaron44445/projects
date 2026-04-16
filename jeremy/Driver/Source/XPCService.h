@@ -4,6 +4,7 @@
 #include "Types.h"
 #include <xpc/xpc.h>
 #include <functional>
+#include <mutex>
 
 namespace MusicianStream {
 
@@ -28,10 +29,11 @@ private:
     ModeChangeCallback mModeCallback;
     ThresholdChangeCallback mThresholdCallback;
     StatusRequestCallback mStatusCallback;
+    std::mutex mCallbackMutex;
 
-    static void connectionHandler(xpc_connection_t peer);
     void handleConnection(xpc_connection_t peer);
     void handleMessage(xpc_object_t message, xpc_connection_t peer);
+    void sendErrorResponse(xpc_connection_t peer, const char* errorMessage);
 };
 
 } // namespace MusicianStream
