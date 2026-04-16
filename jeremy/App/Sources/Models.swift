@@ -32,23 +32,17 @@ struct DriverStatus: Codable {
 /// Application-wide settings and configuration constants
 struct AppSettings {
     /// Storage key for persisting the audio mode preference
-    static let audioModeKey = "com.musicianstream.audioMode"
+    static let audioModeKey = "audioMode"
 
     /// Storage key for persisting the limiter threshold value
-    static let limiterThresholdKey = "com.musicianstream.limiterThreshold"
-
-    /// Storage key for persisting the driver active state
-    static let driverActiveKey = "com.musicianstream.driverActive"
-
-    /// Storage key for persisting the latched device name
-    static let latchedDeviceNameKey = "com.musicianstream.latchedDeviceName"
+    static let limiterThresholdKey = "limiterThreshold"
 
     /// Minimum allowed limiter threshold value
-    static let limiterThresholdMin: Float = -80.0
+    static let limiterMin: Float = -6.0
 
     /// Maximum allowed limiter threshold value
-    static let limiterThresholdMax: Float = 0.0
+    static let limiterMax: Float = 0.0
 
     /// Default limiter threshold value
-    static let limiterThresholdDefault: Float = -6.0
+    static let limiterDefault: Float = -1.0
 }
