@@ -4,7 +4,6 @@ import SwiftUI
 struct PopoverMenuView: View {
     @ObservedObject var settingsManager: SettingsManager
     @ObservedObject var xpcClient: XPCClient
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(spacing: 0) {
@@ -49,9 +48,9 @@ struct PopoverMenuView: View {
 
             // Activity indicator
             Circle()
-                .fill(xpcClient.status.isActive ? Color.studioAccent : Color.studioSecondary.opacity(0.3))
+                .fill(xpcClient.driverStatus.isActive ? Color.studioAccent : Color.studioSecondary.opacity(0.3))
                 .frame(width: 8, height: 8)
-                .shadow(color: xpcClient.status.isActive ? Color.studioAccent.opacity(0.6) : .clear, radius: 4)
+                .shadow(color: xpcClient.driverStatus.isActive ? Color.studioAccent.opacity(0.6) : .clear, radius: 4)
         }
         .padding(16)
     }
@@ -65,7 +64,7 @@ struct PopoverMenuView: View {
                 .foregroundColor(.studioSecondary)
                 .tracking(1.2)
 
-            Text(xpcClient.status.latchedDeviceName)
+            Text(xpcClient.driverStatus.latchedDeviceName)
                 .font(.system(size: 13, weight: .medium, design: .monospaced))
                 .foregroundColor(.studioPrimary)
         }
@@ -89,14 +88,14 @@ struct PopoverMenuView: View {
                     title: "Stereo",
                     isSelected: settingsManager.audioMode == .stereo
                 ) {
-                    settingsManager.setAudioMode(.stereo)
+                    settingsManager.audioMode = .stereo
                 }
 
                 ModeButton(
                     title: "Mono",
                     isSelected: settingsManager.audioMode == .mono
                 ) {
-                    settingsManager.setAudioMode(.mono)
+                    settingsManager.audioMode = .mono
                 }
             }
         }
